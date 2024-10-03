@@ -6,7 +6,7 @@
     const sidebar = useSidebarStore();
 
     const props = defineProps({
-        to: { type: String, required: true },
+        to: { type: [String, Object], required: true },
         icon: { type: String, required: true },
     })
 

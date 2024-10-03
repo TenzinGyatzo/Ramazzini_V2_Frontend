@@ -1,15 +1,21 @@
 <script setup lang="ts">
   import CentroTrabajoItem from '@/components/CentroTrabajoItem.vue';
   import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
+  import { useEmpresasStore } from '@/stores/empresas';
   import { onMounted } from 'vue';
   import { useRoute } from 'vue-router';
 
   const centroTrabajo = useCentrosTrabajoStore();
+  const empresas = useEmpresasStore();
   const route = useRoute();
 
   onMounted(() => {
     const empresaId = String(route.params.idEmpresa);
     centroTrabajo.fetchCentrosTrabajo(empresaId);
+
+    // Setear el ID de empresa actual en el store
+    empresas.currentEmpresaId = empresaId;
+    empresas.fetchEmpresaById(empresaId);
   })
 </script>
 

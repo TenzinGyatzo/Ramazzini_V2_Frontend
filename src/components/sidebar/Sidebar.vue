@@ -1,9 +1,12 @@
 <script lang="ts" setup>
-  import { useSidebarStore } from '@/stores/sidebar';
   import SidebarLink from './SidebarLink.vue';
-
+  import { useSidebarStore } from '@/stores/sidebar';
+  import { useEmpresasStore } from '@/stores/empresas';
+  
   const sidebar = useSidebarStore();
+  const empresas = useEmpresasStore();
 
+  const temporalHide = true;
 </script>
 
 <template>
@@ -21,20 +24,24 @@
       <p>Inicio</p>
       <p class="text-sm" >Ver Empresas</p>
     </SidebarLink>    
-    <SidebarLink to="/centros-trabajo" icon="fas fa-columns" >
-      <p>CALSA</p>
-      <p class="text-xs" >Constructora y Arrendadora López</p>
+    <SidebarLink 
+      v-if="empresas.currentEmpresa" 
+      :to="{ name: 'centros-trabajo', params: { idEmpresa: empresas.currentEmpresa?._id || '' } }"
+      icon="fas fa-columns" 
+    >
+      <p>{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
+      <p class="text-xs" >{{ empresas.currentEmpresa?.razonSocial || 'Nombre no disponible' }}</p>
     </SidebarLink>
-    <SidebarLink to="/trabajadores" icon="fas fa-chart-bar" class="leading-5">
+    <SidebarLink v-if="!temporalHide" to="/trabajadores" icon="fas fa-chart-bar" class="leading-5">
       <p>Proyecto Edificio de control</p>
       <p class="text-xs">Los Mochis - Topolobampo, Los Mochis, Sin.</p>
       
     </SidebarLink>
-    <SidebarLink to="/expediente-medico" icon="fas fa-users" class="leading-5">
+    <SidebarLink v-if="!temporalHide" to="/expediente-medico" icon="fas fa-users" class="leading-5">
       <p>Edgar Omar Coronel Gonzalez</p>
       <p class="text-xs">Supervisor de Seguridad e Higiene</p>
       </SidebarLink>
-    <SidebarLink to="/historia-clinica" icon="fas fa-image" class="leading-5">Historia Clínica</SidebarLink>
+    <SidebarLink v-if="!temporalHide" to="/historia-clinica" icon="fas fa-image" class="leading-5">Historia Clínica</SidebarLink>
 
     <span
       class="collapse-icon"
