@@ -15,7 +15,8 @@ const empresas = useEmpresasStore();
         Nueva Empresa +
       </button>
     </div>
-    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+    <div v-if="empresas.loading"><h1 class="text-4xl py-5 text-center">Cargando...</h1></div>
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
       <EmpresaItem 
         v-for="empresa in empresas.empresas" 
         :key="empresa._id"

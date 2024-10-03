@@ -23,7 +23,7 @@
         Nuevo Centro de Trabajo +
       </button>
     </div>
-    <div class="w-full rounded-lg p-2 shadow-lg bg-gray-50 flex items-center grid grid-cols-1 gap-8">
+    <div class="w-full rounded-lg p-2 shadow-lg bg-gray-50 items-center grid grid-cols-1 gap-8">
       <CentroTrabajoItem 
         v-for="centro in centroTrabajo.centrosTrabajo" 
         :key="centro._id"

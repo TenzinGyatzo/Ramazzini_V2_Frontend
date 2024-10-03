@@ -17,7 +17,7 @@ import { useRouter } from 'vue-router';
 </script>
 
 <template>
-    <div class="w-full p-2 grid grid-cols-1 gap-2 2xl:gap-4 2xl:grid-cols-10 2xl:gap-6">
+    <div class="w-full p-2 grid grid-cols-1 gap-2  2xl:grid-cols-10 2xl:gap-6">
         <button
             type="button"
             class="w-full col-span-1 2xl:col-span-9 text-left rounded-lg p-5 2xl:p-7 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:translate-x-1 shadow-lg hover:shadow-2xl bg-gray-50 hover:bg-gray-200"
