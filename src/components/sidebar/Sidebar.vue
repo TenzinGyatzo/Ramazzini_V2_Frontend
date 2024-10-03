@@ -2,11 +2,25 @@
   import SidebarLink from './SidebarLink.vue';
   import { useSidebarStore } from '@/stores/sidebar';
   import { useEmpresasStore } from '@/stores/empresas';
+  import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
   
   const sidebar = useSidebarStore();
   const empresas = useEmpresasStore();
+  const centrosTrabajo = useCentrosTrabajoStore();
 
   const temporalHide = true;
+
+  const cleanSidebar = (link: string) => {
+    if (link === 'empresas') {
+      empresas.currentEmpresa = {}
+      centrosTrabajo.currentCentroTrabajo = {}  
+      return;    
+    } 
+
+    if (link === 'centros-trabajo') {
+      centrosTrabajo.currentCentroTrabajo = {}
+    }
+  }
 </script>
 
 <template>
@@ -20,27 +34,49 @@
       <span v-else>Navegación</span>
     </h1>
 
-    <SidebarLink to="/empresas" icon="fas fa-home" >
-      <p>Inicio</p>
-      <p class="text-sm" >Ver Empresas</p>
-    </SidebarLink>    
     <SidebarLink 
-      v-if="empresas.currentEmpresa" 
-      :to="{ name: 'centros-trabajo', params: { idEmpresa: empresas.currentEmpresa?._id || '' } }"
-      icon="fas fa-columns" 
+      to="/empresas" 
+      icon="fas fa-home" 
+      @click="cleanSidebar('empresas')"
+    >
+      <p>Empresas</p>
+      <p class="text-sm">Ver todas las empresas</p>
+    </SidebarLink>
+
+    <SidebarLink 
+      v-if="empresas.currentEmpresa?._id" 
+      :to="{ 
+        name: 'centros-trabajo', 
+        params: { idEmpresa: empresas.currentEmpresa?._id || '' } 
+      }"
+      icon="fas fa-columns"
+      class="leading-5" 
+      @click="cleanSidebar('centros-trabajo')"
     >
       <p>{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
       <p class="text-xs" >{{ empresas.currentEmpresa?.razonSocial || 'Nombre no disponible' }}</p>
     </SidebarLink>
-    <SidebarLink v-if="!temporalHide" to="/trabajadores" icon="fas fa-chart-bar" class="leading-5">
-      <p>Proyecto Edificio de control</p>
-      <p class="text-xs">Los Mochis - Topolobampo, Los Mochis, Sin.</p>
-      
+
+    <SidebarLink 
+      v-if="centrosTrabajo.currentCentroTrabajo?._id" 
+      :to="{
+        name: 'trabajadores',
+        params: {
+          idEmpresa: centrosTrabajo.currentCentroTrabajo?.idEmpresa || '',
+          idCentroTrabajo: centrosTrabajo.currentCentroTrabajo?._id || ''
+        }
+      }" 
+      icon="fas fa-chart-bar" 
+      class="leading-5">
+      <p>{{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}</p>
+      <p class="text-xs">{{ centrosTrabajo.currentCentroTrabajo?.direccionCentro }}</p>
     </SidebarLink>
+
     <SidebarLink v-if="!temporalHide" to="/expediente-medico" icon="fas fa-users" class="leading-5">
       <p>Edgar Omar Coronel Gonzalez</p>
       <p class="text-xs">Supervisor de Seguridad e Higiene</p>
-      </SidebarLink>
+    </SidebarLink>
+
     <SidebarLink v-if="!temporalHide" to="/historia-clinica" icon="fas fa-image" class="leading-5">Historia Clínica</SidebarLink>
 
     <span

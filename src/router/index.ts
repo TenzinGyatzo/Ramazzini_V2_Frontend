@@ -15,12 +15,12 @@ const router = createRouter({
           component: () => import('../views/EmpresasView.vue')
         },
         {
-          path: ':idEmpresa/centros-trabajo',
+          path: '/empresas/:idEmpresa/centros-trabajo',
           name: 'centros-trabajo',
           component: () => import('../views/CentrosTrabajoView.vue')
         },
         {
-          path: ':idEmpresa/:idCentroTrabajo/trabajadores',
+          path: ':/empresas/:idEmpresa/centros-trabajo/:idCentroTrabajo/trabajadores',
           name: 'trabajadores',
           component: () => import('../views/TrabajadoresView.vue')
         },
