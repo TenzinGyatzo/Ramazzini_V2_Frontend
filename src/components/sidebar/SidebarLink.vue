@@ -1,6 +1,6 @@
 <script lang="ts" setup>
     import { useRoute, RouterLink } from 'vue-router';
-    import { computed, defineProps } from 'vue';
+    import { computed } from 'vue';
     import { useSidebarStore } from '../../stores/sidebar';
 
     const sidebar = useSidebarStore();
