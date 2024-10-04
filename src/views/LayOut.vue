@@ -1,14 +1,7 @@
 <script lang="ts" setup>
-import { RouterView } from 'vue-router'
-import { onMounted } from 'vue';  
-import { useEmpresasStore } from '@/stores/empresas';
+import { RouterView, useRoute } from 'vue-router'
 
-const empresas = useEmpresasStore();
-
-onMounted(() => {
-  empresas.fetchEmpresas();
-})
-
+const route = useRoute();
 </script>
 
 <template>
@@ -19,7 +12,19 @@ onMounted(() => {
         alt="Ramazzini-Logo" 
       />
     </a>
-
-    <RouterView />
+    <div v-if="route.path === '/'">
+      <h1 class="text-4xl py-5 text-center">Bienvenido a Ramazzini</h1>
+      <p class="text-2xl py-2 text-center">Esta aplicación te permite crear y gestionar expedientes médicos de trabajadores.</p>
+      <a href="/empresas" class="flex justify-center mt-10">
+        <button
+          class="text-4xl bg-emerald-600 hover:bg-emerald-700 text-white uppercase rounded-lg px-8 py-6 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200"
+        >
+          VER EMPRESAS
+        </button>
+      </a>
+    </div>
+    <div v-else>
+      <RouterView />
+    </div>
   </main>
 </template>

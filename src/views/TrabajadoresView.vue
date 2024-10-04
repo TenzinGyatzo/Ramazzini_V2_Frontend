@@ -2,11 +2,12 @@
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const trabajadores = useTrabajadoresStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const route = useRoute();
+const router = useRouter();
 
 onMounted(() => {
   const empresaId = String(route.params.idEmpresa);
@@ -30,6 +31,7 @@ onMounted(() => {
                   <th>#</th>
                   <th>Nombre</th>
                   <th>Sexo</th>
+                  <th>Expediente</th>
                   <th>Acciones</th>
               </tr>
           </thead>
@@ -39,9 +41,18 @@ onMounted(() => {
                   <td>{{ trabajador.nombre }}</td>
                   <td>{{ trabajador.sexo }}</td>
                   <td>
-                      <div class="btn-group">
-                          <button class="btn btn-primary">Editar</button>
-                          <button class="btn btn-danger">Eliminar</button>
+                    <button 
+                      type="button" 
+                      class="bg-emerald-600 hover:bg-emerald-700 text-white uppercase rounded-lg px-2 py-1"
+                      @click="router.push({ name: 'expediente-medico', params: { idEmpresa: trabajador._id, idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId, idTrabajador: trabajador._id } })"
+                    >
+                        Ver
+                    </button>
+                  </td>
+                  <td>
+                      <div>
+                          <button>Editar</button>
+                          <button>Eliminar</button>
                       </div>
                   </td>
               </tr>

@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import EmpresaItem from '@/components/EmpresaItem.vue';
 import { useEmpresasStore } from '@/stores/empresas';
+import { onMounted } from 'vue';
 
 const empresas = useEmpresasStore();
+
+onMounted(() => {
+  empresas.fetchEmpresas();
+})
 </script>
 
 <template>

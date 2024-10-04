@@ -20,12 +20,12 @@ const router = createRouter({
           component: () => import('../views/CentrosTrabajoView.vue')
         },
         {
-          path: ':/empresas/:idEmpresa/centros-trabajo/:idCentroTrabajo/trabajadores',
+          path: '/empresas/:idEmpresa/centros-trabajo/:idCentroTrabajo/trabajadores',
           name: 'trabajadores',
           component: () => import('../views/TrabajadoresView.vue')
         },
         {
-          path: '/expediente-medico',
+          path: '/empresas/:idEmpresa/centros-trabajo/:idCentroTrabajo/expediente-medico/:idTrabajador',
           name: 'expediente-medico',
           component: () => import('../views/ExpedienteMedicoView.vue')
         },

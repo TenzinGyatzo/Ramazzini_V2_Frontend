@@ -3,10 +3,12 @@
   import { useSidebarStore } from '@/stores/sidebar';
   import { useEmpresasStore } from '@/stores/empresas';
   import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
+  import { useTrabajadoresStore } from '@/stores/trabajadores';
   
   const sidebar = useSidebarStore();
   const empresas = useEmpresasStore();
   const centrosTrabajo = useCentrosTrabajoStore();
+  const trabajadores = useTrabajadoresStore();
 
   const temporalHide = true;
 
@@ -14,11 +16,19 @@
     if (link === 'empresas') {
       empresas.currentEmpresa = {}
       centrosTrabajo.currentCentroTrabajo = {}  
+      trabajadores.currentTrabajador = {}
       return;    
     } 
 
     if (link === 'centros-trabajo') {
       centrosTrabajo.currentCentroTrabajo = {}
+      trabajadores.currentTrabajador = {}
+      return;
+    }
+
+    if (link === 'trabajadores') {
+      trabajadores.currentTrabajador = {}
+      return;
     }
   }
 </script>
@@ -36,7 +46,7 @@
 
     <SidebarLink 
       to="/empresas" 
-      icon="fas fa-home" 
+      icon="fas fa-industry" 
       @click="cleanSidebar('empresas')"
     >
       <p>Empresas</p>
@@ -47,9 +57,9 @@
       v-if="empresas.currentEmpresa?._id" 
       :to="{ 
         name: 'centros-trabajo', 
-        params: { idEmpresa: empresas.currentEmpresa?._id || '' } 
+        params: { idEmpresa: empresas.currentEmpresaId || '' } 
       }"
-      icon="fas fa-columns"
+      icon="fas fa-warehouse"
       class="leading-5" 
       @click="cleanSidebar('centros-trabajo')"
     >
@@ -62,22 +72,39 @@
       :to="{
         name: 'trabajadores',
         params: {
-          idEmpresa: centrosTrabajo.currentCentroTrabajo?.idEmpresa || '',
-          idCentroTrabajo: centrosTrabajo.currentCentroTrabajo?._id || ''
+          idEmpresa: empresas.currentEmpresaId || '',
+          idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || ''
         }
       }" 
-      icon="fas fa-chart-bar" 
-      class="leading-5">
+      icon="fas fa-users" 
+      class="leading-5"
+      @click="cleanSidebar('trabajadores')"
+    >
       <p>{{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}</p>
       <p class="text-xs">{{ centrosTrabajo.currentCentroTrabajo?.direccionCentro }}</p>
     </SidebarLink>
 
-    <SidebarLink v-if="!temporalHide" to="/expediente-medico" icon="fas fa-users" class="leading-5">
-      <p>Edgar Omar Coronel Gonzalez</p>
-      <p class="text-xs">Supervisor de Seguridad e Higiene</p>
+    <SidebarLink 
+      v-if="trabajadores.currentTrabajador?._id" 
+      :to="{
+        name: 'expediente-medico',
+        params: {
+          idEmpresa: empresas.currentEmpresaId || '',
+          idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || '',
+          idTrabajador: trabajadores.currentTrabajadorId || ''
+        }
+      }" 
+      icon="fa-regular fa-folder-open" 
+      class="leading-5"
+    >
+      <p>{{ trabajadores.currentTrabajador?.nombre }}</p>
+      <p class="text-xs">Expediente Médico</p>
     </SidebarLink>
 
-    <SidebarLink v-if="!temporalHide" to="/historia-clinica" icon="fas fa-image" class="leading-5">Historia Clínica</SidebarLink>
+    <SidebarLink v-if="!temporalHide" to="/historia-clinica" icon="fas fa-file-pdf" class="leading-5">
+      <p>Historia Clínica</p>
+      <p class="text-xs">Informe</p>
+    </SidebarLink>
 
     <span
       class="collapse-icon"

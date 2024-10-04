@@ -16,8 +16,8 @@ interface Empresa {
 
 export const useEmpresasStore = defineStore("empresas", () => {
 
-    const empresas = ref<Empresa[]>([]);
     const loading = ref(true);
+    const empresas = ref<Empresa[]>([]);
     const currentEmpresaId = ref<string>();
     const currentEmpresa = ref<Empresa>();
 
@@ -46,8 +46,8 @@ export const useEmpresasStore = defineStore("empresas", () => {
     }
 
     return {
-        empresas,
         loading,
+        empresas,
         currentEmpresaId,
         currentEmpresa,
         fetchEmpresas,
