@@ -24,7 +24,7 @@
     <div class="flex flex-col items-center">
       <button
         type="button"
-        class="text-xl bg-emerald-600 hover:bg-emerald-700 text-white uppercase  font-extrabold rounded-lg px-4 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200"
+        class="text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl 2xl:text-3xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg px-4 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg"
       >
         Nuevo Centro de Trabajo +
       </button>

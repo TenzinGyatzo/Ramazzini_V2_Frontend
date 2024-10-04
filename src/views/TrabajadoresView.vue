@@ -22,7 +22,27 @@ onMounted(() => {
 
 </script>
 
-<template>
+<template>  <div class="w-full p-5 space-y-5">
+    <div class="flex flex-row gap-4 items-center">
+      <button
+        type="button"
+        class="text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl 2xl:text-3xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg px-4 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg"
+      >
+        Nuevo Trabajador +
+      </button>
+      <button
+        type="button"
+        class="text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl 2xl:text-3xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg px-4 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg"
+      >
+        Carga Masiva
+      </button>
+      <button
+        type="button"
+        class="text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl 2xl:text-3xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg px-4 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg"
+      >
+        Exportar a Excel
+      </button>
+    </div>
     <div v-if="trabajadores.loading"><h1 class="text-3xl mt-15">Cargando...</h1></div>
     <div v-else>
       <table>
@@ -55,9 +75,12 @@ onMounted(() => {
                           <button>Eliminar</button>
                       </div>
                   </td>
-              </tr>
-          </tbody>
-      </table>
+                </tr>
+            </tbody>
+        </table>
     </div>
+    
+  </div>
+
 
 </template>

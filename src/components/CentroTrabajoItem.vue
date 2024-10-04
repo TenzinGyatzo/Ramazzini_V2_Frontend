@@ -28,7 +28,7 @@ import { useRouter } from 'vue-router';
                 {{ centro.direccionCentro }}, {{ centro.codigoPostal }}, {{ centro.municipio }}, {{ centro.estado }}
             </p>    
         </button> 
-        <div class="w-full md:w-1/2 lg:w-1/3 grid grid-cols-2 gap-4 2xl:gap-0 2xl:w-full 2xl:grid-cols-1 2xl:grid-rows-2">
+        <div class="w-full md:w-1/2 lg:w-1/2 grid grid-cols-2 gap-4 2xl:gap-0 2xl:w-full 2xl:grid-cols-1 2xl:grid-rows-2">
             <div class="flex items-center justify-center">
                 <button class="text-base w-full bg-gray-600 hover:bg-slate-700 text-white uppercase  rounded-lg p-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200">Editar</button>
             </div>

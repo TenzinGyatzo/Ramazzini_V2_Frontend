@@ -17,9 +17,4 @@ const sidebar = useSidebarStore();
 body {
   font-family: 'kanit', sans-serif;
 }
-
-</style>
-
-<style scoped>
-
 </style>
