@@ -1,33 +1,41 @@
 <script lang="ts" setup>
+  import { ref } from 'vue';
   import SidebarLink from './SidebarLink.vue';
   import { useSidebarStore } from '@/stores/sidebar';
   import { useEmpresasStore } from '@/stores/empresas';
   import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
   import { useTrabajadoresStore } from '@/stores/trabajadores';
+  import { onMounted } from 'vue';
+
   
   const sidebar = useSidebarStore();
   const empresas = useEmpresasStore();
   const centrosTrabajo = useCentrosTrabajoStore();
   const trabajadores = useTrabajadoresStore();
-
+  
+  const isMounted = ref(false);
   const temporalHide = true;
+  
+  onMounted(() => {
+    isMounted.value = true;
+  })
 
   const cleanSidebar = (link: string) => {
     if (link === 'empresas') {
-      empresas.currentEmpresa = {}
-      centrosTrabajo.currentCentroTrabajo = {}  
-      trabajadores.currentTrabajador = {}
+      empresas.resetCurrentEmpresa()
+      centrosTrabajo.resetCurrentCentroTrabajo()  
+      trabajadores.resetCurrentTrabajador()
       return;    
     } 
 
     if (link === 'centros-trabajo') {
-      centrosTrabajo.currentCentroTrabajo = {}
-      trabajadores.currentTrabajador = {}
+      centrosTrabajo.resetCurrentCentroTrabajo()
+      trabajadores.resetCurrentTrabajador()
       return;
     }
 
     if (link === 'trabajadores') {
-      trabajadores.currentTrabajador = {}
+      trabajadores.resetCurrentTrabajador()
       return;
     }
   }
@@ -44,67 +52,77 @@
       <span v-else>Navegación</span>
     </h1>
 
-    <SidebarLink 
-      to="/empresas" 
-      icon="fas fa-industry" 
-      @click="cleanSidebar('empresas')"
-    >
-      <p>Empresas</p>
-      <p class="text-sm">Ver todas las empresas</p>
-    </SidebarLink>
+      <SidebarLink
+        class="initial-style"
+        to="/empresas" 
+        icon="fas fa-industry" 
+        @click="cleanSidebar('empresas')"
+        :class="{ 'fade-in': isMounted }"
+      >
+        <p>Empresas</p>
+        <p class="text-sm">Ver todas las empresas</p>
+      </SidebarLink>
 
-    <SidebarLink 
-      v-if="empresas.currentEmpresa?._id" 
-      :to="{ 
-        name: 'centros-trabajo', 
-        params: { idEmpresa: empresas.currentEmpresaId || '' } 
-      }"
-      icon="fas fa-warehouse"
-      class="leading-5" 
-      @click="cleanSidebar('centros-trabajo')"
-    >
-      <p>{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
-      <p class="text-xs" >{{ empresas.currentEmpresa?.razonSocial || 'Nombre no disponible' }}</p>
-    </SidebarLink>
+    <Transition name="enter-left-exit-bounce">
+      <SidebarLink 
+        v-if="empresas.currentEmpresa?._id" 
+        :to="{ 
+          name: 'centros-trabajo', 
+          params: { idEmpresa: empresas.currentEmpresaId || '' } 
+        }"
+        icon="fas fa-warehouse"
+        class="leading-5" 
+        @click="cleanSidebar('centros-trabajo')"
+      >
+        <p>{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
+        <p class="text-xs" >{{ empresas.currentEmpresa?.razonSocial || 'Nombre no disponible' }}</p>
+      </SidebarLink>
+    </Transition>
 
-    <SidebarLink 
-      v-if="centrosTrabajo.currentCentroTrabajo?._id" 
-      :to="{
-        name: 'trabajadores',
-        params: {
-          idEmpresa: empresas.currentEmpresaId || '',
-          idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || ''
-        }
-      }" 
-      icon="fas fa-users" 
-      class="leading-5"
-      @click="cleanSidebar('trabajadores')"
-    >
-      <p>{{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}</p>
-      <p class="text-xs">{{ centrosTrabajo.currentCentroTrabajo?.direccionCentro }}</p>
-    </SidebarLink>
+    <Transition name="enter-left-exit-bounce">
+      <SidebarLink 
+        v-if="centrosTrabajo.currentCentroTrabajo?._id" 
+        :to="{
+          name: 'trabajadores',
+          params: {
+            idEmpresa: empresas.currentEmpresaId || '',
+            idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || ''
+          }
+        }" 
+        icon="fas fa-users" 
+        class="leading-5"
+        @click="cleanSidebar('trabajadores')"
+      >
+        <p>{{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}</p>
+        <p class="text-xs">{{ centrosTrabajo.currentCentroTrabajo?.direccionCentro }}</p>
+      </SidebarLink>
+    </Transition>
 
-    <SidebarLink 
-      v-if="trabajadores.currentTrabajador?._id" 
-      :to="{
-        name: 'expediente-medico',
-        params: {
-          idEmpresa: empresas.currentEmpresaId || '',
-          idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || '',
-          idTrabajador: trabajadores.currentTrabajadorId || ''
-        }
-      }" 
-      icon="fa-regular fa-folder-open" 
-      class="leading-5"
-    >
-      <p>{{ trabajadores.currentTrabajador?.nombre }}</p>
-      <p class="text-xs">Expediente Médico</p>
-    </SidebarLink>
+    <Transition name="enter-left-exit-bounce">
+      <SidebarLink 
+        v-if="trabajadores.currentTrabajador?._id" 
+        :to="{
+          name: 'expediente-medico',
+          params: {
+            idEmpresa: empresas.currentEmpresaId || '',
+            idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || '',
+            idTrabajador: trabajadores.currentTrabajadorId || ''
+          }
+        }" 
+        icon="fa-regular fa-folder-open" 
+        class="leading-5"
+      >
+        <p>{{ trabajadores.currentTrabajador?.nombre }}</p>
+        <p class="text-xs">Expediente Médico</p>
+      </SidebarLink>
+    </Transition>
 
-    <SidebarLink v-if="!temporalHide" to="/historia-clinica" icon="fas fa-file-pdf" class="leading-5">
-      <p>Historia Clínica</p>
-      <p class="text-xs">Informe</p>
-    </SidebarLink>
+    <Transition name="enter-left-exit-bounce">
+      <SidebarLink v-if="!temporalHide" to="/historia-clinica" icon="fas fa-file-pdf" class="leading-5">
+        <p>Historia Clínica</p>
+        <p class="text-xs">Informe</p>
+      </SidebarLink>
+    </Transition>
 
     <span
       class="collapse-icon"
@@ -121,6 +139,35 @@
   --sidebar-bg-color: #2f855a;
   --sidebar-item-hover: #38a169;
   --sidebar-item-active: #276749;
+}
+
+/* Transitions */
+.enter-left-exit-bounce-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.enter-left-exit-bounce-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.enter-left-exit-bounce-enter-from {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+.enter-left-exit-bounce-leave-active {
+  animation: enter-left-exit-bounce-in 0.5s reverse;
+}
+@keyframes enter-left-exit-bounce-in {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 </style>
 
@@ -156,4 +203,5 @@
   transform: rotate(180deg);
   transition: 0.2s linear;
 }
+
 </style>

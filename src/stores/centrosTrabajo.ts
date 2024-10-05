@@ -3,15 +3,17 @@ import { ref } from 'vue'
 import CentrosTrabajoAPI from '../api/CentrosTrabajoAPI'
 
 interface CentroTrabajo {
-    _id?: string
-    nombreCentro?: string
-    direccionCentro?: string
-    codigoPostal?: string
-    estado?: string
-    municipio?: string
-    idEmpresa?: string
-    createdBy?: string
-    updatedBy?: string
+    _id: string
+    nombreCentro: string
+    direccionCentro: string
+    codigoPostal: string
+    estado: string
+    municipio: string
+    idEmpresa: string
+    createdBy: string
+    updatedBy: string
+    createdAt: string
+    updatedAt: string
 }
 
 export const useCentrosTrabajoStore = defineStore('centros-trabajo', () => {
@@ -20,6 +22,22 @@ export const useCentrosTrabajoStore = defineStore('centros-trabajo', () => {
     const loading = ref(true);
     const currentCentroTrabajoId = ref<string>();
     const currentCentroTrabajo = ref<CentroTrabajo>();
+
+    function resetCurrentCentroTrabajo() {
+        currentCentroTrabajo.value = {
+            _id: '',
+            nombreCentro: '',
+            direccionCentro: '',
+            codigoPostal: '',
+            estado: '',
+            municipio: '',
+            idEmpresa: '',
+            createdBy: '',
+            updatedBy: '',
+            createdAt: '',
+            updatedAt: ''
+        };
+    }
 
     async function fetchCentrosTrabajo(empresaId: string) {
         try {
@@ -50,6 +68,7 @@ export const useCentrosTrabajoStore = defineStore('centros-trabajo', () => {
         centrosTrabajo,
         currentCentroTrabajoId,
         currentCentroTrabajo,
+        resetCurrentCentroTrabajo,
         fetchCentrosTrabajo,
         fetchCentroTrabajoById
     }

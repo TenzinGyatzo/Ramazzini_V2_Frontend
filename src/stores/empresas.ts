@@ -3,15 +3,17 @@ import { ref } from "vue";
 import EmpresasAPI from "../api/EmpresasAPI";
 
 interface Empresa {
-    _id?: string;
-    nombreComercial?: string;
-    razonSocial?: string;
-    RFC?: string;
-    giroDeEmpresa?: string;
-    baseOperaciones?: string;
-    logotipo?: string;
-    createdBy?: string;
-    updatedBy?: string;
+    _id: string;
+    nombreComercial: string;
+    razonSocial: string;
+    RFC: string;
+    giroDeEmpresa: string;
+    baseOperaciones: string;
+    logotipo: string;
+    createdBy: string;
+    updatedBy: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export const useEmpresasStore = defineStore("empresas", () => {
@@ -20,6 +22,22 @@ export const useEmpresasStore = defineStore("empresas", () => {
     const empresas = ref<Empresa[]>([]);
     const currentEmpresaId = ref<string>();
     const currentEmpresa = ref<Empresa>();
+
+    function resetCurrentEmpresa() {
+        currentEmpresa.value = {
+            _id: '',
+            nombreComercial: '',
+            razonSocial: '',
+            RFC: '',
+            giroDeEmpresa: '',
+            baseOperaciones: '',
+            logotipo: '',
+            createdBy: '',
+            updatedBy: '',
+            createdAt: '',
+            updatedAt: ''
+        };
+    }
 
     async function fetchEmpresas() {
         try {
@@ -50,6 +68,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
         empresas,
         currentEmpresaId,
         currentEmpresa,
+        resetCurrentEmpresa,
         fetchEmpresas,
         fetchEmpresaById
     }

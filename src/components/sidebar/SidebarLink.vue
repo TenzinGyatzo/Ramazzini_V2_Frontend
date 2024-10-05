@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-    import { useRoute, RouterLink } from 'vue-router';
+    import { useRoute, useRouter, RouterLink } from 'vue-router';
     import { computed } from 'vue';
     import { useSidebarStore } from '../../stores/sidebar';
 
     const sidebar = useSidebarStore();
+    const router = useRouter();
 
     const props = defineProps({
         to: { type: [String, Object], required: true },
@@ -11,7 +12,10 @@
     })
 
     const route = useRoute();
-    const isActive = computed(() => route.path === props.to);
+    const isActive = computed(() => {
+        const resolved = router.resolve(props.to); // Resuelve la ruta a partir del 'to'
+        return resolved.path === route.path;
+    });
 </script>
 
 <template>

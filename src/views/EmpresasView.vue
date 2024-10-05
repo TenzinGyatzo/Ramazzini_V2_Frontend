@@ -20,13 +20,15 @@ onMounted(() => {
         Nueva Empresa +
       </button>
     </div>
-    <div v-if="empresas.loading"><h1 class="text-4xl py-5 text-center">Cargando...</h1></div>
-    <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-      <EmpresaItem 
-        v-for="empresa in empresas.empresas" 
-        :key="empresa._id"
-        :empresa="empresa"
-      />
-    </div>
+    <Transition appear mode="out-in" name="slide-up">
+      <div v-if="empresas.loading"><h1 class="text-3xl sm:text-4xl md:text-5xl py-20 text-center font-semibold text-gray-700">Cargando...</h1></div>
+      <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+        <EmpresaItem 
+          v-for="empresa in empresas.empresas" 
+          :key="empresa._id"
+          :empresa="empresa"
+        />
+      </div>
+    </Transition>
   </div>
 </template>

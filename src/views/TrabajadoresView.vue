@@ -3,6 +3,7 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
 
 const trabajadores = useTrabajadoresStore();
 const centrosTrabajo = useCentrosTrabajoStore();
@@ -43,42 +44,64 @@ onMounted(() => {
         Exportar a Excel
       </button>
     </div>
-    <div v-if="trabajadores.loading"><h1 class="text-3xl mt-15">Cargando...</h1></div>
-    <div v-else>
-      <table>
-          <thead>
-              <tr>
-                  <th>#</th>
-                  <th>Nombre</th>
-                  <th>Sexo</th>
-                  <th>Expediente</th>
-                  <th>Acciones</th>
-              </tr>
-          </thead>
-          <tbody>
-              <tr v-for="trabajador in trabajadores.trabajadores" :key="trabajador._id">
-                  <td>{{ trabajador._id }}</td>
-                  <td>{{ trabajador.nombre }}</td>
-                  <td>{{ trabajador.sexo }}</td>
-                  <td>
-                    <button 
-                      type="button" 
-                      class="bg-emerald-600 hover:bg-emerald-700 text-white uppercase rounded-lg px-2 py-1"
-                      @click="router.push({ name: 'expediente-medico', params: { idEmpresa: trabajador._id, idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId, idTrabajador: trabajador._id } })"
-                    >
-                        Ver
-                    </button>
-                  </td>
-                  <td>
-                      <div>
-                          <button>Editar</button>
-                          <button>Eliminar</button>
-                      </div>
-                  </td>
+    <Transition appear mode="out-in" name="slide-up">
+      <div v-if="trabajadores.loading"><h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1></div>
+      <div v-else>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre</th>
+                    <th>Fecha Registro</th>
+                    <th>Edad</th>
+                    <th>Sexo</th>
+                    <th>Escolaridad</th>
+                    <th>Puesto</th>
+                    <th>Antigüedad</th>
+                    <th>Teléfono</th>
+                    <th>Estado Civil</th>
+                    <th>Hijos</th>
+                    <th>Expediente</th>
+                    <th>-</th>
                 </tr>
-            </tbody>
-        </table>
-    </div>
+            </thead>
+            <tbody>
+                <tr v-for="(trabajador, index) in trabajadores.trabajadores" :key="trabajador._id">
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ trabajador.nombre }}</td>
+                    <td>{{ convertirFechaISOaDDMMYYYY(trabajador.createdAt) }}</td>
+                    <td>{{ calcularEdad(trabajador.fechaNacimiento)}}</td>
+                    <td>{{ trabajador.sexo }}</td>
+                    <td>{{ trabajador.escolaridad }}</td>
+                    <td>{{ trabajador.puesto }}</td>
+                    <td>{{ calcularAntiguedad(trabajador.fechaIngreso) }}</td>
+                    <td>{{ trabajador.telefono ? trabajador.telefono : '-' }}</td>
+                    <td>{{ trabajador.estadoCivil }}</td>
+                    <td>{{ trabajador.hijos }}</td>
+                    <td>
+                      <button 
+                        type="button" 
+                        class="bg-emerald-600 hover:bg-emerald-700 hover:scale-105 text-white rounded-lg px-2 py-1 transition-all duration-300 ease-in-out transform"
+                        @click="router.push({ name: 'expediente-medico', params: { idEmpresa: trabajador._id, idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId, idTrabajador: trabajador._id } })"
+                      >
+                          Expediente
+                      </button>
+                    </td>
+                    <td>
+                        <div class="flex gap-1">
+                            <button type="button" class="hover:scale-110 transition-all duration-100 ease-in-out transform">
+                              <i class="fa-regular fa-pen-to-square fa-lg" style="color: #696969" ></i>
+                            </button>
+                            <button type="button" class="hover:scale-110 transition-all duration-100 ease-in-out transform">
+                              <i class="fa-solid fa-trash-can fa-lg" style="color: #c43117"></i>
+                            </button>
+                        </div>
+                    </td>
+                  </tr>
+              </tbody>
+          </table>
+      </div>
+    </Transition>
     
   </div>
 

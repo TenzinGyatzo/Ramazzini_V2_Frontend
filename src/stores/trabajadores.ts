@@ -3,19 +3,21 @@ import { ref } from 'vue'
 import TrabajadoresAPI from '../api/TrabajadoresAPI'
 
 interface Trabajador {
-    _id?: string
-    nombre?: string
-    fechaNacimiento?: Date
-    sexo?: string
-    escolaridad?: string
-    puesto?: string
-    fechaIngreso?: Date
-    telefono?: string
-    estadoCivil?: string
-    hijos?: number
-    idCentroTrabajo?: string
-    createdBy?: string
-    updatedBy?: string
+    _id: string
+    nombre: string
+    fechaNacimiento: string
+    sexo: string
+    escolaridad: string
+    puesto: string
+    fechaIngreso: string
+    telefono: string
+    estadoCivil: string
+    hijos: number
+    idCentroTrabajo: string
+    createdBy: string
+    updatedBy: string
+    createdAt: string
+    updatedAt: string
 }
 
 export const useTrabajadoresStore = defineStore('trabajadores', () => {
@@ -24,6 +26,26 @@ export const useTrabajadoresStore = defineStore('trabajadores', () => {
     const trabajadores = ref<Trabajador[]>([])
     const currentTrabajadorId = ref<string>()
     const currentTrabajador = ref<Trabajador>()
+
+    function resetCurrentTrabajador() {
+        currentTrabajador.value = {
+            _id: '',
+            nombre: '',
+            fechaNacimiento: '',
+            sexo: '',
+            escolaridad: '',
+            puesto: '',
+            fechaIngreso: '',
+            telefono: '',
+            estadoCivil: '',
+            hijos: 0,
+            idCentroTrabajo: '',
+            createdBy: '',
+            updatedBy: '',
+            createdAt: '',
+            updatedAt: ''
+          };
+    }
 
     async function fetchTrabajadores(empresaId: string, centroTrabajoId: string) {
         try {
@@ -53,7 +75,8 @@ export const useTrabajadoresStore = defineStore('trabajadores', () => {
         loading, 
         trabajadores,
         currentTrabajadorId,
-        currentTrabajador, 
+        currentTrabajador,
+        resetCurrentTrabajador, 
         fetchTrabajadores,
         fetchTrabajadorById
     }
