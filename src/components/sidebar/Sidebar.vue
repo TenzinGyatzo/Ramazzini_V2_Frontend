@@ -6,8 +6,10 @@
   import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
   import { useTrabajadoresStore } from '@/stores/trabajadores';
   import { onMounted } from 'vue';
+  import { useRoute } from 'vue-router';
 
-  
+  const route = useRoute();
+
   const sidebar = useSidebarStore();
   const empresas = useEmpresasStore();
   const centrosTrabajo = useCentrosTrabajoStore();
@@ -18,6 +20,7 @@
   
   onMounted(() => {
     isMounted.value = true;
+    console.log(route.path);
   })
 
   const cleanSidebar = (link: string) => {
@@ -42,18 +45,27 @@
 </script>
 
 <template>
-  <div class="sidebar" :style="{ width: sidebar.sidebarWidth}">
+  <div 
+    class="sidebar" 
+    :style="{ width: sidebar.sidebarWidth}"
+    @mouseenter="sidebar.toggleSidebar()"
+    @mouseleave="sidebar.toggleSidebar()"
+  >
     <h1 class="text-2xl text-center my-5" :class="{ 'text-xl': sidebar.collapsed }">
       <span v-if="sidebar.collapsed">
         <div>N</div>
         <div>A</div>
         <div>V</div>
       </span>
-      <span v-else>Navegación</span>
+      <div v-else class="flex flex-col items-center">
+        <br>
+        <div>Navegación</div>
+        <br>
+      </div>
     </h1>
-
+    <Transition appear name="enter-left-exit-bounce">
       <SidebarLink
-        class="initial-style"
+        v-if="route.path !== '/'"
         to="/empresas" 
         icon="fas fa-industry" 
         @click="cleanSidebar('empresas')"
@@ -62,6 +74,7 @@
         <p>Empresas</p>
         <p class="text-sm">Ver todas las empresas</p>
       </SidebarLink>
+    </Transition>
 
     <Transition name="enter-left-exit-bounce">
       <SidebarLink 

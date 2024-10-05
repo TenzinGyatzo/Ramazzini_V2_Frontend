@@ -4,6 +4,7 @@ import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
+import GreenButton from '@/components/GreenButton.vue';
 
 const trabajadores = useTrabajadoresStore();
 const centrosTrabajo = useCentrosTrabajoStore();
@@ -24,25 +25,10 @@ onMounted(() => {
 </script>
 
 <template>  <div class="w-full p-5 space-y-5">
-    <div class="flex flex-row gap-4 items-center">
-      <button
-        type="button"
-        class="text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl 2xl:text-3xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg px-4 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg"
-      >
-        Nuevo Trabajador +
-      </button>
-      <button
-        type="button"
-        class="text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl 2xl:text-3xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg px-4 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg"
-      >
-        Carga Masiva
-      </button>
-      <button
-        type="button"
-        class="text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl 2xl:text-3xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg px-4 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg"
-      >
-        Exportar a Excel
-      </button>
+    <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-8">
+      <GreenButton text="Nuevo Trabajador +" />
+      <GreenButton text="Carga Masiva" />
+      <GreenButton text="Exportar a Excel" />
     </div>
     <Transition appear mode="out-in" name="slide-up">
       <div v-if="trabajadores.loading"><h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1></div>

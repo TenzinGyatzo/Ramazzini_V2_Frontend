@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 
 export const useSidebarStore = defineStore('sidebar', () => {
 
-    const collapsed = ref(false)
+    const collapsed = ref(true)
 
     function toggleSidebar() {
         collapsed.value = !collapsed.value

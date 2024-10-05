@@ -25,7 +25,7 @@
         :class="{ 'active': isActive }"
     >
         <i class="icon" :class="icon"></i>
-        <Transition name="fade">
+        <Transition appear mode="out-in" name="fade">
             <span v-if="!sidebar.collapsed">
                 <slot></slot>
             </span>
@@ -36,13 +36,15 @@
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.1s ease;
+    transition: all 0.5s ease-in-out;
 }
 
 .fade-enter,
 .fade-leave-to {
     opacity: 0;
 }
+
+
 
 .link {
     display: flex;
@@ -56,9 +58,8 @@
     margin: 0.1em 0;
     padding: 0.5em;
     border-radius: 0.25em;
-    /* height: 5em; */
-    min-height: 5em;
-    height: auto;
+    height: 5em;
+    /* height: auto; */
 
     color: white;
     text-decoration: none;
