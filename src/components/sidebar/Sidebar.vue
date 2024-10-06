@@ -140,7 +140,6 @@
     <span
       class="collapse-icon"
       :class="{ 'rotate-180': sidebar.collapsed }"
-      @click="sidebar.toggleSidebar()"
     >
       <i class="fas fa-angle-double-left"></i>
     </span>
@@ -209,7 +208,6 @@
   padding: 0.5em;
   color: rgba(255, 255, 255, 0.7);
   transition: 0.2s linear;
-  cursor: pointer;
 }
 
 .rotate-180 {
