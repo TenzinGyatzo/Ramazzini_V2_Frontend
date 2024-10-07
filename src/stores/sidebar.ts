@@ -12,11 +12,13 @@ export const useSidebarStore = defineStore('sidebar', () => {
     const SIDEBAR_WIDTH = 230
     const SIDEBAR_WIDTH_COLLAPSED = 55
     const sidebarWidth = computed(() => `${collapsed.value ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH}px`)
+    const sidebarWidthCollapsed = computed(() => `${SIDEBAR_WIDTH_COLLAPSED}px`)
 
 
     return {
         collapsed,
         toggleSidebar,
-        sidebarWidth
+        sidebarWidth,
+        sidebarWidthCollapsed
     }
 })

@@ -12,13 +12,22 @@
   },
   "dependencies": {
     "axios": "^1.7.7",
+    "bootstrap": "^5.3.3",
+    "datatables.net-bs5": "^2.1.8",
+    "datatables.net-buttons-bs5": "^3.1.2",
+    "datatables.net-responsive-bs5": "^3.0.3",
+    "datatables.net-vue3": "^3.0.2",
+    "jszip": "^3.10.1",
+    "pdfmake": "^0.2.13",
     "pinia": "^2.1.7",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
+    "@types/datatables.net-buttons": "^1.4.10",
     "@types/node": "^20.16.10",
+    "@types/pdfmake": "^0.2.9",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vue/compiler-sfc": "^3.5.10",
     "@vue/tsconfig": "^0.5.1",

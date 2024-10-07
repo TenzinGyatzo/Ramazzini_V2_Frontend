@@ -20,7 +20,6 @@
   
   onMounted(() => {
     isMounted.value = true;
-    console.log(route.path);
   })
 
   const cleanSidebar = (link: string) => {

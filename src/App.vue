@@ -8,7 +8,7 @@ const sidebar = useSidebarStore();
 
 <template>
   <Sidebar />
-  <div>
+  <div :style="{ 'margin-left': sidebar.sidebarWidthCollapsed}">
     <RouterView />
   </div>
 </template>

@@ -27,7 +27,7 @@
     </div>
     <Transition appear mode="out-in" name="slide-up">
       <div v-if="centroTrabajo.loading"><h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1></div>
-      <div v-else class="w-full bg-white rounded-lg p-2 shadow-lg bg-gray-50 items-center grid grid-cols-1 gap-8">
+      <div v-else class="w-full bg-white rounded-lg p-2 shadow-lg items-center grid grid-cols-1 gap-8">
         <CentroTrabajoItem 
           v-for="centro in centroTrabajo.centrosTrabajo" 
           :key="centro._id"
