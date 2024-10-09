@@ -5,7 +5,7 @@ const route = useRoute();
 </script>
 
 <template>
-  <main class="flex flex-col items-center p-10">
+  <main class="flex flex-col items-center p-10 w-full overflow-x-auto">
     <Transition appear mode="out-in" name="slide-up">
       <a 
         v-if="route.path === '/'" 

@@ -30,7 +30,7 @@ onMounted(() => {
       <GreenButton text="Certificado" />
     </div>
     <Transition appear mode="out-in" name="slide-up">
-      <div class="w-full bg-white rounded-lg p-2 shadow-lg bg-gray-50 items-center grid grid-cols-1 gap-8">
+      <div class="w-full rounded-lg p-2 shadow-lg bg-gray-50 items-center grid grid-cols-1 gap-8">
         <h1>Expediente Médico de {{ trabajadores.currentTrabajador?.nombre }}</h1>
         <h1>Historia Clinica</h1>
         <h1>Exploracion Fisica</h1>

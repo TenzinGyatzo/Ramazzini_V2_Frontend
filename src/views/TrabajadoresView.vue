@@ -5,7 +5,7 @@ import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useRoute, useRouter } from 'vue-router';
 import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
 import GreenButton from '@/components/GreenButton.vue';
-import DataTableBootstrap from '@/components/DataTableBootstrap.vue';
+import DataTableDT from '@/components/DataTableDT.vue';
 
 const trabajadores = useTrabajadoresStore();
 const centrosTrabajo = useCentrosTrabajoStore();
@@ -24,7 +24,6 @@ onMounted(() => {
 </script>
 
 <template>  
-  <div class="w-full p-5 space-y-5">
     <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-8">
       <GreenButton text="Nuevo Trabajador +" />
       <GreenButton text="Carga Masiva" />
@@ -38,13 +37,13 @@ onMounted(() => {
         </h1>
       </div>
       <div v-else>
-        <!-- Usar el componente DataTableBootstrap -->
-        <DataTableBootstrap>
+        <!-- Usar el componente DataTableDT -->
+        <DataTableDT class="table-auto w-full">
           <tr v-for="(trabajador, index) in trabajadores.trabajadores" :key="trabajador._id">
             <td>{{ index + 1 }}</td>
             <td>{{ trabajador.nombre }}</td>
             <td>{{ convertirFechaISOaDDMMYYYY(trabajador.createdAt) }}</td>
-            <td>{{ calcularEdad(trabajador.fechaNacimiento)}}</td>
+            <td>{{ calcularEdad(trabajador.fechaNacimiento)}} años</td>
             <td>{{ trabajador.sexo }}</td>
             <td>{{ trabajador.escolaridad }}</td>
             <td>{{ trabajador.puesto }}</td>
@@ -72,8 +71,7 @@ onMounted(() => {
               </div>
             </td>
           </tr>
-        </DataTableBootstrap>
+        </DataTableDT>
       </div>
     </Transition>
-  </div>
 </template>

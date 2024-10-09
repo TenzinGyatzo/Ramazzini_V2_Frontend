@@ -12,7 +12,12 @@ onMounted(() => {
   if (!dataTableInstance) {
     dataTableInstance = new DataTablesCore('#customTable', {
       select: true,
-      
+      fixedColumns:{
+        start: 2
+      },
+      scrollCollapse: true,
+      scrollY: '800px',
+      scrollX: true
     });
   }
 });
@@ -27,29 +32,49 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <table id="customTable" class="table table-hover" style="width:100%">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Nombre</th>
-        <th>Fecha Registro</th>
-        <th>Edad</th>
-        <th>Sexo</th>
-        <th>Escolaridad</th>
-        <th>Puesto</th>
-        <th>Antigüedad</th>
-        <th>Teléfono</th>
-        <th>Estado Civil</th>
-        <th>Hijos</th>
-        <th>Expediente</th>
-        <th>-</th>
-      </tr>
-    </thead>
-    <tbody>
-      <slot></slot> <!-- Permitir que el contenido (filas de trabajadores) sea pasado desde el componente padre -->
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table id="customTable" class="table table-hover" style="width:100%">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre</th>
+          <th>Fecha Registro</th>
+          <th>Edad</th>
+          <th>Sexo</th>
+          <th>Escolaridad</th>
+          <th>Puesto</th>
+          <th>Antigüedad</th>
+          <th>Teléfono</th>
+          <th>Estado Civil</th>
+          <th>Hijos</th>
+          <th>Expediente</th>
+          <th>-</th>
+        </tr>
+      </thead>
+      <tbody>
+        <slot></slot> <!-- Permitir que el contenido (filas de trabajadores) sea pasado desde el componente padre -->
+      </tbody>
+    </table>
+  </div>
 </template>
+
+<style scoped>
+.table-container {
+  overflow-x: auto; /* Permite scroll horizontal solo si es necesario */
+  width: 100%;
+}
+
+#customTable {
+  width: 100%;
+  table-layout: auto; /* Mantén el comportamiento automático para el layout */
+}
+
+#customTable td:nth-child(4),
+#customTable td:nth-child(9) {
+  text-align: left; /* Alinea hacia la izquierda */
+}
+</style>
+
 
 <style>
 @import 'datatables.net-dt';
