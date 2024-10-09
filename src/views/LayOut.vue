@@ -55,7 +55,7 @@ const route = useRoute();
         </div>
       </div>
       
-      <div v-else>
+      <div v-else class="w-full">
         <RouterView />
       </div>
     </Transition>

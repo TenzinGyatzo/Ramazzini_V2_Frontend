@@ -12,12 +12,7 @@ onMounted(() => {
   if (!dataTableInstance) {
     dataTableInstance = new DataTablesCore('#customTable', {
       select: true,
-      fixedColumns:{
-        start: 2
-      },
-      scrollCollapse: true,
-      scrollY: '800px',
-      scrollX: true
+      
     });
   }
 });
@@ -32,55 +27,32 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="table-container">
-    <table id="customTable" class="table-auto w-full border-collapse">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Nombre</th>
-          <th>Fecha Registro</th>
-          <th>Edad</th>
-          <th>Sexo</th>
-          <th>Escolaridad</th>
-          <th>Puesto</th>
-          <th>Antigüedad</th>
-          <th>Teléfono</th>
-          <th>Estado Civil</th>
-          <th>Hijos</th>
-          <th>Expediente</th>
-          <th>-</th>
-        </tr>
-      </thead>
-      <tbody>
-        <slot></slot> <!-- Permitir que el contenido (filas de trabajadores) sea pasado desde el componente padre -->
-      </tbody>
-    </table>
-  </div>
+  <table id="customTable" class="table table-hover">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Nombre</th>
+        <th>Fecha Registro</th>
+        <th>Edad</th>
+        <th>Sexo</th>
+        <th>Escolaridad</th>
+        <th>Puesto</th>
+        <th>Antigüedad</th>
+        <th>Teléfono</th>
+        <th>Estado Civil</th>
+        <th>Hijos</th>
+        <th>Expediente</th>
+        <th>-</th>
+      </tr>
+    </thead>
+    <tbody>
+      <slot></slot> <!-- Permitir que el contenido (filas de trabajadores) sea pasado desde el componente padre -->
+    </tbody>
+  </table>
 </template>
-
-<style scoped>
-.table-container {
-  overflow-x: auto; /* Permite scroll horizontal solo si es necesario */
-}
-
-#customTable {
-  width: 100%;
-  table-layout: auto; /* Mantén el comportamiento automático para el layout */
-}
-
-</style>
-
 
 <style>
 @import 'datatables.net-dt';
-
-table.dataTable th.dt-type-numeric, table.dataTable th.dt-type-date, table.dataTable td.dt-type-numeric, table.dataTable td.dt-type-date {
-    text-align: left;
-}
-
-table.dataTable > tbody > tr > th, table.dataTable > tbody > tr > td {
-    padding: 4px 6px;
-}
 
 table.dataTable > tbody > tr.selected > * {
   box-shadow: inset 0 0 0 9999px #10b981;
