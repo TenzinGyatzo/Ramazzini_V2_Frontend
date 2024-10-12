@@ -12,13 +12,23 @@ onMounted(() => {
   if (!dataTableInstance) {
     dataTableInstance = new DataTablesCore('#customTable', {
       select: true,
-      fixedColumns:{
-        start: 2
-      },
+      /* fixedColumns:{
+        leftColumns: 2
+      }, */
       scrollCollapse: true,
       scrollY: '800px',
-      scrollX: true
-    });
+      scrollX: true,
+      language: {
+        url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json',
+        select: {
+          rows: {
+            _: "",
+            0: "",
+            1: ""
+          }
+        }
+      },
+    } as any);
   }
 });
 
@@ -36,8 +46,8 @@ onUnmounted(() => {
     <table id="customTable" class="table-auto w-full border-collapse">
       <thead>
         <tr>
-          <th>#</th>
-          <th>Nombre</th>
+          <th >#</th>
+          <th >Nombre</th>
           <th>Fecha Registro</th>
           <th>Edad</th>
           <th>Sexo</th>
@@ -51,7 +61,7 @@ onUnmounted(() => {
           <th>-</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="divide-y divide-gray-300">
         <slot></slot> <!-- Permitir que el contenido (filas de trabajadores) sea pasado desde el componente padre -->
       </tbody>
     </table>
@@ -122,4 +132,9 @@ div.dt-container .dt-paging .dt-paging-button:active {
   background: linear-gradient(to bottom, #059669 0%, #166534 100%); /* W3C */
   box-shadow: inset 0 0 3px #064e3b !important;
 }
+
+.dtfc-top-blocker {
+  display: none !important;
+}
+
 </style>

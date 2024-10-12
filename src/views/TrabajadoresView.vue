@@ -38,7 +38,7 @@ onMounted(() => {
       </div>
       <div v-else>
         <!-- Usar el componente DataTableDT -->
-        <DataTableDT class="table-auto w-full">
+        <DataTableDT class="table-auto">
           <tr v-for="(trabajador, index) in trabajadores.trabajadores" :key="trabajador._id" class="hover:bg-gray-200 cursor-pointer">
             <td>{{ index + 1 }}</td>
             <td>{{ trabajador.nombre }}</td>

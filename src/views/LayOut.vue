@@ -55,7 +55,7 @@ const route = useRoute();
         </div>
       </div>
       
-      <div v-else class="w-full">
+      <div v-else class="w-full max-w-screen-2xl">
         <RouterView />
       </div>
     </Transition>
