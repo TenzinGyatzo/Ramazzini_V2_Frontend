@@ -1,26 +1,35 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { watch, onMounted } from 'vue';
+import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
+import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useRoute, useRouter } from 'vue-router';
 import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
 import GreenButton from '@/components/GreenButton.vue';
 import DataTableDT from '@/components/DataTableDT.vue';
 
-const trabajadores = useTrabajadoresStore();
+const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
+const trabajadores = useTrabajadoresStore();
 const route = useRoute();
 const router = useRouter();
 
-onMounted(() => {
-  const empresaId = String(route.params.idEmpresa);
-  const centroTrabajoId = String(route.params.idCentroTrabajo);
-  trabajadores.fetchTrabajadores(empresaId, centroTrabajoId);
+watch(
+    () => route.params, // Observamos los parámetros idEmpresa e idCentroTrabajo
+    (newParams) => {
+      const { idEmpresa, idCentroTrabajo } = newParams;
+      if (idEmpresa && idCentroTrabajo) {
+        // Cuando ambos parámetros están definidos, realizamos las llamadas necesarias
+        empresas.fetchEmpresaById(String(idEmpresa)); // Obtenemos los detalles de la empresa
+        centrosTrabajo.fetchCentroTrabajoById(String(idEmpresa), String(idCentroTrabajo)); // Obtenemos los detalles del centro de trabajo
+        trabajadores.fetchTrabajadores(String(idEmpresa), String(idCentroTrabajo)); // Obtenemos los trabajadores del centro de trabajo
+        empresas.currentEmpresaId = String(idEmpresa); // Seteamos el id de la empresa actual en el store
+        centrosTrabajo.currentCentroTrabajoId = String(idCentroTrabajo); // Seteamos el id del centro de trabajo actual en el store
+      }
+    },
+    { immediate: true } // Esto asegura que el watch se ejecute inmediatamente con el valor actual
+  );
 
-  // Setear el ID del centro de trabajo actual en el store
-  centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;
-  centrosTrabajo.fetchCentroTrabajoById(empresaId, centroTrabajoId);
-});
 </script>
 
 <template>  
@@ -55,7 +64,7 @@ onMounted(() => {
               <button 
                 type="button" 
                 class="bg-emerald-600 hover:bg-emerald-700 hover:scale-105 text-white rounded-lg px-2 py-1 transition-all duration-300 ease-in-out transform"
-                @click="router.push({ name: 'expediente-medico', params: { idEmpresa: trabajador._id, idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId, idTrabajador: trabajador._id } })"
+                @click="router.push({ name: 'expediente-medico', params: { idEmpresa: empresas.currentEmpresaId, idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId, idTrabajador: trabajador._id } })"
               >
                 Expediente
               </button>
