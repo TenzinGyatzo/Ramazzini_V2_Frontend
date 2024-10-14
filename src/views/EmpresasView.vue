@@ -1,8 +1,15 @@
 <script setup lang="ts">
 import EmpresaItem from '@/components/EmpresaItem.vue';
 import { useEmpresasStore } from '@/stores/empresas';
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import GreenButton from '@/components/GreenButton.vue';
+import Modal from '@/components/Modal.vue';
+
+const showModal = ref(false);
+
+const toggleModal = () => {
+    showModal.value = !showModal.value;
+};
 
 const empresas = useEmpresasStore();
 
@@ -12,6 +19,10 @@ onMounted(() => {
 </script>
 
 <template>
+  <div>
+    <button @click="toggleModal" class="btn-primary">Open Modal</button>
+    <Modal v-if="showModal" @toggleModal="toggleModal" />
+  </div>
   <div class="p-5 grid gap-5">
     <div class="flex flex-col items-center">
       <GreenButton text="Nueva Empresa +" />
