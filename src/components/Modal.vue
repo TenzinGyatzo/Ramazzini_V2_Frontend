@@ -1,9 +1,5 @@
 <script setup>
 
-
-    const handleSubmit = async (data) => {
-        console.log(data)
-    }
 </script>
 
 <template>

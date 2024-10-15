@@ -1,13 +1,22 @@
 <script lang="ts" setup>
+import { ref } from 'vue';
 import { RouterView, useRoute } from 'vue-router'
 import CoolModal from '../components/CoolModal.vue';
 
+const modal = ref(false);
+
+const toggleModal = () => {
+  modal.value = !modal.value
+}
 
 const route = useRoute();
 </script>
 
 <template>
-  <CoolModal />
+  <button @click="toggleModal">
+    Toggle Modal
+  </button>
+  <CoolModal v-if="modal" @closeModal="toggleModal" />
   <main class="flex flex-col items-center p-10 w-full overflow-x-auto">
     <Transition appear mode="out-in" name="slide-up">
       <a 
