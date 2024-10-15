@@ -1,10 +1,13 @@
 <script lang="ts" setup>
 import { RouterView, useRoute } from 'vue-router'
+import CoolModal from '../components/CoolModal.vue';
+
 
 const route = useRoute();
 </script>
 
 <template>
+  <CoolModal />
   <main class="flex flex-col items-center p-10 w-full overflow-x-auto">
     <Transition appear mode="out-in" name="slide-up">
       <a 

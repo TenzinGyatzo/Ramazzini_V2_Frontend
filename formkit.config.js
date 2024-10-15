@@ -4,8 +4,8 @@ const config = {
     config: {
         classes: generateClasses({
             global: {
-                wrapper: 'space-y-1 mb-3',
-                message: 'bg-red-500 text-white text-center text-sm p-1 mb-3 rounded-lg',
+                wrapper: 'space-y-1 mb-1',
+                message: 'text-red-600 text-sm mb-3',
                 label: 'block mb-1 font-medium text-lg text-gray-700',
                 input: 'w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400'
             },
