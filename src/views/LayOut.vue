@@ -13,10 +13,6 @@ const route = useRoute();
 </script>
 
 <template>
-  <button @click="toggleModal">
-    Toggle Modal
-  </button>
-  <CoolModal v-if="modal" @closeModal="toggleModal" />
   <main class="flex flex-col items-center p-10 w-full overflow-x-auto">
     <Transition appear mode="out-in" name="slide-up">
       <a 
@@ -89,4 +85,26 @@ const route = useRoute();
   opacity: 0;
   transform: translateY(-30px);
 }
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-from .modal-inner,
+.fade-leave-to .modal-inner {
+  opacity: 0;
+  transform: translateY(-32px);
+}
+
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 250ms ease-out;
+}
+
+.fade-leave-active {
+  transition-delay: 250ms;
+}
+
 </style>

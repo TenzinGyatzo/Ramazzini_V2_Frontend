@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import EmpresaItem from '@/components/EmpresaItem.vue';
 import { useEmpresasStore } from '@/stores/empresas';
-import { onMounted, ref } from 'vue';
 import GreenButton from '@/components/GreenButton.vue';
-import Modal from '@/components/Modal.vue';
+import CoolModal from '@/components/CoolModal.vue';
 
 const showModal = ref(false);
 
@@ -19,13 +19,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
-    <button @click="toggleModal" class="btn-primary">Open Modal</button>
-    <Modal v-if="showModal" @toggleModal="toggleModal" />
-  </div>
+  <Transition appear name="fade">
+    <CoolModal v-if="showModal" @closeModal="toggleModal" />
+  </Transition>
   <div class="p-5 grid gap-5">
     <div class="flex flex-col items-center">
-      <GreenButton text="Nueva Empresa +" />
+      <GreenButton 
+        text="Nueva Empresa +" 
+        @click="toggleModal" 
+      />
     </div>
     <Transition appear mode="out-in" name="slide-up">
       <div v-if="empresas.loading"><h1 class="text-3xl sm:text-4xl md:text-5xl py-20 text-center font-semibold text-gray-700">Cargando...</h1></div>
