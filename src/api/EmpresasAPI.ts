@@ -15,5 +15,9 @@ export default {
                 'Content-Type': 'multipart/form-data'
             }
         })
+    },
+
+    deleteEmpresaById(empresaId: string) {
+        return api.delete(`/eliminar-empresa/${empresaId}`)
     }
 }

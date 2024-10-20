@@ -74,6 +74,17 @@ export const useEmpresasStore = defineStore("empresas", () => {
         }
     }
 
+    async function deleteEmpresaById(id: string) {
+        try {
+            loading.value = true;
+            await EmpresasAPI.deleteEmpresaById(id);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            loading.value = false;
+        }
+    }
+
     return {
         loading,
         empresas,
@@ -82,6 +93,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
         resetCurrentEmpresa,
         fetchEmpresas,
         fetchEmpresaById,
-        createEmpresa
+        createEmpresa,
+        deleteEmpresaById
     }
 })

@@ -110,7 +110,7 @@
                     </FormKit>
                 </FormKit>
                     <button 
-                        class="text-xl mt-2 w-full border-2 border-gray-500 hover:bg-gray-200 rounded-lg text-gray-800 font-semibold p-3 transition-transform duration-300 transform hover:scale-105 shadow-md hover:shadow-lg flex-1"
+                        class="text-xl mt-2 w-full rounded-lg bg-white font-semibold text-gray-800 shadow-sm ring-2 ring-inset ring-gray-300 hover:bg-gray-100 p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg flex-1"
                         @click="$emit('closeModal')"
                     >
                         Cerrar

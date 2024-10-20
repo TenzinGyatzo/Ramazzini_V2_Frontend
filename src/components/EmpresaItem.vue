@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
+import type { Empresa } from '@/interfaces/empresa.interface';
 
-    const router = useRouter();
+const router = useRouter();
 
-    defineProps({
-        empresa: {
-            type: Object,
-            default: () => ({})
-        }
-    })
+defineProps({
+    empresa: {
+        type: Object as () => Empresa,
+        required: true,
+    }
+})
+
+const emit = defineEmits<{
+  (event: 'eliminarEmpresa', id: string, nombreComercial: string): void;
+}>();
 </script>
 
 <template>
@@ -22,7 +27,7 @@ import { useRouter } from 'vue-router';
         >
             <img
                 v-if="empresa.nombreComercial"
-                :src="'/uploads/logos/' + empresa.logotipoEmpresa.data"
+                :src="'/uploads/logos/' + empresa.logotipoEmpresa?.data"
                 :alt="'Logo de ' + empresa.nombreComercial"
                 class="w-full h-32 object-contain mb-4 rounded"
             />
@@ -40,6 +45,7 @@ import { useRouter } from 'vue-router';
             </button>
             <button
                 type="button"
+                @click="$emit('eliminarEmpresa', empresa._id, empresa.nombreComercial)"
                 class="text-xs w-1/4 bg-red-500 hover:bg-red-600 text-white rounded-lg p-1 transition duration-300"
             >
                 Eliminar
