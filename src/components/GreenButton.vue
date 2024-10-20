@@ -11,7 +11,7 @@
 <template>
     <button
         type="button"
-        class="border-emerald text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl 2xl:text-3xl bg-emerald-600 hover:bg-white text-white hover:text-emerald-700 font-light rounded-lg px-4 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg"
+        class="border-emerald text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl 2xl:text-3xl bg-emerald-600  text-white hover:font-medium hover:text-emerald-700 font-light rounded-lg px-4 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-50"
     >
         {{ text }}
     </button>

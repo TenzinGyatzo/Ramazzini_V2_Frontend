@@ -63,6 +63,17 @@ export const useEmpresasStore = defineStore("empresas", () => {
         }
     }
 
+    async function createEmpresa(empresa: FormData) {
+        try {
+            loading.value = true;
+            await EmpresasAPI.createEmpresa(empresa);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            loading.value = false;
+        }
+    }
+
     return {
         loading,
         empresas,
@@ -70,6 +81,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
         currentEmpresa,
         resetCurrentEmpresa,
         fetchEmpresas,
-        fetchEmpresaById
+        fetchEmpresaById,
+        createEmpresa
     }
 })

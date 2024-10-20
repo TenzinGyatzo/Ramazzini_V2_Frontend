@@ -7,5 +7,13 @@ export default {
 
     getEmpresaById(empresaId: string) {
         return api.get(`/${empresaId}`)
+    },
+
+    createEmpresa(empresaData) {
+        return api.post('/crear-empresa', empresaData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
     }
 }

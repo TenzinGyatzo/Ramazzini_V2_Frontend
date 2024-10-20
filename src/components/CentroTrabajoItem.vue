@@ -30,10 +30,10 @@ import { useRouter } from 'vue-router';
         </button> 
         <div class="w-full md:w-1/2 lg:w-1/2 grid grid-cols-2 gap-4 2xl:gap-0 2xl:w-full 2xl:grid-cols-1 2xl:grid-rows-2">
             <div class="flex items-center justify-center">
-                <button class="text-base w-full bg-gray-600 hover:bg-slate-700 text-white uppercase  rounded-lg p-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">Editar</button>
+                <button class="text-base w-full bg-gray-600 hover:bg-slate-700 text-white uppercase  rounded-lg p-1 transition duration-300">Editar</button>
             </div>
             <div class="flex items-center justify-center">
-                <button class="text-base w-full bg-red-600 hover:bg-red-700 text-white uppercase  rounded-lg p-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">Eliminar</button>
+                <button class="text-base w-full bg-red-600 hover:bg-red-700 text-white uppercase  rounded-lg p-1 transition duration-300">Eliminar</button>
             </div>
         </div>    
     </div>       

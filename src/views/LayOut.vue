@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { RouterView, useRoute } from 'vue-router'
-import CoolModal from '../components/CoolModal.vue';
+import CoolModal from '../components/EmpresasModal.vue';
 
 const modal = ref(false);
 

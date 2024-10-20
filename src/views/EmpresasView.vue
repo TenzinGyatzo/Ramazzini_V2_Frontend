@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue';
 import EmpresaItem from '@/components/EmpresaItem.vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import GreenButton from '@/components/GreenButton.vue';
-import CoolModal from '@/components/CoolModal.vue';
+import EmpresasModal from '@/components/EmpresasModal.vue';
 
 const showModal = ref(false);
 
@@ -20,7 +20,7 @@ onMounted(() => {
 
 <template>
   <Transition appear name="fade">
-    <CoolModal v-if="showModal" @closeModal="toggleModal" />
+    <EmpresasModal v-if="showModal" @closeModal="toggleModal" />
   </Transition>
   <div class="p-5 grid gap-5">
     <div class="flex flex-col items-center">
