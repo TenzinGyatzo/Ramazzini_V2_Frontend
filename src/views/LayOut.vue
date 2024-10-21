@@ -1,13 +1,5 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
 import { RouterView, useRoute } from 'vue-router'
-import CoolModal from '../components/EmpresasModal.vue';
-
-const modal = ref(false);
-
-const toggleModal = () => {
-  modal.value = !modal.value
-}
 
 const route = useRoute();
 </script>
@@ -97,6 +89,11 @@ const route = useRoute();
   transform: translateY(-32px);
 }
 
+.fade-enter-active .modal-inner,
+.fade-leave-active .modal-inner{
+  transition: all 250ms ease-out;
+}
+
 .fade-enter-active,
 .fade-leave-active {
   transition: all 250ms ease-out;
@@ -105,5 +102,6 @@ const route = useRoute();
 .fade-leave-active {
   transition-delay: 250ms;
 }
+
 
 </style>
