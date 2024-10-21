@@ -97,7 +97,6 @@ const route = useRoute();
   transform: translateY(-32px);
 }
 
-
 .fade-enter-active,
 .fade-leave-active {
   transition: all 250ms ease-out;
