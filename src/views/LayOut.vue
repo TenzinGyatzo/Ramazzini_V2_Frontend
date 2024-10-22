@@ -103,5 +103,25 @@ const route = useRoute();
   transition-delay: 250ms;
 }
 
+/* Personalización para navegadores basados en WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 12px; /* Ancho de la barra de scroll */
+  height: 12px; /* Altura de la barra de scroll para scroll horizontal */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Color del track (fondo del scroll) */
+  border-radius: 10px; /* Bordes redondeados del track */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color de la "thumb" (barra) */
+  border-radius: 10px; /* Bordes redondeados de la thumb */
+  border: 3px solid #f1f1f1; /* Añadir un borde alrededor */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Cambiar el color cuando se hace hover */
+}
 
 </style>

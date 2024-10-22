@@ -111,6 +111,7 @@ const closeModal = () => {
               placeholder="Razón social de la empresa"
               validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio'}"
+              :value="empresas.currentEmpresa?.razonSocial || ''"
             />
             <FormKit 
               type="text"
@@ -119,6 +120,7 @@ const closeModal = () => {
               placeholder="RFC"
               validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio'}"
+              :value="empresas.currentEmpresa?.RFC || ''"
             />
             <FormKit 
               type="text"
@@ -127,6 +129,7 @@ const closeModal = () => {
               placeholder="Giro de la Empresa"
               validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio'}"
+              :value="empresas.currentEmpresa?.giroDeEmpresa || ''"
             />
             
             <!-- Input del archivo con v-model y evento change -->
@@ -136,19 +139,31 @@ const closeModal = () => {
               name="logotipoEmpresa"
               accept=".png, .jpg, .jpeg, .svg"
               multiple="false"
-              validation="required"
+              :validation="!empresas.currentEmpresa?._id ? 'required' : ''"
               :validation-messages="{ required: 'Este campo es obligatorio'}"
               @change="handleFileChange"
             />
             
             <!-- Mostrar la vista previa del logotipo -->
-            <Transition appear name="fade-slow">
-              <div v-if="logotipoPreview" class="my-5 flex flex-col items-center">
-                  <p class="font-medium text-lg text-gray-700">Vista previa del logotipo:</p>
-                  <img :src="logotipoPreview" alt="Vista previa del logotipo" class=" w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"/>
+             <div class="flex flex-row justify-center items-center gap-4">
+              <div class="w-1/2 flex flex-col items-center" v-if="empresas.currentEmpresa?.logotipoEmpresa?.data">
+                <p class="font-medium text-lg text-gray-700">Logotipo actual:</p>
+                <img
+                  :src="'/uploads/logos/' + empresas.currentEmpresa?.logotipoEmpresa?.data"
+                  :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial"
+                  class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"
+                />
               </div>
-            </Transition>
-            
+              <Transition appear name="fade-slow">
+                <div v-if="logotipoPreview" class="w-1/2 flex flex-col items-center">
+                    <p v-if="empresas.currentEmpresa?.logotipoEmpresa?.data" 
+                      class="font-medium text-lg text-gray-700">Logotipo nuevo:</p>
+                    <p v-else
+                    class="font-medium text-lg text-gray-700">Logotipo:</p>
+                    <img :src="logotipoPreview" alt="Vista previa del logotipo" class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"/>
+                </div>
+              </Transition>
+            </div>
             <hr class="my-3">
             <FormKit 
               type="submit"
