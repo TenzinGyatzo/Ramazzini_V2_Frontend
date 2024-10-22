@@ -3,8 +3,9 @@ import { onMounted, ref } from 'vue';
 import EmpresaItem from '@/components/EmpresaItem.vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import GreenButton from '@/components/GreenButton.vue';
-import EmpresasModal from '@/components/EmpresasModal.vue';
+import ModalEmpresas from '@/components/ModalEmpresas.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
+import type { Empresa } from '@/interfaces/empresa.interface';
 
 const empresas = useEmpresasStore();
 
@@ -13,9 +14,28 @@ const showDeleteModal = ref(false);
 const selectedEmpresaId = ref<string | null>(null);
 const selectedEmpresaNombre = ref<string | null>(null);
 
-const toggleModal = () => {
-    showModal.value = !showModal.value;
+const openModal = async (empresa: Empresa | null = null) => {
+    showModal.value = false;  // Cerramos el modal antes de cargar
+    empresas.loadingModal = true;  // Iniciamos la carga del modal
+
+    if (empresa) {
+        try {
+            await empresas.fetchEmpresaById(empresa._id);  // Esperamos a que se cargue la empresa
+        } catch (error) {
+            console.error('Error al cargar la empresa:', error);
+        }
+    } else {
+        empresas.resetCurrentEmpresa();  // Resetear si es una nueva empresa
+    }
+
+    empresas.loadingModal = false;  // Terminamos la carga del modal
+    showModal.value = true;  // Abrimos el modal
 };
+
+
+const closeModal = () => {
+  showModal.value = false;
+}
 
 const toggleDeleteModal = (idEmpresa: string | null = null, nombreComercial: string | null = null) => {
     showDeleteModal.value = !showDeleteModal.value;
@@ -35,7 +55,6 @@ const deleteEmpresaById = async (id: string) => {
   }
 };
 
-
 onMounted(() => {
   empresas.fetchEmpresas();
 })
@@ -43,7 +62,7 @@ onMounted(() => {
 
 <template>
   <Transition appear name="fade">
-    <EmpresasModal v-if="showModal" @closeModal="toggleModal" />
+    <ModalEmpresas v-if="showModal" @closeModal="closeModal" />
   </Transition>
   <Transition appear name="fade">
     <ModalEliminar 
@@ -59,7 +78,7 @@ onMounted(() => {
     <div class="flex flex-col items-center">
       <GreenButton 
         text="Nueva Empresa +" 
-        @click="toggleModal" 
+        @click="openModal(null)" 
       />
     </div>
     <Transition appear mode="out-in" name="slide-up">
@@ -69,6 +88,7 @@ onMounted(() => {
           v-for="empresa in empresas.empresas" 
           :key="empresa._id"
           :empresa="empresa"
+          @editarEmpresa="openModal"
           @eliminarEmpresa="toggleDeleteModal"
         />
       </div>

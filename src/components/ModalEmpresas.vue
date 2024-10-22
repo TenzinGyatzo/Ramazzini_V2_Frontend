@@ -27,8 +27,6 @@ const handleFileChange = (event) => {
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
-    console.log('Formulario Enviado:', data);
-
     const formData = new FormData();
 
     // Añadir los datos del formulario al FormData 
@@ -36,9 +34,9 @@ const handleSubmit = async (data) => {
     formData.append('razonSocial', data.razonSocial);
     formData.append('RFC', data.RFC);
     formData.append('giroDeEmpresa', data.giroDeEmpresa);
-    formData.append('baseOperaciones', 'Pruebas');
-    formData.append('createdBy', '6650f38308ac3beedf5ac41b');
-    formData.append('updatedBy', '6650f38308ac3beedf5ac41b');
+    formData.append('baseOperaciones', 'Pruebas'); // TODO: 'Los Mochis' o 'Pruebas' dependiendo si es usuario real o de prueba 
+    formData.append('createdBy', '6650f38308ac3beedf5ac41b'); // TODO: Obtener el id del usuario actual
+    formData.append('updatedBy', '6650f38308ac3beedf5ac41b'); // TODO: Obtener el id del usuario actual
 
     // Añadir el archivo del logotipo si existe
     if (logotipoArchivo.value) {
@@ -48,7 +46,13 @@ const handleSubmit = async (data) => {
     }
 
     try {
-        await empresas.createEmpresa(formData);
+        if(empresas.currentEmpresa?._id) {
+          // Modo edición: actualizar empresa
+          await empresas.updateEmpresaById(empresas.currentEmpresa._id, formData);
+        } else {
+          // Modo creación: crear nueva empresa
+          await empresas.createEmpresa(formData);
+        }
         emit('closeModal');
         empresas.fetchEmpresas();
     } catch (error) {
@@ -77,79 +81,85 @@ const closeModal = () => {
           &times;
         </div>
 
+        <div v-if="empresas.loadingModal">
+          <h1 class="text-3xl text-center">Cargando empresa...</h1>
+        </div>
         <!-- Contenido del modal -->
-        <h1 class="text-3xl">Registrar Empresa</h1>
-        <hr class="mt-2 mb-3">
-        
-        <FormKit
-          type="form"
-          :actions="false"
-          incomplete-message="Por favor complete todos los campos"
-          @submit="handleSubmit"
-        >
-          <FormKit 
-            type="text"
-            label="Nombre Comercial*"
-            name="nombreComercial"
-            placeholder="Nombre comercial de la empresa"
-            validation="required"
-            :validation-messages="{ required: 'Este campo es obligatorio'}"
-          />
-          <FormKit 
-            type="text"
-            label="Razón Social*"
-            name="razonSocial"
-            placeholder="Razón social de la empresa"
-            validation="required"
-            :validation-messages="{ required: 'Este campo es obligatorio'}"
-          />
-          <FormKit 
-            type="text"
-            label="RFC*"
-            name="RFC"
-            placeholder="RFC"
-            validation="required"
-            :validation-messages="{ required: 'Este campo es obligatorio'}"
-          />
-          <FormKit 
-            type="text"
-            label="Giro de la empresa*"
-            name="giroDeEmpresa"
-            placeholder="Giro de la Empresa"
-            validation="required"
-            :validation-messages="{ required: 'Este campo es obligatorio'}"
-          />
+        <div v-else>
+          <h1 class="text-3xl">{{ empresas.currentEmpresa._id ? 'Editar Empresa' : 'Registrar Empresa' }}</h1>
+          <hr class="mt-2 mb-3">
           
-          <!-- Input del archivo con v-model y evento change -->
-          <FormKit 
-            type="file"
-            label="Logotipo*"
-            name="logotipoEmpresa"
-            accept=".png, .jpg, .jpeg, .svg"
-            multiple="false"
-            validation="required"
-            :validation-messages="{ required: 'Este campo es obligatorio'}"
-            @change="handleFileChange"
-          />
-          
-          <!-- Mostrar la vista previa del logotipo -->
-          <Transition appear name="fade-slow">
-            <div v-if="logotipoPreview" class="my-5 flex flex-col items-center">
-                <p class="font-medium text-lg text-gray-700">Vista previa del logotipo:</p>
-                <img :src="logotipoPreview" alt="Vista previa del logotipo" class=" w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"/>
-            </div>
-          </Transition>
-          
-          <hr class="my-3">
-          <FormKit 
-            type="submit"
-            :disabled="empresas.loading" 
+          <FormKit
+            type="form"
+            :actions="false"
+            incomplete-message="Por favor complete todos los campos"
+            @submit="handleSubmit"
           >
-            <span v-if="empresas.loading">Guardando...</span>
-            <span v-else>Guardar Empresa</span>
+            <FormKit 
+              type="text"
+              label="Nombre Comercial*"
+              name="nombreComercial"
+              placeholder="Nombre comercial de la empresa"
+              validation="required"
+              :validation-messages="{ required: 'Este campo es obligatorio'}"
+              :value="empresas.currentEmpresa?.nombreComercial || ''"
+            />
+            <FormKit 
+              type="text"
+              label="Razón Social*"
+              name="razonSocial"
+              placeholder="Razón social de la empresa"
+              validation="required"
+              :validation-messages="{ required: 'Este campo es obligatorio'}"
+            />
+            <FormKit 
+              type="text"
+              label="RFC*"
+              name="RFC"
+              placeholder="RFC"
+              validation="required"
+              :validation-messages="{ required: 'Este campo es obligatorio'}"
+            />
+            <FormKit 
+              type="text"
+              label="Giro de la empresa*"
+              name="giroDeEmpresa"
+              placeholder="Giro de la Empresa"
+              validation="required"
+              :validation-messages="{ required: 'Este campo es obligatorio'}"
+            />
+            
+            <!-- Input del archivo con v-model y evento change -->
+            <FormKit 
+              type="file"
+              label="Logotipo*"
+              name="logotipoEmpresa"
+              accept=".png, .jpg, .jpeg, .svg"
+              multiple="false"
+              validation="required"
+              :validation-messages="{ required: 'Este campo es obligatorio'}"
+              @change="handleFileChange"
+            />
+            
+            <!-- Mostrar la vista previa del logotipo -->
+            <Transition appear name="fade-slow">
+              <div v-if="logotipoPreview" class="my-5 flex flex-col items-center">
+                  <p class="font-medium text-lg text-gray-700">Vista previa del logotipo:</p>
+                  <img :src="logotipoPreview" alt="Vista previa del logotipo" class=" w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"/>
+              </div>
+            </Transition>
+            
+            <hr class="my-3">
+            <FormKit 
+              type="submit"
+              :disabled="empresas.loadingModal" 
+            >
+              <span v-if="empresas.loadingModal">Guardando...</span>
+              <span v-else>Guardar Empresa</span>
+            </FormKit>
           </FormKit>
-        </FormKit>
-        
+        </div>
+
         <button 
           class="text-xl mt-2 w-full rounded-lg bg-white font-semibold text-gray-800 shadow-sm ring-2 ring-inset ring-gray-300 hover:bg-gray-100 p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg flex-1"
           @click="closeModal"

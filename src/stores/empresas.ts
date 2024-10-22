@@ -19,9 +19,10 @@ interface Empresa {
 export const useEmpresasStore = defineStore("empresas", () => {
 
     const loading = ref(true);
+    const loadingModal = ref(false);
     const empresas = ref<Empresa[]>([]);
     const currentEmpresaId = ref<string>();
-    const currentEmpresa = ref<Empresa>();
+    const currentEmpresa = ref<Empresa | null>(null);
 
     function resetCurrentEmpresa() {
         currentEmpresa.value = {
@@ -53,13 +54,13 @@ export const useEmpresasStore = defineStore("empresas", () => {
 
     async function fetchEmpresaById(id: string) {
         try {
-            loading.value = true;
+            loadingModal.value = true;  // Indicamos que se está cargando
             const { data } = await EmpresasAPI.getEmpresaById(id);
-            currentEmpresa.value = data;
+            currentEmpresa.value = data;  // Guardamos los datos de la empresa en el store
         } catch (error) {
-            console.log(error);
+            console.error('Error al cargar la empresa:', error);
         } finally {
-            loading.value = false;
+            loadingModal.value = false;  // Nos aseguramos de que loading sea false cuando termina la petición
         }
     }
 
@@ -67,6 +68,17 @@ export const useEmpresasStore = defineStore("empresas", () => {
         try {
             loading.value = true;
             await EmpresasAPI.createEmpresa(empresa);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function updateEmpresaById(id: string, empresa: FormData) {
+        try {
+            loading.value = true;
+            await EmpresasAPI.updateEmpresaById(id, empresa);
         } catch (error) {
             console.log(error);
         } finally {
@@ -87,6 +99,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
 
     return {
         loading,
+        loadingModal,
         empresas,
         currentEmpresaId,
         currentEmpresa,
@@ -94,6 +107,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
         fetchEmpresas,
         fetchEmpresaById,
         createEmpresa,
+        updateEmpresaById,
         deleteEmpresaById
     }
 })

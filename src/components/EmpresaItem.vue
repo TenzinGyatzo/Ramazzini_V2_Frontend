@@ -13,6 +13,7 @@ defineProps({
 
 const emit = defineEmits<{
   (event: 'eliminarEmpresa', id: string, nombreComercial: string): void;
+  (event: 'editarEmpresa', empresa: Empresa | null): void;
 }>();
 </script>
 
@@ -23,7 +24,7 @@ const emit = defineEmits<{
         <button
             type="button"
             class="w-full text-center"
-            @click="router.push({ name: 'centros-trabajo', params: { idEmpresa: empresa._id } })"
+             @click="empresa?._id ? router.push({ name: 'centros-trabajo', params: { idEmpresa: empresa._id } }) : null"
         >
             <img
                 v-if="empresa.nombreComercial"
@@ -39,6 +40,7 @@ const emit = defineEmits<{
         <div class="mt-4 flex justify-center gap-4">
             <button
                 type="button"
+                @click="$emit('editarEmpresa', empresa)"
                 class="text-xs w-1/4 bg-gray-600 hover:bg-slate-700 text-white rounded-lg p-1 transition duration-300"
             >
                 Editar
