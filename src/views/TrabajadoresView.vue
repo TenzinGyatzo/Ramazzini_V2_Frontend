@@ -47,7 +47,7 @@ watch(
       </div>
       <div v-else>
         <!-- Usar el componente DataTableDT -->
-        <DataTableDT class="table-auto">
+        <DataTableDT class="table-auto z-1">
           <tr v-for="(trabajador, index) in trabajadores.trabajadores" :key="trabajador._id" class="hover:bg-gray-200 cursor-pointer">
             <td>{{ index + 1 }}</td>
             <td>{{ trabajador.nombre }}</td>

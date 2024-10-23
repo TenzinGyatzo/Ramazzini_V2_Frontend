@@ -1,11 +1,24 @@
 <script lang="ts" setup>
 import { RouterView, useRoute } from 'vue-router'
+import { useEmpresasStore } from '@/stores/empresas';
+
+const empresas = useEmpresasStore();
 
 const route = useRoute();
 </script>
 
 <template>
   <main class="flex flex-col items-center p-10 w-full overflow-x-auto">
+    <div 
+      v-if="empresas.currentEmpresa?.logotipoEmpresa?.data"
+      class="fixed top-0 right-0 h-16 w-16 md:h-32 md:w-32 rounded z-0 flex items-center justify-center overflow-hidden"
+    >
+      <img
+        :src="'/uploads/logos/' + empresas.currentEmpresa?.logotipoEmpresa?.data"
+        :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial"
+        class="max-h-full max-w-full object-contain p-2"
+      >
+    </div>
     <Transition appear mode="out-in" name="slide-up">
       <a 
         v-if="route.path === '/'" 
@@ -21,7 +34,7 @@ const route = useRoute();
       <a 
         v-else 
         href="/" 
-        class="w-full sm:w-1/2 md:1/3 lg:w-1/4 xl:w-1/5 2xl:w-1/6 mt-3 mb-5"
+        class="w-2/3 sm:w-1/2 md:1/3 lg:w-1/4 xl:w-1/5 2xl:w-1/6 mt-3 mb-5"
       >
         <img 
           src="/img/logosRamazzini/RamazziniLogoNoBg.png" 
@@ -29,6 +42,8 @@ const route = useRoute();
         />
       </a>
     </Transition>
+
+
 
     <Transition appear mode="out-in" name="slide-up">
       <div 

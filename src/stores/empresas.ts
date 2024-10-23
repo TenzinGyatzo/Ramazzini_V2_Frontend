@@ -9,7 +9,9 @@ interface Empresa {
     RFC: string;
     giroDeEmpresa: string;
     baseOperaciones: string;
-    logotipo: string;
+    logotipoEmpresa?: {
+        data: string;
+    };
     createdBy: string;
     updatedBy: string;
     createdAt: string;
@@ -32,7 +34,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
             RFC: '',
             giroDeEmpresa: '',
             baseOperaciones: '',
-            logotipo: '',
+            logotipoEmpresa: { data: '' },
             createdBy: '',
             updatedBy: '',
             createdAt: '',
