@@ -44,19 +44,15 @@ const handleSubmit = async (data) => {
     }
 
     // Depuramos el contenido de FormData
-    for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-    }
+    // for (let [key, value] of formData.entries()) {
+    //     console.log(`${key}:`, value);
+    // }
 
     try {
         if (empresas.currentEmpresa?._id) {
-            console.log('Actualizando empresa con ID:', empresas.currentEmpresa._id);
             await empresas.updateEmpresaById(empresas.currentEmpresa._id, formData);
-            console.log('Empresa actualizada correctamente');
         } else {
-            console.log('Creando nueva empresa');
             await empresas.createEmpresa(formData);
-            console.log('Empresa creada correctamente');
         }
         emit('closeModal');
         empresas.fetchEmpresas();
