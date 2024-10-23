@@ -28,7 +28,7 @@ const emit = defineEmits<{
         >
             <img
                 v-if="empresa.nombreComercial"
-                :src="'/uploads/logos/' + empresa.logotipoEmpresa?.data"
+                :src="'/uploads/logos/' + empresa.logotipoEmpresa?.data + '?t=' + empresa.updatedAt"
                 :alt="'Logo de ' + empresa.nombreComercial"
                 class="w-full h-32 object-contain mb-4 rounded"
             />

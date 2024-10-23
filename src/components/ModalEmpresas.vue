@@ -34,30 +34,35 @@ const handleSubmit = async (data) => {
     formData.append('razonSocial', data.razonSocial);
     formData.append('RFC', data.RFC);
     formData.append('giroDeEmpresa', data.giroDeEmpresa);
-    formData.append('baseOperaciones', 'Pruebas'); // TODO: 'Los Mochis' o 'Pruebas' dependiendo si es usuario real o de prueba 
-    formData.append('createdBy', '6650f38308ac3beedf5ac41b'); // TODO: Obtener el id del usuario actual
-    formData.append('updatedBy', '6650f38308ac3beedf5ac41b'); // TODO: Obtener el id del usuario actual
+    formData.append('baseOperaciones', 'Pruebas');
+    formData.append('createdBy', '6650f38308ac3beedf5ac41b');
+    formData.append('updatedBy', '6650f38308ac3beedf5ac41b');
 
     // Añadir el archivo del logotipo si existe
     if (logotipoArchivo.value) {
         formData.append('logotipoEmpresa', logotipoArchivo.value);
-    } else {
-        console.error('No se ha seleccionado un archivo válido');
+    }
+
+    // Depuramos el contenido de FormData
+    for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
     }
 
     try {
-        if(empresas.currentEmpresa?._id) {
-          // Modo edición: actualizar empresa
-          await empresas.updateEmpresaById(empresas.currentEmpresa._id, formData);
+        if (empresas.currentEmpresa?._id) {
+            console.log('Actualizando empresa con ID:', empresas.currentEmpresa._id);
+            await empresas.updateEmpresaById(empresas.currentEmpresa._id, formData);
+            console.log('Empresa actualizada correctamente');
         } else {
-          // Modo creación: crear nueva empresa
-          await empresas.createEmpresa(formData);
+            console.log('Creando nueva empresa');
+            await empresas.createEmpresa(formData);
+            console.log('Empresa creada correctamente');
         }
         emit('closeModal');
         empresas.fetchEmpresas();
     } catch (error) {
-        console.error('Error al crear la empresa:', error);
-        alert('Hubo un error al crear la empresa, por favor intente nuevamente.');
+        console.error('Error al crear o actualizar la empresa:', error);
+        alert('Hubo un error al crear o actualizar la empresa, por favor intente nuevamente.');
     }
 };
 
@@ -149,7 +154,7 @@ const closeModal = () => {
               <div class="w-1/2 flex flex-col items-center" v-if="empresas.currentEmpresa?.logotipoEmpresa?.data">
                 <p class="font-medium text-lg text-gray-700">Logotipo actual:</p>
                 <img
-                  :src="'/uploads/logos/' + empresas.currentEmpresa?.logotipoEmpresa?.data"
+                  :src="'/uploads/logos/' + empresas.currentEmpresa?.logotipoEmpresa?.data + '?t=' + empresas.currentEmpresa?.updatedAt"
                   :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial"
                   class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"
                 />
@@ -170,7 +175,7 @@ const closeModal = () => {
               :disabled="empresas.loadingModal" 
             >
               <span v-if="empresas.loadingModal">Guardando...</span>
-              <span v-else>Guardar Empresa</span>
+              <span v-else>{{ empresas.currentEmpresa._id ? 'Actualizar Empresa' : 'Guardar Empresa' }}</span>
             </FormKit>
           </FormKit>
         </div>

@@ -18,7 +18,7 @@ export default {
     },
 
     updateEmpresaById(empresaId: string, empresaData) {
-        return api.put(`/actualizar-empresa/${empresaId}`, empresaData, {
+        return api.patch(`/actualizar-empresa/${empresaId}`, empresaData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }

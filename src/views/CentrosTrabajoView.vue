@@ -28,11 +28,15 @@
     <Transition appear mode="out-in" name="slide-up">
       <div v-if="centroTrabajo.loading"><h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1></div>
       <div v-else class="w-full bg-white rounded-lg p-2 shadow-lg items-center grid grid-cols-1 gap-8">
-        <CentroTrabajoItem 
+        <CentroTrabajoItem
+          v-if="centroTrabajo.centrosTrabajo.length > 0" 
           v-for="centro in centroTrabajo.centrosTrabajo" 
           :key="centro._id"
           :centro="centro"
         />
+        <h1 v-else
+          class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700"
+        >Esta empresa aún no tiene centros de trabajo registrados</h1>
       </div>
     </Transition>
   </div>
