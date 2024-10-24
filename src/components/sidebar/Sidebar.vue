@@ -22,7 +22,7 @@
   })
 
   watch(() => route.params, (newParams) => {
-    if (newParams.idEmpresa) {
+    if (newParams.idEmpresa && newParams.idEmpresa !== empresas.currentEmpresa?._id) {
       empresas.fetchEmpresaById(String(newParams.idEmpresa));
     }
     if (newParams.idCentroTrabajo) {
@@ -81,13 +81,10 @@
       </SidebarLink>
     </Transition>
 
-    <Transition name="enter-left-exit-bounce">
+    <Transition appear name="enter-left-exit-bounce">
       <SidebarLink 
-        v-if="empresas.currentEmpresa?._id" 
-        :to="{ 
-          name: 'centros-trabajo', 
-          params: { idEmpresa: empresas.currentEmpresaId || '' } 
-        }"
+        v-if="empresas.currentEmpresaId" 
+        :to="{ name: 'centros-trabajo', params: { idEmpresa: empresas.currentEmpresaId } }"
         icon="fas fa-warehouse"
         class="leading-5" 
         @click.stop
@@ -99,7 +96,7 @@
 
     <Transition name="enter-left-exit-bounce">
       <SidebarLink 
-        v-if="!centrosTrabajo.loading && centrosTrabajo.currentCentroTrabajo?._id" 
+        v-if="!centrosTrabajo.loading && centrosTrabajo.currentCentroTrabajoId" 
         :to="{
           name: 'trabajadores',
           params: {

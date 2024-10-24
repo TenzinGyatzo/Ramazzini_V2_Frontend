@@ -24,7 +24,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
     const loading = ref(true);
     const loadingModal = ref(false);
     const empresas = ref<Empresa[]>([]);
-    const currentEmpresaId = ref<string>();
+    const currentEmpresaId = ref<string | null>(null);
     const currentEmpresa = ref<Empresa | null>(null);
 
     function resetCurrentEmpresa() {
