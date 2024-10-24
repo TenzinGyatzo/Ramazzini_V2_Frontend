@@ -20,6 +20,7 @@ export const useCentrosTrabajoStore = defineStore('centros-trabajo', () => {
 
     const centrosTrabajo = ref<CentroTrabajo[]>([]);
     const loading = ref(true);
+    const loadingModal = ref(false);
     const currentCentroTrabajoId = ref<string>();
     const currentCentroTrabajo = ref<CentroTrabajo>();
 
@@ -53,9 +54,33 @@ export const useCentrosTrabajoStore = defineStore('centros-trabajo', () => {
 
     async function fetchCentroTrabajoById(empresaId: string, centroTrabajoId: string) {
         try {
-            loading.value = true;
+            loadingModal.value = true;
             const { data } = await CentrosTrabajoAPI.getCentroTrabajoById(empresaId, centroTrabajoId);
             currentCentroTrabajo.value = data;
+        } catch (error) {
+            console.log(error);
+        } finally {
+            loadingModal.value = true;
+        }
+    }
+
+    async function createCentroTrabajo(centroTrabajo) {
+        try {
+            loading.value = true;
+            console.log('Creating centro:', centroTrabajo);
+            // await EmpresasAPI.createEmpresa(empresa);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function updateCentroTrabajoById(id: string, centroTrabajo) {
+        try {
+            loading.value = true;
+            console.log('Updating empresa:', id, centroTrabajo);
+            // await EmpresasAPI.updateEmpresaById(id, empresa);
         } catch (error) {
             console.log(error);
         } finally {
@@ -65,11 +90,14 @@ export const useCentrosTrabajoStore = defineStore('centros-trabajo', () => {
 
     return {
         loading,
+        loadingModal,
         centrosTrabajo,
         currentCentroTrabajoId,
         currentCentroTrabajo,
         resetCurrentCentroTrabajo,
         fetchCentrosTrabajo,
-        fetchCentroTrabajoById
+        fetchCentroTrabajoById,
+        createCentroTrabajo,
+        updateCentroTrabajoById
     }
 })

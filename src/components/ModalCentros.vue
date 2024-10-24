@@ -1,44 +1,39 @@
 <script setup>
-import { ref } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
+import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 
 const empresas = useEmpresasStore();
+const centrosTrabajo = useCentrosTrabajoStore();
 const emit = defineEmits(['closeModal']);
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
-    const formData = new FormData();
+    const centroTrabajoData = {
+        nombreCentro: data.nombreCentro,
+        direccionCentro: data.direccionCentro,
+        codigoPostal: data.codigoPostal,
+        estado: data.estado,
+        municipio: data.municipio,
+        baseOperaciones: 'Pruebas', // TODO: Ajustar valor "Pruebas" o "Los Mochis" según el usuario
+        createdBy: '6650f38308ac3beedf5ac41b', // TODO: Obtener el ID del usuario actual
+        updatedBy: '6650f38308ac3beedf5ac41b' // TODO: Obtener el ID del usuario actual
+    };
 
-    // Añadir los datos del formulario al FormData 
-    formData.append('nombreComercial', data.nombreComercial);
-    formData.append('razonSocial', data.razonSocial);
-    formData.append('RFC', data.RFC);
-    formData.append('giroDeEmpresa', data.giroDeEmpresa);
-    formData.append('baseOperaciones', 'Pruebas');
-    formData.append('createdBy', '6650f38308ac3beedf5ac41b');
-    formData.append('updatedBy', '6650f38308ac3beedf5ac41b');
-
-    // Añadir el archivo del logotipo si existe
-    if (logotipoArchivo.value) {
-        formData.append('logotipoEmpresa', logotipoArchivo.value);
-    }
-
-    // Depuramos el contenido de FormData
-    // for (let [key, value] of formData.entries()) {
-    //     console.log(`${key}:`, value);
-    // }
+    console.log('Centro de trabajo:', centroTrabajoData);
 
     try {
-        if (empresas.currentEmpresa?._id) {
-            await empresas.updateEmpresaById(empresas.currentEmpresa._id, formData);
+        if (centrosTrabajo.currentCentroTrabajo?._id) {
+            // Actualizar centro de trabajo
+            await centrosTrabajo.updateCentroTrabajoById(centrosTrabajo.currentCentroTrabajo._id, centroTrabajoData);
         } else {
-            await empresas.createEmpresa(formData);
+            // Crear nuevo centro de trabajo
+            await centrosTrabajo.createCentroTrabajo(centroTrabajoData);
         }
         emit('closeModal');
-        empresas.fetchEmpresas();
+        centrosTrabajo.fetchCentrosTrabajo(empresas.currentEmpresaId);
     } catch (error) {
-        console.error('Error al crear o actualizar la empresa:', error);
-        alert('Hubo un error al crear o actualizar la empresa, por favor intente nuevamente.');
+        console.error('Error al crear o actualizar el centro:', error);
+        alert('Hubo un error al crear o actualizar el centro, por favor intente nuevamente.');
     }
 };
 
@@ -47,6 +42,7 @@ const closeModal = () => {
     emit('closeModal');
 };
 </script>
+
 
 <template>
   <div class="modal fixed top-0 left-0 z-10 p-8 h-screen w-full grid place-items-center">
@@ -60,12 +56,12 @@ const closeModal = () => {
           &times;
         </div>
 
-        <div v-if="empresas.loadingModal">
+        <div v-if="centrosTrabajo.loadingModal">
           <h1 class="text-3xl text-center">Cargando centro de trabajo...</h1>
         </div>
         <!-- Contenido del modal -->
         <div v-else>
-          <h1 class="text-3xl">{{ empresas.currentEmpresa._id ? 'Editar Centro de Trabajo' : 'Registrar Centro de Trabajo' }}</h1>
+          <h1 class="text-3xl">{{ centrosTrabajo.currentCentroTrabajo._id ? 'Editar Centro de Trabajo' : 'Registrar Centro de Trabajo' }}</h1>
           <hr class="mt-2 mb-3">
           
           <FormKit
@@ -76,80 +72,58 @@ const closeModal = () => {
           >
             <FormKit 
               type="text"
-              label="Nombre Comercial*"
-              name="nombreComercial"
-              placeholder="Nombre comercial de la empresa"
+              label="Nombre Centro de Trabajo*"
+              name="nombreCentro"
+              placeholder="Nombre del centro de trabajo o proyecto"
               validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio'}"
-              :value="empresas.currentEmpresa?.nombreComercial || ''"
+              :value="centrosTrabajo.currentCentroTrabajo?.nombreCentro || ''"
             />
             <FormKit 
               type="text"
-              label="Razón Social*"
-              name="razonSocial"
-              placeholder="Razón social de la empresa"
+              label="Dirección*"
+              name="direccionCentro"
+              placeholder="Calle, número y colonia"
               validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio'}"
-              :value="empresas.currentEmpresa?.razonSocial || ''"
+              :value="centrosTrabajo.currentCentroTrabajo?.direccionCentro || ''"
             />
             <FormKit 
               type="text"
-              label="RFC*"
-              name="RFC"
-              placeholder="RFC"
+              label="Código Postal*"
+              name="codigoPostal"
+              placeholder="5 dígitos"
               validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio'}"
-              :value="empresas.currentEmpresa?.RFC || ''"
+              :value="centrosTrabajo.currentCentroTrabajo?.codigoPostal || ''"
             />
             <FormKit 
               type="text"
-              label="Giro de la empresa*"
-              name="giroDeEmpresa"
-              placeholder="Giro de la Empresa"
+              label="Estado*"
+              name="estado"
+              placeholder="Estado"
               validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio'}"
-              :value="empresas.currentEmpresa?.giroDeEmpresa || ''"
+              :value="centrosTrabajo.currentCentroTrabajo?.estado || ''"
+            />
+
+            <FormKit 
+              type="text"
+              label="Municipio*"
+              name="municipio"
+              placeholder="Ej. Ahome"
+              validation="required"
+              :validation-messages="{ required: 'Este campo es obligatorio'}"
+              :value="centrosTrabajo.currentCentroTrabajo?.municipio || ''"
             />
             
-            <!-- Input del archivo con v-model y evento change -->
-            <FormKit 
-              type="file"
-              label="Logotipo*"
-              name="logotipoEmpresa"
-              accept=".png, .jpg, .jpeg, .svg"
-              multiple="false"
-              :validation="!empresas.currentEmpresa?._id ? 'required' : ''"
-              :validation-messages="{ required: 'Este campo es obligatorio'}"
-              @change="handleFileChange"
-            />
-            
-            <!-- Mostrar la vista previa del logotipo -->
-             <div class="flex flex-row justify-center items-center gap-4">
-              <div class="w-1/2 flex flex-col items-center" v-if="empresas.currentEmpresa?.logotipoEmpresa?.data">
-                <p class="font-medium text-lg text-gray-700">Logotipo actual:</p>
-                <img
-                  :src="'/uploads/logos/' + empresas.currentEmpresa?.logotipoEmpresa?.data + '?t=' + empresas.currentEmpresa?.updatedAt"
-                  :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial"
-                  class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"
-                />
-              </div>
-              <Transition appear name="fade-slow">
-                <div v-if="logotipoPreview" class="w-1/2 flex flex-col items-center">
-                    <p v-if="empresas.currentEmpresa?.logotipoEmpresa?.data" 
-                      class="font-medium text-lg text-gray-700">Logotipo nuevo:</p>
-                    <p v-else
-                    class="font-medium text-lg text-gray-700">Logotipo:</p>
-                    <img :src="logotipoPreview" alt="Vista previa del logotipo" class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"/>
-                </div>
-              </Transition>
-            </div>
             <hr class="my-3">
             <FormKit 
               type="submit"
-              :disabled="empresas.loadingModal" 
+              :disabled="centrosTrabajo.loadingModal" 
             >
-              <span v-if="empresas.loadingModal">Guardando...</span>
-              <span v-else>{{ empresas.currentEmpresa._id ? 'Actualizar Empresa' : 'Guardar Empresa' }}</span>
+              <span v-if="centrosTrabajo.loadingModal">Guardando...</span>
+              <span v-else>{{ centrosTrabajo.currentCentroTrabajo._id ? 'Actualizar Centro' : 'Guardar Centro' }}</span>
             </FormKit>
           </FormKit>
         </div>

@@ -12,8 +12,8 @@ defineProps({
 })
 
 defineEmits<{
-  (event: 'eliminarEmpresa', id: string, nombreComercial: string): void;
   (event: 'editarEmpresa', empresa: Empresa | null): void;
+  (event: 'eliminarEmpresa', id: string, nombreComercial: string): void;
 }>();
 </script>
 
