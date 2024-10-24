@@ -1,14 +1,29 @@
 <script setup lang="ts">
   import CentroTrabajoItem from '@/components/CentroTrabajoItem.vue';
-  import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
   import { useEmpresasStore } from '@/stores/empresas';
-  import { defineComponent, onMounted, type DefineComponent } from 'vue';
+  import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
+  import { ref, defineComponent, onMounted, type DefineComponent } from 'vue';
   import { useRoute } from 'vue-router';
   import GreenButton from '@/components/GreenButton.vue';
+  import ModalEliminar from '@/components/ModalEliminar.vue';
 
-  const centroTrabajo = useCentrosTrabajoStore();
   const empresas = useEmpresasStore();
+  const centroTrabajo = useCentrosTrabajoStore();
   const route = useRoute();
+
+  const showDeleteModal = ref(false);
+  const selectedCentroTrabajoId = ref<string | null>(null);
+  const selectedCentroTrabajoNombre = ref<string | null>(null);
+
+  const toggleDeleteModal = (idCentroTrabajo: string | null = null, nombreCentro: string | null = null) => {
+      showDeleteModal.value = !showDeleteModal.value;
+      selectedCentroTrabajoId.value = idCentroTrabajo;
+      selectedCentroTrabajoNombre.value = nombreCentro;
+  }
+
+  const deleteCentroTrabajoById = async (id: string) => {
+    console.log('Eliminando centro de trabajo con ID:', id);
+  };
 
   onMounted(() => {
     const empresaId = String(route.params.idEmpresa);
@@ -21,6 +36,16 @@
 </script>
 
 <template>
+  <Transition appear name="fade">
+    <ModalEliminar 
+      v-if="showDeleteModal && selectedCentroTrabajoId && selectedCentroTrabajoNombre" 
+      :idRegistro="selectedCentroTrabajoId"
+      :identificacion="selectedCentroTrabajoNombre"
+      tipoRegistro="Centro de Trabajo"
+      @closeModal="toggleDeleteModal"
+      @confirmDelete="deleteCentroTrabajoById" 
+    />
+  </Transition>
   <div class="w-full p-5 space-y-5">
     <div class="flex flex-col items-center">
       <GreenButton text="Nuevo Centro de Trabajo +" />
@@ -33,6 +58,7 @@
           v-for="centro in centroTrabajo.centrosTrabajo" 
           :key="centro._id"
           :centro="centro"
+          @eliminarCentro="toggleDeleteModal"
         />
         <h1 v-else
           class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700"

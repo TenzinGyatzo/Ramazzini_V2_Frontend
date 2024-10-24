@@ -5,26 +5,6 @@ import { useEmpresasStore } from '@/stores/empresas';
 const empresas = useEmpresasStore();
 const emit = defineEmits(['closeModal']);
 
-// Propiedades reactivas para el logotipo
-const logotipoPreview = ref(null);  // Para la vista previa de la imagen
-const logotipoArchivo = ref(null);  // Para el archivo cargado
-
-// Función que se ejecuta cuando el usuario selecciona un archivo
-const handleFileChange = (event) => {
-    const file = event?.target?.files?.[0]; // Verificamos si el archivo existe
-    if (file && file instanceof File) {
-        logotipoArchivo.value = file;  // Almacenamos el archivo
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            logotipoPreview.value = e.target.result; // Guardar la URL de la imagen
-        };
-        reader.readAsDataURL(file);  // Leer el archivo como URL
-    } else {
-        logotipoPreview.value = null; // Limpiar la vista previa si no hay archivo
-        logotipoArchivo.value = null; // Limpiar el archivo cargado
-    }
-};
-
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
     const formData = new FormData();
@@ -64,8 +44,6 @@ const handleSubmit = async (data) => {
 
 // Limpiar la vista previa cuando se cierre el modal
 const closeModal = () => {
-    logotipoPreview.value = null;  // Limpiar la vista previa
-    logotipoArchivo.value = null;  // Limpiar el archivo cargado
     emit('closeModal');
 };
 </script>
@@ -83,11 +61,11 @@ const closeModal = () => {
         </div>
 
         <div v-if="empresas.loadingModal">
-          <h1 class="text-3xl text-center">Cargando empresa...</h1>
+          <h1 class="text-3xl text-center">Cargando centro de trabajo...</h1>
         </div>
         <!-- Contenido del modal -->
         <div v-else>
-          <h1 class="text-3xl">{{ empresas.currentEmpresa._id ? 'Editar Empresa' : 'Registrar Empresa' }}</h1>
+          <h1 class="text-3xl">{{ empresas.currentEmpresa._id ? 'Editar Centro de Trabajo' : 'Registrar Centro de Trabajo' }}</h1>
           <hr class="mt-2 mb-3">
           
           <FormKit

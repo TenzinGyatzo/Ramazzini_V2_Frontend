@@ -11,7 +11,7 @@ defineProps({
     }
 })
 
-const emit = defineEmits<{
+defineEmits<{
   (event: 'eliminarEmpresa', id: string, nombreComercial: string): void;
   (event: 'editarEmpresa', empresa: Empresa | null): void;
 }>();
@@ -24,7 +24,7 @@ const emit = defineEmits<{
         <button
             type="button"
             class="w-full text-center"
-             @click="empresa?._id ? router.push({ name: 'centros-trabajo', params: { idEmpresa: empresa._id } }) : null"
+            @click="empresa?._id ? router.push({ name: 'centros-trabajo', params: { idEmpresa: empresa._id } }) : null"
         >
             <img
                 v-if="empresa.nombreComercial"

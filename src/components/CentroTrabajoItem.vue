@@ -1,19 +1,22 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 
-    const router = useRouter();
+const router = useRouter();
 
-    defineProps({
-        centro: {
-            type: Object,
-            default: () => ({}),
-        },
-        empresa: {
-            type: Object,
-            default: () => ({}),
-        },
-    });
+defineProps({
+    centro: {
+        type: Object,
+        default: () => ({}),
+    },
+    empresa: {
+        type: Object,
+        default: () => ({}),
+    },
+});
 
+defineEmits<{
+    (event: 'eliminarCentro', id: string, nombreCentro: string): void;
+}>()
 </script>
 
 <template>
@@ -33,7 +36,12 @@ import { useRouter } from 'vue-router';
                 <button class="text-base w-full bg-gray-600 hover:bg-slate-700 text-white uppercase  rounded-lg p-1 transition duration-300">Editar</button>
             </div>
             <div class="flex items-center justify-center">
-                <button class="text-base w-full bg-red-600 hover:bg-red-700 text-white uppercase  rounded-lg p-1 transition duration-300">Eliminar</button>
+                <button 
+                    type="button"
+                    @click="$emit('eliminarCentro', centro._id, centro.nombreCentro)" class="text-base w-full bg-red-600 hover:bg-red-700 text-white uppercase  rounded-lg p-1 transition duration-300"
+                >
+                    Eliminar
+                </button>
             </div>
         </div>    
     </div>       
