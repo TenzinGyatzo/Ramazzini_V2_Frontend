@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useEmpresasStore } from '@/stores/empresas';
+
+const empresas = useEmpresasStore();
 const emit = defineEmits(['closeModal', 'confirmDelete']);
 
 // Definimos las propiedades genéricas
@@ -14,11 +17,18 @@ const props = defineProps({
   tipoRegistro: {
     type: String,
     required: true,
-  },
+  }
 });
 
+
 const handleDelete = () => {
-  emit('confirmDelete', props.idRegistro); // Emitimos el ID del registro a eliminar
+  if (props.tipoRegistro === 'Trabajador') { // TODO: pasar el ID del centro de trabajo tambien
+    emit('confirmDelete', empresas.currentEmpresaId, props.idRegistro); // Se requiere el ID de la empresa y del Centro de Trabajo
+  } else if (props.tipoRegistro === 'Centro de Trabajo') {
+    emit('confirmDelete', empresas.currentEmpresaId, props.idRegistro); // Se requiere el ID de la empresa
+  } else {
+    emit('confirmDelete', props.idRegistro); // Emitimos el ID del registro a eliminar
+  }
   emit('closeModal');  // Cerramos el modal después de la confirmación
 };
 </script>

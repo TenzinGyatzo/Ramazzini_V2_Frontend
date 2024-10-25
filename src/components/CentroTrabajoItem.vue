@@ -24,7 +24,7 @@ defineEmits<{
 
 <template>
     <div v-if="centro && empresa">
-        <div class="w-full px-6 py-2 bg-white grid grid-cols-1 gap-2 2xl:grid-cols-10 2xl:gap-8">
+        <div class="w-full px-6 py-2 grid grid-cols-1 gap-2 2xl:grid-cols-10 2xl:gap-8">
             <button
                 type="button"
                 class="border-shadow w-full col-span-1 2xl:col-span-9 text-left rounded-lg p-5 2xl:p-7 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 shadow-md hover:shadow-xl bg-gray-50 hover:bg-gray-100"
@@ -40,7 +40,7 @@ defineEmits<{
                     <button 
                         type="button"
                         @click="$emit('editarCentro', empresa, centro)"
-                        class="text-base w-full bg-gray-600 hover:bg-slate-700 text-white uppercase  rounded-lg p-1 transition duration-300"
+                        class="text-xs sm:text-sm md:text-base 2xl:text-lg w-full bg-gray-600 hover:bg-slate-700 text-white uppercase  rounded-lg p-1 transition duration-300"
                     >
                         Editar
                 </button>
@@ -48,7 +48,8 @@ defineEmits<{
                 <div class="flex items-center justify-center">
                     <button 
                         type="button"
-                        @click="$emit('eliminarCentro', centro._id, centro.nombreCentro)" class="text-base w-full bg-red-600 hover:bg-red-700 text-white uppercase  rounded-lg p-1 transition duration-300"
+                        @click="$emit('eliminarCentro', centro._id, centro.nombreCentro)" 
+                        class="text-xs sm:text-sm md:text-base 2xl:text-lg w-full bg-red-600 hover:bg-red-700 text-white uppercase  rounded-lg p-1 transition duration-300"
                     >
                         Eliminar
                     </button>

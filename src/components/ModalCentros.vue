@@ -6,6 +6,14 @@ const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const emit = defineEmits(['closeModal']);
 
+const estadosDeMexico = [
+  "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas",
+  "Chihuahua", "Coahuila", "Colima", "Durango", "Guanajuato", "Guerrero", "Hidalgo",
+  "Jalisco", "Estado de México", "Michoacán", "Morelos", "Nayarit", "Nuevo León",
+  "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa",
+  "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz", "Yucatán", "Zacatecas"
+];
+
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
     const centroTrabajoData = {
@@ -14,9 +22,9 @@ const handleSubmit = async (data) => {
         codigoPostal: data.codigoPostal,
         estado: data.estado,
         municipio: data.municipio,
-        baseOperaciones: 'Pruebas', // TODO: Ajustar valor "Pruebas" o "Los Mochis" según el usuario
-        createdBy: '6650f38308ac3beedf5ac41b', // TODO: Obtener el ID del usuario actual
-        updatedBy: '6650f38308ac3beedf5ac41b' // TODO: Obtener el ID del usuario actual
+        idEmpresa: data.idEmpresa,
+        createdBy: data.createdBy, // TODO: Obtener el ID del usuario actual
+        updatedBy: data.updatedBy // TODO: Obtener el ID del usuario actual
     };
 
     console.log('Centro de trabajo:', centroTrabajoData);
@@ -24,10 +32,10 @@ const handleSubmit = async (data) => {
     try {
         if (centrosTrabajo.currentCentroTrabajo?._id) {
             // Actualizar centro de trabajo
-            await centrosTrabajo.updateCentroTrabajoById(centrosTrabajo.currentCentroTrabajo._id, centroTrabajoData);
+            await centrosTrabajo.updateCentroTrabajoById(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajo._id, centroTrabajoData);
         } else {
             // Crear nuevo centro de trabajo
-            await centrosTrabajo.createCentroTrabajo(centroTrabajoData);
+            await centrosTrabajo.createCentroTrabajo(empresas.currentEmpresaId, centroTrabajoData);
         }
         emit('closeModal');
         centrosTrabajo.fetchCentrosTrabajo(empresas.currentEmpresaId);
@@ -93,15 +101,16 @@ const closeModal = () => {
               label="Código Postal*"
               name="codigoPostal"
               placeholder="5 dígitos"
-              validation="required"
-              :validation-messages="{ required: 'Este campo es obligatorio'}"
+              validation="required|length:5"
+              :validation-messages="{ required: 'Este campo es obligatorio', length: 'El código postal debe tener 5 dígitos'}"
               :value="centrosTrabajo.currentCentroTrabajo?.codigoPostal || ''"
             />
             <FormKit 
-              type="text"
+              type="select"
               label="Estado*"
               name="estado"
-              placeholder="Estado"
+              placeholder="Seleccione un estado"
+              :options="estadosDeMexico"
               validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio'}"
               :value="centrosTrabajo.currentCentroTrabajo?.estado || ''"
@@ -115,6 +124,22 @@ const closeModal = () => {
               validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio'}"
               :value="centrosTrabajo.currentCentroTrabajo?.municipio || ''"
+            />
+
+            <FormKit 
+              type="hidden"
+              name="idEmpresa"
+              :value="empresas.currentEmpresaId"
+            />
+            <FormKit 
+              type="hidden"
+              name="createdBy"
+              :value="'6650f38308ac3beedf5ac41b'" 
+            />
+            <FormKit 
+              type="hidden"
+              name="updatedBy"
+              :value="'6650f38308ac3beedf5ac41b'"
             />
             
             <hr class="my-3">

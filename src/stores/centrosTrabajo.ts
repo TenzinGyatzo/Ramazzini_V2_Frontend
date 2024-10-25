@@ -60,15 +60,14 @@ export const useCentrosTrabajoStore = defineStore('centros-trabajo', () => {
         } catch (error) {
             console.log(error);
         } finally {
-            loadingModal.value = true;
+            loadingModal.value = false;
         }
     }
 
-    async function createCentroTrabajo(centroTrabajo) {
+    async function createCentroTrabajo(empresaId: string, centroTrabajo: CentroTrabajo) {
         try {
             loading.value = true;
-            console.log('Creating centro:', centroTrabajo);
-            // await EmpresasAPI.createEmpresa(empresa);
+            await CentrosTrabajoAPI.createCentroTrabajo(empresaId, centroTrabajo);
         } catch (error) {
             console.log(error);
         } finally {
@@ -76,11 +75,21 @@ export const useCentrosTrabajoStore = defineStore('centros-trabajo', () => {
         }
     }
 
-    async function updateCentroTrabajoById(id: string, centroTrabajo) {
+    async function updateCentroTrabajoById(empresaId: string, centroTrabajoId: string, centroTrabajo: CentroTrabajo) {
         try {
             loading.value = true;
-            console.log('Updating empresa:', id, centroTrabajo);
-            // await EmpresasAPI.updateEmpresaById(id, empresa);
+            await CentrosTrabajoAPI.updateCentroTrabajoById(empresaId, centroTrabajoId, centroTrabajo);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function deleteCentroTrabajoById(empresaId: string, centroTrabajoId: string) {
+        try {
+            loading.value = true;
+            await CentrosTrabajoAPI.deleteCentroTrabajoById(empresaId, centroTrabajoId);
         } catch (error) {
             console.log(error);
         } finally {
@@ -98,6 +107,7 @@ export const useCentrosTrabajoStore = defineStore('centros-trabajo', () => {
         fetchCentrosTrabajo,
         fetchCentroTrabajoById,
         createCentroTrabajo,
-        updateCentroTrabajoById
+        updateCentroTrabajoById,
+        deleteCentroTrabajoById
     }
 })

@@ -47,7 +47,10 @@ watch(
       </div>
       <div v-else>
         <!-- Usar el componente DataTableDT -->
-        <DataTableDT class="table-auto z-1">
+        <DataTableDT 
+          v-if="trabajadores.trabajadores.length > 0"
+          class="table-auto z-1"
+        >
           <tr v-for="(trabajador, index) in trabajadores.trabajadores" :key="trabajador._id" class="hover:bg-gray-200 cursor-pointer">
             <td>{{ index + 1 }}</td>
             <td>{{ trabajador.nombre }}</td>
@@ -81,6 +84,9 @@ watch(
             </td>
           </tr>
         </DataTableDT>
+        <h1 v-else
+          class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700 mt-10"
+        >Este centro de trabajo aún no tiene trabajadores registrados</h1>
       </div>
     </Transition>
 </template>
