@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useEmpresasStore } from '@/stores/empresas';
+import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 
 const empresas = useEmpresasStore();
+const centrosTrabajo = useCentrosTrabajoStore();
 const emit = defineEmits(['closeModal', 'confirmDelete']);
 
 // Definimos las propiedades genéricas
@@ -23,7 +25,7 @@ const props = defineProps({
 
 const handleDelete = () => {
   if (props.tipoRegistro === 'Trabajador') { // TODO: pasar el ID del centro de trabajo tambien
-    emit('confirmDelete', empresas.currentEmpresaId, props.idRegistro); // Se requiere el ID de la empresa y del Centro de Trabajo
+    emit('confirmDelete', empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId, props.idRegistro); // Se requiere el ID de la empresa y del Centro de Trabajo
   } else if (props.tipoRegistro === 'Centro de Trabajo') {
     emit('confirmDelete', empresas.currentEmpresaId, props.idRegistro); // Se requiere el ID de la empresa
   } else {

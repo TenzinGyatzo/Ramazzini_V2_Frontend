@@ -8,6 +8,7 @@ import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad } from '@/
 import GreenButton from '@/components/GreenButton.vue';
 import DataTableDT from '@/components/DataTableDT.vue';
 import ModalTrabajadores from '@/components/ModalTrabajadores.vue';
+import ModalEliminar from '@/components/ModalEliminar.vue';
 import type { Empresa } from '@/interfaces/empresa.interface';
 import type { CentroTrabajo } from '@/interfaces/centro-trabajo.interface';
 import type { Trabajador } from '../interfaces/trabajador.interface';
@@ -45,6 +46,24 @@ const closeModal = () => {
   showModal.value = false;
 }
 
+const toggleDeleteModal = (idTrabajador: string | null = null, nombreTrabajador: string | null = null) => {
+    showDeleteModal.value = !showDeleteModal.value;
+    selectedTrabajadorId.value = idTrabajador;
+    selectedTrabajadorNombre.value = nombreTrabajador;
+}
+
+const deleteTrabajadorById = async (empresaId: string, centroTrabajoId: string, trabajadorId: string) => {
+    try {
+    // Esperamos a que el trabjador sea eliminado
+    await trabajadores.deleteTrabajadorById(empresaId, centroTrabajoId, trabajadorId);
+
+    // Una vez eliminado, volvemos a hacer fetch para actualizar la lista
+    await trabajadores.fetchTrabajadores(empresaId, centroTrabajoId);
+  } catch (error) {
+    console.error('Error al eliminar al trabajador', error);
+  }
+};
+
 watch(
     () => route.params, // Observamos los parámetros idEmpresa e idCentroTrabajo
     (newParams) => {
@@ -68,6 +87,17 @@ watch(
       <ModalTrabajadores v-if="showModal" @closeModal="closeModal" />
     </Transition>
 
+    <Transition appear name="fade">
+      <ModalEliminar 
+        v-if="showDeleteModal && selectedTrabajadorId && selectedTrabajadorNombre" 
+        :idRegistro="selectedTrabajadorId"
+        :identificacion="selectedTrabajadorNombre"
+        tipoRegistro="Trabajador"
+        @closeModal="toggleDeleteModal"
+        @confirmDelete="deleteTrabajadorById" 
+      />
+    </Transition>
+  
     <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-8">
       <GreenButton text="Nuevo Trabajador +" @click="openModal(null)"/>
       <GreenButton text="Carga Masiva" />
@@ -116,7 +146,11 @@ watch(
                 >
                   <i class="fa-regular fa-pen-to-square fa-lg" style="color: #696969"></i>
                 </button>
-                <button type="button" class="hover:scale-110 transition-all duration-100 ease-in-out transform">
+                <button 
+                  type="button" 
+                  class="hover:scale-110 transition-all duration-100 ease-in-out transform"
+                  @click="toggleDeleteModal(trabajador._id, trabajador.nombre)"
+                >
                   <i class="fa-solid fa-trash-can fa-lg" style="color: #c43117"></i>
                 </button>
               </div>

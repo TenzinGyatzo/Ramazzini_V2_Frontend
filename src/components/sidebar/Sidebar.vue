@@ -96,7 +96,7 @@
 
     <Transition name="enter-left-exit-bounce">
       <SidebarLink 
-        v-if="!centrosTrabajo.loading && centrosTrabajo.currentCentroTrabajoId" 
+        v-if="centrosTrabajo.currentCentroTrabajoId" 
         :to="{
           name: 'trabajadores',
           params: {
@@ -115,7 +115,7 @@
 
     <Transition name="enter-left-exit-bounce">
       <SidebarLink 
-        v-if="!trabajadores.loading && trabajadores.currentTrabajadorId" 
+        v-if="trabajadores.currentTrabajadorId" 
         :to="{
           name: 'expediente-medico',
           params: {

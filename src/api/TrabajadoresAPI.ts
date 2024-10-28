@@ -16,5 +16,9 @@ export default {
 
     updateTrabajador(empresaId: string, centroTrabajoId: string, trabajadorId: string, trabajadorData: Trabajador) {
         return api.patch(`/${empresaId}/${centroTrabajoId}/actualizar-trabajador/${trabajadorId}`, trabajadorData)
+    },
+
+    deleteTrabajadorById(empresaId: string, centroTrabajoId: string, trabajadorId: string) {
+        return api.delete(`/${empresaId}/${centroTrabajoId}/eliminar-trabajador/${trabajadorId}`)
     }
 }
