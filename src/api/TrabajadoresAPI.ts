@@ -1,3 +1,4 @@
+import type { Trabajador } from '@/interfaces/trabajador.interface';
 import api from '@/lib/axios'
 
 export default {
@@ -7,5 +8,13 @@ export default {
 
     getTrabajadorById(empresaId: string, centroTrabajoId: string, trabajadorId: string) {
         return api.get(`/${empresaId}/${centroTrabajoId}/${trabajadorId}`)
+    },
+
+    createTrabajador(empresaId: string, centroTrabajoId: string, trabajadorData: Trabajador) {
+        return api.post(`/${empresaId}/${centroTrabajoId}/registrar-trabajador`, trabajadorData)
+    },
+
+    updateTrabajador(empresaId: string, centroTrabajoId: string, trabajadorId: string, trabajadorData: Trabajador) {
+        return api.patch(`/${empresaId}/${centroTrabajoId}/actualizar-trabajador/${trabajadorId}`, trabajadorData)
     }
 }

@@ -23,6 +23,7 @@ interface Trabajador {
 export const useTrabajadoresStore = defineStore('trabajadores', () => {
 
     const loading = ref(true)
+    const loadingModal = ref(false)
     const trabajadores = ref<Trabajador[]>([])
     const currentTrabajadorId = ref<string>()
     const currentTrabajador = ref<Trabajador>()
@@ -61,9 +62,31 @@ export const useTrabajadoresStore = defineStore('trabajadores', () => {
 
     async function fetchTrabajadorById(empresaId: string, centroTrabajoId: string, trabajadorId: string) {
         try {
-            loading.value = true
+            loadingModal.value = true
             const { data } = await TrabajadoresAPI.getTrabajadorById(empresaId, centroTrabajoId, trabajadorId)
             currentTrabajador.value = data
+        } catch (error) {
+            console.log(error)
+        } finally {
+            loadingModal.value = false
+        }
+    }
+
+    async function createTrabajador(empresaId: string, centroTrabajoId: string, trabajadorData: Trabajador) {
+        try {
+            loading.value = true
+            await TrabajadoresAPI.createTrabajador(empresaId, centroTrabajoId, trabajadorData)
+        } catch (error) {
+            console.log(error)
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function updateTrabajador(empresaId: string, centroTrabajoId: string, trabajadorId: string, trabajadorData: Trabajador) {
+        try {
+            loading.value = true
+            await TrabajadoresAPI.updateTrabajador(empresaId, centroTrabajoId, trabajadorId, trabajadorData)
         } catch (error) {
             console.log(error)
         } finally {
@@ -73,11 +96,14 @@ export const useTrabajadoresStore = defineStore('trabajadores', () => {
 
     return { 
         loading, 
+        loadingModal,
         trabajadores,
         currentTrabajadorId,
         currentTrabajador,
         resetCurrentTrabajador, 
         fetchTrabajadores,
-        fetchTrabajadorById
+        fetchTrabajadorById,
+        createTrabajador,
+        updateTrabajador
     }
 })

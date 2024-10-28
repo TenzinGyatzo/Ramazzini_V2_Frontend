@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -7,12 +7,43 @@ import { useRoute, useRouter } from 'vue-router';
 import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
 import GreenButton from '@/components/GreenButton.vue';
 import DataTableDT from '@/components/DataTableDT.vue';
+import ModalTrabajadores from '@/components/ModalTrabajadores.vue';
+import type { Empresa } from '@/interfaces/empresa.interface';
+import type { CentroTrabajo } from '@/interfaces/centro-trabajo.interface';
+import type { Trabajador } from '../interfaces/trabajador.interface';
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const route = useRoute();
 const router = useRouter();
+
+const showModal = ref(false);
+const showDeleteModal = ref(false);
+const selectedTrabajadorId = ref<string | null>(null);
+const selectedTrabajadorNombre = ref<string | null>(null);
+
+const openModal = async (empresa: Empresa | null = null, centroTrabajo: CentroTrabajo | null = null, trabajador: Trabajador | null = null) => {
+  showModal.value = false;
+  trabajadores.loadingModal
+
+  if(empresa && centroTrabajo && trabajador) {
+    try {
+      await trabajadores.fetchTrabajadorById(empresa._id, centroTrabajo._id, trabajador._id);
+    } catch (error) {
+      console.error('Error al cargar el trabajador:', error);
+    }
+  } else {
+    trabajadores.resetCurrentTrabajador();
+  }
+
+  trabajadores.loadingModal = false;
+  showModal.value = true;
+}
+
+const closeModal = () => {
+  showModal.value = false;
+}
 
 watch(
     () => route.params, // Observamos los parámetros idEmpresa e idCentroTrabajo
@@ -33,8 +64,12 @@ watch(
 </script>
 
 <template>  
+    <Transition appear name="fade">
+      <ModalTrabajadores v-if="showModal" @closeModal="closeModal" />
+    </Transition>
+
     <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-8">
-      <GreenButton text="Nuevo Trabajador +" />
+      <GreenButton text="Nuevo Trabajador +" @click="openModal(null)"/>
       <GreenButton text="Carga Masiva" />
       <GreenButton text="Exportar a Excel" />
     </div>
@@ -74,7 +109,11 @@ watch(
             </td>
             <td>
               <div class="flex gap-1">
-                <button type="button" class="hover:scale-110 transition-all duration-100 ease-in-out transform">
+                <button 
+                  type="button" 
+                  class="hover:scale-110 transition-all duration-100 ease-in-out transform"
+                  @click="openModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo, trabajador)"
+                >
                   <i class="fa-regular fa-pen-to-square fa-lg" style="color: #696969"></i>
                 </button>
                 <button type="button" class="hover:scale-110 transition-all duration-100 ease-in-out transform">

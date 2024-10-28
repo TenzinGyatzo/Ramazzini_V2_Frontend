@@ -115,7 +115,7 @@
 
     <Transition name="enter-left-exit-bounce">
       <SidebarLink 
-        v-if="!trabajadores.loading && trabajadores.currentTrabajador?._id" 
+        v-if="!trabajadores.loading && trabajadores.currentTrabajadorId" 
         :to="{
           name: 'expediente-medico',
           params: {
