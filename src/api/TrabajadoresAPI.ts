@@ -18,6 +18,10 @@ export default {
         return api.patch(`/${empresaId}/${centroTrabajoId}/actualizar-trabajador/${trabajadorId}`, trabajadorData)
     },
 
+    importTrabajadores(empresaId: string, centroTrabajoId: string, formData: FormData) {
+        return api.post(`/${empresaId}/${centroTrabajoId}/importar-trabajadores`, formData)
+    },
+
     deleteTrabajadorById(empresaId: string, centroTrabajoId: string, trabajadorId: string) {
         return api.delete(`/${empresaId}/${centroTrabajoId}/eliminar-trabajador/${trabajadorId}`)
     }

@@ -94,6 +94,18 @@ export const useTrabajadoresStore = defineStore('trabajadores', () => {
         }
     }
 
+    async function importTrabajadores(empresaId: string, centroTrabajoId: string, formData: FormData) {
+        try {
+            loading.value = true
+            const response = await TrabajadoresAPI.importTrabajadores(empresaId, centroTrabajoId, formData);
+            return response; 
+        } catch (error) {
+            console.log(error)
+        } finally {
+            loading.value = false
+        }
+    }
+
     async function deleteTrabajadorById(empresaId: string, centroTrabajoId: string, trabajadorId: string) {
         try {
             loading.value = true
@@ -116,6 +128,7 @@ export const useTrabajadoresStore = defineStore('trabajadores', () => {
         fetchTrabajadorById,
         createTrabajador,
         updateTrabajador,
+        importTrabajadores,
         deleteTrabajadorById
     }
 })

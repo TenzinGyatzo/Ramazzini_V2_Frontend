@@ -72,7 +72,7 @@ const closeModal = () => {
         </div>
 
         <div v-if="trabajadores.loadingModal">
-          <h1 class="text-3xl text-center">Cargando centro de trabajo...</h1>
+          <h1 class="text-3xl text-center">Cargando trabajador...</h1>
         </div>
         <!-- Contenido del modal -->
         <div v-else>

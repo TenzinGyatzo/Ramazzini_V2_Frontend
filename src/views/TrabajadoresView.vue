@@ -9,6 +9,7 @@ import GreenButton from '@/components/GreenButton.vue';
 import DataTableDT from '@/components/DataTableDT.vue';
 import ModalTrabajadores from '@/components/ModalTrabajadores.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
+import ModalCargaMasiva from '@/components/ModalCargaMasiva.vue';
 import type { Empresa } from '@/interfaces/empresa.interface';
 import type { CentroTrabajo } from '@/interfaces/centro-trabajo.interface';
 import type { Trabajador } from '../interfaces/trabajador.interface';
@@ -21,6 +22,7 @@ const router = useRouter();
 
 const showModal = ref(false);
 const showDeleteModal = ref(false);
+const showImportModal = ref(false);
 const selectedTrabajadorId = ref<string | null>(null);
 const selectedTrabajadorNombre = ref<string | null>(null);
 
@@ -64,6 +66,10 @@ const deleteTrabajadorById = async (empresaId: string, centroTrabajoId: string, 
   }
 };
 
+const toggleImportModal = () => {
+    showImportModal.value = !showImportModal.value;
+}
+
 watch(
     () => route.params, // Observamos los parámetros idEmpresa e idCentroTrabajo
     (newParams) => {
@@ -97,10 +103,14 @@ watch(
         @confirmDelete="deleteTrabajadorById" 
       />
     </Transition>
+
+    <Transition appear name="fade">
+      <ModalCargaMasiva v-if="showImportModal" @closeModal="toggleImportModal" />
+    </Transition>
   
     <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-8">
       <GreenButton text="Nuevo Trabajador +" @click="openModal(null)"/>
-      <GreenButton text="Carga Masiva" />
+      <GreenButton text="Carga Masiva" @click="toggleImportModal"/>
       <GreenButton text="Exportar a Excel" />
     </div>
 
