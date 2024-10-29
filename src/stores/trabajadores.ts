@@ -117,6 +117,25 @@ export const useTrabajadoresStore = defineStore('trabajadores', () => {
         }
     }
 
+    async function exportTrabajadores(empresaId: string, centroTrabajoId: string) {
+        try {
+            const response = await TrabajadoresAPI.exportTrabajadores(empresaId, centroTrabajoId);
+    
+            // Crear una URL para el archivo Blob
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'trabajadores.xlsx'); // nombre del archivo
+            document.body.appendChild(link);
+            link.click();
+    
+            // Limpiar el objeto URL
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error al exportar los trabajadores", error);
+        }
+    }
+
     return { 
         loading, 
         loadingModal,
@@ -129,6 +148,7 @@ export const useTrabajadoresStore = defineStore('trabajadores', () => {
         createTrabajador,
         updateTrabajador,
         importTrabajadores,
-        deleteTrabajadorById
+        deleteTrabajadorById,
+        exportTrabajadores
     }
 })

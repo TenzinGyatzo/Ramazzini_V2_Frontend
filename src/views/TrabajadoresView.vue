@@ -86,6 +86,16 @@ watch(
     { immediate: true } // Esto asegura que el watch se ejecute inmediatamente con el valor actual
   );
 
+  const exportTrabajadores = async () => {
+      try {
+      const empresaId = String(route.params.idEmpresa);
+      const centroTrabajoId = String(route.params.idCentroTrabajo);
+      await trabajadores.exportTrabajadores(empresaId, centroTrabajoId);
+    } catch (error) {
+      console.error('Error al exportar los trabajadores', error);
+    }
+  };
+
 </script>
 
 <template>  
@@ -111,7 +121,7 @@ watch(
     <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-8">
       <GreenButton text="Nuevo Trabajador +" @click="openModal(null)"/>
       <GreenButton text="Carga Masiva" @click="toggleImportModal"/>
-      <GreenButton text="Exportar a Excel" />
+      <GreenButton text="Exportar a Excel" @click="exportTrabajadores"/>
     </div>
 
     <Transition appear mode="out-in" name="slide-up">

@@ -24,5 +24,15 @@ export default {
 
     deleteTrabajadorById(empresaId: string, centroTrabajoId: string, trabajadorId: string) {
         return api.delete(`/${empresaId}/${centroTrabajoId}/eliminar-trabajador/${trabajadorId}`)
-    }
+    },
+
+exportTrabajadores(empresaId: string, centroTrabajoId: string) {
+    return api.get(`/${empresaId}/${centroTrabajoId}/exportar-trabajadores`, {
+        headers: {
+            'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        },
+        responseType: 'blob'
+    });
+}
+
 }
