@@ -91,11 +91,17 @@ const closeModal = () => {
           </FormKit>
 
         <div class="grid grid-cols-2 gap-4">
-            <button
-                class="text-xl mt-2 w-full rounded-lg bg-white font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-800 hover:bg-gray-800 hover:text-white p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg flex-1"
+            <a 
+              href="/template/Plantilla para Importar Trabajadores.xlsx"
+              download="Plantilla para Importar Trabajadores.xlsx"
             >
-              Descargar Plantilla
-            </button>
+              <button
+                  class="text-xl mt-2 w-full rounded-lg bg-white font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-800 hover:bg-gray-800 hover:text-white p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg flex-1"
+              >
+                Descargar Plantilla
+              </button>
+            </a>
+
             <button 
               class="text-xl mt-2 w-full rounded-lg bg-white font-semibold text-gray-800 shadow-sm ring-2 ring-inset ring-gray-300 hover:bg-gray-100 p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg flex-1"
               @click="closeModal"
