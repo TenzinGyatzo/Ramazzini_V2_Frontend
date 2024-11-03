@@ -1,29 +1,25 @@
 <script lang="ts" setup>
-    import { useRoute, useRouter, RouterLink } from 'vue-router';
-    import { computed } from 'vue';
-    import { useSidebarStore } from '../../stores/sidebar';
+import { useRoute, useRouter, RouterLink } from 'vue-router';
+import { computed } from 'vue';
+import { useSidebarStore } from '../../stores/sidebar';
 
-    const sidebar = useSidebarStore();
-    const router = useRouter();
+const sidebar = useSidebarStore();
+const router = useRouter();
 
-    const props = defineProps({
-        to: { type: [String, Object], required: true },
-        icon: { type: String, required: true },
-    })
+const props = defineProps({
+    to: { type: [String, Object], required: true },
+    icon: { type: String, required: true },
+});
 
-    const route = useRoute();
-    const isActive = computed(() => {
-        const resolved = router.resolve(props.to); // Resuelve la ruta a partir del 'to'
-        return resolved.path === route.path;
-    });
+const route = useRoute();
+const isActive = computed(() => {
+    const resolved = router.resolve(props.to); // Resuelve la ruta a partir del 'to'
+    return resolved.path === route.path;
+});
 </script>
 
 <template>
-    <RouterLink
-        :to="to"
-        class="link text-lg"
-        :class="{ 'active': isActive }"
-    >
+    <RouterLink :to="to" class="link text-lg" :class="{ 'active': isActive }">
         <i class="icon" :class="icon"></i>
         <Transition appear mode="out-in" name="fade">
             <span v-if="!sidebar.collapsed">
@@ -49,7 +45,7 @@
 .link {
     display: flex;
     align-items: center;
-    
+
     cursor: pointer;
     position: relative;
     font-weight: 400;

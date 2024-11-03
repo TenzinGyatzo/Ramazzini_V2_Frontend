@@ -46,8 +46,8 @@ onUnmounted(() => {
     <table id="customTable" class="table-auto w-full border-collapse">
       <thead>
         <tr>
-          <th >#</th>
-          <th >Nombre</th>
+          <th>#</th>
+          <th>Nombre</th>
           <th>Fecha Registro</th>
           <th>Edad</th>
           <th>Sexo</th>
@@ -70,71 +70,94 @@ onUnmounted(() => {
 
 <style scoped>
 .table-container {
-  overflow-x: auto; /* Permite scroll horizontal solo si es necesario */
+  overflow-x: auto;
+  /* Permite scroll horizontal solo si es necesario */
 }
 
 #customTable {
   width: 100%;
-  table-layout: auto; /* Mantén el comportamiento automático para el layout */
+  table-layout: auto;
+  /* Mantén el comportamiento automático para el layout */
 }
-
 </style>
 
 
 <style>
 @import 'datatables.net-dt';
 
-table.dataTable th.dt-type-numeric, table.dataTable th.dt-type-date, table.dataTable td.dt-type-numeric, table.dataTable td.dt-type-date {
-    text-align: left;
+table.dataTable th.dt-type-numeric,
+table.dataTable th.dt-type-date,
+table.dataTable td.dt-type-numeric,
+table.dataTable td.dt-type-date {
+  text-align: left;
 }
 
-table.dataTable > tbody > tr > th, table.dataTable > tbody > tr > td {
-    padding: 4px 6px;
+table.dataTable>tbody>tr>th,
+table.dataTable>tbody>tr>td {
+  padding: 4px 6px;
 }
 
-table.dataTable > tbody > tr.selected > * {
+table.dataTable>tbody>tr.selected>* {
   box-shadow: inset 0 0 0 9999px #10b981;
   color: rgb(255, 255, 255);
 }
 
-div.dt-container .dt-paging .dt-paging-button.current, div.dt-container .dt-paging .dt-paging-button.current:hover {
-  color: white !important; 
+div.dt-container .dt-paging .dt-paging-button.current,
+div.dt-container .dt-paging .dt-paging-button.current:hover {
+  color: white !important;
   border: 1px solid #15803d;
   background-color: #059669;
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #10b981), color-stop(100%, #059669)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, #10b981 0%, #059669 100%); /* Chrome10+,Safari5.1+ */
-  background: -moz-linear-gradient(top, #10b981 0%, #059669 100%); /* FF3.6+ */
-  background: -ms-linear-gradient(top, #10b981 0%, #059669 100%); /* IE10+ */
-  background: -o-linear-gradient(top, #10b981 0%, #059669 100%); /* Opera 11.10+ */
-  background: linear-gradient(to bottom, #10b981 0%, #059669 100%); /* W3C */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #10b981), color-stop(100%, #059669));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #10b981 0%, #059669 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -moz-linear-gradient(top, #10b981 0%, #059669 100%);
+  /* FF3.6+ */
+  background: -ms-linear-gradient(top, #10b981 0%, #059669 100%);
+  /* IE10+ */
+  background: -o-linear-gradient(top, #10b981 0%, #059669 100%);
+  /* Opera 11.10+ */
+  background: linear-gradient(to bottom, #10b981 0%, #059669 100%);
+  /* W3C */
 }
 
 div.dt-container .dt-paging .dt-paging-button:hover {
   color: inherit !important;
   border: 1px solid #047857;
   background-color: rgba(0, 255, 21, 0.05) !important;
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(230, 230, 230, 0.05)), color-stop(100%, rgba(0, 0, 0, 0.05))); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, rgba(230, 230, 230, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%); /* Chrome10+,Safari5.1+ */
-  background: -moz-linear-gradient(top, rgba(230, 230, 230, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%); /* FF3.6+ */
-  background: -ms-linear-gradient(top, rgba(230, 230, 230, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%); /* IE10+ */
-  background: -o-linear-gradient(top, rgba(230, 230, 230, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%); /* Opera 11.10+ */
-  background: linear-gradient(to bottom, rgba(230, 230, 230, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%); /* W3C */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(230, 230, 230, 0.05)), color-stop(100%, rgba(0, 0, 0, 0.05)));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, rgba(230, 230, 230, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -moz-linear-gradient(top, rgba(230, 230, 230, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%);
+  /* FF3.6+ */
+  background: -ms-linear-gradient(top, rgba(230, 230, 230, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%);
+  /* IE10+ */
+  background: -o-linear-gradient(top, rgba(230, 230, 230, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%);
+  /* Opera 11.10+ */
+  background: linear-gradient(to bottom, rgba(230, 230, 230, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%);
+  /* W3C */
 }
 
 div.dt-container .dt-paging .dt-paging-button:active {
   outline: none;
   background-color: #059669;
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #059669), color-stop(100%, #166534)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, #059669 0%, #166534 100%); /* Chrome10+,Safari5.1+ */
-  background: -moz-linear-gradient(top, #059669 0%, #166534 100%); /* FF3.6+ */
-  background: -ms-linear-gradient(top, #059669 0%, #166534 100%); /* IE10+ */
-  background: -o-linear-gradient(top, #059669 0%, #166534 100%); /* Opera 11.10+ */
-  background: linear-gradient(to bottom, #059669 0%, #166534 100%); /* W3C */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #059669), color-stop(100%, #166534));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #059669 0%, #166534 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -moz-linear-gradient(top, #059669 0%, #166534 100%);
+  /* FF3.6+ */
+  background: -ms-linear-gradient(top, #059669 0%, #166534 100%);
+  /* IE10+ */
+  background: -o-linear-gradient(top, #059669 0%, #166534 100%);
+  /* Opera 11.10+ */
+  background: linear-gradient(to bottom, #059669 0%, #166534 100%);
+  /* W3C */
   box-shadow: inset 0 0 3px #064e3b !important;
 }
 
 .dtfc-top-blocker {
   display: none !important;
 }
-
 </style>

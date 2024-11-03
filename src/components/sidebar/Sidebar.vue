@@ -1,61 +1,57 @@
 <script lang="ts" setup>
-  import { ref, watch } from 'vue';
-  import SidebarLink from './SidebarLink.vue';
-  import { useSidebarStore } from '@/stores/sidebar';
-  import { useEmpresasStore } from '@/stores/empresas';
-  import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
-  import { useTrabajadoresStore } from '@/stores/trabajadores';
-  import { onMounted } from 'vue';
-  import { useRoute } from 'vue-router';
+import { ref, watch } from 'vue';
+import SidebarLink from './SidebarLink.vue';
+import { useSidebarStore } from '@/stores/sidebar';
+import { useEmpresasStore } from '@/stores/empresas';
+import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
+import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 
-  const route = useRoute();
-  const sidebar = useSidebarStore();
-  const empresas = useEmpresasStore();
-  const centrosTrabajo = useCentrosTrabajoStore();
-  const trabajadores = useTrabajadoresStore();
-  
-  const isMounted = ref(false);
-  const temporalHide = true;
-  
-  onMounted(() => {
-    isMounted.value = true;
-  })
+const route = useRoute();
+const sidebar = useSidebarStore();
+const empresas = useEmpresasStore();
+const centrosTrabajo = useCentrosTrabajoStore();
+const trabajadores = useTrabajadoresStore();
 
-  watch(() => route.params, (newParams) => {
-    if (newParams.idEmpresa && newParams.idEmpresa !== empresas.currentEmpresa?._id) {
-      empresas.fetchEmpresaById(String(newParams.idEmpresa));
-    }
-    if (newParams.idCentroTrabajo) {
-      centrosTrabajo.fetchCentroTrabajoById(String(newParams.idEmpresa), String(newParams.idCentroTrabajo));
-    }
-    if (newParams.idTrabajador) {
-      trabajadores.fetchTrabajadorById(String(newParams.idEmpresa), String(newParams.idCentroTrabajo), String(newParams.idTrabajador));
-    }
-  });
+const isMounted = ref(false);
+const temporalHide = true;
 
-  watch(() => empresas.currentEmpresa, (newEmpresa, oldEmpresa) => {
-    if (newEmpresa?._id !== oldEmpresa?._id) {
-      // Si currentEmpresa cambia, reinicia centrosTrabajo y trabajadores
-      centrosTrabajo.resetCurrentCentroTrabajo();
-      trabajadores.resetCurrentTrabajador();
-    }
-  });
+onMounted(() => {
+  isMounted.value = true;
+});
 
-  watch(() => centrosTrabajo.currentCentroTrabajo, (newCentro, oldCentro) => {
-    if (newCentro?._id !== oldCentro?._id) {
-      // Si currentCentroTrabajo cambia, reinicia trabajadores
-      trabajadores.resetCurrentTrabajador();
-    }
-  });
+watch(() => route.params, (newParams) => {
+  if (newParams.idEmpresa && newParams.idEmpresa !== empresas.currentEmpresa?._id) {
+    empresas.fetchEmpresaById(String(newParams.idEmpresa));
+  }
+  if (newParams.idCentroTrabajo) {
+    centrosTrabajo.fetchCentroTrabajoById(String(newParams.idEmpresa), String(newParams.idCentroTrabajo));
+  }
+  if (newParams.idTrabajador) {
+    trabajadores.fetchTrabajadorById(String(newParams.idEmpresa), String(newParams.idCentroTrabajo), String(newParams.idTrabajador));
+  }
+});
+
+watch(() => empresas.currentEmpresa, (newEmpresa, oldEmpresa) => {
+  if (newEmpresa?._id !== oldEmpresa?._id) {
+    // Si currentEmpresa cambia, reinicia centrosTrabajo y trabajadores
+    centrosTrabajo.resetCurrentCentroTrabajo();
+    trabajadores.resetCurrentTrabajador();
+  }
+});
+
+watch(() => centrosTrabajo.currentCentroTrabajo, (newCentro, oldCentro) => {
+  if (newCentro?._id !== oldCentro?._id) {
+    // Si currentCentroTrabajo cambia, reinicia trabajadores
+    trabajadores.resetCurrentTrabajador();
+  }
+});
 
 </script>
 
 <template>
-  <div 
-    class="sidebar cursor-pointer" 
-    :style="{ width: sidebar.sidebarWidth}"
-    @click="sidebar.toggleSidebar()"
-  >
+  <div class="sidebar cursor-pointer" :style="{ width: sidebar.sidebarWidth }" @click="sidebar.toggleSidebar()">
     <h1 class="text-2xl text-center my-5" :class="{ 'text-xl': sidebar.collapsed }">
       <span v-if="sidebar.collapsed">
         <div>N</div>
@@ -69,65 +65,44 @@
       </div>
     </h1>
     <Transition appear name="enter-left-exit-bounce">
-      <SidebarLink
-        v-if="route.path !== '/'"
-        to="/empresas" 
-        icon="fas fa-industry" 
-        :class="{ 'fade-in': isMounted }"
-        @click.stop
-      >
+      <SidebarLink v-if="route.path !== '/'" to="/empresas" icon="fas fa-industry" :class="{ 'fade-in': isMounted }"
+        @click.stop>
         <p>Empresas</p>
         <p class="text-sm">Ver todas las empresas</p>
       </SidebarLink>
     </Transition>
 
     <Transition appear name="enter-left-exit-bounce">
-      <SidebarLink 
-        v-if="empresas.currentEmpresaId" 
-        :to="{ name: 'centros-trabajo', params: { idEmpresa: empresas.currentEmpresaId } }"
-        icon="fas fa-warehouse"
-        class="leading-5" 
-        @click.stop
-      >
+      <SidebarLink v-if="empresas.currentEmpresaId"
+        :to="{ name: 'centros-trabajo', params: { idEmpresa: empresas.currentEmpresaId } }" icon="fas fa-warehouse"
+        class="leading-5" @click.stop>
         <p>{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
-        <p class="text-xs" >{{ empresas.currentEmpresa?.razonSocial || 'Nombre no disponible' }}</p>
+        <p class="text-xs">{{ empresas.currentEmpresa?.razonSocial || 'Nombre no disponible' }}</p>
       </SidebarLink>
     </Transition>
 
     <Transition name="enter-left-exit-bounce">
-      <SidebarLink 
-        v-if="centrosTrabajo.currentCentroTrabajoId" 
-        :to="{
-          name: 'trabajadores',
-          params: {
-            idEmpresa: empresas.currentEmpresaId || '',
-            idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || ''
-          }
-        }" 
-        icon="fas fa-users" 
-        class="leading-5"
-        @click.stop
-      >
+      <SidebarLink v-if="centrosTrabajo.currentCentroTrabajoId" :to="{
+        name: 'trabajadores',
+        params: {
+          idEmpresa: empresas.currentEmpresaId || '',
+          idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || ''
+        }
+      }" icon="fas fa-users" class="leading-5" @click.stop>
         <p>{{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}</p>
         <p class="text-xs">{{ centrosTrabajo.currentCentroTrabajo?.direccionCentro }}</p>
       </SidebarLink>
     </Transition>
 
     <Transition name="enter-left-exit-bounce">
-      <SidebarLink 
-        v-if="trabajadores.currentTrabajadorId" 
-        :to="{
-          name: 'expediente-medico',
-          params: {
-            idEmpresa: empresas.currentEmpresaId || '',
-            idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || '',
-            idTrabajador: trabajadores.currentTrabajadorId || ''
-          }
-        }" 
-        icon="fa-regular fa-folder-open" 
-        class="leading-5"
-        @click.stop
-      >
+      <SidebarLink v-if="trabajadores.currentTrabajadorId" :to="{
+        name: 'expediente-medico',
+        params: {
+          idEmpresa: empresas.currentEmpresaId || '',
+          idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || '',
+          idTrabajador: trabajadores.currentTrabajadorId || ''
+        }
+      }" icon="fa-regular fa-folder-open" class="leading-5" @click.stop>
         <p>{{ trabajadores.currentTrabajador?.nombre }}</p>
         <p class="text-xs">Expediente Médico</p>
       </SidebarLink>
@@ -140,11 +115,8 @@
       </SidebarLink>
     </Transition>
 
-    <span
-      class="collapse-icon cursor-pointer"
-      :class="{ 'rotate-180': sidebar.collapsed }"
-      @click.stop="sidebar.toggleSidebar()"
-    >
+    <span class="collapse-icon cursor-pointer" :class="{ 'rotate-180': sidebar.collapsed }"
+      @click.stop="sidebar.toggleSidebar()">
       <i class="fas fa-angle-double-left"></i>
     </span>
   </div>
@@ -174,13 +146,16 @@
 .enter-left-exit-bounce-leave-active {
   animation: enter-left-exit-bounce-in 0.5s reverse;
 }
+
 @keyframes enter-left-exit-bounce-in {
   0% {
     transform: scale(0);
   }
+
   50% {
     transform: scale(1.25);
   }
+
   100% {
     transform: scale(1);
   }
@@ -218,5 +193,4 @@
   transform: rotate(180deg);
   transition: 0.2s linear;
 }
-
 </style>

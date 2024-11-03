@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterLink, RouterView } from 'vue-router';
 import Sidebar from './components/sidebar/Sidebar.vue';
 import { useSidebarStore } from './stores/sidebar';
 
@@ -8,7 +8,7 @@ const sidebar = useSidebarStore();
 
 <template>
   <Sidebar />
-  <div :style="{ 'margin-left': sidebar.isSmallScreen ? sidebar.sidebarWidthCollapsed : sidebar.sidebarWidth}">
+  <div :style="{ 'margin-left': sidebar.isSmallScreen ? sidebar.sidebarWidthCollapsed : sidebar.sidebarWidth }">
     <RouterView />
   </div>
 </template>

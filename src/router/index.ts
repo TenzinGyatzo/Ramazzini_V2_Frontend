@@ -1,43 +1,42 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import LayOut from '../views/LayOut.vue'
+import { createRouter, createWebHistory } from "vue-router";
+import LayOut from "../views/LayOut.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'inicio',
+      path: "/",
+      name: "inicio",
       component: LayOut,
       children: [
         {
-          path: 'empresas',
-          name: 'empresas',
-          component: () => import('../views/EmpresasView.vue')
+          path: "empresas",
+          name: "empresas",
+          component: () => import("../views/EmpresasView.vue"),
         },
         {
-          path: '/empresas/:idEmpresa/centros-trabajo',
-          name: 'centros-trabajo',
-          component: () => import('../views/CentrosTrabajoView.vue')
+          path: "/empresas/:idEmpresa/centros-trabajo",
+          name: "centros-trabajo",
+          component: () => import("../views/CentrosTrabajoView.vue"),
         },
         {
-          path: '/empresas/:idEmpresa/centros-trabajo/:idCentroTrabajo/trabajadores',
-          name: 'trabajadores',
-          component: () => import('../views/TrabajadoresView.vue')
+          path: "/empresas/:idEmpresa/centros-trabajo/:idCentroTrabajo/trabajadores",
+          name: "trabajadores",
+          component: () => import("../views/TrabajadoresView.vue"),
         },
         {
-          path: '/empresas/:idEmpresa/centros-trabajo/:idCentroTrabajo/expediente-medico/:idTrabajador',
-          name: 'expediente-medico',
-          component: () => import('../views/ExpedienteMedicoView.vue')
+          path: "/empresas/:idEmpresa/centros-trabajo/:idCentroTrabajo/expediente-medico/:idTrabajador",
+          name: "expediente-medico",
+          component: () => import("../views/ExpedienteMedicoView.vue"),
         },
         {
-          path: '/historia-clinica',
-          name: 'historia-clinica',
-          component: () => import('../views/InformeView.vue')
+          path: "/historia-clinica",
+          name: "historia-clinica",
+          component: () => import("../views/InformeView.vue"),
         },
-
-      ]
+      ],
     },
-  ]
-})
+  ],
+});
 
-export default router
+export default router;
