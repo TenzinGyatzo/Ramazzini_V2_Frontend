@@ -7,12 +7,14 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import GreenButton from '@/components/GreenButton.vue';
 import { calcularEdad } from '@/helpers/dates';
 import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const route = useRoute();
 const router = useRouter();
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
+const documentos = useDocumentosStore();
 
 watch(
   () => route.params, // Observamos los parámetros idEmpresa e idCentroTrabajo
@@ -32,6 +34,17 @@ watch(
   },
   { immediate: true } // Esto asegura que el watch se ejecute inmediatamente con el valor actual
 );
+
+onMounted(() => {
+  const trabajadorId = String(route.params.idTrabajador);
+  documentos.fetchAntidopings(trabajadorId);
+  documentos.fetchAptitudes(trabajadorId);
+  documentos.fetchCertificados(trabajadorId);
+  documentos.fetchDocumentosExternos(trabajadorId);
+  documentos.fetchExamenesVista(trabajadorId);
+  documentos.fetchExploracionesFisicas(trabajadorId);
+  documentos.fetchHistoriasClinicas(trabajadorId);
+});
 
 </script>
 
@@ -55,11 +68,15 @@ watch(
     </Transition>
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-      <GrupoDocumentos />
-      <GrupoDocumentos />
-      <GrupoDocumentos />
-      <GrupoDocumentos />
-      <GrupoDocumentos />
+      <GrupoDocumentos 
+          :antidopings="documentos.antidopings"
+          :aptitudes="documentos.aptitudes"
+          :certificados="documentos.certificados"
+          :documentosExternos="documentos.documentosExternos"
+          :examenesVista="documentos.examenesVista"
+          :exploracionesFisicas="documentos.exploracionesFisicas"
+          :historiasClinicas="documentos.historiasClinicas"
+      />
     </div>
 
   </div>

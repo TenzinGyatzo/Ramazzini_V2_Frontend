@@ -9,7 +9,7 @@ function convertirFechaISOaDDMMYYYY(dateString: string): string {
   const mes = String(fecha.getMonth() + 1).padStart(2, "0"); // Los meses empiezan en 0, por eso se suma 1
   const año = fecha.getFullYear(); // Obtiene el año completo
 
-  return `${dia}/${mes}/${año}`;
+  return `${dia}-${mes}-${año}`;
 }
 
 function convertirFechaISOaYYYYMMDD(dateString: string): string {
@@ -32,9 +32,9 @@ function convertirFechaISOaYYYYMMDD(dateString: string): string {
 
 function calcularEdad(dateString: string): number {
   const fechaNacimiento = new Date(dateString);
-  if (isNaN(fechaNacimiento.getTime())) {
-    throw new Error("La fecha proporcionada no es válida.");
-  }
+  // if (isNaN(fechaNacimiento.getTime())) {
+  //   throw new Error("La fecha proporcionada no es válida.");
+  // }
 
   const hoy = new Date().getTime();
   const edad = Math.floor(

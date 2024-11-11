@@ -1,5 +1,15 @@
 <script setup>
+import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
 
+defineProps({
+    antidoping: [Object, String],
+    aptitud: [Object, String],
+    certificado: [Object, String],
+    documentoExterno: [Object, String],
+    examenVista: [Object, String],
+    exploracionFisica: [Object, String],
+    historiaClinica: [Object, String]
+});
 </script>
 
 <template>
@@ -9,9 +19,40 @@
             <div class="mx-2">
                 <input class="my-1 transform scale-150" type="checkbox" name="" id="">
             </div>
-            <div class="my-1 mx-1">
-                <p class="leading-5 text-lg px-1 font-medium">{Tipo de Documento}</p>
-                <p class="leading-5 px-1">{fecha}</p>
+            <div v-if="typeof antidoping === 'object'" class="my-1 mx-1">
+                <p class="leading-5 text-lg px-1 font-medium">Antidoping</p>
+                <p class="leading-5 px-1">{{ convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping) }}</p>
+                <p class="leading-5 px-1">{{ antidoping._id }}</p>
+            </div>
+            <div v-if="typeof aptitud === 'object'" class="my-1 mx-1">
+                <p class="leading-5 text-lg px-1 font-medium">Aptitud al Puesto</p>
+                <p class="leading-5 px-1">{{ convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto) }}</p>
+                <p class="leading-5 px-1">{{ aptitud._id }}</p>
+            </div>
+            <div v-if="typeof certificado === 'object'" class="my-1 mx-1">
+                <p class="leading-5 text-lg px-1 font-medium">Certificado</p>
+                <p class="leading-5 px-1">{{ convertirFechaISOaDDMMYYYY(certificado.fechaCertificado) }}</p>
+                <p class="leading-5 px-1">{{ certificado._id }}</p>
+            </div>
+            <div v-if="typeof documentoExterno === 'object'" class="my-1 mx-1">
+                <p class="leading-5 text-lg px-1 font-medium">{{ documentoExterno.tipoDocumento }}</p>
+                <p class="leading-5 px-1">{{ convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento) }}</p>
+                <p class="leading-5 px-1">{{ documentoExterno._id }}</p>
+            </div>
+            <div v-if="typeof examenVista === 'object'" class="my-1 mx-1">
+                <p class="leading-5 text-lg px-1 font-medium">Examen de la Vista</p>
+                <p class="leading-5 px-1">{{ convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista) }}</p>
+                <p class="leading-5 px-1">{{ examenVista._id }}</p>
+            </div>
+            <div v-if="typeof exploracionFisica === 'object'" class="my-1 mx-1">
+                <p class="leading-5 text-lg px-1 font-medium">Exploración Física</p>
+                <p class="leading-5 px-1">{{ convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica) }}</p>
+                <p class="leading-5 px-1">{{ exploracionFisica._id }}</p>
+            </div>
+            <div v-if="typeof historiaClinica === 'object'" class="my-1 mx-1">
+                <p class="leading-5 text-lg px-1 font-medium">Historia Clínica</p>
+                <p class="leading-5 px-1">{{ convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica) }}</p>
+                <p class="leading-5 px-1">{{ historiaClinica._id }}</p>
             </div>
         </div>
         <div class="flex gap-3 md:gap-4 lg:gap-5 mx-2">
