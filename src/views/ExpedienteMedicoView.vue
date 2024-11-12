@@ -25,7 +25,6 @@ watch(
       empresas.fetchEmpresaById(String(idEmpresa));
       centrosTrabajo.fetchCentroTrabajoById(String(idEmpresa), String(idCentroTrabajo));
       trabajadores.fetchTrabajadorById(String(idEmpresa), String(idCentroTrabajo), String(idTrabajador));
-      // Aquí se debe hacer el fetch de los informes médicos del trabajador
 
       empresas.currentEmpresaId = String(idEmpresa); // Seteamos el id de la empresa actual en el store
       centrosTrabajo.currentCentroTrabajoId = String(idCentroTrabajo); // Seteamos el id del centro de trabajo actual en el store
@@ -37,13 +36,7 @@ watch(
 
 onMounted(() => {
   const trabajadorId = String(route.params.idTrabajador);
-  documentos.fetchAntidopings(trabajadorId);
-  documentos.fetchAptitudes(trabajadorId);
-  documentos.fetchCertificados(trabajadorId);
-  documentos.fetchDocumentosExternos(trabajadorId);
-  documentos.fetchExamenesVista(trabajadorId);
-  documentos.fetchExploracionesFisicas(trabajadorId);
-  documentos.fetchHistoriasClinicas(trabajadorId);
+  documentos.fetchAllDocuments(trabajadorId);
 });
 
 </script>
@@ -67,17 +60,22 @@ onMounted(() => {
       </div>
     </Transition>
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-      <GrupoDocumentos 
-          :antidopings="documentos.antidopings"
-          :aptitudes="documentos.aptitudes"
-          :certificados="documentos.certificados"
-          :documentosExternos="documentos.documentosExternos"
-          :examenesVista="documentos.examenesVista"
-          :exploracionesFisicas="documentos.exploracionesFisicas"
-          :historiasClinicas="documentos.historiasClinicas"
-      />
-    </div>
+    <Transition appear mode="out-in" name="slide-up">
+      <div v-if="documentos.loading">
+        <h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1>
+      </div>
+      <div v-else>
+        <div v-if="documentos.documentsByYear && Object.keys(documentos.documentsByYear).length"
+          class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))" :key="year">
+            <GrupoDocumentos :documents="documentos.documentsByYear[year]" :year="String(year)" />
+          </div>
+        </div>
+        <h1 v-else
+          class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700">Esta
+          trabajador aun no tiene documentos registrados</h1>
+      </div>
+    </Transition>
 
   </div>
 </template>

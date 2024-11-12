@@ -3,134 +3,148 @@ import { ref } from "vue";
 import DocumentosAPI from "@/api/DocumentosAPI";
 import type { Antidoping, Aptitud, Certificado, DocumentoExterno, ExamenVista, ExploracionFisica, HistoriaClinica } from "@/interfaces/documentos.inteface";
 
-function groupDocumentsByYear<T>(
-    documentosArray: T[],
-    campoFecha: keyof T // Permite usar una clave específica en cada interfaz sin restricciones adicionales
-): { [year: string]: T[] } {
-    const documentosAgrupados: { [year: string]: T[] } = {};
-
-    documentosArray.forEach((documento) => {
-        const fecha = documento[campoFecha] as unknown as Date; // Convierte temporalmente a Date
-        const year = new Date(fecha).getFullYear();
-        if (!documentosAgrupados[year]) {
-            documentosAgrupados[year] = [];
-        }
-        documentosAgrupados[year].push(documento);
-    });
-
-    return documentosAgrupados;
-}
-
+export type DocumentsByYear = {
+    [year: string]: {
+        antidopings?: Antidoping[];
+        aptitudes?: Aptitud[];
+        certificados?: Certificado[];
+        documentosExternos?: DocumentoExterno[];
+        examenesVista?: ExamenVista[];
+        exploracionesFisicas?: ExploracionFisica[];
+        historiasClinicas?: HistoriaClinica[];
+    };
+};
 
 export const useDocumentosStore = defineStore("documentos", () => {
-    const antidopings = ref<{ [year: string]: Antidoping[] }>({});
-    const aptitudes = ref<{ [year: string]: Aptitud[] }>({});
-    const certificados = ref<{ [year: string]: Certificado[] }>({});
-    const documentosExternos = ref<{ [year: string]: DocumentoExterno[] }>({});
-    const examenesVista = ref<{ [year: string]: ExamenVista[] }>({});
-    const exploracionesFisicas = ref<{ [year: string]: ExploracionFisica[] }>({});
-    const historiasClinicas = ref<{ [year: string]: HistoriaClinica[] }>({});
-
+    const documentsByYear = ref<DocumentsByYear>({});
     const loading = ref(true);
 
-    async function fetchAntidopings(trabajadorId: string) {
-        try {
-            loading.value = true;
-            const { data } = await DocumentosAPI.getAntidopings(trabajadorId);
-            antidopings.value = groupDocumentsByYear<Antidoping>(data, 'fechaAntidoping');
-        } catch (error) {
-            console.log(error);
-        } finally {
-            loading.value = false;
-        }
-    }
+    async function fetchAllDocuments(trabajadorId: string) {
 
-    async function fetchAptitudes(trabajadorId: string) {
         try {
             loading.value = true;
-            const { data } = await DocumentosAPI.getAptitudes(trabajadorId);
-            aptitudes.value = groupDocumentsByYear<Aptitud>(data, 'fechaAptitudPuesto');
-        } catch (error) {
-            console.log(error);
-        } finally {
-            loading.value = false;
-        }
-    }
 
-    async function fetchCertificados(trabajadorId: string) {
-        try {
-            loading.value = true;
-            const { data } = await DocumentosAPI.getCertificados(trabajadorId);
-            certificados.value = groupDocumentsByYear<Certificado>(data, 'fechaCertificado');
-        } catch (error) {
-            console.log(error);
-        } finally {
-            loading.value = false;
-        }
-    }
+            documentsByYear.value = {};
 
-    async function fetchDocumentosExternos(trabajadorId: string) {
-        try {
-            loading.value = true;
-            const { data } = await DocumentosAPI.getDocumentosExternos(trabajadorId);
-            documentosExternos.value = groupDocumentsByYear<DocumentoExterno>(data, 'fechaDocumento');
-        } catch (error) {
-            console.log(error);
-        } finally {
-            loading.value = false;
-        }
-    }
+            const [antidopings, aptitudes, certificados, documentosExternos, examenesVista, exploracionesFisicas, historiasClinicas] = await Promise.all([
+                DocumentosAPI.getAntidopings(trabajadorId),
+                DocumentosAPI.getAptitudes(trabajadorId),
+                DocumentosAPI.getCertificados(trabajadorId),
+                DocumentosAPI.getDocumentosExternos(trabajadorId),
+                DocumentosAPI.getExamenesVista(trabajadorId),
+                DocumentosAPI.getExploracionesFisicas(trabajadorId),
+                DocumentosAPI.getHistoriasClinicas(trabajadorId),
+            ])
 
-    async function fetchExamenesVista(trabajadorId: string) {
-        try {
-            loading.value = true;
-            const { data } = await DocumentosAPI.getExamenesVista(trabajadorId);
-            examenesVista.value = groupDocumentsByYear<ExamenVista>(data, 'fechaExamenVista');
-        } catch (error) {
-            console.log(error);
-        } finally {
-            loading.value = false;
-        }
-    }
+            function addAntidopingsByYear(data: Antidoping[]) {
+                data.forEach((documento) => {
+                    const year = new Date(documento.fechaAntidoping).getFullYear();
+                    if (!documentsByYear.value[year]) {
+                        documentsByYear.value[year] = {};
+                    }
+                    if (!documentsByYear.value[year].antidopings) {
+                        documentsByYear.value[year].antidopings = [];
+                    }
+                    documentsByYear.value[year].antidopings.push(documento);
+                });
+            }
+            
+            function addAptitudesByYear(data: Aptitud[]) {
+                data.forEach((documento) => {
+                    const year = new Date(documento.fechaAptitudPuesto).getFullYear();
+                    if (!documentsByYear.value[year]) {
+                        documentsByYear.value[year] = {};
+                    }
+                    if (!documentsByYear.value[year].aptitudes) {
+                        documentsByYear.value[year].aptitudes = [];
+                    }
+                    documentsByYear.value[year].aptitudes.push(documento);
+                });
+            }
+            
+            function addCertificadosByYear(data: Certificado[]) {
+                data.forEach((documento) => {
+                    const year = new Date(documento.fechaCertificado).getFullYear();
+                    if (!documentsByYear.value[year]) {
+                        documentsByYear.value[year] = {};
+                    }
+                    if (!documentsByYear.value[year].certificados) {
+                        documentsByYear.value[year].certificados = [];
+                    }
+                    documentsByYear.value[year].certificados.push(documento);
+                });
+            }
 
-    async function fetchExploracionesFisicas(trabajadorId: string) {
-        try {
-            loading.value = true;
-            const { data } = await DocumentosAPI.getExploracionesFisicas(trabajadorId);
-            exploracionesFisicas.value = groupDocumentsByYear<ExploracionFisica>(data, 'fechaExploracionFisica');
-        } catch (error) {
-            console.log(error);
-        } finally {
-            loading.value = false;
-        }
-    }
+            function addDocumentosExternosByYear(data: DocumentoExterno[]) {
+                data.forEach((documento) => {
+                    const year = new Date(documento.fechaDocumento).getFullYear();
+                    if (!documentsByYear.value[year]) {
+                        documentsByYear.value[year] = {};
+                    }
+                    if (!documentsByYear.value[year].documentosExternos) {
+                        documentsByYear.value[year].documentosExternos = [];
+                    }
+                    documentsByYear.value[year].documentosExternos.push(documento);
+                });
+            }
 
-    async function fetchHistoriasClinicas(trabajadorId: string) {
-        try {
-            loading.value = true;
-            const { data } = await DocumentosAPI.getHistoriasClinicas(trabajadorId);
-            historiasClinicas.value = groupDocumentsByYear<HistoriaClinica>(data, 'fechaHistoriaClinica');
+            function addExamenesVistaByYear(data: ExamenVista[]) {
+                data.forEach((documento) => {
+                    const year = new Date(documento.fechaExamenVista).getFullYear();
+                    if (!documentsByYear.value[year]) {
+                        documentsByYear.value[year] = {};
+                    }
+                    if (!documentsByYear.value[year].examenesVista) {
+                        documentsByYear.value[year].examenesVista = [];
+                    }
+                    documentsByYear.value[year].examenesVista.push(documento);
+                });
+            }
+
+            function addExploracionesFisicasByYear(data: ExploracionFisica[]) {
+                data.forEach((documento) => {
+                    const year = new Date(documento.fechaExploracionFisica).getFullYear();
+                    if (!documentsByYear.value[year]) {
+                        documentsByYear.value[year] = {};
+                    }
+                    if (!documentsByYear.value[year].exploracionesFisicas) {
+                        documentsByYear.value[year].exploracionesFisicas = [];
+                    }
+                    documentsByYear.value[year].exploracionesFisicas.push(documento);
+                });
+            }
+
+            function addHistoriasClinicasByYear(data: HistoriaClinica[]) {
+                data.forEach((documento) => {
+                    const year = new Date(documento.fechaHistoriaClinica).getFullYear();
+                    if (!documentsByYear.value[year]) {
+                        documentsByYear.value[year] = {};
+                    }
+                    if (!documentsByYear.value[year].historiasClinicas) {
+                        documentsByYear.value[year].historiasClinicas = [];
+                    }
+                    documentsByYear.value[year].historiasClinicas.push(documento);
+                });
+            }
+
+            addAntidopingsByYear(antidopings.data);
+            addAptitudesByYear(aptitudes.data);
+            addCertificadosByYear(certificados.data);
+            addDocumentosExternosByYear(documentosExternos.data);
+            addExamenesVistaByYear(examenesVista.data);
+            addExploracionesFisicasByYear(exploracionesFisicas.data);
+            addHistoriasClinicasByYear(historiasClinicas.data);
+
         } catch (error) {
-            console.log(error);
+            console.log(error)
         } finally {
-            loading.value = false;
+            loading.value = false
         }
     }
 
     return {
-        antidopings,
-        aptitudes,
-        certificados,
-        documentosExternos,
-        examenesVista,
-        exploracionesFisicas,
-        historiasClinicas,
-        fetchAntidopings,
-        fetchAptitudes,
-        fetchCertificados,
-        fetchDocumentosExternos,
-        fetchExamenesVista,
-        fetchExploracionesFisicas,
-        fetchHistoriasClinicas
+        loading,
+        documentsByYear,
+        fetchAllDocuments
     }
 })
