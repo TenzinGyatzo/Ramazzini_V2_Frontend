@@ -117,6 +117,10 @@ const exportTrabajadores = async () => {
     <GreenButton text="Nuevo Trabajador +" @click="openModal(null)" />
     <GreenButton text="Carga Masiva" @click="toggleImportModal" />
     <GreenButton text="Exportar a Excel" @click="exportTrabajadores" />
+    <button class="button rounded-lg" type="button" @click="exportTrabajadores">
+      <span class="button__text">Exportar a Excel</span>
+      <span class="button__icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" id="bdd05811-e15d-428c-bb53-8661459f9307" data-name="Layer 2" class="svg"><path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"></path><path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.99,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"></path><path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,0,1,2.5,0v8.738a.815.815,0,0,0,.814.814H31.436a.815.815,0,0,0,.814-.814V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"></path></svg></span>
+    </button>
   </div>
 
   <Transition appear mode="out-in" name="slide-up">
@@ -143,20 +147,20 @@ const exportTrabajadores = async () => {
           <td>{{ trabajador.hijos }}</td>
           <td>
             <button type="button"
-              class="bg-emerald-600 hover:bg-emerald-700 hover:scale-105 text-white rounded-lg px-2 py-1 transition-all duration-300 ease-in-out transform"
+              class="bg-emerald-600 text-white rounded-full px-2 py-1 transition-transform duration-300 ease-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-700 border-2 border-emerald-600"
               @click="router.push({ name: 'expediente-medico', params: { idEmpresa: empresas.currentEmpresaId, idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId, idTrabajador: trabajador._id } })">
               Expediente
             </button>
           </td>
           <td>
             <div class="flex gap-1">
-              <button type="button" class="hover:scale-110 transition-all duration-100 ease-in-out transform"
+              <button type="button" class="p-2 px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm"
                 @click="openModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo, trabajador)">
-                <i class="fa-regular fa-pen-to-square fa-lg" style="color: #696969"></i>
+                <i class="fa-regular fa-pen-to-square fa-lg"></i>
               </button>
-              <button type="button" class="hover:scale-110 transition-all duration-100 ease-in-out transform"
+              <button type="button" class="p-2 px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm"
                 @click="toggleDeleteModal(trabajador._id, trabajador.nombre)">
-                <i class="fa-solid fa-trash-can fa-lg" style="color: #c43117"></i>
+                <i class="fa-solid fa-trash-can fa-lg" ></i>
               </button>
             </div>
           </td>
@@ -168,3 +172,65 @@ const exportTrabajadores = async () => {
     </div>
   </Transition>
 </template>
+
+<style scoped>
+/* From Uiverse.io by andrew-demchenk0 */ 
+.button {
+  position: relative;
+  width: 202px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border: 1px solid #17795E;
+  background-color: #209978;
+  overflow: hidden;
+}
+
+.button, .button__icon, .button__text {
+  transition: all 0.3s;
+}
+
+.button .button__text {
+  transform: translateX(22px);
+  color: #fff;
+  font-weight: 600;
+}
+
+.button .button__icon {
+  position: absolute;
+  transform: translateX(160px);
+  height: 100%;
+  width: 39px;
+  background-color: #17795E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button .svg {
+  width: 20px;
+  fill: #fff;
+}
+
+.button:hover {
+  background: #17795E;
+}
+
+.button:hover .button__text {
+  color: transparent;
+}
+
+.button:hover .button__icon {
+  width: 148px;
+  transform: translateX(25px);
+}
+
+.button:active .button__icon {
+  background-color: #146c54;
+}
+
+.button:active {
+  border: 1px solid #146c54;
+}
+</style>

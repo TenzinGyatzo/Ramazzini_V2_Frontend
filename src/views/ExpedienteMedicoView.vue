@@ -5,6 +5,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import GreenButton from '@/components/GreenButton.vue';
+import SliderButton from '@/components/SliderButton.vue';
 import { calcularEdad } from '@/helpers/dates';
 import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
 import { useDocumentosStore } from '@/stores/documentos';
@@ -43,20 +44,26 @@ onMounted(() => {
 
 <template>
   <div class="p-5 grid gap-5">
-    <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-6">
+    <div class="flex flex-wrap flex-col md:flex-row justify-center gap-3 md:gap-6">
       <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Historia Clínica" />
-      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl"
-        text="Exploración Fisica" />
+      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Exploración Fisica" />
       <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Examen Vista" />
       <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Antidoping" />
       <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Aptitud" />
       <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Certificado" />
+      <div class="w-full flex justify-center">
+        <SliderButton class="align-self-center" text="Documento Externo" />
+      </div>
+
     </div>
     <Transition appear mode="out-in" name="slide-up">
-      <div v-if="trabajadores.currentTrabajador" class="w-full text-center items-center grid grid-cols-1 gap-1 mt-1">
-        <h1 class="text-3xl">{{ trabajadores.currentTrabajador?.nombre }}</h1>
-        <h1 class="text-xl">{{ calcularEdad(trabajadores.currentTrabajador?.fechaNacimiento) }} años - {{
-          trabajadores.currentTrabajador?.puesto }}</h1>
+      <div v-if="trabajadores.currentTrabajador" class="w-full text-center flex flex-col items-center gap-2 mt-4 p-4 border border-gray-200 rounded-lg shadow-md bg-gray-50">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-800">
+          {{ trabajadores.currentTrabajador?.nombre }}
+        </h1>
+        <h2 class="text-sm sm:text-base md:text-lg text-gray-500 italic">
+          {{ calcularEdad(trabajadores.currentTrabajador?.fechaNacimiento) }} años - {{ trabajadores.currentTrabajador?.puesto }}
+        </h2>
       </div>
     </Transition>
 
@@ -79,3 +86,4 @@ onMounted(() => {
 
   </div>
 </template>
+

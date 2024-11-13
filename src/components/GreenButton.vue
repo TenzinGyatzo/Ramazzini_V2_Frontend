@@ -1,26 +1,28 @@
 <script setup lang="ts">
 defineProps({
-    text: {
-        type: String,
-        required: true,
-        default: 'Button',
-    }
+  text: {
+    type: String,
+    required: true,
+    default: 'Button',
+  },
 });
 </script>
 
 <template>
-    <button type="button"
-        class="border-emerald text-lg sm:text-xl md:text-xl lg:text-2xl xl:text-2xl 2xl:text-2xl bg-emerald-600  text-white hover:font-medium hover:text-emerald-700 font-light rounded-lg px-4 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-50">
-        {{ text }}
-    </button>
+  <button type="button"
+    class="min-w-52 bg-emerald-600 text-white font-medium rounded-full px-6 py-2 text-xl transition-transform duration-300 ease-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-700 border-2 border-emerald-600">
+    {{ text }}
+  </button>
 </template>
 
 <style scoped>
-.border-emerald {
-    transition: all 300ms ease-in-out;
+/* Estilo de borde y transición en hover */
+button {
+  transition: box-shadow 300ms ease, transform 300ms ease, background-color 300ms ease;
 }
 
-.border-emerald:hover {
-    box-shadow: 0 0 2px 0 #059669 inset, 0 0 4px 2px #059669;
+/* Efecto especial en hover */
+button:hover {
+  box-shadow: 0 4px 8px rgba(0, 128, 0, 0.3);
 }
 </style>

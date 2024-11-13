@@ -58,7 +58,7 @@ onUnmounted(() => {
           <th>Estado Civil</th>
           <th>Hijos</th>
           <th>Expediente</th>
-          <th>-</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-300">

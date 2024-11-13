@@ -23,19 +23,53 @@ export const useDocumentosStore = defineStore("documentos", () => {
 
         try {
             loading.value = true;
-
             documentsByYear.value = {};
 
-            const [antidopings, aptitudes, certificados, documentosExternos, examenesVista, exploracionesFisicas, historiasClinicas] = await Promise.all([
-                DocumentosAPI.getAntidopings(trabajadorId),
-                DocumentosAPI.getAptitudes(trabajadorId),
-                DocumentosAPI.getCertificados(trabajadorId),
-                DocumentosAPI.getDocumentosExternos(trabajadorId),
-                DocumentosAPI.getExamenesVista(trabajadorId),
-                DocumentosAPI.getExploracionesFisicas(trabajadorId),
-                DocumentosAPI.getHistoriasClinicas(trabajadorId),
-            ])
+            // Fetch con manejo de errores y validación en cada llamada
+            try {
+                const antidopings = await DocumentosAPI.getAntidopings(trabajadorId);
+                if (Array.isArray(antidopings.data)) addAntidopingsByYear(antidopings.data);
+            } catch (error) {
+                console.error("Error al obtener antidopings", error);
+            }
+            try {
+                const aptitudes = await DocumentosAPI.getAptitudes(trabajadorId);
+                if (Array.isArray(aptitudes.data)) addAptitudesByYear(aptitudes.data);
+            } catch (error) {
+                console.error("Error al obtener aptitudes", error);
+            }
+            try {
+                const certificados = await DocumentosAPI.getCertificados(trabajadorId);
+                if (Array.isArray(certificados.data)) addCertificadosByYear(certificados.data);
+            } catch (error) {
+                console.error("Error al obtener certificados", error);
+            }
+            try {
+                const documentosExternos = await DocumentosAPI.getDocumentosExternos(trabajadorId);
+                if (Array.isArray(documentosExternos.data)) addDocumentosExternosByYear(documentosExternos.data);
+            } catch (error) {
+                console.error("Error al obtener documentosExternos", error);
+            }
+            try {
+                const examenesVista = await DocumentosAPI.getExamenesVista(trabajadorId);
+                if (Array.isArray(examenesVista.data)) addExamenesVistaByYear(examenesVista.data);
+            } catch (error) {
+                console.error("Error al obtener examenesVista", error);
+            }
+            try {
+                const exploracionesFisicas = await DocumentosAPI.getExploracionesFisicas(trabajadorId);
+                if (Array.isArray(exploracionesFisicas.data)) addExploracionesFisicasByYear(exploracionesFisicas.data);
+            } catch (error) {
+                console.error("Error al obtener exploracionesFisicas", error);
+            }
+            try {
+                const historiasClinicas = await DocumentosAPI.getHistoriasClinicas(trabajadorId);
+                if (Array.isArray(historiasClinicas.data)) addHistoriasClinicasByYear(historiasClinicas.data);
+            } catch (error) {
+                console.error("Error al obtener historiasClinicas", error);
+            }
 
+            // Funciones de agrupación por año
             function addAntidopingsByYear(data: Antidoping[]) {
                 data.forEach((documento) => {
                     const year = new Date(documento.fechaAntidoping).getFullYear();
@@ -127,18 +161,10 @@ export const useDocumentosStore = defineStore("documentos", () => {
                 });
             }
 
-            addAntidopingsByYear(antidopings.data);
-            addAptitudesByYear(aptitudes.data);
-            addCertificadosByYear(certificados.data);
-            addDocumentosExternosByYear(documentosExternos.data);
-            addExamenesVistaByYear(examenesVista.data);
-            addExploracionesFisicasByYear(exploracionesFisicas.data);
-            addHistoriasClinicasByYear(historiasClinicas.data);
-
         } catch (error) {
-            console.log(error)
+            console.error("Error al obtener documentos", error);
         } finally {
-            loading.value = false
+            loading.value = false;
         }
     }
 
@@ -147,4 +173,4 @@ export const useDocumentosStore = defineStore("documentos", () => {
         documentsByYear,
         fetchAllDocuments
     }
-})
+});
