@@ -9,13 +9,14 @@ defineProps<{
 </script>
 
 <template>
-    <div class="w-full">
+    <div class="w-full rounded-lg shadow-lg">
 
-        <h1 class="ring-1 ring-gray-600 bg-gray-300 rounded-t-md text-center text-xl">Documentos {{ year }}</h1>
+        <h1 class="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-t-lg text-center text-2xl font-semibold py-2">Documentos {{ year }}</h1>
 
-        <div class="ring-1 ring-gray-600 border-t-0 bg-gray-50 flex px-2 items-center">
-            <input class="mx-2 my-3 transform scale-150" type="checkbox" name="" id="">
-            <p class="mx-2">Seleccionar Todos</p>
+        <div class="flex items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
+            <input class="transform scale-125 mr-3 cursor-pointer accent-blue-500 transition duration-200 ease-in-out hover:scale-150" 
+                   type="checkbox" name="" id="">
+            <label for="" class="text-gray-700 font-medium">Seleccionar Todos</label>
         </div>
 
         <!-- Aptitudes -->
