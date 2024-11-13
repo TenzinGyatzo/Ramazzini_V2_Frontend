@@ -11,7 +11,7 @@ defineProps<{
 <template>
     <div class="w-full rounded-lg shadow-lg">
 
-        <h1 class="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-t-lg text-center text-2xl font-semibold py-2">Documentos {{ year }}</h1>
+        <h1 class="bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-t-lg text-center text-2xl font-medium py-2">Documentos {{ year }}</h1>
 
         <div class="flex items-center px-4 py-2 bg-gray-50 border-b border-gray-200">
             <input class="transform scale-125 mr-3 cursor-pointer accent-blue-500 transition duration-200 ease-in-out hover:scale-150" 
