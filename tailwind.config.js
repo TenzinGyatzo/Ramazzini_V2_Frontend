@@ -6,7 +6,11 @@ export default {
     "./formkit.config.js"
   ],
   theme: {
-    extend: {},
+    extend: {
+      screens: {
+        'md-lg': '900px'
+      }
+    },
   },
   plugins: [],
 }

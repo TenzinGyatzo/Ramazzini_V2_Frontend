@@ -24,8 +24,8 @@ defineProps({
   cursor: pointer;
   display: flex;
   align-items: center;
-  border: 1px solid #059669;
-  background-color: #059669;
+  border: 2px solid #059669;
+  background-color: #ffffff;
   overflow: hidden;
 }
 
@@ -35,7 +35,7 @@ defineProps({
 
 .button .button__text {
   transform: translateX(22px);
-  color: #fff;
+  color: #059669;
 }
 
 .button .button__icon {
