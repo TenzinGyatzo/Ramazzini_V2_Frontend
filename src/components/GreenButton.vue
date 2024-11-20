@@ -6,10 +6,13 @@ defineProps({
     default: 'Button',
   },
 });
+
+const emit = defineEmits(['click']);
 </script>
 
 <template>
   <button type="button"
+    @click="$emit('click')"
     class="min-w-52 bg-emerald-600 text-white font-medium rounded-full px-6 py-2 text-xl transition-transform duration-300 ease-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-700 border-2 border-emerald-600">
     {{ text }}
   </button>

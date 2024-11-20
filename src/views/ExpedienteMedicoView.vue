@@ -40,17 +40,69 @@ onMounted(() => {
   documentos.fetchAllDocuments(trabajadorId);
 });
 
+const navigateTo = (routeName, params) => {
+  router.push({ name: routeName, params });
+};
+
 </script>
 
 <template>
   <div class="p-5 grid gap-5">
     <div class="flex flex-wrap flex-col md:flex-row justify-center gap-3 md:gap-6">
-      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Historia Clínica" />
-      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Exploración Fisica" />
-      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Examen Vista" />
-      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Antidoping" />
-      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Aptitud" />
-      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Certificado" />
+      <GreenButton 
+        class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" 
+        text="Historia Clínica" 
+        @click="navigateTo('crear-documento', { 
+        idEmpresa: empresas.currentEmpresaId, 
+        idTrabajador: trabajadores.currentTrabajadorId, 
+        tipoDocumento: 'Historia Clinica' 
+      })"
+      />
+      <GreenButton 
+        class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" 
+        text="Exploración Física"
+        @click="navigateTo('crear-documento', { 
+        idEmpresa: empresas.currentEmpresaId, 
+        idTrabajador: trabajadores.currentTrabajadorId, 
+        tipoDocumento: 'Exploración Física' 
+      })"
+      />
+      <GreenButton 
+        class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" 
+        text="Examen Vista" 
+        @click="navigateTo('crear-documento', { 
+        idEmpresa: empresas.currentEmpresaId, 
+        idTrabajador: trabajadores.currentTrabajadorId, 
+        tipoDocumento: 'Examen Vista' 
+      })"
+      />
+      <GreenButton 
+        class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" 
+        text="Antidoping" 
+        @click="navigateTo('crear-documento', { 
+        idEmpresa: empresas.currentEmpresaId, 
+        idTrabajador: trabajadores.currentTrabajadorId, 
+        tipoDocumento: 'Antidoping' 
+      })"
+      />
+      <GreenButton 
+        class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" 
+        text="Aptitud" 
+        @click="navigateTo('crear-documento', { 
+        idEmpresa: empresas.currentEmpresaId, 
+        idTrabajador: trabajadores.currentTrabajadorId, 
+        tipoDocumento: 'Aptitud' 
+      })"
+      />
+      <GreenButton 
+        class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" 
+        text="Certificado" 
+        @click="navigateTo('crear-documento', { 
+        idEmpresa: empresas.currentEmpresaId, 
+        idTrabajador: trabajadores.currentTrabajadorId, 
+        tipoDocumento: 'Certificado' 
+      })"
+      />
       <div class="w-full flex justify-center">
         <SliderButton class="align-self-center" text="Documento Externo" />
       </div>
