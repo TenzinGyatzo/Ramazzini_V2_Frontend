@@ -96,6 +96,7 @@ const exportTrabajadores = async () => {
   }
 };
 
+
 </script>
 
 <template>

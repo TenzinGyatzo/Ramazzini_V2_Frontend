@@ -5,6 +5,7 @@ import { useSidebarStore } from '@/stores/sidebar';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { useDocumentosStore } from '@/stores/documentos';
 import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -13,6 +14,7 @@ const sidebar = useSidebarStore();
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
+const documentos = useDocumentosStore();
 
 const isMounted = ref(false);
 const temporalHide = true;
@@ -45,6 +47,13 @@ watch(() => centrosTrabajo.currentCentroTrabajo, (newCentro, oldCentro) => {
   if (newCentro?._id !== oldCentro?._id) {
     // Si currentCentroTrabajo cambia, reinicia trabajadores
     trabajadores.resetCurrentTrabajador();
+  }
+});
+
+watch(() => trabajadores.currentTrabajador, (newTrabajador, oldTrabajador) => {
+  if (newTrabajador?._id !== oldTrabajador?._id) {
+    // Si currentCentroTrabajo cambia, reinicia trabajadores
+    documentos.resetCurrentTypeOfDocument();
   }
 });
 
@@ -109,9 +118,18 @@ watch(() => centrosTrabajo.currentCentroTrabajo, (newCentro, oldCentro) => {
     </Transition>
 
     <Transition name="enter-left-exit-bounce">
-      <SidebarLink v-if="!temporalHide" to="/historia-clinica" icon="fas fa-file-pdf" class="leading-5" @click.stop>
-        <p>Historia Clínica</p>
-        <p class="text-xs">Informe</p>
+      <SidebarLink v-if="documentos.currentTypeOfDocument" 
+        :to="{
+          name: 'crear-documento',
+          params: {
+            idEmpresa: empresas.currentEmpresaId || '',
+            idTrabajador: trabajadores.currentTrabajadorId || '',
+            tipoDocumento: documentos.currentTypeOfDocument
+          }
+        }"
+         icon="fas fa-file-pdf" class="leading-5" @click.stop>
+        <p>{{ documentos.currentTypeOfDocument }}</p>
+        <p class="text-xs">Creando nuevo</p>
       </SidebarLink>
     </Transition>
 

@@ -40,6 +40,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
       createdAt: "",
       updatedAt: "",
     };
+    currentEmpresaId.value = null;
   }
 
   async function fetchEmpresas() {

@@ -47,7 +47,7 @@ export default {
 
 <template>
   <div
-    class="border-shadow w-full col-span-1 2xl:col-span-9 text-left rounded-lg p-5 2xl:p-7 transition-all duration-300 ease-in-out transform shadow-md bg-gray-50"
+    class="border-shadow w-full col-span-1 2xl:col-span-9 text-left rounded-lg p-5 2xl:p-7 transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-lg mx-auto"
   >
     <div v-if="currentStep <= steps.length">
       <!-- Formulario dinámico -->
@@ -90,6 +90,3 @@ export default {
   </div>
 </template>
 
-<style scoped>
-/* Aquí puedes añadir estilos específicos del componente */
-</style>
