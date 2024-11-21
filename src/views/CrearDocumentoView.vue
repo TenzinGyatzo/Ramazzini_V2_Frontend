@@ -9,7 +9,6 @@ const tipoDocumento = route.params.tipoDocumento;
 
 <template>
   <div>
-    <h1>Tipo de Documento: {{ tipoDocumento }}</h1>
     <div v-if="tipoDocumento === 'Historia Clinica'">
       {{ tipoDocumento }}
     </div>

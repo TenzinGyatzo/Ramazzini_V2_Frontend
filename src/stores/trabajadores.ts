@@ -22,6 +22,7 @@ interface Trabajador {
 
 export const useTrabajadoresStore = defineStore("trabajadores", () => {
   const loading = ref(true);
+  const loadingOnSidebar = ref(false);
   const loadingModal = ref(false);
   const trabajadores = ref<Trabajador[]>([]);
   const currentTrabajadorId = ref<string>();
@@ -45,6 +46,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
       createdAt: "",
       updatedAt: "",
     };
+    currentTrabajadorId.value = "";
   }
 
   async function fetchTrabajadores(empresaId: string, centroTrabajoId: string) {
@@ -68,6 +70,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
     trabajadorId: string
   ) {
     try {
+      loadingOnSidebar.value = true;
       loadingModal.value = true;
       const { data } = await TrabajadoresAPI.getTrabajadorById(
         empresaId,
@@ -75,9 +78,11 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
         trabajadorId
       );
       currentTrabajador.value = data;
+      currentTrabajadorId.value = trabajadorId;
     } catch (error) {
       console.log(error);
     } finally {
+      loadingOnSidebar.value = false;
       loadingModal.value = false;
     }
   }
@@ -188,6 +193,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
 
   return {
     loading,
+    loadingOnSidebar,
     loadingModal,
     trabajadores,
     currentTrabajadorId,

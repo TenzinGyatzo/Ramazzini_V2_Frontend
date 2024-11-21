@@ -37,6 +37,7 @@ export const useCentrosTrabajoStore = defineStore("centros-trabajo", () => {
       createdAt: "",
       updatedAt: "",
     };
+    currentCentroTrabajoId.value = "";
   }
 
   async function fetchCentrosTrabajo(empresaId: string) {
@@ -56,15 +57,18 @@ export const useCentrosTrabajoStore = defineStore("centros-trabajo", () => {
     centroTrabajoId: string
   ) {
     try {
+      loading.value = true;
       loadingModal.value = true;
       const { data } = await CentrosTrabajoAPI.getCentroTrabajoById(
         empresaId,
         centroTrabajoId
       );
       currentCentroTrabajo.value = data;
+      currentCentroTrabajoId.value = centroTrabajoId;
     } catch (error) {
       console.log(error);
     } finally {
+      loading.value = false;
       loadingModal.value = false;
     }
   }

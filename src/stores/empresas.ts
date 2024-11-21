@@ -40,7 +40,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
       createdAt: "",
       updatedAt: "",
     };
-    currentEmpresaId.value = null;
+    currentEmpresaId.value = "";
   }
 
   async function fetchEmpresas() {
@@ -60,6 +60,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
       loadingModal.value = true; // Indicamos que se está cargando
       const { data } = await EmpresasAPI.getEmpresaById(id);
       currentEmpresa.value = data; // Guardamos los datos de la empresa en el store
+      currentEmpresaId.value = id;
     } catch (error) {
       console.error("Error al cargar la empresa:", error);
     } finally {

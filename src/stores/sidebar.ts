@@ -1,7 +1,29 @@
 import { defineStore } from "pinia";
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { useEmpresasStore } from "./empresas";
+import { useCentrosTrabajoStore } from "./centrosTrabajo";
+import { useTrabajadoresStore } from "./trabajadores";
+import { useDocumentosStore } from "./documentos";
 
 export const useSidebarStore = defineStore("sidebar", () => {
+  const empresas = useEmpresasStore();
+  const centrosTrabajo = useCentrosTrabajoStore();
+  const trabajadores = useTrabajadoresStore();
+  const documentos = useDocumentosStore();
+
+  async function initializeState(params: { idEmpresa?: string | string[]; idCentroTrabajo?: string | string[]; idTrabajador?: string | string[], tipoDocumento?: string | string[] }) {
+    const idEmpresa = Array.isArray(params.idEmpresa) ? params.idEmpresa[0] : params.idEmpresa;
+    const idCentroTrabajo = Array.isArray(params.idCentroTrabajo) ? params.idCentroTrabajo[0] : params.idCentroTrabajo;
+    const idTrabajador = Array.isArray(params.idTrabajador) ? params.idTrabajador[0] : params.idTrabajador;
+    const tipoDocumento = Array.isArray(params.tipoDocumento) ? params.tipoDocumento[0] : params.tipoDocumento;
+  
+    if (idEmpresa) await empresas.fetchEmpresaById(idEmpresa);
+    if (idCentroTrabajo) await centrosTrabajo.fetchCentroTrabajoById(idEmpresa!, idCentroTrabajo);
+    if (idTrabajador) await trabajadores.fetchTrabajadorById(idEmpresa!, idCentroTrabajo!, idTrabajador);
+    if (tipoDocumento) await documentos.setCurrentTypeOfDocument(tipoDocumento!);
+  }
+  
+
   const collapsed = ref(localStorage.getItem("sidebarCollapsed") === "true");
 
   const isSmallScreen = ref(window.innerWidth < 640);
@@ -37,6 +59,7 @@ export const useSidebarStore = defineStore("sidebar", () => {
   return {
     isSmallScreen,
     collapsed,
+    initializeState,
     toggleSidebar,
     sidebarWidth,
     sidebarWidthCollapsed,

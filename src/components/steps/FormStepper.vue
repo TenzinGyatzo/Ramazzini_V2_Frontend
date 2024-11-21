@@ -19,8 +19,11 @@ export default {
       Object.assign(formData, data); // Mezcla los datos recibidos en formData
       if (currentStep.value < steps.length) {
         currentStep.value++;
+      } else {
+        currentStep.value = steps.length + 1; // Marca el formulario como completado
       }
     };
+
 
     const handlePrevious = () => {
       if (currentStep.value > 1) {
@@ -49,8 +52,8 @@ export default {
   <div
     class="border-shadow w-full col-span-1 2xl:col-span-9 text-left rounded-lg p-5 2xl:p-7 transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-lg mx-auto"
   >
+    <!-- Formulario dinámico -->
     <div v-if="currentStep <= steps.length">
-      <!-- Formulario dinámico -->
       <component
         :is="steps[currentStep - 1].component"
         @next="handleNext"
@@ -59,7 +62,8 @@ export default {
       />
 
       <!-- Navegación entre pasos -->
-      <div class="flex justify-between mt-4">
+      <div class="flex justify-between mt-6">
+        <!-- Botón Anterior -->
         <button
           v-if="currentStep > 1"
           @click="handlePrevious"
@@ -67,8 +71,9 @@ export default {
         >
           &lt; Anterior
         </button>
+
+        <!-- Botón Siguiente -->
         <button
-          v-if="currentStep < steps.length"
           @click="handleNext({})"
           class="px-4 py-2 text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-all duration-300"
         >

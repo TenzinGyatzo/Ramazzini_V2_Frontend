@@ -32,7 +32,6 @@ const openModal = async (empresa: Empresa | null = null) => {
   showModal.value = true;  // Abrimos el modal
 };
 
-
 const closeModal = () => {
   showModal.value = false;
 };

@@ -1,12 +1,11 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import SidebarLink from './SidebarLink.vue';
 import { useSidebarStore } from '@/stores/sidebar';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
-import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -17,21 +16,22 @@ const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 
 const isMounted = ref(false);
-const temporalHide = true;
 
-onMounted(() => {
-  isMounted.value = true;
+onMounted(async () => {
+  try {
+    const { idEmpresa, idCentroTrabajo, idTrabajador, tipoDocumento } = route.params;
+    await sidebar.initializeState({ idEmpresa, idCentroTrabajo, idTrabajador, tipoDocumento });
+    isMounted.value = true;
+  } catch (error) {
+    console.error('Error inicializando el estado:', error);
+  }
 });
 
-watch(() => route.params, (newParams) => {
-  if (newParams.idEmpresa && newParams.idEmpresa !== empresas.currentEmpresa?._id) {
-    empresas.fetchEmpresaById(String(newParams.idEmpresa));
-  }
-  if (newParams.idCentroTrabajo) {
-    centrosTrabajo.fetchCentroTrabajoById(String(newParams.idEmpresa), String(newParams.idCentroTrabajo));
-  }
-  if (newParams.idTrabajador) {
-    trabajadores.fetchTrabajadorById(String(newParams.idEmpresa), String(newParams.idCentroTrabajo), String(newParams.idTrabajador));
+watch(() => route.params, async (newParams) => {
+  try {
+    await sidebar.initializeState(newParams);
+  } catch (error) {
+    console.error('Error al actualizar estado con route.params:', error);
   }
 });
 
@@ -40,6 +40,7 @@ watch(() => empresas.currentEmpresa, (newEmpresa, oldEmpresa) => {
     // Si currentEmpresa cambia, reinicia centrosTrabajo y trabajadores
     centrosTrabajo.resetCurrentCentroTrabajo();
     trabajadores.resetCurrentTrabajador();
+    documentos.resetCurrentTypeOfDocument();
   }
 });
 
@@ -47,6 +48,7 @@ watch(() => centrosTrabajo.currentCentroTrabajo, (newCentro, oldCentro) => {
   if (newCentro?._id !== oldCentro?._id) {
     // Si currentCentroTrabajo cambia, reinicia trabajadores
     trabajadores.resetCurrentTrabajador();
+    documentos.resetCurrentTypeOfDocument();
   }
 });
 
@@ -118,16 +120,15 @@ watch(() => trabajadores.currentTrabajador, (newTrabajador, oldTrabajador) => {
     </Transition>
 
     <Transition name="enter-left-exit-bounce">
-      <SidebarLink v-if="documentos.currentTypeOfDocument" 
-        :to="{
-          name: 'crear-documento',
-          params: {
-            idEmpresa: empresas.currentEmpresaId || '',
-            idTrabajador: trabajadores.currentTrabajadorId || '',
-            tipoDocumento: documentos.currentTypeOfDocument
-          }
-        }"
-         icon="fas fa-file-pdf" class="leading-5" @click.stop>
+      <SidebarLink v-if="documentos.currentTypeOfDocument" :to="{
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId || '',
+          idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || '',
+          idTrabajador: trabajadores.currentTrabajadorId || '',
+          tipoDocumento: documentos.currentTypeOfDocument
+        }
+      }" icon="fas fa-file-pdf" class="leading-5" @click.stop>
         <p>{{ documentos.currentTypeOfDocument }}</p>
         <p class="text-xs">Creando nuevo</p>
       </SidebarLink>
