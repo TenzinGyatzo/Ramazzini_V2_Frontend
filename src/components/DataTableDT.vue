@@ -19,13 +19,15 @@ onMounted(() => {
       scrollY: '800px',
       scrollX: true,
       language: {
-        url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json',
+        url: '//cdn.datatables.net/plug-ins/2.1.8/i18n/es-ES.json',
         select: {
           rows: {
-            _: "",
-            0: "",
-            1: ""
-          }
+            _: "", // Texto cuando se seleccionan varias filas
+            0: "", // Texto cuando no se selecciona ninguna fila
+            1: ""  // Texto cuando se selecciona una fila
+          },
+          cells: "", // Texto para celdas seleccionadas (puedes dejarlo vacío)
+          columns: "" // Texto para columnas seleccionadas (puedes dejarlo vacío)
         }
       },
     } as any);
