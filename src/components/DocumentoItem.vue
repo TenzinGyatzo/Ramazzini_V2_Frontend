@@ -1,5 +1,46 @@
 <script setup>
 import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
+import { ref } from 'vue';
+import { VPdfViewer, useLicense } from '@vue-pdf-viewer/viewer';
+
+// If the value is empty or incorrect, the watermark will remain.
+const licenseKey = import.meta.env.VITE_VPV_LICENSE ?? '102d64ec-006b-4fd6-8850-a00a050703ad';
+
+// useLicense must be used here to ensure proper license 
+// initialization before the component renders.
+useLicense({ licenseKey });
+
+// Estados para mostrar el visor y la URL del PDF
+const showPdfViewer = ref(false);
+const pdfUrl = ref('');
+
+// Función para abrir el visor con una ruta dinámica
+const abrirPdf = async (ruta) => {
+  const fullPath = `/${ruta}`; // Construir la ruta absoluta
+
+  try {
+    // Verificar si el archivo existe y es un PDF
+    const response = await fetch(fullPath, { method: 'HEAD' });
+
+    if (response.ok && response.headers.get('Content-Type') === 'application/pdf') {
+      // Si el archivo existe y es un PDF, abrir el visor
+      pdfUrl.value = fullPath;
+      showPdfViewer.value = true;
+    } else {
+      // Si no es un PDF o no existe, mostrar alerta
+      alert('El archivo PDF no existe o no es válido.');
+    }
+  } catch (error) {
+    // Manejo de errores de red u otros problemas
+    alert('Ocurrió un error al intentar cargar el archivo PDF.');
+  }
+};
+
+// Función para cerrar el visor
+const cerrarPdf = () => {
+    showPdfViewer.value = false;
+    pdfUrl.value = '';
+};
 
 defineProps({
     antidoping: [Object, String],
@@ -18,7 +59,7 @@ defineProps({
         <div class="flex items-center">
             <div class="mx-2">
                 <input
-                    class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150"
+                    class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
                     type="checkbox" name="" id="">
             </div>
             <div v-if="typeof antidoping === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
@@ -48,7 +89,7 @@ defineProps({
                         <p class="leading-5 text-sm px-1">Resultado:</p>
                         <p class="leading-5 font-semibold text-gray-800 px-1"
                             :class="aptitud.aptitudPuesto === 'No Apto' ? 'text-red-500' : 'text-gray-800'">{{
-                            aptitud.aptitudPuesto }}</p>
+                                aptitud.aptitudPuesto }}</p>
                     </div>
                 </div>
             </div>
@@ -120,7 +161,7 @@ defineProps({
                         <p class="leading-5 text-sm px-1">Ishihara:</p>
                         <p class="leading-5 font-semibold text-gray-800 px-1"
                             :class="examenVista.porcentajeIshihara < 80 ? 'text-red-500' : 'text-gray-800'">{{
-                            examenVista.porcentajeIshihara }}% - {{ examenVista.interpretacionIshihara }}</p>
+                                examenVista.porcentajeIshihara }}% - {{ examenVista.interpretacionIshihara }}</p>
                     </div>
                 </div>
             </div>
@@ -136,7 +177,7 @@ defineProps({
                         <p class="leading-5 text-sm px-1">Categoría IMC:</p>
                         <p class="leading-5 font-semibold text-gray-800 px-1"
                             :class="exploracionFisica.indiceMasaCorporal >= 30 ? 'text-red-500' : 'text-gray-800'">{{
-                            exploracionFisica.indiceMasaCorporal }} - {{ exploracionFisica.categoriaIMC }}</p>
+                                exploracionFisica.indiceMasaCorporal }} - {{ exploracionFisica.categoriaIMC }}</p>
                     </div>
                     <div class="w-72 2xl:block hidden">
                         <p class="leading-5 text-sm px-1">Tension Arterial:</p>
@@ -153,7 +194,9 @@ defineProps({
                 </div>
             </div>
 
-            <div v-if="typeof historiaClinica === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+            <div v-if="typeof historiaClinica === 'object'"
+                class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer"
+                @click="abrirPdf(`${historiaClinica.rutaPDF}`)">
                 <div class="min-w-30 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">Historia Clínica</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -182,17 +225,36 @@ defineProps({
 
         <div class="flex gap-1 sm:gap-1 md:gap-2 lg:gap-4 mx-2">
             <button type="button"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm">
+                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
                 <i class="fa-solid fa-download fa-lg"></i>
             </button>
             <button type="button"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm">
+                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
             </button>
             <button type="button"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm">
+                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
                 <i class="fa-solid fa-trash-can fa-lg"></i>
             </button>
         </div>
     </div>
+
+    <!-- Visor de PDF -->
+    <div v-if="showPdfViewer"
+        class="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-75 flex justify-center items-center z-50"
+        @click.self="cerrarPdf">
+        <!-- Botón para cerrar, en el fondo -->
+        <div class="absolute top-4 right-4">
+            <button class="bg-red-500 text-white px-4 py-2 rounded shadow-lg hover:bg-red-600 transition"
+                @click="cerrarPdf">
+                Cerrar
+            </button>
+        </div>
+
+        <!-- Contenedor del visor de PDF -->
+        <div :style="{ width: '90%', height: '90%' }" class="bg-white rounded shadow-lg relative">
+            <VPdfViewer :src="pdfUrl" />
+        </div>
+    </div>
+
 </template>

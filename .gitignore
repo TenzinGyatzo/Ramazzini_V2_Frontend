@@ -28,3 +28,7 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+# Ignorar archivos de configuración local
+.env
+.env.local
