@@ -5,29 +5,29 @@ import { useFormDataStore } from '@/stores/formDataStore';
 const { formDataHistoriaClinica } = useFormDataStore();
 
 // Valor local para la pregunta principal
-const nefropatias = ref('No');
+const leuticos = ref('No');
 
-// Asegurar que formData tenga un valor inicial para nefropatias
-if (!formDataHistoriaClinica.nefropatias) {
-    formDataHistoriaClinica.nefropatias = nefropatias.value;
+// Asegurar que formData tenga un valor inicial para leuticos
+if (!formDataHistoriaClinica.leuticos) {
+    formDataHistoriaClinica.leuticos = leuticos.value;
 }
 
-if (!formDataHistoriaClinica.nefropatiasEspecificar) {
-    formDataHistoriaClinica.nefropatiasEspecificar = 'Negado';
+if (!formDataHistoriaClinica.leuticosEspecificar) {
+    formDataHistoriaClinica.leuticosEspecificar = 'Negado';
 }
 
-// Sincronizar nefropatias con formData
-watch(nefropatias, (newValue) => {
-    formDataHistoriaClinica.nefropatias = newValue;
+// Sincronizar leuticos con formData
+watch(leuticos, (newValue) => {
+    formDataHistoriaClinica.leuticos = newValue;
 });
 
-// Watch para establecer 'Negado' cuando nefropatias sea 'No'
-watch(nefropatias, (newValue) => {
+// Watch para establecer 'Negado' cuando leuticos sea 'No'
+watch(leuticos, (newValue) => {
     if (newValue === 'No') {
-        formDataHistoriaClinica.nefropatiasEspecificar = 'Negado';
+        formDataHistoriaClinica.leuticosEspecificar = 'Negado';
     }
     if (newValue === 'Si') {
-        formDataHistoriaClinica.nefropatiasEspecificar = '';
+        formDataHistoriaClinica.leuticosEspecificar = '';
     }
 });
 </script>
@@ -38,26 +38,26 @@ watch(nefropatias, (newValue) => {
 
         <!-- Pregunta principal -->
         <div class="mb-4">
-            <p class="font-medium mb-1 text-gray-800 leading-5">¿Problemas de riñones en la familia?</p>
+            <p class="font-medium mb-1 text-gray-800 leading-5">¿Antecedentes de sífilis en la familia?</p>
             <div class="flex items-center space-x-6 font-light">
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="No" v-model="nefropatias" class="form-radio accent-emerald-600" />
+                    <input type="radio" value="No" v-model="leuticos" class="form-radio accent-emerald-600" />
                     <span>No</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="Si" v-model="nefropatias" class="form-radio accent-emerald-600" />
+                    <input type="radio" value="Si" v-model="leuticos" class="form-radio accent-emerald-600" />
                     <span>Si</span>
                 </label>
             </div>
         </div>
 
         <!-- Opciones adicionales, solo visibles si el resultado es "Sí" -->
-        <div v-if="nefropatias === 'Si'" class="mt-4">
+        <div v-if="leuticos === 'Si'" class="mt-4">
             <p class="font-medium mb-2 text-gray-800">Especifique:</p>
             <div class="font-light">
                 <input type="text"
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                    v-model="formDataHistoriaClinica.nefropatiasEspecificar"
+                    v-model="formDataHistoriaClinica.leuticosEspecificar"
                     placeholder="Madre, Padre, Abuelo Materno, etc">
             </div>
         </div>

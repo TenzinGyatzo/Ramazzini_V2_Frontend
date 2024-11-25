@@ -9,6 +9,7 @@ import SliderButton from '@/components/SliderButton.vue';
 import { calcularEdad } from '@/helpers/dates';
 import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
 import { useDocumentosStore } from '@/stores/documentos';
+import { useFormDataStore } from '@/stores/formDataStore';
 
 const route = useRoute();
 const router = useRouter();
@@ -16,6 +17,7 @@ const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
+const formData = useFormDataStore();
 
 watch(
   () => route.params, // Observamos los parámetros idEmpresa e idCentroTrabajo
@@ -38,6 +40,7 @@ watch(
 onMounted(() => {
   const trabajadorId = String(route.params.idTrabajador);
   documentos.fetchAllDocuments(trabajadorId);
+  formData.resetFormData();
 });
 
 const navigateTo = (routeName, params) => {
@@ -56,7 +59,7 @@ const navigateTo = (routeName, params) => {
         @click="navigateTo('crear-documento', { 
         idEmpresa: empresas.currentEmpresaId, 
         idTrabajador: trabajadores.currentTrabajadorId, 
-        tipoDocumento: 'Historia Clinica' 
+        tipoDocumento: 'Historia Clínica' 
       })"
       />
       <GreenButton 

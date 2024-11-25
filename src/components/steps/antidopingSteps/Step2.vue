@@ -1,10 +1,11 @@
 <script setup>
 import { reactive, watch, ref, onMounted } from 'vue';
+import { useFormDataStore } from '@/stores/formDataStore';
 
-const props = defineProps(['formData']);
+const { formDataAntidoping } = useFormDataStore();
 
 // Valor local para la pregunta principal
-const antidopingResult = ref('no'); // Por defecto "No"
+const antidopingResult = ref('No'); // Por defecto "No"
 
 // Objeto reactivo para los resultados de las sustancias
 const drugResults = reactive({
@@ -17,12 +18,12 @@ const drugResults = reactive({
 
 // Inicializar `formData` con valores por defecto al montar el componente
 onMounted(() => {
-  Object.assign(props.formData, drugResults);
+  Object.assign(formDataAntidoping, drugResults);
 });
 
 // Sincronizar solo drugResults con formData
 watch(drugResults, (newValues) => {
-  Object.assign(props.formData, newValues);
+  Object.assign(formDataAntidoping, newValues);
 });
 </script>
 
@@ -37,7 +38,7 @@ watch(drugResults, (newValues) => {
         <label class="flex items-center space-x-2">
           <input
             type="radio"
-            value="no"
+            value="No"
             v-model="antidopingResult"
             class="form-radio accent-emerald-600"
           />
@@ -46,7 +47,7 @@ watch(drugResults, (newValues) => {
         <label class="flex items-center space-x-2">
           <input
             type="radio"
-            value="yes"
+            value="Si"
             v-model="antidopingResult"
             class="form-radio accent-emerald-600"
           />
@@ -56,7 +57,7 @@ watch(drugResults, (newValues) => {
     </div>
 
     <!-- Opciones adicionales, solo visibles si el resultado es "Sí" -->
-    <div v-if="antidopingResult === 'yes'" class="mt-4">
+    <div v-if="antidopingResult === 'Si'" class="mt-4">
       <p class="font-medium mb-2 text-gray-800">Especifique:</p>
       <div class="grid grid-cols-2 gap-1 font-light">
         <label class="flex items-center space-x-2">

@@ -18,8 +18,8 @@ function formatKey(key) {
     <table class="table-auto w-full border-collapse border border-gray-200">
       <thead>
         <tr class="bg-gray-200">
-          <th class="px-4 py-2 border border-gray-300 text-left">Campo</th>
-          <th class="px-4 py-2 border border-gray-300 text-left">Valor</th>
+          <th class="px-2 py-1 border w-1/2 border-gray-300 text-left">Campo</th>
+          <th class="px-2 py-1 border border-gray-300 text-left">Valor</th>
         </tr>
       </thead>
       <transition-group
@@ -28,18 +28,19 @@ function formatKey(key) {
         class="transition-group"
       >
         <tr 
-          v-for="(value, key) in formData.formData" 
+          v-for="(value, key) in formData.formDataAntidoping" 
           :key="key" 
           class="odd:bg-white even:bg-gray-50"
         >
-          <td class="px-4 py-2 border border-gray-300 font-medium">{{ formatKey(key) }}</td>
-          <td class="px-4 py-2 border border-gray-300">
+          <td class="px-2 py-1 border border-gray-300 font-medium">{{ formatKey(key) }}</td>
+          <td class="px-2 py-1 border border-gray-300">
             <!-- Transición para el Value -->
             <transition name="value-change" mode="out-in">
               <span :key="value">{{ value }}</span>
             </transition>
           </td>
         </tr>
+
       </transition-group>
     </table>
   </div>

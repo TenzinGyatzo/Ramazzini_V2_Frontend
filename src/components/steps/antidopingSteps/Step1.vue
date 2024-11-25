@@ -1,23 +1,24 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { format } from 'date-fns';
+import { useFormDataStore } from '@/stores/formDataStore';
 
-const props = defineProps(['formData']); // Recibe formData desde FormStepper
+const { formDataAntidoping } = useFormDataStore();
 
 // Obtener la fecha actual en formato YYYY-MM-DD
 const today = format(new Date(), 'yyyy-MM-dd');
 
 // Asegurar que formData tenga un valor inicial para fechaAntidoping
-if (!props.formData.fechaAntidoping) {
-  props.formData.fechaAntidoping = today;
+if (!formDataAntidoping.fechaAntidoping) {
+  formDataAntidoping.fechaAntidoping = today;
 }
 
 // Inicializar la referencia local sincronizada con formData
-const fechaAntidoping = ref(props.formData.fechaAntidoping);
+const fechaAntidoping = ref(formDataAntidoping.fechaAntidoping);
 
 // Mantener sincronizados los valores
 watch(fechaAntidoping, (newValue) => {
-  props.formData.fechaAntidoping = newValue;
+  formDataAntidoping.fechaAntidoping = newValue;
 });
 </script>
 

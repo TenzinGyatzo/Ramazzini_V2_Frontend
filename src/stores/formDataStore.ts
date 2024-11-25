@@ -1,12 +1,34 @@
 import { defineStore } from 'pinia';
-import { reactive } from 'vue';
+import { ref } from 'vue';
 
 export const useFormDataStore = defineStore('formData', () => {
-  const formData = reactive({}); // Estado compartido
+  const formDataAntidoping = ref({}); // Estado compartido
+  const formDataAptitud = ref({}); // Estado compartido
+  const formDataCertificado = ref({}); // Estado compartido
+  const formDataDocumentoExterno = ref({}); // Estado compartido
+  const formDataExamenVista = ref({}); // Estado compartido
+  const formDataExploracionFisica = ref({}); // Estado compartido
+  const formDataHistoriaClinica = ref({}); // Estado compartido
 
-  const updateFormData = (data) => {
-    Object.assign(formData, data); // Actualiza los datos
+  const resetFormData = () => {
+    // Reiniciar el estado directamente asignando un objeto vacío.
+    formDataAntidoping.value = {};
+    formDataAptitud.value = {};
+    formDataCertificado.value = {};
+    formDataDocumentoExterno.value = {};
+    formDataExamenVista.value = {};
+    formDataExploracionFisica.value = {};
+    formDataHistoriaClinica.value = {};
   };
 
-  return { formData, updateFormData };
+  return { 
+    formDataAntidoping,
+    formDataAptitud,
+    formDataCertificado,
+    formDataDocumentoExterno,
+    formDataExamenVista,
+    formDataExploracionFisica,
+    formDataHistoriaClinica, 
+    resetFormData 
+  };
 });
