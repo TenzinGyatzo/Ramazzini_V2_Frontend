@@ -1,5 +1,5 @@
 <script setup>
-import { watch, ref } from 'vue';
+import { watch, ref, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
@@ -7,14 +7,17 @@ const { formDataHistoriaClinica } = useFormDataStore();
 // Valor local para la pregunta principal
 const cardiopaticos = ref('No');
 
-// Asegurar que formData tenga un valor inicial para cardiopaticos
-if (!formDataHistoriaClinica.cardiopaticos) {
-    formDataHistoriaClinica.cardiopaticos = cardiopaticos.value;
-}
+onUnmounted(() => {
+    // Asegurar que formData tenga un valor inicial para cardiopaticos
+    if (!formDataHistoriaClinica.cardiopaticos) {
+        formDataHistoriaClinica.cardiopaticos = cardiopaticos.value;
+    }
 
-if (!formDataHistoriaClinica.cardiopaticosEspecificar) {
-    formDataHistoriaClinica.cardiopaticosEspecificar = 'Negado';
-}
+    if (!formDataHistoriaClinica.cardiopaticosEspecificar) {
+        formDataHistoriaClinica.cardiopaticosEspecificar = 'Negado';
+    }
+});
+
 
 // Sincronizar cardiopaticos con formData
 watch(cardiopaticos, (newValue) => {
@@ -58,7 +61,7 @@ watch(cardiopaticos, (newValue) => {
                 <input type="text"
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     v-model="formDataHistoriaClinica.cardiopaticosEspecificar"
-                    placeholder="Madre, Padre, Abuelo Materno, etc">
+                    placeholder="Madre, Padre, Abuelo Materno, etc" required>
             </div>
         </div>
     </div>

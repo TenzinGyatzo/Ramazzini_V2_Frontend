@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onUnmounted } from 'vue';
 import { format } from 'date-fns';
 import { useFormDataStore } from '@/stores/formDataStore';
 
@@ -10,18 +10,19 @@ const motivoExamen = ref('Ingreso');
 // Obtener la fecha actual en formato YYYY-MM-DD
 const today = format(new Date(), 'yyyy-MM-dd');
 
-// Asegurar que formData tenga un valor inicial para motivoExamen
-if (!formDataHistoriaClinica.motivoExamen) {
-  formDataHistoriaClinica.motivoExamen = motivoExamen.value;
-}
-
-// Asegurar que formData tenga un valor inicial para fechaHistoriaClinica
-if (!formDataHistoriaClinica.fechaHistoriaClinica) {
-  formDataHistoriaClinica.fechaHistoriaClinica = today;
-}
+onUnmounted(() => {
+  // Asignar defaults de formulario en caso de que no se haya interactuado con el componente
+  if (!formDataHistoriaClinica.motivoExamen) {
+    formDataHistoriaClinica.motivoExamen = motivoExamen.value;
+  }
+  
+  if (!formDataHistoriaClinica.fechaHistoriaClinica) {
+    formDataHistoriaClinica.fechaHistoriaClinica = today;
+  }
+});
 
 // Inicializar la referencia local sincronizada con formData
-const fechaHistoriaClinica = ref(formDataHistoriaClinica.fechaHistoriaClinica);
+const fechaHistoriaClinica = ref(today);
 
 // Sincronizar motivoExamen con formData
 watch(motivoExamen, (newValue) => {

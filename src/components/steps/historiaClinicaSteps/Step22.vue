@@ -1,5 +1,5 @@
 <script setup>
-import { watch, ref } from 'vue';
+import { watch, ref, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
@@ -7,14 +7,17 @@ const { formDataHistoriaClinica } = useFormDataStore();
 // Valor local para la pregunta principal
 const alcoholismo = ref('No');
 
-// Asegurar que formData tenga un valor inicial para alcoholismo
-if (!formDataHistoriaClinica.alcoholismo) {
-    formDataHistoriaClinica.alcoholismo = alcoholismo.value;
-}
+onUnmounted(() => {
+    // Asegurar que formData tenga un valor inicial para alcoholismo
+    if (!formDataHistoriaClinica.alcoholismo) {
+        formDataHistoriaClinica.alcoholismo = alcoholismo.value;
+    }
 
-if (!formDataHistoriaClinica.alcoholismoEspecificar) {
-    formDataHistoriaClinica.alcoholismoEspecificar = 'Negado';
-}
+    if (!formDataHistoriaClinica.alcoholismoEspecificar) {
+        formDataHistoriaClinica.alcoholismoEspecificar = 'Negado';
+    }
+});
+
 
 // Sincronizar alcoholismo con formData
 watch(alcoholismo, (newValue) => {
@@ -38,7 +41,8 @@ watch(alcoholismo, (newValue) => {
         <h2>ALCOHOLISMO</h2>
         <!-- Pregunta principal -->
         <div class="mb-4">
-            <p class="font-medium mb-1 text-gray-800 leading-5">¿El trabajador consume alcohol o cuenta con antecedentes de consumo de alcohol?</p>
+            <p class="font-medium mb-1 text-gray-800 leading-5">¿El trabajador consume alcohol o cuenta con antecedentes
+                de consumo de alcohol?</p>
             <div class="flex items-center space-x-6 font-light">
                 <label class="flex items-center space-x-2">
                     <input type="radio" value="No" v-model="alcoholismo" class="form-radio accent-emerald-600" />
@@ -58,7 +62,7 @@ watch(alcoholismo, (newValue) => {
                 <input type="text"
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     v-model="formDataHistoriaClinica.alcoholismoEspecificar"
-                    placeholder="Madre, Padre, Abuelo Materno, etc">
+                    placeholder="Madre, Padre, Abuelo Materno, etc" required>
             </div>
         </div>
     </div>

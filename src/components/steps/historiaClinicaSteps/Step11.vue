@@ -1,5 +1,5 @@
 <script setup>
-import { watch, ref } from 'vue';
+import { watch, ref, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
@@ -7,14 +7,16 @@ const { formDataHistoriaClinica } = useFormDataStore();
 // Valor local para la pregunta principal
 const hepatopatias = ref('No');
 
-// Asegurar que formData tenga un valor inicial para hepatopatias
-if (!formDataHistoriaClinica.hepatopatias) {
-    formDataHistoriaClinica.hepatopatias = hepatopatias.value;
-}
+onUnmounted(() => {
+    // Asegurar que formData tenga un valor inicial para hepatopatias
+    if (!formDataHistoriaClinica.hepatopatias) {
+        formDataHistoriaClinica.hepatopatias = hepatopatias.value;
+    }
 
-if (!formDataHistoriaClinica.hepatopatiasEspecificar) {
-    formDataHistoriaClinica.hepatopatiasEspecificar = 'Negado';
-}
+    if (!formDataHistoriaClinica.hepatopatiasEspecificar) {
+        formDataHistoriaClinica.hepatopatiasEspecificar = 'Negado';
+    }
+});
 
 // Sincronizar hepatopatias con formData
 watch(hepatopatias, (newValue) => {
@@ -58,7 +60,7 @@ watch(hepatopatias, (newValue) => {
                 <input type="text"
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     v-model="formDataHistoriaClinica.hepatopatiasEspecificar"
-                    placeholder="Madre, Padre, Abuelo Materno, etc">
+                    placeholder="Madre, Padre, Abuelo Materno, etc" required>
             </div>
         </div>
     </div>

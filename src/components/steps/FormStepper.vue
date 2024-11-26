@@ -1,8 +1,10 @@
 <script>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { onMounted, onUnmounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
+import { useStepsStore } from '@/stores/steps';
+
 import Step1Antidoping from '../steps/antidopingSteps/Step1.vue';
 import Step2Antidoping from '../steps/antidopingSteps/Step2.vue';
 import Step1HistoriaClinica from '../steps/historiaClinicaSteps/Step1.vue';
@@ -39,18 +41,24 @@ export default {
   setup() {
     const formData = useFormDataStore();
     const documentos = useDocumentosStore();
-    const currentStep = ref(1);
+    const stepsStore = useStepsStore();
     const router = useRouter();
+    const route = useRoute();
 
-    // Computed property para obtener los pasos según el tipo de documento
-    const steps = computed(() => {
+    // Establece los pasos al montar el componente
+    onMounted(() => {
+      console.log(route.params);
+      console.log(route.params.tipoDocumento);
+
+      documentos.setCurrentTypeOfDocument(route.params.tipoDocumento);
+
       if (documentos.currentTypeOfDocument === 'Antidoping') {
-        return [
+        stepsStore.setSteps([
           { component: Step1Antidoping, name: 'Paso 1' },
           { component: Step2Antidoping, name: 'Paso 2' },
-        ];
+        ]);
       } else if (documentos.currentTypeOfDocument === 'Historia Clínica') {
-        return [
+        stepsStore.setSteps([
           { component: Step1HistoriaClinica, name: 'Paso 1' },
           { component: Step2HistoriaClinica, name: 'Paso 2' },
           { component: Step3HistoriaClinica, name: 'Paso 3' },
@@ -78,42 +86,9 @@ export default {
           { component: Step25HistoriaClinica, name: 'Paso 25' },
           { component: Step26HistoriaClinica, name: 'Paso 26' },
           { component: Step27HistoriaClinica, name: 'Paso 27' },
-        ];
+        ]);
       }
-      // Agregar más documentos aquí
-      return [];
     });
-
-    let isNavigating = false; // Bandera para controlar la navegación
-
-    const handleNext = () => {
-      if (isNavigating) return; // Evitar múltiples entradas rápidas
-      isNavigating = true;
-
-      if (currentStep.value < steps.value.length) {
-        currentStep.value++;
-      } else {
-        currentStep.value = steps.value.length + 1; // Marca el formulario como completado
-      }
-
-      // Esperar un momento antes de permitir otra navegación
-      setTimeout(() => {
-        isNavigating = false;
-      }, 500); // Ajusta el tiempo según sea necesario
-    };
-
-    const handlePrevious = () => {
-      if (isNavigating) return; // Evitar múltiples entradas rápidas
-      isNavigating = true;
-
-      if (currentStep.value > 1) {
-        currentStep.value--;
-      }
-
-      setTimeout(() => {
-        isNavigating = false;
-      }, 300); // Ajusta el tiempo según sea necesario
-    };
 
     // Manejo de eventos de teclado
     const handleKeyDown = (event) => {
@@ -127,10 +102,10 @@ export default {
       // Manejar Enter y Backspace
       if (event.key === 'Enter') {
         event.preventDefault(); // Prevenir comportamiento por defecto de Enter
-        handleNext();
+        stepsStore.nextStep();
       } else if (event.key === 'Backspace') {
         event.preventDefault(); // Prevenir comportamiento por defecto de Backspace
-        handlePrevious();
+        stepsStore.previousStep();
       }
     };
 
@@ -173,12 +148,7 @@ export default {
     };
 
     return {
-      formData,
-      documentos,
-      currentStep,
-      steps,
-      handleNext,
-      handlePrevious,
+      stepsStore,
       handleSubmit,
     };
   },
@@ -192,26 +162,26 @@ export default {
     <!-- Barra de progreso -->
     <div class="relative w-full h-2 mb-4 bg-gray-200 rounded-full overflow-hidden">
       <div class="progress-bar absolute top-0 left-0 h-full bg-emerald-600 transition-all duration-300"
-        :style="{ width: (currentStep / steps.length * 100) + '%' }"></div>
+        :style="{ width: (stepsStore.currentStep / stepsStore.steps.length) * 100 + '%' }"></div>
     </div>
 
     <!-- Formulario dinámico -->
     <transition name="fade-slide" mode="out-in">
-      <div v-if="currentStep <= steps.length" :key="currentStep">
-        <component :is="steps[currentStep - 1].component" :form-data="formData" />
+      <div v-if="stepsStore.currentStep <= stepsStore.steps.length && stepsStore.steps.length > 0"
+        :key="stepsStore.currentStep">
+        <component :is="stepsStore.steps[stepsStore.currentStep - 1].component" />
       </div>
     </transition>
 
     <!-- Navegación entre pasos -->
-    <div v-if="currentStep <= steps.length" class="flex justify-between mt-6">
-      <!-- Botón Anterior -->
-      <button :class="{ 'invisible': currentStep === 1 }" @click="handlePrevious"
+    <div v-if="stepsStore.currentStep <= stepsStore.steps.length && stepsStore.steps.length > 0"
+      class="flex justify-between mt-6">
+      <button :class="{ invisible: stepsStore.currentStep === 1 }" @click="stepsStore.previousStep"
         class="px-4 py-2 text-white rounded-lg bg-gray-500 hover:bg-gray-600 transition-all duration-300">
         &lt; Anterior
       </button>
 
-      <!-- Botón Siguiente -->
-      <button :class="{ 'invisible': currentStep > steps.length }" @click="handleNext"
+      <button :class="{ invisible: stepsStore.currentStep > stepsStore.steps.length }" @click="stepsStore.nextStep"
         class="px-4 py-2 text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-all duration-300">
         Siguiente &gt;
       </button>
@@ -219,7 +189,7 @@ export default {
 
     <!-- Mensaje final -->
     <div v-else>
-      <p class="text-center font-bold text-lg">¡{{ documentos.currentTypeOfDocument }} completado!</p>
+      <p class="text-center font-bold text-lg">¡Formulario completado!</p>
       <button @click="handleSubmit"
         class="mt-4 px-6 py-3 text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all duration-300">
         Guardar
@@ -227,6 +197,7 @@ export default {
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .fade-slide-enter-active,

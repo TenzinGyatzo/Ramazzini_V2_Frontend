@@ -192,6 +192,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
   function setCurrentTypeOfDocument(type: string) {
     currentTypeOfDocument.value = type;
   }
+  
 
   function resetCurrentTypeOfDocument() {
     currentTypeOfDocument.value = "";

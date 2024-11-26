@@ -1,5 +1,5 @@
 <script setup>
-import { watch, ref } from 'vue';
+import { watch, ref, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
@@ -7,14 +7,17 @@ const { formDataHistoriaClinica } = useFormDataStore();
 // Valor local para la pregunta principal
 const psiquiatricos = ref('No');
 
-// Asegurar que formData tenga un valor inicial para psiquiatricos
-if (!formDataHistoriaClinica.psiquiatricos) {
-    formDataHistoriaClinica.psiquiatricos = psiquiatricos.value;
-}
+onUnmounted(() => {
+    // Asegurar que formData tenga un valor inicial para psiquiatricos
+    if (!formDataHistoriaClinica.psiquiatricos) {
+        formDataHistoriaClinica.psiquiatricos = psiquiatricos.value;
+    }
 
-if (!formDataHistoriaClinica.psiquiatricosEspecificar) {
-    formDataHistoriaClinica.psiquiatricosEspecificar = 'Negado';
-}
+    if (!formDataHistoriaClinica.psiquiatricosEspecificar) {
+        formDataHistoriaClinica.psiquiatricosEspecificar = 'Negado';
+    }
+});
+
 
 // Sincronizar psiquiatricos con formData
 watch(psiquiatricos, (newValue) => {
@@ -38,7 +41,8 @@ watch(psiquiatricos, (newValue) => {
         <h2>PSIQUIÁTRICOS</h2>
         <!-- Pregunta principal -->
         <div class="mb-4">
-            <p class="font-medium mb-1 text-gray-800 leading-5">¿Antecedentes de trastornos psiquiátricos en la familia?</p>
+            <p class="font-medium mb-1 text-gray-800 leading-5">¿Antecedentes de trastornos psiquiátricos en la familia?
+            </p>
             <div class="flex items-center space-x-6 font-light">
                 <label class="flex items-center space-x-2">
                     <input type="radio" value="No" v-model="psiquiatricos" class="form-radio accent-emerald-600" />
@@ -58,7 +62,7 @@ watch(psiquiatricos, (newValue) => {
                 <input type="text"
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     v-model="formDataHistoriaClinica.psiquiatricosEspecificar"
-                    placeholder="Madre, Padre, Abuelo Materno, etc">
+                    placeholder="Madre, Padre, Abuelo Materno, etc" required>
             </div>
         </div>
     </div>
