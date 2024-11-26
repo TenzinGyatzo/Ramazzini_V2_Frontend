@@ -35,7 +35,7 @@ watch(alimentacionDeficiente, (newValue) => {
 <template>
     <div>
         <h1 class="font-bold mb-4 text-gray-800 leading-5">Antecedentes Personales No Patolóficos</h1>
-
+        <h2>ALIMENTACIÓN</h2>
         <!-- Pregunta principal -->
         <div class="mb-4">
             <p class="font-medium mb-1 text-gray-800 leading-5">¿La alimentación del trabajador es deficiente?</p>

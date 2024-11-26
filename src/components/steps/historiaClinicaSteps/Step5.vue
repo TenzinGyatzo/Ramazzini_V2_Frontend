@@ -35,7 +35,7 @@ watch(cardiopaticos, (newValue) => {
 <template>
     <div>
         <h1 class="font-bold mb-4 text-gray-800 leading-5">Antecedentes Heredofamiliares</h1>
-
+        <h2>CARDIOPÁTICOS</h2>
         <!-- Pregunta principal -->
         <div class="mb-4">
             <p class="font-medium mb-1 text-gray-800 leading-5">¿Casos de problemas cardíacos en la familia?</p>

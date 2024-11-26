@@ -35,7 +35,7 @@ watch(toxicomanias, (newValue) => {
 <template>
     <div>
         <h1 class="font-bold mb-4 text-gray-800 leading-5">Antecedentes Heredofamiliares</h1>
-
+        <h2>TOXICOMANIAS</h2>
         <!-- Pregunta principal -->
         <div class="mb-4">
             <p class="font-medium mb-1 text-gray-800 leading-5">¿El trabajador tiene historial de adicciones por consumo compulsivo de sustancias psicoactivas?</p>

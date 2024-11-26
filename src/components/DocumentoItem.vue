@@ -1,7 +1,7 @@
 <script setup>
 import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
 import { ref } from 'vue';
-import { VPdfViewer, useLicense } from '@vue-pdf-viewer/viewer';
+import { VPdfViewer, Locales, useLicense } from '@vue-pdf-viewer/viewer';
 
 // If the value is empty or incorrect, the watermark will remain.
 const licenseKey = import.meta.env.VITE_VPV_LICENSE ?? '102d64ec-006b-4fd6-8850-a00a050703ad';
@@ -13,27 +13,99 @@ useLicense({ licenseKey });
 // Estados para mostrar el visor y la URL del PDF
 const showPdfViewer = ref(false);
 const pdfUrl = ref('');
+const customLang = ref("es_MX")
+
+const localization = {
+    customLang: {
+        // Import the English localization as a fallback
+        ...Locales.en_US,
+        documentPropertiesLabel: 'Propiedades del documento',
+        documentPropertiesTooltip: 'Mostrar propiedades del documento',
+        downloadFileLabel: 'Descargar',
+        downloadFileTooltip: 'Descargar archivo',
+        dragDropFileMessage: 'Arrastra y suelta un archivo aquí para abrirlo',
+        dualPageLabel: 'Página doble',
+        firstPageTooltip: 'Ir a la primera página',
+        fullScreenLabel: 'Pantalla completa',
+        fullScreenTooltip: 'Ver en pantalla completa',
+        handToolLabel: 'Herramienta de mano',
+        handToolTooltip: 'Mover página con herramienta de mano',
+        horizontalScrollingLabel: 'Desplazamiento horizontal',
+        lastPageLabel: 'Última página',
+        lastPageTooltip: 'Ir a la última página',
+        moreOptionTooltip: 'Más opciones',
+        nextPageTooltip: 'Página siguiente',
+        openLocalFileLabel: 'Abrir archivo local',
+        openLocalFileTooltip: 'Seleccionar un archivo local para abrir',
+        pageScrollingLabel: 'Desplazamiento por página',
+        passwordConfirmLabel: 'Confirmar',
+        passwordError: 'Contraseña incorrecta',
+        passwordModalMessage: 'Este documento está protegido con contraseña. Introduce la contraseña para continuar.',
+        passwordModalTitle: 'Contraseña requerida',
+        passwordPlaceholder: 'Introducir contraseña',
+        previousPageTooltip: 'Página anterior',
+        printCancelLabel: 'Cancelar impresión',
+        printLabel: 'Imprimir',
+        printLoadingMessage: 'Preparando para imprimir...',
+        printTooltip: 'Imprimir archivo',
+        propertiesAuthorLabel: 'Autor',
+        propertiesCreateOnLabel: 'Creado el',
+        propertiesCreatorLabel: 'Creador',
+        propertiesFilenameLabel: 'Nombre del archivo',
+        propertiesFileSizeLabel: 'Tamaño del archivo',
+        propertiesKeywordLabel: 'Palabras clave',
+        propertiesModifiedOnLabel: 'Modificado el',
+        propertiesPageCountLabel: 'Cantidad de páginas',
+        propertiesPDFProducerLabel: 'Productor PDF',
+        propertiesPDFVersionLabel: 'Versión de PDF',
+        propertiesSubjectLabel: 'Asunto',
+        propertiesTitleLabel: 'Título',
+        rotateClockwiseLabel: 'Girar a la derecha',
+        rotateClockwiseTooltip: 'Girar en sentido horario',
+        rotateCounterclockwiseLabel: 'Girar a la izquierda',
+        rotateCounterclockwiseTooltip: 'Girar en sentido antihorario',
+        searchButtonTooltip: 'Buscar',
+        searchCloseButtonTooltip: 'Cerrar búsqueda',
+        searchInputPlaceholder: 'Buscar...',
+        searchNextTooltip: 'Siguiente resultado',
+        searchPrevTooltip: 'Resultado anterior',
+        singlePageLabel: 'Página única',
+        textSelectionLabel: 'Seleccionar texto',
+        textSelectionTooltip: 'Activar herramienta de selección de texto',
+        themeEnableDarkTooltip: 'Activar modo oscuro',
+        themeEnableLightTooltip: 'Activar modo claro',
+        thumbnailTooltip: 'Miniaturas',
+        verticalScrollingLabel: 'Desplazamiento vertical',
+        wrappedScrollingLabel: 'Desplazamiento envuelto',
+        zoomActualSize: 'Tamaño real',
+        zoomInTooltip: 'Acercar',
+        zoomOutTooltip: 'Alejar',
+        zoomPageFit: 'Ajustar a la página',
+        zoomPageWidth: 'Ajustar al ancho de la página',
+        zoomSelectTooltip: 'Seleccionar nivel de zoom'
+    }
+}
 
 // Función para abrir el visor con una ruta dinámica
 const abrirPdf = async (ruta) => {
-  const fullPath = `/${ruta}`; // Construir la ruta absoluta
+    const fullPath = `/${ruta}`; // Construir la ruta absoluta
 
-  try {
-    // Verificar si el archivo existe y es un PDF
-    const response = await fetch(fullPath, { method: 'HEAD' });
+    try {
+        // Verificar si el archivo existe y es un PDF
+        const response = await fetch(fullPath, { method: 'HEAD' });
 
-    if (response.ok && response.headers.get('Content-Type') === 'application/pdf') {
-      // Si el archivo existe y es un PDF, abrir el visor
-      pdfUrl.value = fullPath;
-      showPdfViewer.value = true;
-    } else {
-      // Si no es un PDF o no existe, mostrar alerta
-      alert('El archivo PDF no existe o no es válido.');
+        if (response.ok && response.headers.get('Content-Type') === 'application/pdf') {
+            // Si el archivo existe y es un PDF, abrir el visor
+            pdfUrl.value = fullPath;
+            showPdfViewer.value = true;
+        } else {
+            // Si no es un PDF o no existe, mostrar alerta
+            alert('El archivo PDF no existe o no es válido.');
+        }
+    } catch (error) {
+        // Manejo de errores de red u otros problemas
+        alert('Ocurrió un error al intentar cargar el archivo PDF.');
     }
-  } catch (error) {
-    // Manejo de errores de red u otros problemas
-    alert('Ocurrió un error al intentar cargar el archivo PDF.');
-  }
 };
 
 // Función para cerrar el visor
@@ -244,8 +316,8 @@ defineProps({
         class="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-75 flex justify-center items-center z-50"
         @click.self="cerrarPdf">
         <!-- Botón para cerrar, en el fondo -->
-        <div class="absolute top-4 right-4">
-            <button class="bg-red-500 text-white px-4 py-2 rounded shadow-lg hover:bg-red-600 transition"
+        <div class="absolute top-2 right-2">
+            <button class="bg-red-600 text-white text-sm px-4 py-2 rounded shadow-lg hover:bg-red-500 transition"
                 @click="cerrarPdf">
                 Cerrar
             </button>
@@ -253,7 +325,8 @@ defineProps({
 
         <!-- Contenedor del visor de PDF -->
         <div :style="{ width: '90%', height: '90%' }" class="bg-white rounded shadow-lg relative">
-            <VPdfViewer :src="pdfUrl" />
+            <VPdfViewer :src="pdfUrl" :initialThumbnails-visible="true" :initialScale="2" locale="customLang"
+                :localization="localization" />
         </div>
     </div>
 

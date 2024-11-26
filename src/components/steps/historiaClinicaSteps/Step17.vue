@@ -35,7 +35,7 @@ watch(obesidad, (newValue) => {
 <template>
     <div>
         <h1 class="font-bold mb-4 text-gray-800 leading-5">Antecedentes Personales Patológicos</h1>
-
+        <h2>OBESIDAD</h2>
         <!-- Pregunta principal -->
         <div class="mb-4">
             <p class="font-medium mb-1 text-gray-800 leading-5">¿Historial de obesidad en el trabajador?</p>

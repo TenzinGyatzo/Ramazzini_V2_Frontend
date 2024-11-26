@@ -1,5 +1,5 @@
 <script>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
@@ -84,19 +84,64 @@ export default {
       return [];
     });
 
+    let isNavigating = false; // Bandera para controlar la navegación
+
     const handleNext = () => {
+      if (isNavigating) return; // Evitar múltiples entradas rápidas
+      isNavigating = true;
+
       if (currentStep.value < steps.value.length) {
         currentStep.value++;
       } else {
         currentStep.value = steps.value.length + 1; // Marca el formulario como completado
       }
+
+      // Esperar un momento antes de permitir otra navegación
+      setTimeout(() => {
+        isNavigating = false;
+      }, 500); // Ajusta el tiempo según sea necesario
     };
 
     const handlePrevious = () => {
+      if (isNavigating) return; // Evitar múltiples entradas rápidas
+      isNavigating = true;
+
       if (currentStep.value > 1) {
         currentStep.value--;
       }
+
+      setTimeout(() => {
+        isNavigating = false;
+      }, 300); // Ajusta el tiempo según sea necesario
     };
+
+    // Manejo de eventos de teclado
+    const handleKeyDown = (event) => {
+      const activeElement = document.activeElement;
+
+      // Permitir navegación en campos de entrada
+      if (activeElement.tagName === 'TEXTAREA') {
+        return; // Salir si un campo de texto está enfocado
+      }
+
+      // Manejar Enter y Backspace
+      if (event.key === 'Enter') {
+        event.preventDefault(); // Prevenir comportamiento por defecto de Enter
+        handleNext();
+      } else if (event.key === 'Backspace') {
+        event.preventDefault(); // Prevenir comportamiento por defecto de Backspace
+        handlePrevious();
+      }
+    };
+
+    onMounted(() => {
+      window.addEventListener('keydown', handleKeyDown);
+    });
+
+    onUnmounted(() => {
+      window.removeEventListener('keydown', handleKeyDown);
+    });
+
 
     // Función auxiliar para obtener el formulario plano según el tipo de documento
     const handleSubmit = () => {
@@ -225,15 +270,15 @@ button {
 .bg-emerald-600:active {
   transform: translateY(2px) scale(0.95);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  background-color: #059669; /* Tono más oscuro de verde */
+  background-color: #059669;
+  /* Tono más oscuro de verde */
 }
 
 /* Estilos específicos para los botones grises al ser presionados */
 .bg-gray-500:active {
   transform: translateY(2px) scale(0.95);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  background-color: #4b5563; /* Mantiene un tono de gris similar al hover */
+  background-color: #4b5563;
+  /* Mantiene un tono de gris similar al hover */
 }
-
-
 </style>
