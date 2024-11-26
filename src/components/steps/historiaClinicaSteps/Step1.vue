@@ -15,7 +15,7 @@ onUnmounted(() => {
   if (!formDataHistoriaClinica.motivoExamen) {
     formDataHistoriaClinica.motivoExamen = motivoExamen.value;
   }
-  
+
   if (!formDataHistoriaClinica.fechaHistoriaClinica) {
     formDataHistoriaClinica.fechaHistoriaClinica = today;
   }

@@ -56,7 +56,7 @@ export const useStepsStore = defineStore("steps", () => {
 
     setTimeout(() => {
       isNavigating.value = false;
-    }, 500);
+    }, 700);
   };
 
   // Retroceder al paso anterior

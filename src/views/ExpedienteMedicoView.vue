@@ -19,9 +19,10 @@ const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 
-watch(
+/* watch(
   () => route.params, // Observamos los parámetros idEmpresa e idCentroTrabajo
   (newParams) => {
+    console.log("Parámetros actuales:", newParams);
     const { idEmpresa, idCentroTrabajo, idTrabajador } = newParams;
     if (idEmpresa && idCentroTrabajo && idTrabajador) {
       // Cuando todos los parámetros están definidos, realizamos las llamadas necesarias
@@ -35,11 +36,21 @@ watch(
     }
   },
   { immediate: true } // Esto asegura que el watch se ejecute inmediatamente con el valor actual
-);
+); */
 
 onMounted(() => {
+  const empresaId = String(route.params.idEmpresa);
+  const centroTrabajoId = String(route.params.idCentroTrabajo);
   const trabajadorId = String(route.params.idTrabajador);
   documentos.fetchAllDocuments(trabajadorId);
+
+  // Setear los ID actuales en el store
+  empresas.currentEmpresaId = empresaId;
+  empresas.fetchEmpresaById(empresaId);
+  centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;
+  centrosTrabajo.fetchCentroTrabajoById(empresaId, centroTrabajoId);
+  trabajadores.currentTrabajadorId = trabajadorId;
+  trabajadores.fetchTrabajadorById(empresaId, centroTrabajoId, trabajadorId);
   formData.resetFormData();
 });
 
@@ -53,72 +64,52 @@ const navigateTo = (routeName, params) => {
 <template>
   <div class="p-5 grid gap-5">
     <div class="flex flex-wrap flex-col md:flex-row justify-center gap-3 md:gap-6">
-      <GreenButton 
-        class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" 
-        text="Historia Clínica" 
-        @click="navigateTo('crear-documento', { 
-        idEmpresa: empresas.currentEmpresaId, 
-        idTrabajador: trabajadores.currentTrabajadorId, 
-        tipoDocumento: 'Historia Clínica' 
-      })"
-      />
-      <GreenButton 
-        class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" 
-        text="Exploración Física"
-        @click="navigateTo('crear-documento', { 
-        idEmpresa: empresas.currentEmpresaId, 
-        idTrabajador: trabajadores.currentTrabajadorId, 
-        tipoDocumento: 'Exploración Física' 
-      })"
-      />
-      <GreenButton 
-        class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" 
-        text="Examen Vista" 
-        @click="navigateTo('crear-documento', { 
-        idEmpresa: empresas.currentEmpresaId, 
-        idTrabajador: trabajadores.currentTrabajadorId, 
-        tipoDocumento: 'Examen Vista' 
-      })"
-      />
-      <GreenButton 
-        class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" 
-        text="Antidoping" 
-        @click="navigateTo('crear-documento', { 
-        idEmpresa: empresas.currentEmpresaId, 
-        idTrabajador: trabajadores.currentTrabajadorId, 
-        tipoDocumento: 'Antidoping' 
-      })"
-      />
-      <GreenButton 
-        class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" 
-        text="Aptitud" 
-        @click="navigateTo('crear-documento', { 
-        idEmpresa: empresas.currentEmpresaId, 
-        idTrabajador: trabajadores.currentTrabajadorId, 
-        tipoDocumento: 'Aptitud' 
-      })"
-      />
-      <GreenButton 
-        class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" 
-        text="Certificado" 
-        @click="navigateTo('crear-documento', { 
-        idEmpresa: empresas.currentEmpresaId, 
-        idTrabajador: trabajadores.currentTrabajadorId, 
-        tipoDocumento: 'Certificado' 
-      })"
-      />
+      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Historia Clínica"
+        @click="navigateTo('crear-documento', {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'Historia Clínica'
+        })" />
+      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Exploración Física"
+        @click="navigateTo('crear-documento', {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'Exploración Física'
+        })" />
+      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Examen Vista" @click="navigateTo('crear-documento', {
+        idEmpresa: empresas.currentEmpresaId,
+        idTrabajador: trabajadores.currentTrabajadorId,
+        tipoDocumento: 'Examen Vista'
+      })" />
+      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Antidoping" @click="navigateTo('crear-documento', {
+        idEmpresa: empresas.currentEmpresaId,
+        idTrabajador: trabajadores.currentTrabajadorId,
+        tipoDocumento: 'Antidoping'
+      })" />
+      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Aptitud" @click="navigateTo('crear-documento', {
+        idEmpresa: empresas.currentEmpresaId,
+        idTrabajador: trabajadores.currentTrabajadorId,
+        tipoDocumento: 'Aptitud'
+      })" />
+      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Certificado" @click="navigateTo('crear-documento', {
+        idEmpresa: empresas.currentEmpresaId,
+        idTrabajador: trabajadores.currentTrabajadorId,
+        tipoDocumento: 'Certificado'
+      })" />
       <div class="w-full flex justify-center">
         <SliderButton class="align-self-center" text="Documento Externo" />
       </div>
 
     </div>
     <Transition appear mode="out-in" name="slide-up">
-      <div v-if="trabajadores.currentTrabajador" class="w-full text-center flex flex-col items-center gap-2 mt-4 p-4 border border-gray-200 rounded-lg shadow-md bg-gray-50">
+      <div v-if="trabajadores.currentTrabajador"
+        class="w-full text-center flex flex-col items-center gap-2 mt-4 p-4 border border-gray-200 rounded-lg shadow-md bg-gray-50">
         <h1 class="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-800">
           {{ trabajadores.currentTrabajador?.nombre }}
         </h1>
         <h2 class="text-sm sm:text-base md:text-lg text-gray-500 italic">
-          {{ calcularEdad(trabajadores.currentTrabajador?.fechaNacimiento) }} años - {{ trabajadores.currentTrabajador?.puesto }}
+          {{ calcularEdad(trabajadores.currentTrabajador?.fechaNacimiento) }} años - {{
+            trabajadores.currentTrabajador?.puesto }}
         </h2>
       </div>
     </Transition>
@@ -130,7 +121,8 @@ const navigateTo = (routeName, params) => {
       <div v-else>
         <div v-if="documentos.documentsByYear && Object.keys(documentos.documentsByYear).length"
           class="grid grid-cols-1 gap-6"> <!-- xl:grid-cols-2 -->
-          <div v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))" :key="year">
+          <div v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
+            :key="year">
             <GrupoDocumentos :documents="documentos.documentsByYear[year]" :year="String(year)" />
           </div>
         </div>
@@ -142,4 +134,3 @@ const navigateTo = (routeName, params) => {
 
   </div>
 </template>
-

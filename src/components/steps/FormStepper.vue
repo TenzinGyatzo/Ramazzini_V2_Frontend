@@ -47,9 +47,6 @@ export default {
 
     // Establece los pasos al montar el componente
     onMounted(() => {
-      console.log(route.params);
-      console.log(route.params.tipoDocumento);
-
       documentos.setCurrentTypeOfDocument(route.params.tipoDocumento);
 
       if (documentos.currentTypeOfDocument === 'Antidoping') {

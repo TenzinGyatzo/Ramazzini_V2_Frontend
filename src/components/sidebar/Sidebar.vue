@@ -84,7 +84,7 @@ watch(() => trabajadores.currentTrabajador, (newTrabajador, oldTrabajador) => {
     </Transition>
 
     <Transition appear name="enter-left-exit-bounce">
-      <SidebarLink v-if="empresas.currentEmpresaId && isMounted"
+      <SidebarLink v-if="empresas.currentEmpresaId"
         :to="{ name: 'centros-trabajo', params: { idEmpresa: empresas.currentEmpresaId } }" icon="fas fa-warehouse"
         class="leading-5" @click.stop>
         <p>{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
@@ -93,7 +93,7 @@ watch(() => trabajadores.currentTrabajador, (newTrabajador, oldTrabajador) => {
     </Transition>
 
     <Transition name="enter-left-exit-bounce">
-      <SidebarLink v-if="centrosTrabajo.currentCentroTrabajoId && isMounted" :to="{
+      <SidebarLink v-if="centrosTrabajo.currentCentroTrabajoId && empresas.currentEmpresaId" :to="{
         name: 'trabajadores',
         params: {
           idEmpresa: empresas.currentEmpresaId || '',
@@ -106,7 +106,7 @@ watch(() => trabajadores.currentTrabajador, (newTrabajador, oldTrabajador) => {
     </Transition>
 
     <Transition name="enter-left-exit-bounce">
-      <SidebarLink v-if="trabajadores.currentTrabajadorId && isMounted" :to="{
+      <SidebarLink v-if="trabajadores.currentTrabajadorId && centrosTrabajo.currentCentroTrabajoId && empresas.currentEmpresaId" :to="{
         name: 'expediente-medico',
         params: {
           idEmpresa: empresas.currentEmpresaId || '',
@@ -120,7 +120,7 @@ watch(() => trabajadores.currentTrabajador, (newTrabajador, oldTrabajador) => {
     </Transition>
 
     <Transition name="enter-left-exit-bounce">
-      <SidebarLink v-if="documentos.currentTypeOfDocument && isMounted" :to="{
+      <SidebarLink v-if="documentos.currentTypeOfDocument && trabajadores.currentTrabajadorId && centrosTrabajo.currentCentroTrabajoId && empresas.currentEmpresaId" :to="{
         name: 'crear-documento',
         params: {
           idEmpresa: empresas.currentEmpresaId || '',

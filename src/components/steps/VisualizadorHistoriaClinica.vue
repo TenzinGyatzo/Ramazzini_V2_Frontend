@@ -1,7 +1,12 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 const formData = useFormDataStore();
+
+onMounted(() => {
+  formData.resetFormData();
+});
+
 
 const goToStep = (stepNumber) => {
   if (stepNumber >= 1 && stepNumber <= steps.value.length) {
@@ -11,15 +16,18 @@ const goToStep = (stepNumber) => {
   }
 };
 
-const antecedents = ref([
+const antecedentesHeredoFamiliares = ref([
   { name: 'NEFROPATÍAS', step: 2, key: 'nefropatias', specifyKey: 'nefropatiasEspecificar' },
   { name: 'DIABÉTICOS', step: 3, key: 'diabeticos', specifyKey: 'diabeticosEspecificar' },
   { name: 'HIPERTENSIVOS', step: 4, key: 'hipertensivos', specifyKey: 'hipertensivosEspecificar' },
   { name: 'CARDIOPÁTICOS', step: 5, key: 'cardiopaticos', specifyKey: 'cardiopaticosEspecificar' },
   { name: 'NEOPLÁSICOS', step: 6, key: 'neoplasicos', specifyKey: 'neoplasicosEspecificar' },
-  // Agrega más según sea necesario
+  { name: 'PSIQUÁTRICOS', step: 7, key: 'psiquiatricos', specifyKey: 'psiquiatricosEspecificar' },
+  { name: 'EPILÉPTICOS', step: 8, key: 'epilepticos', specifyKey: 'epilepticosEspecificar' },
+  { name: 'LEUTICOS', step: 9, key: 'leuticos', specifyKey: 'leuticosEspecificar' },
+  { name: 'FÍMICOS', step: 10, key: 'fimicos', specifyKey: 'fimicosEspecificar' },
+  { name: 'HEPATOPATÍAS', step: 11, key: 'hepatopatias', specifyKey: 'hepatopatiasEspecificar' },
 ]);
-
 
 </script>
 
@@ -37,18 +45,18 @@ const antecedents = ref([
             <th class="text-sm sm:text-base px-2 py-0 border border-gray-300 text-left">Valor</th>
           </tr>
         </thead>
+        <tbody>
           <tr class="odd:bg-white even:bg-gray-50">
             <td class="text-sm sm:text-base px-2 py-0 border border-gray-300 font-medium">Motivo Examen</td>
-            <td class="text-sm sm:text-base px-2 py-0 border border-gray-300">
-                <span>{{ formData.formDataHistoriaClinica.motivoExamen }}</span>
-            </td>
+            <td class="text-sm sm:text-base px-2 py-0 border border-gray-300">{{
+              formData.formDataHistoriaClinica.motivoExamen }}</td>
           </tr>
           <tr class="odd:bg-white even:bg-gray-50">
             <td class="text-sm sm:text-base px-2 py-0 border border-gray-300 font-medium">Fecha Historia Clínica</td>
-            <td class="text-sm sm:text-base px-2 py-0 border border-gray-300">
-                <span>{{ formData.formDataHistoriaClinica.fechaHistoriaClinica }}</span>
-            </td>
+            <td class="text-sm sm:text-base px-2 py-0 border border-gray-300">{{
+              formData.formDataHistoriaClinica.fechaHistoriaClinica }}</td>
           </tr>
+        </tbody>
       </table>
     </div>
 
@@ -64,105 +72,9 @@ const antecedents = ref([
             <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">Especifique</th>
           </tr>
         </thead>
-                <tbody>
-          <tr class="odd:bg-gray-50 even::bg-white ">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">NEFROPATÍAS</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 ">{{
-              formData.formDataHistoriaClinica.nefropatias === 'Si' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.nefropatias === 'No' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.nefropatiasEspecificar }}</td>
-          </tr>
-          <tr class="odd:bg-gray-50 even::bg-white">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">DIABÉTICOS</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.diabeticos === 'Si' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.diabeticos === 'No' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.diabeticosEspecificar }}</td>
-          </tr>
-          <tr class="odd:bg-gray-50 even::bg-white">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">HIPERTENSIVOS</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.hipertensivos === 'Si' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.hipertensivos === 'No' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.hipertensivosEspecificar }}</td>
-          </tr>
-          <tr class="odd:bg-gray-50 even::bg-white">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">CARDIOPÁTICOS</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.cardiopaticos === 'Si' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.cardiopaticos === 'No' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.cardiopaticosEspecificar }}</td>
-          </tr>
-          <tr class="odd:bg-gray-50 even::bg-white">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">NEOPLÁSICOS</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.neoplasicos === 'Si' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.neoplasicos === 'No' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.neoplasicosEspecificar }}</td>
-          </tr>
-          <tr class="odd:bg-gray-50 even::bg-white">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">PSIQUIÁTRICOS</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.psiquiatricos === 'Si' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.psiquiatricos === 'No' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.psiquiatricosEspecificar }}</td>
-          </tr>
-          <tr class="odd:bg-gray-50 even::bg-white">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">EPILÉPTICOS</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.epilepticos === 'Si' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.epilepticos === 'No' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.epilepticosEspecificar }}</td>
-          </tr>
-          <tr class="odd:bg-gray-50 even::bg-white">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">LEUTICOS</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.leuticos
-                === 'Si' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.leuticos
-                === 'No' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.leuticosEspecificar }}</td>
-          </tr>
-          <tr class="odd:bg-gray-50 even::bg-white">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">FÍMICOS</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.fimicos
-                === 'Si' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.fimicos
-                === 'No' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.fimicosEspecificar }}</td>
-          </tr>
-          <tr class="odd:bg-gray-50 even::bg-white">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">HEPATOPATÍAS</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.hepatopatias === 'Si' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.hepatopatias === 'No' ? 'XX' : '' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.hepatopatiasEspecificar }}</td>
-          </tr>
-        </tbody> 
-<!--         <tbody>
-          <tr v-for="(item, index) in antecedents" :key="index" :class="{ 'cursor-pointer hover:bg-gray-100': true }"
-            @click="goToStep(item.step)">
+        <tbody>
+          <tr v-for="(item, index) in antecedentesHeredoFamiliares" :key="index"
+            :class="index % 2 === 0 ? 'bg-gray-50' : 'bg-white'">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">{{ item.name }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ formData.formDataHistoriaClinica[item.key] === 'Si' ? 'XX' : '' }}
@@ -174,8 +86,7 @@ const antecedents = ref([
               {{ formData.formDataHistoriaClinica[item.specifyKey] }}
             </td>
           </tr>
-        </tbody> -->
-
+        </tbody>
       </table>
     </div>
 

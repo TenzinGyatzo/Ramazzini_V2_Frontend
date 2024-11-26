@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -70,7 +70,7 @@ const toggleImportModal = () => {
   showImportModal.value = !showImportModal.value;
 };
 
-watch(
+/* watch(
   () => route.params, // Observamos los parámetros idEmpresa e idCentroTrabajo
   (newParams) => {
     const { idEmpresa, idCentroTrabajo } = newParams;
@@ -84,7 +84,19 @@ watch(
     }
   },
   { immediate: true } // Esto asegura que el watch se ejecute inmediatamente con el valor actual
-);
+); */
+
+onMounted(() => {
+  const empresaId = String(route.params.idEmpresa);
+  const centroTrabajoId = String(route.params.idCentroTrabajo);
+  trabajadores.fetchTrabajadores(empresaId, centroTrabajoId);
+
+  // Setear los ID actuales en el store
+  empresas.currentEmpresaId = empresaId;
+  empresas.fetchEmpresaById(empresaId);
+  centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;
+  centrosTrabajo.fetchCentroTrabajoById(empresaId, centroTrabajoId);
+});
 
 const exportTrabajadores = async () => {
   try {
