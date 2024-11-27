@@ -1,6 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useEmpresasStore } from '@/stores/empresas';
+import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { calcularEdad, calcularAntiguedad, convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
+
+const empresas = useEmpresasStore();
+const trabajadores = useTrabajadoresStore();
 const formData = useFormDataStore();
 
 onMounted(() => {
@@ -35,26 +41,101 @@ const antecedentesHeredoFamiliares = ref([
   <div
     class="flex flex-wrap justify-start gap-4 border-shadow w-full text-left rounded-lg p-5 transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-6xl mx-auto">
 
-    <!-- Historia Clínica -->
-    <div class="w-full md:w-3/5 mx-auto mb-1">
-      <!-- <h2 class="text-lg font-semibold mb-1">Historia Clínica</h2> -->
+    <div class="flex flex-wrap w-full gap-4">
+      <!-- Empresa -->
+      <div class="w-full md:w-2/5">
+        <p class="text-center text-base sm:text-lg font-semibold">
+          {{ empresas.currentEmpresa.nombreComercial }}
+        </p>
+      </div>
+
+      <!-- Fecha y Motivo del Examen -->
+      <div
+        class="w-full md:w-[calc(60%-1rem)] flex flex-wrap gap-2 justify-start md:justify-end text-sm sm:text-base">
+        <p class="flex-1 md:flex-none">Ingreso ( {{ formData.formDataHistoriaClinica.motivoExamen === 'Ingreso' ? 'X' :
+          '&nbsp;' }} )</p>
+        <p class="flex-1 md:flex-none">Inicial ( {{ formData.formDataHistoriaClinica.motivoExamen === 'Inicial' ? 'X' :
+          '&nbsp;' }} )</p>
+        <p class="flex-1 md:flex-none">Periódico ( {{ formData.formDataHistoriaClinica.motivoExamen === 'Periódico' ?
+          'X' : '&nbsp;' }} )</p>
+        <p class="w-full md:w-auto">Fecha: <span class="font-semibold">{{
+          formData.formDataHistoriaClinica.fechaHistoriaClinica }}</span></p>
+      </div>
+    </div>
+
+    <!-- Trabajador -->
+    <div class="w-full">
       <table class="table-auto w-full border-collapse border border-gray-200">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="text-sm sm:text-base px-2 py-0 border w-1/2 border-gray-300 text-left">Campo</th>
-            <th class="text-sm sm:text-base px-2 py-0 border border-gray-300 text-left">Valor</th>
-          </tr>
-        </thead>
         <tbody>
           <tr class="odd:bg-white even:bg-gray-50">
-            <td class="text-sm sm:text-base px-2 py-0 border border-gray-300 font-medium">Motivo Examen</td>
-            <td class="text-sm sm:text-base px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.motivoExamen }}</td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              NOMBRE
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.nombre }}
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              NACIMIENTO
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ convertirFechaISOaDDMMYYYY(trabajadores.currentTrabajador.fechaNacimiento) }}
+            </td>
           </tr>
           <tr class="odd:bg-white even:bg-gray-50">
-            <td class="text-sm sm:text-base px-2 py-0 border border-gray-300 font-medium">Fecha Historia Clínica</td>
-            <td class="text-sm sm:text-base px-2 py-0 border border-gray-300">{{
-              formData.formDataHistoriaClinica.fechaHistoriaClinica }}</td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              ESCOLARIDAD
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.escolaridad }}
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              EDAD
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}
+            </td>
+          </tr>
+          <tr class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              PUESTO
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.puesto }}
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              SEXO
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.sexo }}
+            </td>
+          </tr>
+          <tr class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              ANTIGUEDAD
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ calcularAntiguedad(trabajadores.currentTrabajador.fechaIngreso) }}
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              TELÉFONO
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.telefono }}
+            </td>
+          </tr>
+          <tr class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              ESTADO CIVIL
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.estadoCivil }}
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              HIJOS
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.hijos }}
+            </td>
           </tr>
         </tbody>
       </table>
@@ -288,6 +369,113 @@ const antecedentesHeredoFamiliares = ref([
         </tbody>
       </table>
     </div>
+
+    <!-- Antecedentes Gineco Obstétricos -->
+    <!-- <div v-if="trabajadores.currentTrabajador.sexo === 'Femenino'" class="w-full">
+      <h2 class="text-lg font-semibold mb-1">Antecedentes Gineco Obstétricos</h2>
+      <table class="table-auto w-full border-collapse border border-gray-200">
+        <tbody>
+          <tr class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              MENARCA
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.menarca }}
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              FECHA ULTIMA REGLA
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ convertirFechaISOaDDMMYYYY(trabajadores.currentTrabajador.fechaNacimiento) }}
+            </td>
+          </tr>
+          <tr class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              DURACIÓN PROMEDIO
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.escolaridad }}
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              CANTIDAD DE SANGRE
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}
+            </td>
+          </tr>
+          <tr class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              FRECUENCIA
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.puesto }}
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              DOLOR MENSTRUAL
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.sexo }}
+            </td>
+          </tr>
+          <tr class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              GESTAS
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ calcularAntiguedad(trabajadores.currentTrabajador.fechaIngreso) }}
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              EMBARAZO ACTUAL
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.telefono }}
+            </td>
+          </tr>
+          <tr class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              PARTOS
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.estadoCivil }}
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              PLANIFICACIÓN FAMILIAR
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.hijos }}
+            </td>
+          </tr>
+          <tr class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              CESÁREAS
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.estadoCivil }}
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              VIDA SEXUAL ACTIVA
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.hijos }}
+            </td>
+          </tr>
+          <tr class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              ABORTOS
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.estadoCivil }}
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              ÚLTIMO PAPANICOLAOU
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+              {{ trabajadores.currentTrabajador.hijos }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div> -->
   </div>
 </template>
 

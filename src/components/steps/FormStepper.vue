@@ -1,6 +1,7 @@
 <script>
 import { onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
 import { useStepsStore } from '@/stores/steps';
@@ -34,11 +35,17 @@ import Step24HistoriaClinica from '../steps/historiaClinicaSteps/Step24.vue';
 import Step25HistoriaClinica from '../steps/historiaClinicaSteps/Step25.vue';
 import Step26HistoriaClinica from '../steps/historiaClinicaSteps/Step26.vue';
 import Step27HistoriaClinica from '../steps/historiaClinicaSteps/Step27.vue';
+import Step28HistoriaClinica from '../steps/historiaClinicaSteps/Step28.vue';
+import Step29HistoriaClinica from '../steps/historiaClinicaSteps/Step29.vue';
+import Step30HistoriaClinica from '../steps/historiaClinicaSteps/Step30.vue';
+import Step31HistoriaClinica from '../steps/historiaClinicaSteps/Step31.vue';
+import Step32HistoriaClinica from '../steps/historiaClinicaSteps/Step32.vue';
 
 
 export default {
-  components: { Step1Antidoping, Step2Antidoping, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica },
+  components: { Step1Antidoping, Step2Antidoping, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica },
   setup() {
+    const trabajadores = useTrabajadoresStore();
     const formData = useFormDataStore();
     const documentos = useDocumentosStore();
     const stepsStore = useStepsStore();
@@ -55,7 +62,7 @@ export default {
           { component: Step2Antidoping, name: 'Paso 2' },
         ]);
       } else if (documentos.currentTypeOfDocument === 'Historia Clínica') {
-        stepsStore.setSteps([
+        const historiaClinicaSteps = [
           { component: Step1HistoriaClinica, name: 'Paso 1' },
           { component: Step2HistoriaClinica, name: 'Paso 2' },
           { component: Step3HistoriaClinica, name: 'Paso 3' },
@@ -78,12 +85,29 @@ export default {
           { component: Step20HistoriaClinica, name: 'Paso 20' },
           { component: Step21HistoriaClinica, name: 'Paso 21' },
           { component: Step22HistoriaClinica, name: 'Paso 22' },
+          { component: Step22HistoriaClinica, name: 'Paso 22' },
           { component: Step23HistoriaClinica, name: 'Paso 23' },
           { component: Step24HistoriaClinica, name: 'Paso 24' },
           { component: Step25HistoriaClinica, name: 'Paso 25' },
           { component: Step26HistoriaClinica, name: 'Paso 26' },
-          { component: Step27HistoriaClinica, name: 'Paso 27' },
-        ]);
+          { component: Step27HistoriaClinica, name: 'Paso 27' }
+        ];
+
+        // Agregar pasos condicionalmente según el sexo del trabajador
+        if (trabajadores.currentTrabajador.sexo === 'Femenino') {
+          historiaClinicaSteps.push(
+            { component: Step28HistoriaClinica, name: 'Paso 28' },
+            { component: Step29HistoriaClinica, name: 'Paso 29' },
+            { component: Step30HistoriaClinica, name: 'Paso 30' },
+            { component: Step31HistoriaClinica, name: 'Paso 31' },
+          );
+        }
+
+        historiaClinicaSteps.push(
+          { component: Step32HistoriaClinica, name: 'Paso 32' }
+        );
+
+        stepsStore.setSteps(historiaClinicaSteps);
       }
     });
 

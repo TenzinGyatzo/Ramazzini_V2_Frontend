@@ -1,14 +1,36 @@
 <script setup>
-import { ref, watch, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { format } from 'date-fns';
+import { useEmpresasStore } from '@/stores/empresas';
+import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
+import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 
+const empresas = useEmpresasStore();
+const centrosTrabajo = useCentrosTrabajoStore();
+const trabajadores = useTrabajadoresStore();
 const { formDataHistoriaClinica } = useFormDataStore();
 
 // Valor local para la pregunta principal
 const motivoExamen = ref('Ingreso');
 // Obtener la fecha actual en formato YYYY-MM-DD
 const today = format(new Date(), 'yyyy-MM-dd');
+const todayDDMMYYYY = format(new Date(), 'dd-MM-yyyy');
+
+onMounted(() => {
+  // Establece rutaPDF en formData
+  const empresa = empresas.currentEmpresa.nombreComercial;
+  const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
+  const trabajador = trabajadores.currentTrabajador.nombre;
+  formDataHistoriaClinica.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/Historia-Clinica ${todayDDMMYYYY}.pdf`;
+
+  // Establece idTrabajador en formData
+  formDataHistoriaClinica.idTrabajador = trabajadores.currentTrabajadorId;
+
+  // Establece usuario creador y/o actualizador en formData
+  formDataHistoriaClinica.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
+  formDataHistoriaClinica.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
+});
 
 onUnmounted(() => {
   // Asignar defaults de formulario en caso de que no se haya interactuado con el componente

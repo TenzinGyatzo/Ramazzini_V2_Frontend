@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, watch, ref, onMounted } from 'vue';
+import { reactive, watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataAntidoping } = useFormDataStore();
@@ -17,7 +17,7 @@ const drugResults = reactive({
 });
 
 // Inicializar `formData` con valores por defecto al montar el componente
-onMounted(() => {
+onUnmounted(() => {
   Object.assign(formDataAntidoping, drugResults);
 });
 
