@@ -31,7 +31,7 @@ watch(partos, (newValue) => {
         <h2>PARTOS</h2>
         <!-- Pregunta principal -->
         <div class="mb-4">
-            <p class="font-medium mb-2 text-gray-800 leading-5">¿Cuántos embarazos ha tenido la trabajadora, incluyendo el actual si lo hay?</p>
+            <p class="font-medium mb-2 text-gray-800 leading-5">¿Cuántos partos completos ha tenido la trabajadora?</p>
             <div class="grid grid-cols-1 gap-2 font-light">
                 <label class="flex items-center space-x-2">
                     <input type="radio" value="0 (Ninguno)" v-model="partos"

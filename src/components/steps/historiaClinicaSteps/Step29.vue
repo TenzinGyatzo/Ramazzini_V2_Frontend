@@ -5,22 +5,22 @@ import { useFormDataStore } from '@/stores/formDataStore';
 const { formDataHistoriaClinica } = useFormDataStore();
 
 // Valor local para la pregunta principal
-const duracion = ref('5 días');
+const duracionPromedio = ref('5 días');
 
 onUnmounted(() => {
-    // Asegurar que formData tenga un valor inicial para duracion
-    if (!formDataHistoriaClinica.duracion) {
-        formDataHistoriaClinica.duracion = duracion.value;
+    // Asegurar que formData tenga un valor inicial para duracionPromedio
+    if (!formDataHistoriaClinica.duracionPromedio) {
+        formDataHistoriaClinica.duracionPromedio = duracionPromedio.value;
     }
 
-    if (!formDataHistoriaClinica.duracionEspecificar) {
-        formDataHistoriaClinica.duracionEspecificar = '5 días';
+    if (!formDataHistoriaClinica.duracionPromedioEspecificar) {
+        formDataHistoriaClinica.duracionPromedioEspecificar = '5 días';
     }
 });
 
-// Sincronizar duracion con formData
-watch(duracion, (newValue) => {
-    formDataHistoriaClinica.duracion = newValue;
+// Sincronizar duracionPromedio con formData
+watch(duracionPromedio, (newValue) => {
+    formDataHistoriaClinica.duracionPromedio = newValue;
 });
 
 </script>
@@ -34,37 +34,37 @@ watch(duracion, (newValue) => {
             <p class="font-medium mb-2 text-gray-800 leading-5">¿Cuántos días dura, en promedio, el periodo menstrual de la trabajadora?</p>
             <div class="grid grid-cols-2 gap-2 font-light">
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="2 días" v-model="duracion"
+                    <input type="radio" value="2 días" v-model="duracionPromedio"
                         class="form-radio accent-emerald-600" />
                     <span>2 días</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="3 días" v-model="duracion"
+                    <input type="radio" value="3 días" v-model="duracionPromedio"
                         class="form-radio accent-emerald-600" />
                     <span>3 días</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="4 días" v-model="duracion"
+                    <input type="radio" value="4 días" v-model="duracionPromedio"
                         class="form-radio accent-emerald-600" />
                     <span>4 días</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="5 días" v-model="duracion"
+                    <input type="radio" value="5 días" v-model="duracionPromedio"
                         class="form-radio accent-emerald-600" />
                     <span>5 días</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="6 días" v-model="duracion"
+                    <input type="radio" value="6 días" v-model="duracionPromedio"
                         class="form-radio accent-emerald-600" />
                     <span>6 días</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="7 días" v-model="duracion"
+                    <input type="radio" value="7 días" v-model="duracionPromedio"
                         class="form-radio accent-emerald-600" />
                     <span>7 días</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="Otro" v-model="duracion"
+                    <input type="radio" value="Otro" v-model="duracionPromedio"
                         class="form-radio accent-emerald-600" />
                     <span>Otro</span>
                 </label>

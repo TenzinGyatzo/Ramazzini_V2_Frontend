@@ -37,7 +37,7 @@ watch(alimentacionDeficiente, (newValue) => {
 
 <template>
     <div>
-        <h1 class="font-bold mb-4 text-gray-800 leading-5">Antecedentes Personales No Patolóficos</h1>
+        <h1 class="font-bold mb-4 text-gray-800 leading-5">Antecedentes Personales No Patológicos</h1>
         <h2>ALIMENTACIÓN</h2>
         <!-- Pregunta principal -->
         <div class="mb-4">
