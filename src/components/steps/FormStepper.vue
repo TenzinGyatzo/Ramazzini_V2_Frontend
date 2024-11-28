@@ -14,6 +14,8 @@ import Step3ExamenVista from '../steps/examenVistaSteps/Step3.vue';
 import Step4ExamenVista from '../steps/examenVistaSteps/Step4.vue';
 import Step5ExamenVista from '../steps/examenVistaSteps/Step5.vue';
 import Step6ExamenVista from '../steps/examenVistaSteps/Step6.vue';
+import Step1ExploracionFisica from '../steps/exploracionFisicaSteps/Step1.vue';
+import Step2ExploracionFisica from '../steps/exploracionFisicaSteps/Step2.vue';
 import Step1HistoriaClinica from '../steps/historiaClinicaSteps/Step1.vue';
 import Step2HistoriaClinica from '../steps/historiaClinicaSteps/Step2.vue';
 import Step3HistoriaClinica from '../steps/historiaClinicaSteps/Step3.vue';
@@ -62,7 +64,7 @@ import Step45HistoriaClinica from '../steps/historiaClinicaSteps/Step45.vue';
 import Step46HistoriaClinica from '../steps/historiaClinicaSteps/Step46.vue';
 
 export default {
-  components: { Step1Antidoping, Step2Antidoping, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica },
+  components: { Step1Antidoping, Step2Antidoping, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica },
   setup() {
     const trabajadores = useTrabajadoresStore();
     const formData = useFormDataStore();
@@ -89,8 +91,12 @@ export default {
           { component: Step5ExamenVista, name: 'Paso 5' },
           { component: Step6ExamenVista, name: 'Paso 6' },
         ]);
-      }
-      else if (documentos.currentTypeOfDocument === 'Historia Clínica') {
+      } else if (documentos.currentTypeOfDocument === 'Exploración Física') {
+        stepsStore.setSteps([
+          { component: Step1ExploracionFisica, name: 'Paso 1' },
+          { component: Step2ExploracionFisica, name: 'Paso 2' },
+        ]);
+      } else if (documentos.currentTypeOfDocument === 'Historia Clínica') {
         const historiaClinicaSteps = [
           { component: Step1HistoriaClinica, name: 'Paso 1' },
           { component: Step2HistoriaClinica, name: 'Paso 2' },

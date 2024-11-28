@@ -13,6 +13,7 @@ const { formDataExamenVista } = useFormDataStore();
 
 // Obtener la fecha actual en formato YYYY-MM-DD
 const today = format(new Date(), 'yyyy-MM-dd');
+const todayDDMMYYYY = format(new Date(), 'dd-MM-yyyy');
 
 onMounted(() => {
   // Establece idTrabajador en formData
@@ -21,6 +22,12 @@ onMounted(() => {
   // Establece usuario creador y/o actualizador en formData
   formDataExamenVista.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
   formDataExamenVista.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
+
+  // Establece rutaPDF en formData cuando aun no se ha seleccionado la fecha
+  const empresa = empresas.currentEmpresa.nombreComercial;
+  const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
+  const trabajador = trabajadores.currentTrabajador.nombre;
+  formDataExamenVista.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/Examen Vista ${todayDDMMYYYY}.pdf`;
 });
 
 onUnmounted(() => {

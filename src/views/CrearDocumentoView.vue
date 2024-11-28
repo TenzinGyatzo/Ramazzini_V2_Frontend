@@ -9,6 +9,7 @@ import { useFormDataStore } from '@/stores/formDataStore';
 import FormStepper from '@/components/steps/FormStepper.vue';
 import VisualizadorAntidoping from '@/components/steps/VisualizadorAntidoping.vue';
 import VisualizadorExamenVista from '@/components/steps/VisualizadorExamenVista.vue';
+import VisualizadorExploracionFisica from '@/components/steps/VisualizadorExploracionFisica.vue';
 import VisualizadorHistoriaClinica from '@/components/steps/VisualizadorHistoriaClinica.vue';
 
 const route = useRoute();
@@ -47,6 +48,16 @@ onUnmounted(() => {
     </div>
     <div class="w-full lg:w-1/2">
       <VisualizadorAntidoping />
+    </div>
+  </div>
+
+  <div v-if="documentos.currentTypeOfDocument === 'Exploración Física'"
+    class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+    <div class="w-full xl:w-1/4">
+      <FormStepper />
+    </div>
+    <div class="w-full xl:w-3/4">
+      <VisualizadorExploracionFisica />
     </div>
   </div>
 
