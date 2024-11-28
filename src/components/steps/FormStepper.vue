@@ -10,6 +10,10 @@ import Step1Antidoping from '../steps/antidopingSteps/Step1.vue';
 import Step2Antidoping from '../steps/antidopingSteps/Step2.vue';
 import Step1ExamenVista from '../steps/examenVistaSteps/Step1.vue';
 import Step2ExamenVista from '../steps/examenVistaSteps/Step2.vue';
+import Step3ExamenVista from '../steps/examenVistaSteps/Step3.vue';
+import Step4ExamenVista from '../steps/examenVistaSteps/Step4.vue';
+import Step5ExamenVista from '../steps/examenVistaSteps/Step5.vue';
+import Step6ExamenVista from '../steps/examenVistaSteps/Step6.vue';
 import Step1HistoriaClinica from '../steps/historiaClinicaSteps/Step1.vue';
 import Step2HistoriaClinica from '../steps/historiaClinicaSteps/Step2.vue';
 import Step3HistoriaClinica from '../steps/historiaClinicaSteps/Step3.vue';
@@ -58,7 +62,7 @@ import Step45HistoriaClinica from '../steps/historiaClinicaSteps/Step45.vue';
 import Step46HistoriaClinica from '../steps/historiaClinicaSteps/Step46.vue';
 
 export default {
-  components: { Step1Antidoping, Step2Antidoping, Step1ExamenVista, Step2ExamenVista, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica },
+  components: { Step1Antidoping, Step2Antidoping, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica },
   setup() {
     const trabajadores = useTrabajadoresStore();
     const formData = useFormDataStore();
@@ -80,6 +84,10 @@ export default {
         stepsStore.setSteps([
           { component: Step1ExamenVista, name: 'Paso 1' },
           { component: Step2ExamenVista, name: 'Paso 2' },
+          { component: Step3ExamenVista, name: 'Paso 3' },
+          { component: Step4ExamenVista, name: 'Paso 4' },
+          { component: Step5ExamenVista, name: 'Paso 5' },
+          { component: Step6ExamenVista, name: 'Paso 6' },
         ]);
       }
       else if (documentos.currentTypeOfDocument === 'Historia Clínica') {
@@ -173,26 +181,45 @@ export default {
     });
 
 
-    // Función auxiliar para obtener el formulario plano según el tipo de documento
+    // Función para limpiar valores undefined
+    function limpiarValoresUndefined(obj) {
+      return Object.fromEntries(
+        Object.entries(obj).filter(([_, value]) => value !== undefined)
+      );
+    }
+
     const handleSubmit = () => {
+      let datosLimpios;
+
       if (documentos.currentTypeOfDocument === 'Antidoping') {
-        console.log('Datos enviados:', formData.formDataAntidoping);
+        datosLimpios = limpiarValoresUndefined(formData.formDataAntidoping);
+        console.log('Datos enviados:', datosLimpios);
       } else if (documentos.currentTypeOfDocument === 'Aptitud') {
-        console.log('Datos enviados:', formData.formDataAptitud);
+        datosLimpios = limpiarValoresUndefined(formData.formDataAptitud);
+        console.log('Datos enviados:', datosLimpios);
       } else if (documentos.currentTypeOfDocument === 'Certificado') {
-        console.log('Datos enviados:', formData.formDataCertificado);
+        datosLimpios = limpiarValoresUndefined(formData.formDataCertificado);
+        console.log('Datos enviados:', datosLimpios);
       } else if (documentos.currentTypeOfDocument === 'Documento Externo') {
-        console.log('Datos enviados:', formData.formDataDocumentoExterno);
+        datosLimpios = limpiarValoresUndefined(formData.formDataDocumentoExterno);
+        console.log('Datos enviados:', datosLimpios);
       } else if (documentos.currentTypeOfDocument === 'Examen Vista') {
-        console.log('Datos enviados:', formData.formDataExamenVista);
+        datosLimpios = limpiarValoresUndefined(formData.formDataExamenVista);
+        console.log('Datos enviados:', datosLimpios);
       } else if (documentos.currentTypeOfDocument === 'Exploración Física') {
-        console.log('Datos enviados:', formData.formDataExploracionFisica);
+        datosLimpios = limpiarValoresUndefined(formData.formDataExploracionFisica);
+        console.log('Datos enviados:', datosLimpios);
       } else if (documentos.currentTypeOfDocument === 'Historia Clínica') {
-        console.log('Datos enviados:', formData.formDataHistoriaClinica);
+        datosLimpios = limpiarValoresUndefined(formData.formDataHistoriaClinica);
+        console.log('Datos enviados:', datosLimpios);
       } else {
         console.error(`Tipo de documento no reconocido: ${documentos.currentTypeOfDocument}`);
         return; // Salir si el tipo de documento no es válido
       }
+
+      // Si necesitas enviar los datos al backend, aquí usarías `datosLimpios`
+      // Ejemplo:
+      // api.post('/endpoint', datosLimpios);
 
       // Reiniciar el estado del formulario después de enviar
       formData.resetFormData();
@@ -201,6 +228,7 @@ export default {
       documentos.currentTypeOfDocument = null;
       router.back();
     };
+
 
     return {
       stepsStore,

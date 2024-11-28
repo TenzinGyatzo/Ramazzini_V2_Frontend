@@ -93,6 +93,138 @@ const goToStep = (stepNumber) => {
       </table>
     </div>
 
+    <!-- Agudeza Visual Sin Corrección -->
+    <div class="w-full">
+      <h2 class="text-lg font-semibold mb-1 text-center">Agudeza Visual Sin Corrección</h2>
+      <table class="table-auto w-full border-collapse border border-gray-200">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">-</th>
+            <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">OJO IZQUIERDO</th>
+            <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">OJO DERECHO</th>
+            <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">INTERPRETACIÓN</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
+            <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">LEJANA</td>
+            <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.ojoIzquierdoLejanaSinCorreccion ?
+                '20/' + formData.formDataExamenVista.ojoIzquierdoLejanaSinCorreccion : '' }}
+            </td>
+            <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.ojoDerechoLejanaSinCorreccion ?
+                '20/' + formData.formDataExamenVista.ojoDerechoLejanaSinCorreccion : '' }}
+            </td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.sinCorreccionLejanaInterpretacion }}
+            </td>
+          </tr>
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(3)">
+            <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">CERCANA</td>
+            <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.ojoIzquierdoCercanaSinCorreccion ?
+                '20/' + formData.formDataExamenVista.ojoIzquierdoCercanaSinCorreccion : '' }}
+            </td>
+            <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.ojoDerechoCercanaSinCorreccion ?
+                '20/' + formData.formDataExamenVista.ojoDerechoCercanaSinCorreccion : '' }}
+            </td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.sinCorreccionCercanaInterpretacion }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Requiere Lentes -->
+    <div class="w-full flex flex-wrap gap-0 md:gap-8 justify-start xl:justify-evenly text-sm sm:text-base">
+      <p class="w-full md:w-auto cursor-pointer" @click="goToStep(2)">
+        Requiere Lentes para Uso General: (
+        <span class="font-semibold">{{ formData.formDataExamenVista.requiereLentesUsoGeneral }}</span> )
+      </p>
+      <p class="w-full md:w-auto cursor-pointer" @click="goToStep(3)">
+        Requiere Lentes para Lectura: (
+        <span class="font-semibold">{{ formData.formDataExamenVista.requiereLentesParaLectura }}</span> )
+      </p>
+    </div>
+
+    <!-- Agudeza Visual Con Corrección -->
+    <div class="w-full">
+      <h2 class="text-lg font-semibold mb-1 text-center">Agudeza Visual Con Corrección</h2>
+      <table class="table-auto w-full border-collapse border border-gray-200">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">-</th>
+            <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">OJO IZQUIERDO</th>
+            <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">OJO DERECHO</th>
+            <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">INTERPRETACIÓN</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(4)">
+            <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">LEJANA</td>
+            <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.ojoIzquierdoLejanaConCorreccion ?
+                '20/' + formData.formDataExamenVista.ojoIzquierdoLejanaConCorreccion : 'NA' }}
+            </td>
+            <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.ojoDerechoLejanaConCorreccion ?
+                '20/' + formData.formDataExamenVista.ojoDerechoLejanaConCorreccion : 'NA' }}
+            </td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.conCorreccionLejanaInterpretacion ? 
+                formData.formDataExamenVista.conCorreccionLejanaInterpretacion : 'NA' }}
+            </td>
+          </tr>
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(5)">
+            <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">CERCANA</td>
+            <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.ojoIzquierdoCercanaConCorreccion ?
+                '20/' + formData.formDataExamenVista.ojoIzquierdoCercanaConCorreccion : 'NA' }}
+            </td>
+            <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.ojoDerechoCercanaConCorreccion  ?
+                '20/' + formData.formDataExamenVista.ojoDerechoCercanaConCorreccion : 'NA' }}
+            </td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.conCorreccionCercanaInterpretacion ?
+                formData.formDataExamenVista.conCorreccionCercanaInterpretacion : 'NA' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Prueba de Ishihara -->
+    <div class="w-full">
+      <h2 class="text-lg font-semibold mb-1 text-center">Prueba de Ishihara</h2>
+      <table class="table-auto w-full border-collapse border border-gray-200">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">PLACAS CORRECTAS</th>
+            <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">PORCENTAJE</th>
+            <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">INTERPRETACIÓN</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(6)">
+            <td class="w-1/3 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">
+              {{ formData.formDataExamenVista.placasCorrectas ?
+                formData.formDataExamenVista.placasCorrectas + ' de 14': '&nbsp;' }}
+            </td>
+            <td class="w-1/3 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.porcentajeIshihara ?
+                formData.formDataExamenVista.porcentajeIshihara + ' %': '' }}
+            </td>
+            <td class="w-1/3 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+              {{ formData.formDataExamenVista.interpretacionIshihara }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 

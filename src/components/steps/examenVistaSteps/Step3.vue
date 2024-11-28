@@ -4,39 +4,39 @@ import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataExamenVista } = useFormDataStore();
 
-const ojoIzquierdoLejanaSinCorreccion = ref(20);
-const ojoDerechoLejanaSinCorreccion = ref(20);
-const sinCorreccionLejanaInterpretacion = ref('Visión Normal');
-const requiereLentesUsoGeneral = ref('No');
+const ojoIzquierdoCercanaSinCorreccion = ref(20);
+const ojoDerechoCercanaSinCorreccion = ref(20);
+const sinCorreccionCercanaInterpretacion = ref('Visión Normal');
+const requiereLentesParaLectura = ref('No');
 
 onUnmounted(() => {
-  formDataExamenVista.ojoIzquierdoLejanaSinCorreccion = ojoIzquierdoLejanaSinCorreccion.value;
-  formDataExamenVista.ojoDerechoLejanaSinCorreccion = ojoDerechoLejanaSinCorreccion.value;
-  formDataExamenVista.sinCorreccionLejanaInterpretacion = sinCorreccionLejanaInterpretacion.value;
-  formDataExamenVista.requiereLentesUsoGeneral = requiereLentesUsoGeneral.value;
+  formDataExamenVista.ojoIzquierdoCercanaSinCorreccion = ojoIzquierdoCercanaSinCorreccion.value;
+  formDataExamenVista.ojoDerechoCercanaSinCorreccion = ojoDerechoCercanaSinCorreccion.value;
+  formDataExamenVista.sinCorreccionCercanaInterpretacion = sinCorreccionCercanaInterpretacion.value;
+  formDataExamenVista.requiereLentesParaLectura = requiereLentesParaLectura.value;
 })
 
 // Observa los cambios y actualiza el store y los campos relacionados
-watch([ojoIzquierdoLejanaSinCorreccion, ojoDerechoLejanaSinCorreccion], () => {
-  formDataExamenVista.ojoIzquierdoLejanaSinCorreccion = ojoIzquierdoLejanaSinCorreccion.value;
-  formDataExamenVista.ojoDerechoLejanaSinCorreccion = ojoDerechoLejanaSinCorreccion.value;
-  interpretarAgudezaVisualLejana();
+watch([ojoIzquierdoCercanaSinCorreccion, ojoDerechoCercanaSinCorreccion], () => {
+  formDataExamenVista.ojoIzquierdoCercanaSinCorreccion = ojoIzquierdoCercanaSinCorreccion.value;
+  formDataExamenVista.ojoDerechoCercanaSinCorreccion = ojoDerechoCercanaSinCorreccion.value;
+  interpretarAgudezaVisualCercana();
 });
 
 // Función para interpretar la agudeza visual
-function interpretarAgudezaVisualLejana() {
-  const interpretacionOjoIzquierdo = obtenerInterpretacion(ojoIzquierdoLejanaSinCorreccion.value);
-  const interpretacionOjoDerecho = obtenerInterpretacion(ojoDerechoLejanaSinCorreccion.value);
+function interpretarAgudezaVisualCercana() {
+  const interpretacionOjoIzquierdo = obtenerInterpretacion(ojoIzquierdoCercanaSinCorreccion.value);
+  const interpretacionOjoDerecho = obtenerInterpretacion(ojoDerechoCercanaSinCorreccion.value);
 
   // Actualiza la interpretación basada en el peor valor
-  sinCorreccionLejanaInterpretacion.value = ojoIzquierdoLejanaSinCorreccion.value > ojoDerechoLejanaSinCorreccion.value
+  sinCorreccionCercanaInterpretacion.value = ojoIzquierdoCercanaSinCorreccion.value > ojoDerechoCercanaSinCorreccion.value
     ? interpretacionOjoIzquierdo
     : interpretacionOjoDerecho;
 
-  formDataExamenVista.sinCorreccionLejanaInterpretacion = sinCorreccionLejanaInterpretacion.value;
+  formDataExamenVista.sinCorreccionCercanaInterpretacion = sinCorreccionCercanaInterpretacion.value;
 
   // Determina si requiere lentes
-  requiereLentes();
+  requiereLentesLectura();
 }
 
 // Función auxiliar para obtener la interpretación
@@ -58,14 +58,14 @@ function obtenerInterpretacion(valor) {
 }
 
 // Función para determinar si requiere lentes
-function requiereLentes() {
-  if (ojoIzquierdoLejanaSinCorreccion.value <= 20 && ojoDerechoLejanaSinCorreccion.value <= 20) {
-    requiereLentesUsoGeneral.value = "No";
+function requiereLentesLectura() {
+  if (ojoIzquierdoCercanaSinCorreccion.value <= 20 && ojoDerechoCercanaSinCorreccion.value <= 20) {
+    requiereLentesParaLectura.value = "No";
   } else {
-    requiereLentesUsoGeneral.value = "Si";
+    requiereLentesParaLectura.value = "Si";
   }
 
-  formDataExamenVista.requiereLentesUsoGeneral = requiereLentesUsoGeneral.value;
+  formDataExamenVista.requiereLentesParaLectura = requiereLentesParaLectura.value;
 }
 </script>
 
@@ -73,9 +73,9 @@ function requiereLentes() {
   <div>
     <h1 class="font-bold text-gray-800 ">Agudeza Visual</h1>
     <h1 class="font-bold mb-4 text-gray-800">SIN CORRECCIÓN</h1>
-    <h2 class="mb-4">LEJANA (CARTA SCHNELLEN)</h2>
+    <h2 class="mb-4">CERCANA (CARTA JAEGER)</h2>
 
-    <label for="ojoIzquierdoLejanaSinCorreccion">Ojo Izquierdo</label>
+    <label for="ojoIzquierdoCercanaSinCorreccion">Ojo Izquierdo</label>
     <div class="flex space-x-4 mt-1 mb-4">
       <div class="flex flex-col space-y-1">
         <input type="number"
@@ -86,11 +86,11 @@ function requiereLentes() {
       <div class="flex flex-col space-y-1">
         <input type="number"
           class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="ojoIzquierdoLejanaSinCorreccion" step="10" min="10" max="200" />
+          v-model="ojoIzquierdoCercanaSinCorreccion" step="10" min="10" max="200" />
       </div>
     </div>
 
-    <label for="ojoDerechoLejanaSinCorreccion">Ojo Derecho</label>
+    <label for="ojoDerechoCercanaSinCorreccion">Ojo Derecho</label>
     <div class="flex space-x-4 mt-1 mb-4">
       <div class="flex flex-col space-y-1">
         <input type="number"
@@ -101,7 +101,7 @@ function requiereLentes() {
       <div class="flex flex-col space-y-1">
         <input type="number"
           class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="ojoDerechoLejanaSinCorreccion" step="10" min="10" max="200" />
+          v-model="ojoDerechoCercanaSinCorreccion" step="10" min="10" max="200" />
       </div>
     </div>
 
@@ -109,7 +109,7 @@ function requiereLentes() {
     <input 
       type="text"
       class="w-full p-3 mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-      v-model="sinCorreccionLejanaInterpretacion"
+      v-model="sinCorreccionCercanaInterpretacion"
       readonly
     >
   </div>
