@@ -12,10 +12,6 @@ onUnmounted(() => {
     if (!formDataHistoriaClinica.abortos) {
         formDataHistoriaClinica.abortos = abortos.value;
     }
-
-    if (!formDataHistoriaClinica.abortosEspecificar) {
-        formDataHistoriaClinica.abortosEspecificar = '0 (Ninguno)';
-    }
 });
 
 // Sincronizar abortos con formData

@@ -18,7 +18,6 @@ onUnmounted(() => {
     }
 });
 
-
 // Sincronizar cardiopaticosPP con formData
 watch(cardiopaticosPP, (newValue) => {
     formDataHistoriaClinica.cardiopaticosPP = newValue;

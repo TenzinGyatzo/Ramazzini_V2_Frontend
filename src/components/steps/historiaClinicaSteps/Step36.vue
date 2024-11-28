@@ -12,10 +12,6 @@ onUnmounted(() => {
     if (!formDataHistoriaClinica.cantidadDeSangre) {
         formDataHistoriaClinica.cantidadDeSangre = cantidadDeSangre.value;
     }
-
-    if (!formDataHistoriaClinica.cantidadDeSangreEspecificar) {
-        formDataHistoriaClinica.cantidadDeSangreEspecificar = 'Normal';
-    }
 });
 
 // Sincronizar cantidadDeSangre con formData

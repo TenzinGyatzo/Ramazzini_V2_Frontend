@@ -15,15 +15,8 @@ const { formDataHistoriaClinica } = useFormDataStore();
 const motivoExamen = ref('Ingreso');
 // Obtener la fecha actual en formato YYYY-MM-DD
 const today = format(new Date(), 'yyyy-MM-dd');
-const todayDDMMYYYY = format(new Date(), 'dd-MM-yyyy');
 
 onMounted(() => {
-  // Establece rutaPDF en formData
-  const empresa = empresas.currentEmpresa.nombreComercial;
-  const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
-  const trabajador = trabajadores.currentTrabajador.nombre;
-  formDataHistoriaClinica.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/Historia-Clinica ${todayDDMMYYYY}.pdf`;
-
   // Establece idTrabajador en formData
   formDataHistoriaClinica.idTrabajador = trabajadores.currentTrabajadorId;
 
@@ -54,6 +47,12 @@ watch(motivoExamen, (newValue) => {
 // Mantener sincronizados los valores
 watch(fechaHistoriaClinica, (newValue) => {
   formDataHistoriaClinica.fechaHistoriaClinica = newValue;
+  
+  // Establece rutaPDF en formData
+  const empresa = empresas.currentEmpresa.nombreComercial;
+  const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
+  const trabajador = trabajadores.currentTrabajador.nombre;
+  formDataHistoriaClinica.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/Historia-Clinica ${formDataHistoriaClinica.fechaHistoriaClinica}.pdf`;
 });
 </script>
 

@@ -12,10 +12,6 @@ onUnmounted(() => {
     if (!formDataHistoriaClinica.frecuencia) {
         formDataHistoriaClinica.frecuencia = frecuencia.value;
     }
-
-    if (!formDataHistoriaClinica.frecuenciaEspecificar) {
-        formDataHistoriaClinica.frecuenciaEspecificar = 'Regular';
-    }
 });
 
 // Sincronizar frecuencia con formData

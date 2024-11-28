@@ -12,10 +12,6 @@ onUnmounted(() => {
     if (!formDataHistoriaClinica.gestas) {
         formDataHistoriaClinica.gestas = gestas.value;
     }
-
-    if (!formDataHistoriaClinica.gestasEspecificar) {
-        formDataHistoriaClinica.gestasEspecificar = '0 (Ninguna)';
-    }
 });
 
 // Sincronizar gestas con formData

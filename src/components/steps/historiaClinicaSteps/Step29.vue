@@ -12,10 +12,6 @@ onUnmounted(() => {
     if (!formDataHistoriaClinica.duracionPromedio) {
         formDataHistoriaClinica.duracionPromedio = duracionPromedio.value;
     }
-
-    if (!formDataHistoriaClinica.duracionPromedioEspecificar) {
-        formDataHistoriaClinica.duracionPromedioEspecificar = '5 días';
-    }
 });
 
 // Sincronizar duracionPromedio con formData

@@ -12,10 +12,6 @@ onUnmounted(() => {
     if (!formDataHistoriaClinica.menarca) {
         formDataHistoriaClinica.menarca = menarca.value;
     }
-
-    if (!formDataHistoriaClinica.menarcaEspecificar) {
-        formDataHistoriaClinica.menarcaEspecificar = '12-14 años';
-    }
 });
 
 // Sincronizar menarca con formData

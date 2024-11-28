@@ -8,6 +8,8 @@ import { useStepsStore } from '@/stores/steps';
 
 import Step1Antidoping from '../steps/antidopingSteps/Step1.vue';
 import Step2Antidoping from '../steps/antidopingSteps/Step2.vue';
+import Step1ExamenVista from '../steps/examenVistaSteps/Step1.vue';
+import Step2ExamenVista from '../steps/examenVistaSteps/Step2.vue';
 import Step1HistoriaClinica from '../steps/historiaClinicaSteps/Step1.vue';
 import Step2HistoriaClinica from '../steps/historiaClinicaSteps/Step2.vue';
 import Step3HistoriaClinica from '../steps/historiaClinicaSteps/Step3.vue';
@@ -52,9 +54,11 @@ import Step41HistoriaClinica from '../steps/historiaClinicaSteps/Step41.vue';
 import Step42HistoriaClinica from '../steps/historiaClinicaSteps/Step42.vue';
 import Step43HistoriaClinica from '../steps/historiaClinicaSteps/Step43.vue';
 import Step44HistoriaClinica from '../steps/historiaClinicaSteps/Step44.vue';
+import Step45HistoriaClinica from '../steps/historiaClinicaSteps/Step45.vue';
+import Step46HistoriaClinica from '../steps/historiaClinicaSteps/Step46.vue';
 
 export default {
-  components: { Step1Antidoping, Step2Antidoping, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica },
+  components: { Step1Antidoping, Step2Antidoping, Step1ExamenVista, Step2ExamenVista, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica },
   setup() {
     const trabajadores = useTrabajadoresStore();
     const formData = useFormDataStore();
@@ -72,7 +76,13 @@ export default {
           { component: Step1Antidoping, name: 'Paso 1' },
           { component: Step2Antidoping, name: 'Paso 2' },
         ]);
-      } else if (documentos.currentTypeOfDocument === 'Historia Clínica') {
+      } else if (documentos.currentTypeOfDocument === 'Examen Vista') {
+        stepsStore.setSteps([
+          { component: Step1ExamenVista, name: 'Paso 1' },
+          { component: Step2ExamenVista, name: 'Paso 2' },
+        ]);
+      }
+      else if (documentos.currentTypeOfDocument === 'Historia Clínica') {
         const historiaClinicaSteps = [
           { component: Step1HistoriaClinica, name: 'Paso 1' },
           { component: Step2HistoriaClinica, name: 'Paso 2' },
@@ -95,7 +105,6 @@ export default {
           { component: Step19HistoriaClinica, name: 'Paso 19' },
           { component: Step20HistoriaClinica, name: 'Paso 20' },
           { component: Step21HistoriaClinica, name: 'Paso 21' },
-          { component: Step22HistoriaClinica, name: 'Paso 22' },
           { component: Step22HistoriaClinica, name: 'Paso 22' },
           { component: Step23HistoriaClinica, name: 'Paso 23' },
           { component: Step24HistoriaClinica, name: 'Paso 24' },
@@ -127,7 +136,9 @@ export default {
         historiaClinicaSteps.push(
           { component: Step42HistoriaClinica, name: 'Paso 42' },
           { component: Step43HistoriaClinica, name: 'Paso 43' },
-          { component: Step44HistoriaClinica, name: 'Paso 44' }
+          { component: Step44HistoriaClinica, name: 'Paso 44' },
+          { component: Step45HistoriaClinica, name: 'Paso 45' },
+          { component: Step46HistoriaClinica, name: 'Paso 46' }
         );
 
         stepsStore.setSteps(historiaClinicaSteps);
@@ -139,7 +150,7 @@ export default {
       const activeElement = document.activeElement;
 
       // Permitir navegación en campos de entrada
-      if (activeElement.tagName === 'TEXTAREA') {
+      if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
         return; // Salir si un campo de texto está enfocado
       }
 
@@ -233,11 +244,24 @@ export default {
 
     <!-- Mensaje final -->
     <div v-else>
-      <p class="text-center font-bold text-lg">¡Formulario completado!</p>
-      <button @click="handleSubmit"
-        class="mt-4 px-6 py-3 text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all duration-300">
-        Guardar
-      </button>
+      <transition name="fade-slide" mode="out-in">
+        <div>
+          <p class="text-center text-2xl font-bold mb-2 text-emerald-600">¡Completado!</p>
+          <p class="text-center text-sm font-medium text-gray-500 mb-6">
+            Todos los pasos se han completado correctamente. Puedes guardar el PDF o revisar nuevamente.
+          </p>
+          <div class="flex justify-between">
+            <button @click="stepsStore.previousStep"
+              class="px-4 py-2 text-white rounded-lg bg-gray-500 hover:bg-gray-600 transition-all duration-300 shadow-md">
+              &lt; Anterior
+            </button>
+            <button @click="handleSubmit"
+              class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-transform duration-200 ease-in-out hover:scale-110 glow-animation">
+              Crear PDF
+            </button>
+          </div>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -295,5 +319,37 @@ button {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   background-color: #4b5563;
   /* Mantiene un tono de gris similar al hover */
+}
+
+.glow-animation {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.glow-animation::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, rgba(56, 248, 158, 0.1), rgba(56, 248, 158, 0.3));
+  opacity: 0.8;
+  transform: rotate(0deg);
+  z-index: -1;
+  animation: glow 3s linear infinite;
+  border-radius: inherit;
+  /* Asegura que siga la forma del botón */
+}
+
+@keyframes glow {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

@@ -9,45 +9,45 @@ import { useFormDataStore } from '@/stores/formDataStore';
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
-const { formDataAntidoping } = useFormDataStore();
+const { formDataExamenVista } = useFormDataStore();
 
 // Obtener la fecha actual en formato YYYY-MM-DD
 const today = format(new Date(), 'yyyy-MM-dd');
 
 onMounted(() => {
   // Establece idTrabajador en formData
-  formDataAntidoping.idTrabajador = trabajadores.currentTrabajadorId;
+  formDataExamenVista.idTrabajador = trabajadores.currentTrabajadorId;
 
   // Establece usuario creador y/o actualizador en formData
-  formDataAntidoping.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-  formDataAntidoping.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
+  formDataExamenVista.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
+  formDataExamenVista.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para fechaAntidoping
-  if (!formDataAntidoping.fechaAntidoping) {
-    formDataAntidoping.fechaAntidoping = today;
+  // Asegurar que formData tenga un valor inicial para fechaExamenVista
+  if (!formDataExamenVista.fechaExamenVista) {
+    formDataExamenVista.fechaExamenVista = today;
   }
 })
 
 // Inicializar la referencia local sincronizada con formData
-const fechaAntidoping = ref(today);
+const fechaExamenVista = ref(today);
 
 // Mantener sincronizados los valores
-watch(fechaAntidoping, (newValue) => {
-  formDataAntidoping.fechaAntidoping = newValue;
+watch(fechaExamenVista, (newValue) => {
+  formDataExamenVista.fechaExamenVista = newValue;
 
   // Establece rutaPDF en formData
   const empresa = empresas.currentEmpresa.nombreComercial;
   const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
   const trabajador = trabajadores.currentTrabajador.nombre;
-  formDataAntidoping.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/Antidoping ${formDataAntidoping.fechaAntidoping}.pdf`;
+  formDataExamenVista.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/Examen Vista ${formDataExamenVista.fechaExamenVista}.pdf`;
 });
 </script>
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Fecha de realización de la prueba</h1>
-    <FormKit type="date" name="fechaAntidoping" placeholder="Seleccione una fecha" v-model="fechaAntidoping" />
+    <h1 class="font-bold mb-4 text-gray-800 leading-5">Fecha de valoración</h1>
+    <FormKit type="date" name="fechaExamenVista" placeholder="Seleccione una fecha" v-model="fechaExamenVista" />
   </div>
 </template>

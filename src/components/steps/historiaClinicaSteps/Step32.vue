@@ -12,10 +12,6 @@ onUnmounted(() => {
     if (!formDataHistoriaClinica.partos) {
         formDataHistoriaClinica.partos = partos.value;
     }
-
-    if (!formDataHistoriaClinica.partosEspecificar) {
-        formDataHistoriaClinica.partosEspecificar = '0 (Ninguno)';
-    }
 });
 
 // Sincronizar partos con formData

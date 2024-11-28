@@ -19,25 +19,6 @@ const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 
-/* watch(
-  () => route.params, // Observamos los parámetros idEmpresa e idCentroTrabajo
-  (newParams) => {
-    console.log("Parámetros actuales:", newParams);
-    const { idEmpresa, idCentroTrabajo, idTrabajador } = newParams;
-    if (idEmpresa && idCentroTrabajo && idTrabajador) {
-      // Cuando todos los parámetros están definidos, realizamos las llamadas necesarias
-      empresas.fetchEmpresaById(String(idEmpresa));
-      centrosTrabajo.fetchCentroTrabajoById(String(idEmpresa), String(idCentroTrabajo));
-      trabajadores.fetchTrabajadorById(String(idEmpresa), String(idCentroTrabajo), String(idTrabajador));
-
-      empresas.currentEmpresaId = String(idEmpresa); // Seteamos el id de la empresa actual en el store
-      centrosTrabajo.currentCentroTrabajoId = String(idCentroTrabajo); // Seteamos el id del centro de trabajo actual en el store
-      trabajadores.currentTrabajadorId = String(idTrabajador); // Seteamos el id del trabajador actual en el store
-    }
-  },
-  { immediate: true } // Esto asegura que el watch se ejecute inmediatamente con el valor actual
-); */
-
 onMounted(() => {
   const empresaId = String(route.params.idEmpresa);
   const centroTrabajoId = String(route.params.idCentroTrabajo);

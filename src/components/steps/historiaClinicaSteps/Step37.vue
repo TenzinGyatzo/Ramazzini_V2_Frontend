@@ -12,10 +12,6 @@ onUnmounted(() => {
     if (!formDataHistoriaClinica.dolorMenstrual) {
         formDataHistoriaClinica.dolorMenstrual = dolorMenstrual.value;
     }
-
-    if (!formDataHistoriaClinica.dolorMenstrualEspecificar) {
-        formDataHistoriaClinica.dolorMenstrualEspecificar = 'Eumenorrea';
-    }
 });
 
 // Sincronizar dolorMenstrual con formData

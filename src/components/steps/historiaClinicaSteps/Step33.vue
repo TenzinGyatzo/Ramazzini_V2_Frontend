@@ -12,10 +12,6 @@ onUnmounted(() => {
     if (!formDataHistoriaClinica.cesareas) {
         formDataHistoriaClinica.cesareas = cesareas.value;
     }
-
-    if (!formDataHistoriaClinica.cesareasEspecificar) {
-        formDataHistoriaClinica.cesareasEspecificar = '0 (Ninguna)';
-    }
 });
 
 // Sincronizar cesareas con formData
