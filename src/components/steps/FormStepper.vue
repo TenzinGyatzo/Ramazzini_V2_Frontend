@@ -16,6 +16,35 @@ import Step5ExamenVista from '../steps/examenVistaSteps/Step5.vue';
 import Step6ExamenVista from '../steps/examenVistaSteps/Step6.vue';
 import Step1ExploracionFisica from '../steps/exploracionFisicaSteps/Step1.vue';
 import Step2ExploracionFisica from '../steps/exploracionFisicaSteps/Step2.vue';
+import Step3ExploracionFisica from '../steps/exploracionFisicaSteps/Step3.vue';
+import Step4ExploracionFisica from '../steps/exploracionFisicaSteps/Step4.vue';
+import Step5ExploracionFisica from '../steps/exploracionFisicaSteps/Step5.vue';
+import Step6ExploracionFisica from '../steps/exploracionFisicaSteps/Step6.vue';
+import Step7ExploracionFisica from '../steps/exploracionFisicaSteps/Step7.vue';
+import Step8ExploracionFisica from '../steps/exploracionFisicaSteps/Step8.vue';
+import Step9ExploracionFisica from '../steps/exploracionFisicaSteps/Step9.vue';
+import Step10ExploracionFisica from '../steps/exploracionFisicaSteps/Step10.vue';
+import Step11ExploracionFisica from '../steps/exploracionFisicaSteps/Step11.vue';
+import Step12ExploracionFisica from '../steps/exploracionFisicaSteps/Step12.vue';
+import Step13ExploracionFisica from '../steps/exploracionFisicaSteps/Step13.vue';
+import Step14ExploracionFisica from '../steps/exploracionFisicaSteps/Step14.vue';
+import Step15ExploracionFisica from '../steps/exploracionFisicaSteps/Step15.vue';
+import Step16ExploracionFisica from '../steps/exploracionFisicaSteps/Step16.vue';
+import Step17ExploracionFisica from '../steps/exploracionFisicaSteps/Step17.vue';
+import Step18ExploracionFisica from '../steps/exploracionFisicaSteps/Step18.vue';
+import Step19ExploracionFisica from '../steps/exploracionFisicaSteps/Step19.vue';
+import Step20ExploracionFisica from '../steps/exploracionFisicaSteps/Step20.vue';
+import Step21ExploracionFisica from '../steps/exploracionFisicaSteps/Step21.vue';
+import Step22ExploracionFisica from '../steps/exploracionFisicaSteps/Step22.vue';
+import Step23ExploracionFisica from '../steps/exploracionFisicaSteps/Step23.vue';
+import Step24ExploracionFisica from '../steps/exploracionFisicaSteps/Step24.vue';
+import Step25ExploracionFisica from '../steps/exploracionFisicaSteps/Step25.vue';
+import Step26ExploracionFisica from '../steps/exploracionFisicaSteps/Step26.vue';
+import Step27ExploracionFisica from '../steps/exploracionFisicaSteps/Step27.vue';
+import Step28ExploracionFisica from '../steps/exploracionFisicaSteps/Step28.vue';
+import Step29ExploracionFisica from '../steps/exploracionFisicaSteps/Step29.vue';
+import Step30ExploracionFisica from '../steps/exploracionFisicaSteps/Step30.vue';
+import Step31ExploracionFisica from '../steps/exploracionFisicaSteps/Step31.vue';
 import Step1HistoriaClinica from '../steps/historiaClinicaSteps/Step1.vue';
 import Step2HistoriaClinica from '../steps/historiaClinicaSteps/Step2.vue';
 import Step3HistoriaClinica from '../steps/historiaClinicaSteps/Step3.vue';
@@ -64,7 +93,7 @@ import Step45HistoriaClinica from '../steps/historiaClinicaSteps/Step45.vue';
 import Step46HistoriaClinica from '../steps/historiaClinicaSteps/Step46.vue';
 
 export default {
-  components: { Step1Antidoping, Step2Antidoping, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica },
+  components: { Step1Antidoping, Step2Antidoping, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica },
   setup() {
     const trabajadores = useTrabajadoresStore();
     const formData = useFormDataStore();
@@ -95,6 +124,35 @@ export default {
         stepsStore.setSteps([
           { component: Step1ExploracionFisica, name: 'Paso 1' },
           { component: Step2ExploracionFisica, name: 'Paso 2' },
+          { component: Step3ExploracionFisica, name: 'Paso 3' },
+          { component: Step4ExploracionFisica, name: 'Paso 4' },
+          { component: Step5ExploracionFisica, name: 'Paso 5' },
+          { component: Step6ExploracionFisica, name: 'Paso 6' },
+          { component: Step7ExploracionFisica, name: 'Paso 7' },
+          { component: Step8ExploracionFisica, name: 'Paso 8' },
+          { component: Step9ExploracionFisica, name: 'Paso 9' },
+          { component: Step10ExploracionFisica, name: 'Paso 10' },
+          { component: Step11ExploracionFisica, name: 'Paso 11' },
+          { component: Step12ExploracionFisica, name: 'Paso 12' },
+          { component: Step13ExploracionFisica, name: 'Paso 13' },
+          { component: Step14ExploracionFisica, name: 'Paso 14' },
+          { component: Step15ExploracionFisica, name: 'Paso 15' },
+          { component: Step16ExploracionFisica, name: 'Paso 16' },
+          { component: Step17ExploracionFisica, name: 'Paso 17' },
+          { component: Step18ExploracionFisica, name: 'Paso 18' },
+          { component: Step19ExploracionFisica, name: 'Paso 19' },
+          { component: Step20ExploracionFisica, name: 'Paso 20' },
+          { component: Step21ExploracionFisica, name: 'Paso 21' },
+          { component: Step22ExploracionFisica, name: 'Paso 22' },
+          { component: Step23ExploracionFisica, name: 'Paso 23' },
+          { component: Step24ExploracionFisica, name: 'Paso 24' },
+          { component: Step25ExploracionFisica, name: 'Paso 25' },
+          { component: Step26ExploracionFisica, name: 'Paso 26' },
+          { component: Step27ExploracionFisica, name: 'Paso 27' },
+          { component: Step28ExploracionFisica, name: 'Paso 28' },
+          { component: Step29ExploracionFisica, name: 'Paso 29' },
+          { component: Step30ExploracionFisica, name: 'Paso 30' },
+          { component: Step31ExploracionFisica, name: 'Paso 31' },
         ]);
       } else if (documentos.currentTypeOfDocument === 'Historia Clínica') {
         const historiaClinicaSteps = [

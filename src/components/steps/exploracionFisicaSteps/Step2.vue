@@ -10,7 +10,7 @@ const peso = ref(80);
 const altura = ref(1.7);
 const indiceMasaCorporal = ref(27.68);
 const categoriaIMC = ref('Sobrepeso');
-const circunferenciaCintura = ref(90);
+const circunferenciaCintura = ref(89);
 const categoriaCircunferenciaCintura = ref('Bajo Riesgo');
 
 onUnmounted(() => {
@@ -32,7 +32,7 @@ watch([peso, altura, circunferenciaCintura], () => {
 
 function calcularIMC(peso, altura) {
   if (peso > 0 && altura > 0) {
-    const imc = peso / ((altura / 100) ** 2); // Altura en cm convertida a m
+    const imc = peso / (altura ** 2); // Altura ya está en metros
     const imcRedondeado = Math.round(imc * 100) / 100;
 
     // Actualiza tanto el estado reactivo como el formData
@@ -48,46 +48,49 @@ function calcularIMC(peso, altura) {
 
 function setCategoriaIMC() {
   let IMC = formDataExploracionFisica.indiceMasaCorporal
+  let categoria = '';
+
   if (IMC < 18.5) {
-    categoriaIMC.value = 'Bajo peso';
-    formDataExploracionFisica.categoriaIMC = 'Bajo peso';
+    categoria = 'Bajo peso';
   } else if (IMC >= 18.5 && IMC <= 24.9) {
-    categoriaIMC.value = 'Normal';
-    formDataExploracionFisica.categoriaIMC = 'Normal';
+    categoria = 'Normal';
   } else if (IMC >= 25 && IMC <= 29.9) {
-    categoriaIMC.value = 'Sobrepeso';
-    formDataExploracionFisica.categoriaIMC = 'Sobrepeso';
+    categoria = 'Sobrepeso';
   } else if (IMC >= 30 && IMC <= 34.9) {
-    categoriaIMC.value = 'Obesidad clase I';
-    formDataExploracionFisica.categoriaIMC = 'Obesidad clase I';
+    categoria = 'Obesidad clase I';
   } else if (IMC >= 35 && IMC <= 39.9) {
-    categoriaIMC.value = 'Obesidad clase II';
-    formDataExploracionFisica.categoriaIMC = 'Obesidad clase II';
+    categoria = 'Obesidad clase II';
   } else if (IMC >= 40) {
-    categoriaIMC.value = 'Obesidad clase III';
-    formDataExploracionFisica.categoriaIMC = 'Obesidad clase III';
+    categoria = 'Obesidad clase III';
   }
+
+  categoriaIMC.value = categoria;
+  formDataExploracionFisica.categoriaIMC = categoria;
 }
 
 function setCategoriaCircunferenciaCintura() {
   let circunferencia = formDataExploracionFisica.circunferenciaCintura
+  let categoria = '';
   if (trabajadores.currentTrabajador.sexo === 'Femenino') {
     if (circunferencia < 80) {
-      formDataExploracionFisica.categoriaCircunferenciaCintura = 'Bajo Riesgo';
+      categoria = 'Bajo Riesgo';
     } else if (circunferencia >= 80 && circunferencia <= 89) {
-      formDataExploracionFisica.categoriaCircunferenciaCintura = 'Riesgo Aumentado';
+      categoria = 'Riesgo Aumentado';
     } else {
-      formDataExploracionFisica.categoriaCircunferenciaCintura = 'Alto Riesgo';
+      categoria = 'Alto Riesgo';
     }
   } else if (trabajadores.currentTrabajador.sexo === 'Masculino') {
     if (circunferencia < 94) {
-      formDataExploracionFisica.categoriaCircunferenciaCintura = 'Bajo Riesgo';
+      categoria = 'Bajo Riesgo';
     } else if (circunferencia >= 94 && circunferencia <= 103) {
-      formDataExploracionFisica.categoriaCircunferenciaCintura = 'Riesgo Aumentado';
+      categoria = 'Riesgo Aumentado';
     } else {
-      formDataExploracionFisica.categoriaCircunferenciaCintura = 'Alto Riesgo';
+      categoria = 'Alto Riesgo';
     }
   }
+
+  categoriaCircunferenciaCintura.value = categoria;
+  formDataExploracionFisica.categoriaCircunferenciaCintura = categoria;
 }
 </script>
 
@@ -122,6 +125,20 @@ function setCategoriaCircunferenciaCintura() {
         <input type="text"
           class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
           v-model="categoriaIMC" readonly />
+      </div>
+    </div>
+
+    <label for="circunferenciaCintura">Circunferencia de Cintura</label>
+    <div class="flex gap-4 mb-4">
+      <div>
+        <input type="number"
+          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+          v-model="circunferenciaCintura" min="50"/>
+      </div>
+      <div>
+        <input type="text"
+          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+          v-model="categoriaCircunferenciaCintura" readonly />
       </div>
     </div>
   </div>

@@ -26,17 +26,16 @@ const goToStep = (stepNumber) => {
     class="flex flex-wrap justify-start gap-4 border-shadow w-full text-left rounded-lg p-5 transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-6xl mx-auto max-h-[66vh] sm:max-h-[68vh] md:max-h-[67vh] lg:max-h-[67vh] xl:max-h-[81vh] overflow-y-auto">
 
     <!-- Empresa y Fecha -->
-    <div class="flex flex-wrap w-full gap-4">
+    <div class="flex flex-wrap w-full gap-1 md:gap-4">
       <!-- Empresa -->
-      <div class="w-full md:w-2/5">
+      <div class="w-full md:w-[calc(75%-0.5rem)]">
         <p class="text-center text-base sm:text-lg">
           {{ empresas.currentEmpresa.nombreComercial }}
         </p>
       </div>
 
       <!-- Fecha -->
-      <div
-        class="w-full md:w-[calc(60%-1rem)] flex flex-wrap gap-2 justify-start md:justify-end text-sm sm:text-base cursor-pointer"
+      <div class="w-full md:w-[calc(25%-0.5rem)] flex flex-wrap gap-2 justify-end text-sm sm:text-base cursor-pointer"
         @click="goToStep(1)">
         <p class="w-full md:w-auto">Fecha: <span class="font-semibold">{{
           formData.formDataExamenVista.fechaExamenVista }}</span></p>

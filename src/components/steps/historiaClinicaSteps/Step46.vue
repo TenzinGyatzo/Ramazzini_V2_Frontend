@@ -1,5 +1,5 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 
@@ -8,8 +8,11 @@ const { formDataHistoriaClinica } = useFormDataStore();
 
 // Valor local para la pregunta principal
 const resumenHistoriaClinicaPregunta = ref('No');
-
 const resumenHistoriaClinica = ref ('');
+
+onMounted(() => {
+    resumenHistoriaClinica.value = formDataHistoriaClinica.resumenHistoriaClinica;
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para resumenHistoriaClinica
@@ -36,7 +39,7 @@ watch(resumenHistoriaClinicaPregunta, (newValue) => {
                 : 'Se encuentra clínicamente asintomático';
     }
     if (newValue === 'Si') {
-        formDataHistoriaClinica.resumenHistoriaClinica = '';
+        formDataHistoriaClinica.resumenHistoriaClinica = resumenHistoriaClinica.value;
     }
 });
 </script>
