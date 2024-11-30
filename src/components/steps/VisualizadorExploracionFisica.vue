@@ -472,33 +472,6 @@ const goToStep = (stepNumber) => {
 </template>
 
 <style scoped>
-/* Transiciones personalizadas */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 1s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-/* Transiciones para los valores */
-.value-change-enter-active,
-.value-change-leave-active {
-  transition: all 0.3s ease;
-}
-
-.value-change-enter-from {
-  transform: translateY(-10px);
-  opacity: 0;
-}
-
-.value-change-leave-to {
-  transform: translateY(10px);
-  opacity: 0;
-}
-
 .cursor-pointer {
   cursor: pointer;
 }
