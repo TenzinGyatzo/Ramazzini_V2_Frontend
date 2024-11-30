@@ -175,7 +175,7 @@ defineProps({
                 <div class="flex gap-2 md-lg:block hidden">
                     <div class="w-72">
                         <p class="leading-5 text-sm px-1">Notas:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1">Sin impedimentos físicos</p>
+                        <p class="leading-5 font-semibold text-gray-800 px-1">{{ certificado.impedimentosFisicos }}</p>
                     </div>
                 </div>
             </div>

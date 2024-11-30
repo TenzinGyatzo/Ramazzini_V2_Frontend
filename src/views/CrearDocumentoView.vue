@@ -53,11 +53,11 @@ onUnmounted(() => {
   </div>
 
   <div v-if="documentos.currentTypeOfDocument === 'Certificado'"
-    class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
-    <div class="w-full xl:w-1/4">
+    class="max-w-6xl mx-auto flex flex-wrap lg:flex-nowrap gap-3 md:gap-6 justify-center">
+    <div class="w-full xl:w-1/3">
       <FormStepper />
     </div>
-    <div class="w-full xl:w-3/4">
+    <div class="w-full xl:w-2/3">
       <VisualizadorCertificado />
     </div>
   </div>

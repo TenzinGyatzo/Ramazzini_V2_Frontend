@@ -23,7 +23,7 @@ const goToStep = (stepNumber) => {
 
 <template>
   <div
-    class="flex flex-wrap justify-start gap-4 border-shadow w-full text-left rounded-lg p-5 transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-6xl mx-auto max-h-[66vh] sm:max-h-[68vh] md:max-h-[67vh] lg:max-h-[67vh] xl:max-h-[81vh] overflow-y-auto">
+    class="flex flex-wrap justify-start gap-4 border-shadow w-full text-left rounded-lg p-5 transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-6xl mx-auto max-h-[66vh] sm:max-h-[68vh] md:max-h-[67vh] lg:max-h-[67vh] xl:max-h-[81vh] overflow-y-auto max-w-4xl">
 
     <!-- Empresa y Fecha -->
     <div class="flex flex-wrap w-full gap-1 md:gap-4">
@@ -55,65 +55,21 @@ const goToStep = (stepNumber) => {
 
      <div class="w-full mb-4">
         <p class="text-justify">
-            Que, habiendo practicado reconocimiento médico en esta fecha, al C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad, <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'lo encontré íntegro' : 'la encontré íntegra' }}</span> físicamente, sin defectos ni anomalías del aparato locomotor, con agudeza visual (AGUUDEZA VISUAL), campo visual, profundidad de campo, estereopsis y percepción cromática sin alteraciones; agudeza auditiva, aparato respiratorio y aparato locomotor íntegros, el examen neurológico reveló buena coordinación y reflejos.
+            Que, habiendo practicado reconocimiento médico en esta fecha, al C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad, <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'lo encontré íntegro' : 'la encontré íntegra' }}</span> físicamente, sin defectos ni anomalías del aparato locomotor, con agudeza visual (AGUDEZA VISUAL), campo visual, profundidad de campo, estereopsis y percepción cromática sin alteraciones; agudeza auditiva, aparato respiratorio y aparato locomotor íntegros, el examen neurológico reveló buena coordinación y reflejos.
         </p>
      </div>
 
      <div class="w-full mb-4">
         <p class="text-justify">
-            Por lo anterior, se establece que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el' : 'la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> no presenta impedimento físico para desarrollar el puesto que actualmente solicita. Este certificado de salud no implica ningún tipo de garantía de que el trabajador no se lesionará o enfermará en el futuro.
+            Por lo anterior, se establece que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el' : 'la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> {{ formData.formDataCertificado.impedimentosFisicos ? formData.formDataCertificado.impedimentosFisicos : '[DESCRIPCIÓN DE IMPEDIMENTOS FÍSICOS]' }}. Este certificado de salud no implica ningún tipo de garantía de que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el trabajador' : 'la trabajadora' }}</span> no se lesionará o enfermará en el futuro.
         </p>
      </div>
-
-    <!-- Trabajador -->
-    <div class="w-full">
-      <table class="table-auto w-full border-collapse border border-gray-200">
-        <tbody>
-          <tr class="odd:bg-white even:bg-gray-50">
-            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              NOMBRE
-            </td>
-            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
-              {{ trabajadores.currentTrabajador.nombre }}
-            </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              EDAD
-            </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
-              {{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}
-            </td>
-          </tr>
-          <tr class="odd:bg-white even:bg-gray-50">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              PUESTO
-            </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
-              {{ trabajadores.currentTrabajador.puesto }}
-            </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              SEXO
-            </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
-              {{ trabajadores.currentTrabajador.sexo }}
-            </td>
-          </tr>
-          <tr class="odd:bg-white even:bg-gray-50">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              ESCOLARIDAD
-            </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
-              {{ trabajadores.currentTrabajador.escolaridad }}
-            </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              ANTIGUEDAD
-            </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
-              {{ calcularAntiguedad(trabajadores.currentTrabajador.fechaIngreso) }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+     
+     <div class="w-full mb-4">
+        <p class="text-justify">
+            Expido el presente certificado médico a petición <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'del' : 'de la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> para los usos legales a que haya lugar, en la ciudad de Los Mochis, Sinaloa, en la fecha mencionada al inicio de este certificado.
+        </p>
+     </div>
 
   </div>
 </template>

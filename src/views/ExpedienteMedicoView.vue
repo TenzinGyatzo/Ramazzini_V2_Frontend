@@ -101,7 +101,7 @@ const navigateTo = (routeName, params) => {
       </div>
       <div v-else>
         <div v-if="documentos.documentsByYear && Object.keys(documentos.documentsByYear).length"
-          class="grid grid-cols-1 gap-6"> <!-- xl:grid-cols-2 -->
+          class="grid grid-cols-1 gap-6">
           <div v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
             :key="year">
             <GrupoDocumentos :documents="documentos.documentsByYear[year]" :year="String(year)" />
