@@ -1,19 +1,68 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
-import { calcularEdad, calcularAntiguedad } from '@/helpers/dates';
+import { calcularEdad } from '@/helpers/dates';
+import DocumentosAPI from '@/api/DocumentosAPI';
 
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
 const formData = useFormDataStore();
 const steps = useStepsStore();
 
-onMounted(() => {
+const examenesVista = ref([]);
+const nearestExamenVista = ref(null);
+
+onMounted(async () => {
   formData.resetFormData();
+  
+  try {
+    const response = await DocumentosAPI.getExamenesVista(trabajadores.currentTrabajadorId);
+    examenesVista.value = response.data;
+  } catch (error) {
+    console.error('Error al obtener los exámenes:', error);
+  }
 });
+
+watch(
+  () => formData.formDataCertificado.fechaCertificado,
+  (newFechaCertificado) => {
+    if (!newFechaCertificado || !examenesVista.value.length) {
+      console.log('No hay fecha válida o el array de exámenes está vacío.');
+      nearestExamenVista.value = null;
+      return;
+    }
+
+    const referenceDate = new Date(newFechaCertificado);
+
+    if (isNaN(referenceDate.getTime())) {
+      console.error('Fecha del certificado no válida:', newFechaCertificado);
+      nearestExamenVista.value = null;
+      return;
+    }
+
+    // Procesar solo si las fechas son válidas
+    nearestExamenVista.value = examenesVista.value.reduce((closest, current) => {
+      const currentDate = current.fechaExamenVista ? new Date(current.fechaExamenVista) : null;
+
+      if (!currentDate || isNaN(currentDate.getTime())) {
+        console.error('Fecha de examen no válida:', current.fechaExamenVista);
+        return closest; // Ignorar exámenes con fechas inválidas
+      }
+
+      const currentDiff = Math.abs(currentDate - referenceDate);
+      const closestDiff = closest
+        ? Math.abs(new Date(closest.fechaExamenVista) - referenceDate)
+        : Infinity;
+
+      return currentDiff < closestDiff ? current : closest;
+    }, null);
+    
+  },
+  { immediate: true }
+);
 
 const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
@@ -55,7 +104,7 @@ const goToStep = (stepNumber) => {
 
      <div class="w-full mb-4">
         <p class="text-justify">
-            Que, habiendo practicado reconocimiento médico en esta fecha, al C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad, <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'lo encontré íntegro' : 'la encontré íntegra' }}</span> físicamente, sin defectos ni anomalías del aparato locomotor, con agudeza visual (AGUDEZA VISUAL), campo visual, profundidad de campo, estereopsis y percepción cromática sin alteraciones; agudeza auditiva, aparato respiratorio y aparato locomotor íntegros, el examen neurológico reveló buena coordinación y reflejos.
+            Que, habiendo practicado reconocimiento médico en esta fecha, al C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad, <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'lo encontré íntegro' : 'la encontré íntegra' }}</span> físicamente, sin defectos ni anomalías del aparato locomotor, con agudeza visual{{ nearestExamenVista ? ` OI: 20/${nearestExamenVista?.ojoIzquierdoCercanaSinCorreccion}, OD: 20/${nearestExamenVista?.ojoDerechoCercanaSinCorreccion},` : ',' }} campo visual, profundidad de campo, estereopsis y percepción cromática sin alteraciones; agudeza auditiva, aparato respiratorio y aparato locomotor íntegros, el examen neurológico reveló buena coordinación y reflejos.
         </p>
      </div>
 

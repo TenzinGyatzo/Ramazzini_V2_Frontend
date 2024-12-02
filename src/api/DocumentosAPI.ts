@@ -12,6 +12,7 @@ export default {
     getCertificados(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/certificado`);
     },
+
     getDocumentosExternos(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/documentoExterno`);
     },
@@ -23,9 +24,8 @@ export default {
     getExploracionesFisicas(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/exploracionFisica`);
     },
-
+    
     getHistoriasClinicas(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/historiaClinica`);
     },
-
 }
