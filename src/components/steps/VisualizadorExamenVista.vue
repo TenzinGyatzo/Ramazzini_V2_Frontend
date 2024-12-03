@@ -4,7 +4,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
-import { calcularEdad, calcularAntiguedad } from '@/helpers/dates';
+import { calcularEdad, calcularAntiguedad, formatDateDDMMYYYY } from '@/helpers/dates';
 
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
@@ -38,7 +38,7 @@ const goToStep = (stepNumber) => {
       <div class="w-full md:w-[calc(25%-0.5rem)] flex flex-wrap gap-2 justify-end text-sm sm:text-base cursor-pointer"
         @click="goToStep(1)">
         <p class="w-full md:w-auto">Fecha: <span class="font-semibold">{{
-          formData.formDataExamenVista.fechaExamenVista }}</span></p>
+          formatDateDDMMYYYY(formData.formDataExamenVista.fechaExamenVista) }}</span></p>
       </div>
     </div>
 

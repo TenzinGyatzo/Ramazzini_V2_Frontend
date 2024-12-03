@@ -1,4 +1,5 @@
 <script setup>
+import { formatDateDDMMYYYY } from '@/helpers/dates';
 import { useFormDataStore } from '@/stores/formDataStore';
 const formData = useFormDataStore();
 </script>
@@ -17,7 +18,7 @@ const formData = useFormDataStore();
       <tbody>
         <tr class="odd:bg-white even:bg-gray-50">
           <td class="px-2 py-1 border border-gray-300 font-medium">Fecha Antidoping</td>
-          <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.fechaAntidoping }}</td>
+          <td class="px-2 py-1 border border-gray-300">{{ formatDateDDMMYYYY(formData.formDataAntidoping.fechaAntidoping) }}</td>
         </tr>
         <tr class="odd:bg-white even:bg-gray-50">
           <td class="px-2 py-1 border border-gray-300 font-medium">Marihuana</td>

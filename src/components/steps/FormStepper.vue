@@ -9,6 +9,14 @@ import { useStepsStore } from '@/stores/steps';
 import Step1Antidoping from '../steps/antidopingSteps/Step1.vue';
 import Step2Antidoping from '../steps/antidopingSteps/Step2.vue';
 import Step1Aptitud from '../steps/aptitudSteps/Step1.vue';
+import Step2Aptitud from '../steps/aptitudSteps/Step2.vue';
+import Step3Aptitud from '../steps/aptitudSteps/Step3.vue';
+import Step4Aptitud from '../steps/aptitudSteps/Step4.vue';
+import Step5Aptitud from '../steps/aptitudSteps/Step5.vue';
+import Step6Aptitud from '../steps/aptitudSteps/Step6.vue';
+import Step7Aptitud from '../steps/aptitudSteps/Step7.vue';
+import Step8Aptitud from '../steps/aptitudSteps/Step8.vue';
+import Step9Aptitud from '../steps/aptitudSteps/Step9.vue';
 import Step1Certificado from '../steps/certificadoSteps/Step1.vue';
 import Step2Certificado from '../steps/certificadoSteps/Step2.vue';
 import Step1ExamenVista from '../steps/examenVistaSteps/Step1.vue';
@@ -94,10 +102,9 @@ import Step43HistoriaClinica from '../steps/historiaClinicaSteps/Step43.vue';
 import Step44HistoriaClinica from '../steps/historiaClinicaSteps/Step44.vue';
 import Step45HistoriaClinica from '../steps/historiaClinicaSteps/Step45.vue';
 import Step46HistoriaClinica from '../steps/historiaClinicaSteps/Step46.vue';
-import Step2 from './certificadoSteps/Step2.vue';
 
 export default {
-  components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step1Certificado, Step2Certificado, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica },
+  components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step1Certificado, Step2Certificado, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica },
   setup() {
     const trabajadores = useTrabajadoresStore();
     const formData = useFormDataStore();
@@ -118,6 +125,14 @@ export default {
       } else if (documentos.currentTypeOfDocument === 'Aptitud') {
         stepsStore.setSteps([
           { component: Step1Aptitud, name: 'Paso 1' },
+          { component: Step2Aptitud, name: 'Paso 2' },
+          { component: Step3Aptitud, name: 'Paso 3' },
+          { component: Step4Aptitud, name: 'Paso 4' },
+          { component: Step5Aptitud, name: 'Paso 5' },
+          { component: Step6Aptitud, name: 'Paso 6' },
+          { component: Step7Aptitud, name: 'Paso 7' },
+          { component: Step8Aptitud, name: 'Paso 8' },
+          { component: Step9Aptitud, name: 'Paso 9' },
         ]);
       } else if (documentos.currentTypeOfDocument === 'Certificado') {
         stepsStore.setSteps([
@@ -265,34 +280,47 @@ export default {
       );
     }
 
+    // Función para convertir todas las fechas al formato ISO
+    function convertirFechasAISO(obj) {
+      const result = { ...obj }; // Clonar el objeto para evitar modificar el original
+      for (const key in result) {
+        if (result.hasOwnProperty(key)) {
+          const value = result[key];
+          if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+            // Si el valor es una fecha en formato YYYY-MM-DD, conviértelo a ISO
+            result[key] = new Date(value).toISOString();
+          }
+        }
+      }
+      return result;
+    }
+
     const handleSubmit = () => {
       let datosLimpios;
 
       if (documentos.currentTypeOfDocument === 'Antidoping') {
         datosLimpios = limpiarValoresUndefined(formData.formDataAntidoping);
-        console.log('Datos enviados:', datosLimpios);
       } else if (documentos.currentTypeOfDocument === 'Aptitud') {
         datosLimpios = limpiarValoresUndefined(formData.formDataAptitud);
-        console.log('Datos enviados:', datosLimpios);
       } else if (documentos.currentTypeOfDocument === 'Certificado') {
         datosLimpios = limpiarValoresUndefined(formData.formDataCertificado);
-        console.log('Datos enviados:', datosLimpios);
       } else if (documentos.currentTypeOfDocument === 'Documento Externo') {
         datosLimpios = limpiarValoresUndefined(formData.formDataDocumentoExterno);
-        console.log('Datos enviados:', datosLimpios);
       } else if (documentos.currentTypeOfDocument === 'Examen Vista') {
         datosLimpios = limpiarValoresUndefined(formData.formDataExamenVista);
-        console.log('Datos enviados:', datosLimpios);
       } else if (documentos.currentTypeOfDocument === 'Exploración Física') {
         datosLimpios = limpiarValoresUndefined(formData.formDataExploracionFisica);
-        console.log('Datos enviados:', datosLimpios);
       } else if (documentos.currentTypeOfDocument === 'Historia Clínica') {
         datosLimpios = limpiarValoresUndefined(formData.formDataHistoriaClinica);
-        console.log('Datos enviados:', datosLimpios);
       } else {
         console.error(`Tipo de documento no reconocido: ${documentos.currentTypeOfDocument}`);
         return; // Salir si el tipo de documento no es válido
       }
+
+      // Convertir todas las fechas en los datos al formato ISO
+      datosLimpios = convertirFechasAISO(datosLimpios);
+
+      console.log('Datos enviados:', datosLimpios);
 
       // Si necesitas enviar los datos al backend, aquí usarías `datosLimpios`
       // Ejemplo:
@@ -305,7 +333,6 @@ export default {
       documentos.currentTypeOfDocument = null;
       router.back();
     };
-
 
     return {
       stepsStore,

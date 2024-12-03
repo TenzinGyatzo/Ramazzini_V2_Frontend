@@ -54,7 +54,7 @@ onUnmounted(() => {
   </div>
 
   <div v-if="documentos.currentTypeOfDocument === 'Aptitud'"
-    class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+    class=" flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
     <div class="w-full xl:w-1/4">
       <FormStepper />
     </div>

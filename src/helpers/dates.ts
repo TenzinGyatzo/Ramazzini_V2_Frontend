@@ -62,9 +62,21 @@ function calcularAntiguedad(dateString: string): string {
   return `${years} años, ${months} meses`;
 }
 
+function formatDateDDMMYYYY(date) {
+  if (!date) return '';
+
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, '0'); // Asegura que sea de dos dígitos
+  const month = String(d.getMonth() + 1).padStart(2, '0'); // Los meses son base 0
+  const year = d.getFullYear();
+
+  return `${day}-${month}-${year}`;
+}
+
 export {
   convertirFechaISOaDDMMYYYY,
   convertirFechaISOaYYYYMMDD,
   calcularEdad,
   calcularAntiguedad,
+  formatDateDDMMYYYY
 };

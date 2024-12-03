@@ -54,7 +54,7 @@ watch(fechaAptitudPuesto, (newValue) => {
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Fecha Aptitud al Puesto</h1>
+    <h1 class="font-bold mb-4 text-gray-800 leading-5">Fecha de Valoración</h1>
     <FormKit type="date" name="fechaAptitudPuesto" placeholder="Seleccione una fecha" v-model="fechaAptitudPuesto" />
   </div>
 </template>

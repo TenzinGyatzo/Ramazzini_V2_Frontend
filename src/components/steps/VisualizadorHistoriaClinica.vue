@@ -4,7 +4,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
-import { calcularEdad, calcularAntiguedad, convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
+import { calcularEdad, calcularAntiguedad, convertirFechaISOaDDMMYYYY, formatDateDDMMYYYY } from '@/helpers/dates';
 
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
@@ -89,7 +89,7 @@ const antecedentesLaborales = ref([
         <p class="flex-1 md:flex-none">Periódico ( {{ formData.formDataHistoriaClinica.motivoExamen === 'Periódico' ?
           'X' : '&nbsp;' }} )</p>
         <p class="w-full md:w-auto">Fecha: <span class="font-semibold">{{
-          formData.formDataHistoriaClinica.fechaHistoriaClinica }}</span></p>
+          formatDateDDMMYYYY(formData.formDataHistoriaClinica.fechaHistoriaClinica) }}</span></p>
       </div>
     </div>
 
