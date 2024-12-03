@@ -30,7 +30,6 @@ watch(
   () => formData.formDataCertificado.fechaCertificado,
   (newFechaCertificado) => {
     if (!newFechaCertificado || !examenesVista.value.length) {
-      console.log('No hay fecha válida o el array de exámenes está vacío.');
       nearestExamenVista.value = null;
       return;
     }
