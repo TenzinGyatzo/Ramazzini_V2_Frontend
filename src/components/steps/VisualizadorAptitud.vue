@@ -1,17 +1,19 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, computed } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
 import { calcularEdad, calcularAntiguedad, convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
 import DocumentosAPI from '@/api/DocumentosAPI';
+import { findNearestDocument } from '@/helpers/findNearestDocuments';
 
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
 const formData = useFormDataStore();
 const steps = useStepsStore();
 
+// Lógica para traerse la data de los documentos con fecha más cercana a la aptitud
 const historiasClinicas = ref([]);
 const nearestHistoriaClinica = ref(null);
 
@@ -21,7 +23,7 @@ const nearestExploracionFisica = ref(null);
 const examenesVista = ref([]);
 const nearestExamenVista = ref(null);
 
-const antidopings = ref([]);  
+const antidopings = ref([]);
 const nearestAntidoping = ref(null);
 
 onMounted(async () => {
@@ -55,53 +57,80 @@ onMounted(async () => {
 
 watch(
   () => formData.formDataAptitud.fechaAptitudPuesto,
-  (newfechaAptitudPuesto) => {
-    if (!newfechaAptitudPuesto || !examenesVista.value.length) {
-      console.log('No hay fecha válida o el array de exámenes está vacío.');
-      nearestExamenVista.value = null;
-      return;
-    }
-
-    const referenceDate = new Date(newfechaAptitudPuesto);
-
-    if (isNaN(referenceDate.getTime())) {
-      console.error('Fecha del certificado no válida:', newfechaAptitudPuesto);
-      nearestExamenVista.value = null;
-      return;
-    }
-
-    // Procesar solo si las fechas son válidas
-    nearestExamenVista.value = examenesVista.value.reduce((closest, current) => {
-      const currentDate = current.fechaExamenVista ? new Date(current.fechaExamenVista) : null;
-
-      if (!currentDate || isNaN(currentDate.getTime())) {
-        console.error('Fecha de examen no válida:', current.fechaExamenVista);
-        return closest; // Ignorar exámenes con fechas inválidas
-      }
-
-      const currentDiff = Math.abs(currentDate - referenceDate);
-      const closestDiff = closest
-        ? Math.abs(new Date(closest.fechaExamenVista) - referenceDate)
-        : Infinity;
-
-      return currentDiff < closestDiff ? current : closest;
-    }, null);
-    
-  },
-  { immediate: true }
+  (newFechaAptitudPuesto) => {
+    nearestExamenVista.value = findNearestDocument(examenesVista.value, newFechaAptitudPuesto, 'fechaExamenVista');
+    nearestHistoriaClinica.value = findNearestDocument(historiasClinicas.value, newFechaAptitudPuesto, 'fechaHistoriaClinica');
+    nearestExploracionFisica.value = findNearestDocument(exploracionesFisicas.value, newFechaAptitudPuesto, 'fechaExploracionFisica');
+    nearestAntidoping.value = findNearestDocument(antidopings.value, newFechaAptitudPuesto, 'fechaAntidoping');
+  }
 );
 
+// Ir a un paso específico
 const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
 };
 
-console.log(nearestExamenVista.value);
+// Resumenes Computados
+const historiaClinicaResumen = computed(() => {
+  if (!nearestHistoriaClinica.value) {
+    return 'No hay históricas clínicas disponibles';
+  }
+  return nearestHistoriaClinica.value.resumenHistoriaClinica + '.';
+});
 
-const examenVistaResumen =
-  (nearestExamenVista.ojoIzquierdoLejanaConCorreccion === 0 || nearestExamenVista.ojoIzquierdoLejanaConCorreccion == null) &&
-  (nearestExamenVista.ojoDerechoLejanaConCorreccion === 0 || nearestExamenVista.ojoDerechoLejanaConCorreccion == null)
-    ? `OI: 20/${nearestExamenVista.ojoIzquierdoLejanaSinCorreccion}, OD: 20/${nearestExamenVista.ojoDerechoLejanaSinCorreccion} - ${nearestExamenVista.sinCorreccionLejanaInterpretacion}, Ishihara: ${nearestExamenVista.porcentajeIshihara}% - ${nearestExamenVista.interpretacionIshihara}`
-    : `OI: 20/${nearestExamenVista.ojoIzquierdoLejanaConCorreccion}, OD: 20/${nearestExamenVista.ojoDerechoLejanaConCorreccion} - ${nearestExamenVista.conCorreccionLejanaInterpretacion} Corregida, Ishihara: ${nearestExamenVista.porcentajeIshihara}% - ${nearestExamenVista.interpretacionIshihara}`;
+const exploracionFisicaResumen = computed(() => {
+  if (!nearestExploracionFisica.value) {
+    return 'No hay exploraciones físicas disponibles';
+  }
+  return `TA: ${nearestExploracionFisica.value.tensionArterialSistolica}/${nearestExploracionFisica.value.tensionArterialDiastolica} mmHg - ${nearestExploracionFisica.value.categoriaTensionArterial}. ${nearestExploracionFisica.value.resumenExploracionFisica}.`;
+});
+
+const adiposidadCorporalResumen = computed(() => {
+  if (!nearestExploracionFisica.value) {
+    return 'No hay exploraciones físicas disponibles';
+  }
+  return `IMC: ${nearestExploracionFisica.value.indiceMasaCorporal} - ${nearestExploracionFisica.value.categoriaIMC}. Cintura: ${nearestExploracionFisica.value.circunferenciaCintura} cm - ${nearestExploracionFisica.value.categoriaCircunferenciaCintura}.`;
+});
+
+const examenVistaResumen = computed(() => {
+  if (!nearestExamenVista.value) {
+    return 'No hay exámenes de vista disponibles';
+  }
+  return (nearestExamenVista.value.ojoIzquierdoLejanaConCorreccion === 0 || nearestExamenVista.value.ojoIzquierdoLejanaConCorreccion == null) &&
+    (nearestExamenVista.value.ojoDerechoLejanaConCorreccion === 0 || nearestExamenVista.value.ojoDerechoLejanaConCorreccion == null)
+    ? `OI: 20/${nearestExamenVista.value.ojoIzquierdoLejanaSinCorreccion || '-'}, OD: 20/${nearestExamenVista.value.ojoDerechoLejanaSinCorreccion || '-'} - ${nearestExamenVista.value.sinCorreccionLejanaInterpretacion || '-'}, Ishihara: ${nearestExamenVista.value.porcentajeIshihara || '-'}% - ${nearestExamenVista.value.interpretacionIshihara || '-'}`
+    : `OI: 20/${nearestExamenVista.value.ojoIzquierdoLejanaConCorreccion || '-'}, OD: 20/${nearestExamenVista.value.ojoDerechoLejanaConCorreccion || '-'} - ${nearestExamenVista.value.conCorreccionLejanaInterpretacion || '-'} Corregida, Ishihara: ${nearestExamenVista.value.porcentajeIshihara || '-'}% - ${nearestExamenVista.value.interpretacionIshihara || '-'}`;
+});
+
+const antidopingResumen = computed(() => {
+  if (!nearestAntidoping.value) {
+    return 'No hay antidopings disponibles';
+  }
+
+  // Evaluar si todos los parámetros son 'Negativo'
+  const todosNegativos = 
+    nearestAntidoping.value.marihuana === 'Negativo' &&
+    nearestAntidoping.value.cocaina === 'Negativo' &&
+    nearestAntidoping.value.anfetaminas === 'Negativo' &&
+    nearestAntidoping.value.metanfetaminas === 'Negativo' &&
+    nearestAntidoping.value.opiaceos === 'Negativo';
+
+  if (todosNegativos) {
+    return 'Negativo a cinco parámetros';
+  }
+
+  // Si hay algún positivo, construir el mensaje con las sustancias correspondientes
+  const sustanciasPositivas = [
+    nearestAntidoping.value.marihuana !== 'Negativo' ? 'Marihuana' : null,
+    nearestAntidoping.value.cocaina !== 'Negativo' ? 'Cocaína' : null,
+    nearestAntidoping.value.anfetaminas !== 'Negativo' ? 'Anfetaminas' : null,
+    nearestAntidoping.value.metanfetaminas !== 'Negativo' ? 'Metanfetaminas' : null,
+    nearestAntidoping.value.opiaceos !== 'Negativo' ? 'Opiáceos' : null,
+  ].filter(Boolean) // Filtrar valores nulos o `undefined`
+    .join(', '); // Unir los nombres en una cadena separada por comas
+
+  return `Positivo a: ${sustanciasPositivas}`;
+});
 
 </script>
 
@@ -222,30 +251,40 @@ const examenVistaResumen =
           <tr class="odd:bg-white even:bg-gray-50">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">HISTORIA CLÍNICA
             </td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"></td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"></td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestHistoriaClinica ?
+              convertirFechaISOaDDMMYYYY(nearestHistoriaClinica.fechaHistoriaClinica) : '-' }}</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestHistoriaClinica ?
+              historiaClinicaResumen : '-' }}</td>
           </tr>
           <tr class="odd:bg-white even:bg-gray-50">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">EXPLORACIÓN FÍSICA
             </td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"></td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"></td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestExploracionFisica ?
+              convertirFechaISOaDDMMYYYY(nearestExploracionFisica.fechaExploracionFisica) : '-' }}</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestExploracionFisica ?
+              exploracionFisicaResumen : '-' }}</td>
           </tr>
           <tr class="odd:bg-white even:bg-gray-50">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">ADIPOSIDAD CORPORAL
             </td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"></td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"></td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestExploracionFisica ?
+              convertirFechaISOaDDMMYYYY(nearestExploracionFisica.fechaExploracionFisica) : '-' }}</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestExploracionFisica ?
+              adiposidadCorporalResumen : '-' }}</td>
           </tr>
           <tr class="odd:bg-white even:bg-gray-50">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">EXAMEN VISUAL</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestExamenVista ? convertirFechaISOaDDMMYYYY(nearestExamenVista.fechaExamenVista) : '-' }}</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestExamenVista ? examenVistaResumen : '-' }}</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestExamenVista ?
+              convertirFechaISOaDDMMYYYY(nearestExamenVista.fechaExamenVista) : '-' }}</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestExamenVista ?
+              examenVistaResumen : '-' }}</td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50">
+          <tr v-if="nearestAntidoping" class="odd:bg-white even:bg-gray-50">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">ANTIDOPING</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"></td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"></td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestAntidoping ?
+              convertirFechaISOaDDMMYYYY(nearestAntidoping.fechaAntidoping) : '-' }}</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestAntidoping ?
+              antidopingResumen : '-' }}</td>
           </tr>
         </tbody>
       </table>
