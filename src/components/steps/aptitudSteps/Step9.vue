@@ -27,27 +27,30 @@ const examenesVista = ref([]);
 const nearestExamenVista = ref(null);
 
 onMounted(async () => {
-  try {
-    const response = await DocumentosAPI.getHistoriasClinicas(trabajadores.currentTrabajadorId);
-    historiasClinicas.value = response.data;
-    nearestHistoriaClinica.value = findNearestDocument(historiasClinicas.value, formDataAptitud.fechaAptitudPuesto, 'fechaHistoriaClinica');
-  } catch (error) {
-    console.error('Error al obtener los exámenes:', error);
-  }
-  try {
-    const response = await DocumentosAPI.getExploracionesFisicas(trabajadores.currentTrabajadorId);
-    exploracionesFisicas.value = response.data;
-    nearestExploracionFisica.value = findNearestDocument(exploracionesFisicas.value, formDataAptitud.fechaAptitudPuesto, 'fechaExploracionFisica');
-  } catch (error) {
-    console.error('Error al obtener los exámenes:', error);
-  }
-  try {
-    const response = await DocumentosAPI.getExamenesVista(trabajadores.currentTrabajadorId);
-    examenesVista.value = response.data;
-    nearestExamenVista.value = findNearestDocument(examenesVista.value, formDataAptitud.fechaAptitudPuesto, 'fechaExamenVista');
-  } catch (error) {
-    console.error('Error al obtener los exámenes:', error);
-  }
+    try {
+        const response = await DocumentosAPI.getHistoriasClinicas(trabajadores.currentTrabajadorId);
+        historiasClinicas.value = response.data;
+        nearestHistoriaClinica.value = findNearestDocument(historiasClinicas.value, formDataAptitud.fechaAptitudPuesto, 'fechaHistoriaClinica');
+    } catch (error) {
+        console.error('Error al obtener los exámenes:', error);
+    }
+    try {
+        const response = await DocumentosAPI.getExploracionesFisicas(trabajadores.currentTrabajadorId);
+        exploracionesFisicas.value = response.data;
+        nearestExploracionFisica.value = findNearestDocument(exploracionesFisicas.value, formDataAptitud.fechaAptitudPuesto, 'fechaExploracionFisica');
+    } catch (error) {
+        console.error('Error al obtener los exámenes:', error);
+    }
+    try {
+        const response = await DocumentosAPI.getExamenesVista(trabajadores.currentTrabajadorId);
+        examenesVista.value = response.data;
+        nearestExamenVista.value = findNearestDocument(examenesVista.value, formDataAptitud.fechaAptitudPuesto, 'fechaExamenVista');
+    } catch (error) {
+        console.error('Error al obtener los exámenes:', error);
+    }
+
+    // Inicializa alteracionesSalud con textoBase una vez que los datos estén disponibles
+    formDataAptitud.alteracionesSalud = textoBase.value;
 });
 
 
@@ -125,15 +128,19 @@ const textoBase = computed(() => {
         <div class="font-light mb-4">
             <textarea
                 class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 h-64"
-                v-model="formDataAptitud.alteracionesSalud" required>
+                v-model="formDataAptitud.alteracionesSalud" :placeholder="textoBase || 'Cargando datos...'" required>
             </textarea>
         </div>
-        <div>
+<!--         <div>
             <p class="font-medium mb-1 text-gray-800 leading-5">Texto base sugerido: </p>
-            <p v-if="nearestExploracionFisica" class="text-sm font-light mb-4 italic text-gray-700 hover:text-emerald-700 cursor-pointer leading-5 text-justify"
-               @click="copiarTexto(textoBase)">
-               {{ textoBase }}
+            <p v-if="!nearestExploracionFisica || !nearestHistoriaClinica"
+                class="text-sm font-light italic text-gray-700">
+                Cargando texto base...
             </p>
-        </div>
+            <p v-else class="text-sm font-light mb-4 italic text-gray-700 hover:text-emerald-700 cursor-pointer leading-5 text-justify"
+               @click="copiarTexto(textoBase)">
+                {{ textoBase }}
+            </p>
+        </div> -->
     </div>
 </template>

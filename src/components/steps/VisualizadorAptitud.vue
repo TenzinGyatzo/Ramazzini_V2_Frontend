@@ -393,7 +393,7 @@ const antidopingResumen = computed(() => {
               {{ formData.formDataAptitud.alteracionesSalud }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50" style="height: 3.9rem;">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 3.9rem;" @click='goToStep(10)'>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               Resultados
             </td>
@@ -401,7 +401,7 @@ const antidopingResumen = computed(() => {
               {{ formData.formDataAptitud.resultados }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50" style="height: 3.9rem;">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 3.9rem;" @click='goToStep(11)'>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               Medidas Preventivas Específicas
             </td>

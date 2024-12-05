@@ -70,22 +70,6 @@ const toggleImportModal = () => {
   showImportModal.value = !showImportModal.value;
 };
 
-/* watch(
-  () => route.params, // Observamos los parámetros idEmpresa e idCentroTrabajo
-  (newParams) => {
-    const { idEmpresa, idCentroTrabajo } = newParams;
-    if (idEmpresa && idCentroTrabajo) {
-      // Cuando ambos parámetros están definidos, realizamos las llamadas necesarias
-      empresas.fetchEmpresaById(String(idEmpresa)); // Obtenemos los detalles de la empresa
-      centrosTrabajo.fetchCentroTrabajoById(String(idEmpresa), String(idCentroTrabajo)); // Obtenemos los detalles del centro de trabajo
-      trabajadores.fetchTrabajadores(String(idEmpresa), String(idCentroTrabajo)); // Obtenemos los trabajadores del centro de trabajo
-      empresas.currentEmpresaId = String(idEmpresa); // Seteamos el id de la empresa actual en el store
-      centrosTrabajo.currentCentroTrabajoId = String(idCentroTrabajo); // Seteamos el id del centro de trabajo actual en el store
-    }
-  },
-  { immediate: true } // Esto asegura que el watch se ejecute inmediatamente con el valor actual
-); */
-
 onMounted(() => {
   const empresaId = String(route.params.idEmpresa);
   const centroTrabajoId = String(route.params.idCentroTrabajo);

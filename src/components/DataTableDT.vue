@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onBeforeUnmount } from 'vue';
 import DataTablesCore from 'datatables.net-dt';
 import 'datatables.net-select-dt';
 import 'datatables.net-buttons-dt';
@@ -34,13 +34,19 @@ onMounted(() => {
   }
 });
 
-onUnmounted(() => {
-  // Destruir la instancia de DataTable cuando el componente se desmonte
+/* onBeforeUnmount(() => {
   if (dataTableInstance) {
-    dataTableInstance.destroy();
-    dataTableInstance = null;
+    try {
+      dataTableInstance.destroy(); // Asegúrate de destruir la instancia antes de que Vue elimine el DOM
+    } catch (error) {
+      console.error("Error destruyendo la instancia de DataTable:", error);
+    } finally {
+      dataTableInstance = null; // Limpia la referencia
+    }
   }
-});
+}); */
+
+
 </script>
 
 <template>
