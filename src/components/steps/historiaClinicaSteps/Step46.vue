@@ -19,8 +19,8 @@ onUnmounted(() => {
     if (!formDataHistoriaClinica.resumenHistoriaClinica) {
         formDataHistoriaClinica.resumenHistoriaClinica =
             trabajadores.currentTrabajador.sexo === 'Femenino'
-                ? 'Se encuentra clínicamente asintomática'
-                : 'Se encuentra clínicamente asintomático';
+                ? 'Se refiere actualmente asintomática'
+                : 'Se refiere actualmente asintomático';
     }
 });
 

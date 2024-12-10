@@ -118,7 +118,7 @@ const copiarTexto = (texto) => {
                 <!-- Contenedor del desplegable -->
                 <div v-if="isOpen('generico')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white">
                     <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
-                        <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
+                        <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
                             @click="copiarTexto('Es importante usar adecuadamente el EPP, mantener hábitos saludables como una alimentación balanceada, ejercicio regular y descanso adecuado, así como efectuar vigilancia médica con periodicidad anual, incluyendo exámenes generales de laboratorio y gabinete para una vigilancia integral de la salud. ')">
                             Es importante usar adecuadamente el EPP, mantener hábitos saludables como una alimentación
                             balanceada, ejercicio regular y descanso adecuado, así como efectuar vigilancia médica con
@@ -138,7 +138,7 @@ const copiarTexto = (texto) => {
                 </button>
 
                 <!-- Contenedor del desplegable -->
-                <div v-if="isOpen('Espalda')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white">
+                <div v-if="isOpen('Espalda')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white text-justify">
                     <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
                             @click="copiarTexto('Es crucial priorizar la prevención y el cuidado de la espalda mediante el fortalecimiento de los músculos centrales, la mejora de la postura y el uso de técnicas adecuadas de levantamiento de objetos. ')">
@@ -157,7 +157,7 @@ const copiarTexto = (texto) => {
                 </button>
 
                 <!-- Contenedor del desplegable -->
-                <div v-if="isOpen('obesidad')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white">
+                <div v-if="isOpen('obesidad')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white text-justify">
                     <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
                             @click="copiarTexto('Se recomienda adoptar una dieta balanceada y realizar ejercicio físico regularmente para mejorar la salud en general. Estas prácticas ayudan a controlar el peso, disminuir los niveles de grasa corporal, fortalecer los músculos y mejorar la función cardiovascular Además, reducen el riesgo de desarrollar enfermedades crónicas como la diabetes tipo 2, enfermedades cardíacas y ciertos tipos de cáncer. ')">
@@ -176,7 +176,7 @@ const copiarTexto = (texto) => {
                 </button>
 
                 <!-- Contenedor del desplegable -->
-                <div v-if="isOpen('diabetesMellitus2')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white">
+                <div v-if="isOpen('diabetesMellitus2')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white text-justify">
                     <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
                             @click="copiarTexto('Es importante mantener una dieta equilibrada, controlar regularmente los niveles de azúcar en la sangre y visitar al médico familiar para un seguimiento y una correcta gestión de la diabetes tipo 2. ')">
@@ -197,7 +197,7 @@ const copiarTexto = (texto) => {
                 <!-- Contenedor del desplegable -->
                 <div v-if="isOpen('hipertension')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white">
                     <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
-                        <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
+                        <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
                             @click="copiarTexto('Es recomendable mantener una dieta baja en sodio, realizar actividad física regularmente, controlar la presión arterial periódicamente y adherirse estrictamente al tratamiento recetado para gestionar la hipertensión de manera efectiva. ')">
                             Es recomendable mantener una dieta baja en sodio, realizar actividad física regularmente, controlar la presión arterial periódicamente y adherirse estrictamente al tratamiento recetado para gestionar la hipertensión de manera efectiva. 
                         </p>

@@ -43,7 +43,7 @@ onUnmounted(() => {
 
 <template>
 
-  <div v-if="documentos.currentTypeOfDocument === 'Antidoping'"
+  <div v-if="documentos.currentTypeOfDocument === 'antidoping'"
     class="max-w-3xl mx-auto flex flex-wrap lg:flex-nowrap gap-3 md:gap-6 justify-center">
     <div class="w-full lg:w-1/2">
       <FormStepper />
@@ -53,7 +53,7 @@ onUnmounted(() => {
     </div>
   </div>
 
-  <div v-if="documentos.currentTypeOfDocument === 'Aptitud'"
+  <div v-if="documentos.currentTypeOfDocument === 'aptitud'"
     class=" flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
     <div class="w-full xl:w-1/4">
       <FormStepper />
@@ -63,7 +63,7 @@ onUnmounted(() => {
     </div>
   </div>
 
-  <div v-if="documentos.currentTypeOfDocument === 'Certificado'"
+  <div v-if="documentos.currentTypeOfDocument === 'certificado'"
     class="max-w-6xl mx-auto flex flex-wrap lg:flex-nowrap gap-3 md:gap-6 justify-center">
     <div class="w-full xl:w-1/3">
       <FormStepper />
@@ -73,7 +73,7 @@ onUnmounted(() => {
     </div>
   </div>
 
-  <div v-if="documentos.currentTypeOfDocument === 'Exploración Física'"
+  <div v-if="documentos.currentTypeOfDocument === 'exploracionFisica'"
     class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
     <div class="w-full xl:w-1/4">
       <FormStepper />
@@ -83,7 +83,7 @@ onUnmounted(() => {
     </div>
   </div>
 
-  <div v-if="documentos.currentTypeOfDocument === 'Examen Vista'"
+  <div v-if="documentos.currentTypeOfDocument === 'examenVista'"
     class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
     <div class="w-full xl:w-1/4">
       <FormStepper />
@@ -93,7 +93,7 @@ onUnmounted(() => {
     </div>
   </div>
 
-  <div v-if="documentos.currentTypeOfDocument === 'Historia Clínica'"
+  <div v-if="documentos.currentTypeOfDocument === 'historiaClinica'"
     class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
     <div class="w-full xl:w-1/4">
       <FormStepper />

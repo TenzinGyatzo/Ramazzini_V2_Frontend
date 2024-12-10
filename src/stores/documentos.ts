@@ -199,6 +199,28 @@ export const useDocumentosStore = defineStore("documentos", () => {
     currentDocumentId.value = "";
   }
 
+  async function createDocument(documentType: string, trabajadorId: string, data: any) {
+    try {
+      loading.value = true;
+      await DocumentosAPI.createDocument(documentType, trabajadorId, data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function deleteDocumentById(documentType: string, trabajadorId: string, documentId: string) {
+    try {
+      loading.value = true;
+      await DocumentosAPI.deleteDocumentById(documentType, trabajadorId, documentId);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
   return {
     loading,
     documentsByYear,
@@ -207,5 +229,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
     fetchAllDocuments,
     setCurrentTypeOfDocument,
     resetCurrentTypeOfDocument,
+    createDocument,
+    deleteDocumentById
   };
 });

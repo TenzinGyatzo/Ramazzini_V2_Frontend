@@ -28,4 +28,12 @@ export default {
     getHistoriasClinicas(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/historiaClinica`);
     },
+
+    createDocument(documentType: string, trabajadorId: string, data: any) {
+        return api.post(`/expedientes/${trabajadorId}/documentos/${documentType}/crear`, data);
+    },
+
+    deleteDocumentById(documentType: string, trabajadorId: string, documentoId: string) {
+        return api.delete(`/expedientes/${trabajadorId}/documentos/${documentType}/eliminar/${documentoId}`);
+    },
 }

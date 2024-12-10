@@ -175,7 +175,7 @@ defineProps({
                 <div class="flex gap-2 md-lg:block hidden">
                     <div class="w-72">
                         <p class="leading-5 text-sm px-1">Notas:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1">{{ certificado.impedimentosFisicos }}</p>
+                        <p class="leading-5 font-semibold text-gray-800 px-1">{{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita.' ? 'No presenta impedimentos fisicos' : certificado.impedimentosFisicos }}</p>
                     </div>
                 </div>
             </div>
@@ -282,7 +282,7 @@ defineProps({
                     <div class="w-72 2xl:block hidden">
                         <p class="leading-5 text-sm px-1">Accidente Laboral:</p>
                         <p class="leading-5 font-semibold text-gray-800 px-1"
-                            :class="historiaClinica.accidenteLaboralEspecificar !== 'Niega haber sufrido algún accidente' ? 'text-red-500' : 'text-gray-800'">
+                            :class="historiaClinica.accidenteLaboralEspecificar !== 'Niega haber sufrido accidentes' ? 'text-red-500' : 'text-gray-800'">
                             {{ historiaClinica.accidenteLaboralEspecificar }}</p>
                     </div>
                     <div class="w-72 md-lg:block hidden">

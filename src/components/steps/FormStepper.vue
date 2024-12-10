@@ -119,12 +119,12 @@ export default {
     onMounted(() => {
       documentos.setCurrentTypeOfDocument(route.params.tipoDocumento);
 
-      if (documentos.currentTypeOfDocument === 'Antidoping') {
+      if (documentos.currentTypeOfDocument === 'antidoping') {
         stepsStore.setSteps([
           { component: Step1Antidoping, name: 'Paso 1' },
           { component: Step2Antidoping, name: 'Paso 2' },
         ]);
-      } else if (documentos.currentTypeOfDocument === 'Aptitud') {
+      } else if (documentos.currentTypeOfDocument === 'aptitud') {
         stepsStore.setSteps([
           { component: Step1Aptitud, name: 'Paso 1' },
           { component: Step2Aptitud, name: 'Paso 2' },
@@ -138,12 +138,12 @@ export default {
           { component: Step10Aptitud, name: 'Paso 10' },
           { component: Step11Aptitud, name: 'Paso 11' },
         ]);
-      } else if (documentos.currentTypeOfDocument === 'Certificado') {
+      } else if (documentos.currentTypeOfDocument === 'certificado') {
         stepsStore.setSteps([
           { component: Step1Certificado, name: 'Paso 1' },
           { component: Step2Certificado, name: 'Paso 2' },
         ])
-      } else if (documentos.currentTypeOfDocument === 'Examen Vista') {
+      } else if (documentos.currentTypeOfDocument === 'examenVista') {
         stepsStore.setSteps([
           { component: Step1ExamenVista, name: 'Paso 1' },
           { component: Step2ExamenVista, name: 'Paso 2' },
@@ -152,7 +152,7 @@ export default {
           { component: Step5ExamenVista, name: 'Paso 5' },
           { component: Step6ExamenVista, name: 'Paso 6' },
         ]);
-      } else if (documentos.currentTypeOfDocument === 'Exploración Física') {
+      } else if (documentos.currentTypeOfDocument === 'exploracionFisica') {
         stepsStore.setSteps([
           { component: Step1ExploracionFisica, name: 'Paso 1' },
           { component: Step2ExploracionFisica, name: 'Paso 2' },
@@ -186,7 +186,7 @@ export default {
           { component: Step30ExploracionFisica, name: 'Paso 30' },
           { component: Step31ExploracionFisica, name: 'Paso 31' },
         ]);
-      } else if (documentos.currentTypeOfDocument === 'Historia Clínica') {
+      } else if (documentos.currentTypeOfDocument === 'historiaClinica') {
         const historiaClinicaSteps = [
           { component: Step1HistoriaClinica, name: 'Paso 1' },
           { component: Step2HistoriaClinica, name: 'Paso 2' },
@@ -302,19 +302,19 @@ export default {
     const handleSubmit = () => {
       let datosLimpios;
 
-      if (documentos.currentTypeOfDocument === 'Antidoping') {
+      if (documentos.currentTypeOfDocument === 'antidoping') {
         datosLimpios = limpiarValoresUndefined(formData.formDataAntidoping);
-      } else if (documentos.currentTypeOfDocument === 'Aptitud') {
+      } else if (documentos.currentTypeOfDocument === 'aptitud') {
         datosLimpios = limpiarValoresUndefined(formData.formDataAptitud);
-      } else if (documentos.currentTypeOfDocument === 'Certificado') {
+      } else if (documentos.currentTypeOfDocument === 'certificado') {
         datosLimpios = limpiarValoresUndefined(formData.formDataCertificado);
-      } else if (documentos.currentTypeOfDocument === 'Documento Externo') {
+      } else if (documentos.currentTypeOfDocument === 'documento Externo') {
         datosLimpios = limpiarValoresUndefined(formData.formDataDocumentoExterno);
-      } else if (documentos.currentTypeOfDocument === 'Examen Vista') {
+      } else if (documentos.currentTypeOfDocument === 'examenVista') {
         datosLimpios = limpiarValoresUndefined(formData.formDataExamenVista);
-      } else if (documentos.currentTypeOfDocument === 'Exploración Física') {
+      } else if (documentos.currentTypeOfDocument === 'exploracionFisica') {
         datosLimpios = limpiarValoresUndefined(formData.formDataExploracionFisica);
-      } else if (documentos.currentTypeOfDocument === 'Historia Clínica') {
+      } else if (documentos.currentTypeOfDocument === 'historiaClinica') {
         datosLimpios = limpiarValoresUndefined(formData.formDataHistoriaClinica);
       } else {
         console.error(`Tipo de documento no reconocido: ${documentos.currentTypeOfDocument}`);
@@ -329,6 +329,9 @@ export default {
       // Si necesitas enviar los datos al backend, aquí usarías `datosLimpios`
       // Ejemplo:
       // api.post('/endpoint', datosLimpios);
+
+      // Enviar los datos al backend
+      documentos.createDocument(documentos.currentTypeOfDocument, trabajadores.currentTrabajadorId, datosLimpios);
 
       // Reiniciar el estado del formulario después de enviar
       formData.resetFormData();

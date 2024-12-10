@@ -49,33 +49,33 @@ const navigateTo = (routeName, params) => {
         @click="navigateTo('crear-documento', {
           idEmpresa: empresas.currentEmpresaId,
           idTrabajador: trabajadores.currentTrabajadorId,
-          tipoDocumento: 'Historia Clínica'
+          tipoDocumento: 'historiaClinica'
         })" />
       <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Exploración Física"
         @click="navigateTo('crear-documento', {
           idEmpresa: empresas.currentEmpresaId,
           idTrabajador: trabajadores.currentTrabajadorId,
-          tipoDocumento: 'Exploración Física'
+          tipoDocumento: 'exploracionFisica'
         })" />
       <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Examen Vista" @click="navigateTo('crear-documento', {
         idEmpresa: empresas.currentEmpresaId,
         idTrabajador: trabajadores.currentTrabajadorId,
-        tipoDocumento: 'Examen Vista'
+        tipoDocumento: 'examenVista'
       })" />
       <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Antidoping" @click="navigateTo('crear-documento', {
         idEmpresa: empresas.currentEmpresaId,
         idTrabajador: trabajadores.currentTrabajadorId,
-        tipoDocumento: 'Antidoping'
+        tipoDocumento: 'antidoping'
       })" />
       <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Aptitud" @click="navigateTo('crear-documento', {
         idEmpresa: empresas.currentEmpresaId,
         idTrabajador: trabajadores.currentTrabajadorId,
-        tipoDocumento: 'Aptitud'
+        tipoDocumento: 'aptitud'
       })" />
       <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Certificado" @click="navigateTo('crear-documento', {
         idEmpresa: empresas.currentEmpresaId,
         idTrabajador: trabajadores.currentTrabajadorId,
-        tipoDocumento: 'Certificado'
+        tipoDocumento: 'certificado'
       })" />
       <div class="w-full flex justify-center">
         <SliderButton class="align-self-center" text="Documento Externo" />
