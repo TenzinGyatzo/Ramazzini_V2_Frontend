@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import type { DocumentsByYear } from '@/stores/documentos';
 import DocumentoItem from './DocumentoItem.vue';
+import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
 
 defineProps<{
     documents: DocumentsByYear[string];
     year: string;
 }>();
+
+defineEmits(['eliminarDocumento']);
 </script>
 
 <template>
@@ -22,49 +25,56 @@ defineProps<{
         <!-- Aptitudes -->
         <div v-if="documents.aptitudes && documents.aptitudes.length > 0">
             <div v-for="aptitud in documents.aptitudes" :key="aptitud._id">
-                <DocumentoItem :aptitud="aptitud" />
+                <DocumentoItem :aptitud="aptitud" 
+                    @eliminarDocumento="$emit('eliminarDocumento', aptitud._id, convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto), 'Aptitud al Puesto')" />
             </div>
         </div>
 
         <!-- Historias Clinicas -->
         <div v-if="documents.historiasClinicas && documents.historiasClinicas.length > 0">
             <div v-for="historiaClinica in documents.historiasClinicas" :key="historiaClinica._id">
-                <DocumentoItem :historiaClinica="historiaClinica" />
+                <DocumentoItem :historiaClinica="historiaClinica" 
+                    @eliminarDocumento="$emit('eliminarDocumento', historiaClinica._id, convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica), 'Historia Clínica')" />
             </div>
         </div>
 
         <!-- Exploraciones Fisicas -->
         <div v-if="documents.exploracionesFisicas && documents.exploracionesFisicas.length > 0">
             <div v-for="exploracionFisica in documents.exploracionesFisicas" :key="exploracionFisica._id">
-                <DocumentoItem :exploracionFisica="exploracionFisica" />
+                <DocumentoItem :exploracionFisica="exploracionFisica" 
+                    @eliminarDocumento="$emit('eliminarDocumento', exploracionFisica._id, convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica), 'Exploración Física')" />
             </div>
         </div>
 
         <!-- Examenes de la Vista -->
         <div v-if="documents.examenesVista && documents.examenesVista.length > 0">
             <div v-for="examenVista in documents.examenesVista" :key="examenVista._id">
-                <DocumentoItem :examenVista="examenVista" />
+                <DocumentoItem :examenVista="examenVista" 
+                    @eliminarDocumento="$emit('eliminarDocumento', examenVista._id, convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista), 'Examen de la Vista')" />
             </div>
         </div>
 
         <!-- Antidopings -->
         <div v-if="documents.antidopings && documents.antidopings.length > 0">
             <div v-for="antidoping in documents.antidopings" :key="antidoping._id">
-                <DocumentoItem :antidoping="antidoping" />
+                <DocumentoItem :antidoping="antidoping" 
+                    @eliminarDocumento="$emit('eliminarDocumento', antidoping._id, convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping), 'Antidoping')" />
             </div>
         </div>
 
         <!-- Certificados -->
         <div v-if="documents.certificados && documents.certificados.length > 0">
             <div v-for="certificado in documents.certificados" :key="certificado._id">
-                <DocumentoItem :certificado="certificado" />
+                <DocumentoItem :certificado="certificado" 
+                    @eliminarDocumento="$emit('eliminarDocumento', certificado._id, convertirFechaISOaDDMMYYYY(certificado.fechaCertificado), 'Certificado')" />
             </div>
         </div>
 
         <!-- Documentos Externos -->
         <div v-if="documents.documentosExternos && documents.documentosExternos.length > 0">
             <div v-for="documentoExterno in documents.documentosExternos" :key="documentoExterno._id">
-                <DocumentoItem :documentoExterno="documentoExterno" />
+                <DocumentoItem :documentoExterno="documentoExterno" 
+                    @eliminarDocumento="$emit('eliminarDocumento', documentoExterno._id, 'Documento Externo', 'Documento Externo')" />
             </div>
         </div>
     </div>

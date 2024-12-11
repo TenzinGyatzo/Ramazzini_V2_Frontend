@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { watch, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import GreenButton from '@/components/GreenButton.vue';
 import SliderButton from '@/components/SliderButton.vue';
+import ModalEliminar from '@/components/ModalEliminar.vue';
 import { calcularEdad } from '@/helpers/dates';
 import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
 import { useDocumentosStore } from '@/stores/documentos';
@@ -18,6 +19,49 @@ const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 const formData = useFormDataStore();
+
+const showDeleteModal = ref(false); // Controla la visibilidad del modal
+const selectedDocumentId = ref<string | null>(null); // ID del documento seleccionado
+const selectedDocumentName = ref<string>(''); // Valor inicial como cadena vacía
+const selectedDocumentType = ref<string | null>(null); // Tipo del documento seleccionado
+
+const toggleDeleteModal = (
+  documentId: string | null = null,
+  documentName: string = 'Sin nombre',
+  documentType: string | null = null
+) => {
+  showDeleteModal.value = !showDeleteModal.value;
+
+  if (!showDeleteModal.value) {
+    // Limpia los valores si el modal se cierra
+    selectedDocumentId.value = null;
+    selectedDocumentName.value = '';
+    selectedDocumentType.value = null;
+  } else {
+    // Asigna valores si el modal se abre
+    selectedDocumentId.value = documentId;
+    selectedDocumentName.value = documentName;
+    selectedDocumentType.value = documentType;
+  }
+};
+
+const handleDeleteDocument = async () => {
+  if (!selectedDocumentId.value || !selectedDocumentType.value) return;
+
+  try {
+    // TODO: Llamar a la API para eliminar el documento
+    await documentos.deleteDocumentById(
+      selectedDocumentType.value,
+      trabajadores.currentTrabajadorId!,
+      selectedDocumentId.value
+    );
+
+    toggleDeleteModal(); // Cierra el modal
+    await documentos.fetchAllDocuments(trabajadores.currentTrabajadorId!); // Actualiza la lista
+  } catch (error) {
+    console.error("Error al eliminar el documento:", error);
+  }
+};
 
 onMounted(() => {
   const empresaId = String(route.params.idEmpresa);
@@ -43,6 +87,17 @@ const navigateTo = (routeName, params) => {
 </script>
 
 <template>
+  <Transition appear name="fade">
+    <ModalEliminar
+      v-if="showDeleteModal && selectedDocumentId && selectedDocumentType"
+      :idRegistro="selectedDocumentId"
+      :identificacion="selectedDocumentName"
+      :tipoRegistro="selectedDocumentType"
+      @closeModal="toggleDeleteModal"
+      @confirmDelete="handleDeleteDocument"
+    />
+  </Transition>
+
   <div class="p-5 grid gap-5">
     <div class="flex flex-wrap flex-col md:flex-row justify-center gap-3 md:gap-6">
       <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Historia Clínica"
@@ -102,10 +157,13 @@ const navigateTo = (routeName, params) => {
       <div v-else>
         <div v-if="documentos.documentsByYear && Object.keys(documentos.documentsByYear).length"
           class="grid grid-cols-1 gap-6">
-          <div v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
-            :key="year">
-            <GrupoDocumentos :documents="documentos.documentsByYear[year]" :year="String(year)" />
-          </div>
+          <GrupoDocumentos
+            v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
+            :key="year"
+            :documents="documentos.documentsByYear[year]"
+            :year="year"
+            @eliminarDocumento="toggleDeleteModal"
+          />
         </div>
         <h1 v-else
           class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700">Esta

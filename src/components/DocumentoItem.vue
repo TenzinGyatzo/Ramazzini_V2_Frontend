@@ -123,6 +123,9 @@ defineProps({
     exploracionFisica: [Object, String],
     historiaClinica: [Object, String]
 });
+
+defineEmits(['eliminarDocumento']);
+
 </script>
 
 <template>
@@ -305,9 +308,12 @@ defineProps({
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
             </button>
             <button type="button"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
+                @click="$emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo)"
+                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10"
+            >
                 <i class="fa-solid fa-trash-can fa-lg"></i>
             </button>
+
         </div>
     </div>
 

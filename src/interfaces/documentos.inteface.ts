@@ -1,6 +1,6 @@
 export interface Antidoping {
     _id: string;
-    fechaAntidoping: Date;
+    fechaAntidoping: string;
     marihuana: string;
     cocaina: string;
     anfetaminas: string;
@@ -14,7 +14,7 @@ export interface Antidoping {
 
 export interface Aptitud {
     _id: string;
-    fechaAptitudPuesto: Date;
+    fechaAptitudPuesto: string;
     evaluacionAdicional1?: string;
     fechaEvaluacionAdicional1?: Date;
     resultadosEvaluacionAdicional1?: string;
@@ -45,7 +45,7 @@ export interface Aptitud {
 
 export interface Certificado {
     _id: string;
-    fechaCertificado: Date;
+    fechaCertificado: string;
     idTrabajador: string;
     rutaPDF: string;
     createdBy: string;
@@ -56,7 +56,7 @@ export interface DocumentoExterno {
     _id: string;
     tipoDocumento: string;
     nombreDocumento: string;
-    fechaDocumento: Date;
+    fechaDocumento: string;
     notasDocumento?: string;
     extension: string;
     idTrabajador: string;
@@ -67,7 +67,7 @@ export interface DocumentoExterno {
 
 export interface ExamenVista {
     _id: string;
-    fechaExamenVista: Date;
+    fechaExamenVista: string;
     ojoIzquierdoLejanaSinCorreccion: number;
     ojoDerechoLejanaSinCorreccion: number;
     sinCorreccionLejanaInterpretacion: string;
@@ -93,7 +93,7 @@ export interface ExamenVista {
 
 export interface ExploracionFisica {
     _id: string;
-    fechaExploracionFisica: Date;
+    fechaExploracionFisica: string;
     peso?: number;
     altura?: number;
     indiceMasaCorporal?: number;
@@ -146,7 +146,7 @@ export interface ExploracionFisica {
 export interface HistoriaClinica {
     _id: string;
     motivoExamen: string;
-    fechaHistoriaClinica: Date;
+    fechaHistoriaClinica: string;
     nefropatias?: string;
     nefropatiasEspecificar?: string;
     diabeticos?: string;
