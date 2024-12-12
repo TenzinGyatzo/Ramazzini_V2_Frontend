@@ -33,6 +33,12 @@ export default {
         return api.post(`/expedientes/${trabajadorId}/documentos/${documentType}/crear`, data);
     },
 
+    getDocumentById(documentType: string, trabajadorId: string, documentoId: string) {
+        const response = api.get(`/expedientes/${trabajadorId}/documentos/${documentType}/${documentoId}`);
+        console.log('Respuesta completa de la API:', response);
+        return response;
+    },
+
     deleteDocumentById(documentType: string, trabajadorId: string, documentoId: string) {
         return api.delete(`/expedientes/${trabajadorId}/documentos/${documentType}/eliminar/${documentoId}`);
     },

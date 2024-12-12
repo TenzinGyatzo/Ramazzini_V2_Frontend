@@ -59,6 +59,15 @@ watch(() => trabajadores.currentTrabajador, (newTrabajador, oldTrabajador) => {
   }
 });
 
+const documentTypeLabels = {
+  aptitud: "Aptitud al Puesto",
+  historiaClinica: "Historia Clínica",
+  exploracionFisica: "Exploración Física",
+  examenVista: "Examen de la Vista",
+  antidoping: "Antidoping",
+  certificado: "Certificado",
+};
+
 </script>
 
 <template>
@@ -129,7 +138,7 @@ watch(() => trabajadores.currentTrabajador, (newTrabajador, oldTrabajador) => {
           tipoDocumento: documentos.currentTypeOfDocument
         }
       }" icon="fas fa-file-pdf" class="leading-5" @click.stop>
-        <p>{{ documentos.currentTypeOfDocument }}</p>
+        <p>{{ documentTypeLabels[documentos.currentTypeOfDocument] || 'Documento desconocido' }}</p>
         <p class="text-xs">Creando nuevo</p>
       </SidebarLink>
     </Transition>

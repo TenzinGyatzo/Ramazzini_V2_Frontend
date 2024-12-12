@@ -2,6 +2,31 @@
 import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
 import { ref } from 'vue';
 import { VPdfViewer, Locales, useLicense } from '@vue-pdf-viewer/viewer';
+import { useRouter } from 'vue-router';
+import { useEmpresasStore } from '@/stores/empresas';
+import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
+import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { useDocumentosStore } from '@/stores/documentos';
+
+const router = useRouter();
+const empresas = useEmpresasStore();
+const centrosTrabajo = useCentrosTrabajoStore();
+const trabajadores = useTrabajadoresStore();
+const documentos = useDocumentosStore();
+
+const editarDocumento = (documentoId, documentoTipo) => {
+  console.log('Editar documento:', { documentoId, documentoTipo });
+  router.push({
+    name: 'crear-documento',
+    params: {
+      idEmpresa: empresas.currentEmpresaId,
+      idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId,
+      idTrabajador: trabajadores.currentTrabajadorId,
+      tipoDocumento: documentoTipo,
+      idDocumento: documentoId,
+    },
+  });
+};
 
 // If the value is empty or incorrect, the watermark will remain.
 const licenseKey = import.meta.env.VITE_VPV_LICENSE ?? '102d64ec-006b-4fd6-8850-a00a050703ad';
@@ -115,6 +140,14 @@ const cerrarPdf = () => {
 };
 
 defineProps({
+    documentoId: {
+        type: String,
+        required: true,
+    },
+    documentoTipo: {
+        type: String,
+        required: true,
+    },
     antidoping: [Object, String],
     aptitud: [Object, String],
     certificado: [Object, String],
@@ -304,9 +337,11 @@ defineEmits(['eliminarDocumento']);
                 <i class="fa-solid fa-download fa-lg"></i>
             </button>
             <button type="button"
+                @click="editarDocumento(documentoId, documentoTipo)"
                 class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
             </button>
+
             <button type="button"
                 @click="$emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo)"
                 class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10"

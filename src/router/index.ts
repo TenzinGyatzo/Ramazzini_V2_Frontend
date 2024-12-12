@@ -30,7 +30,7 @@ const router = createRouter({
           component: () => import("../views/ExpedienteMedicoView.vue"),
         },
         {
-          path: "/crear-documento/:idEmpresa/:idCentroTrabajo/:idTrabajador/:tipoDocumento",
+          path: "/crear-documento/:idEmpresa/:idCentroTrabajo/:idTrabajador/:tipoDocumento/:idDocumento?",
           name: "crear-documento",
           component: () => import("../views/CrearDocumentoView.vue"),
         },

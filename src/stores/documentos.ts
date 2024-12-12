@@ -28,6 +28,23 @@ export const useDocumentosStore = defineStore("documentos", () => {
   const loading = ref(true);
   const currentTypeOfDocument = ref<string | null>(null);
   const currentDocumentId = ref<string | null>(null);
+  const currentDocument = ref<any | null>(null);
+
+  async function fetchDocumentById(documentType: string, trabajadorId: string, documentId: string) {
+    try {
+      loading.value = true;
+      currentDocument.value = null;
+
+      const response = await DocumentosAPI.getDocumentById(documentType, trabajadorId, documentId);
+      console.log('Respuesta de la API en fetchDocumentById:', response);
+      currentDocument.value = response.data.data;
+      console.log('Documento recibido en el store:', currentDocument.value);
+    } catch (error) {
+      console.error(`Error al obtener el documento ${documentId} de tipo ${documentType}:`, error);
+    } finally {
+      loading.value = false;
+    }
+  }
 
   async function fetchAllDocuments(trabajadorId: string) {
     try {
@@ -192,7 +209,11 @@ export const useDocumentosStore = defineStore("documentos", () => {
   function setCurrentTypeOfDocument(type: string) {
     currentTypeOfDocument.value = type;
   }
-  
+
+  function setCurrentDocument(documentType: string, documentId: string) {
+    currentTypeOfDocument.value = documentType;
+    currentDocumentId.value = documentId;
+  }  
 
   function resetCurrentTypeOfDocument() {
     currentTypeOfDocument.value = "";
@@ -226,7 +247,9 @@ export const useDocumentosStore = defineStore("documentos", () => {
     documentsByYear,
     currentTypeOfDocument,
     currentDocumentId,
+    fetchDocumentById,
     fetchAllDocuments,
+    setCurrentDocument,
     setCurrentTypeOfDocument,
     resetCurrentTypeOfDocument,
     createDocument,

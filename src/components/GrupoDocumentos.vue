@@ -25,7 +25,7 @@ defineEmits(['eliminarDocumento']);
         <!-- Aptitudes -->
         <div v-if="documents.aptitudes && documents.aptitudes.length > 0">
             <div v-for="aptitud in documents.aptitudes" :key="aptitud._id">
-                <DocumentoItem :aptitud="aptitud" 
+                <DocumentoItem :aptitud="aptitud" :documentoId="aptitud._id" :documentoTipo="'aptitud'"
                     @eliminarDocumento="$emit('eliminarDocumento', aptitud._id, convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto), 'aptitud')" />
             </div>
         </div>
@@ -33,7 +33,7 @@ defineEmits(['eliminarDocumento']);
         <!-- Historias Clinicas -->
         <div v-if="documents.historiasClinicas && documents.historiasClinicas.length > 0">
             <div v-for="historiaClinica in documents.historiasClinicas" :key="historiaClinica._id">
-                <DocumentoItem :historiaClinica="historiaClinica" 
+                <DocumentoItem :historiaClinica="historiaClinica" :documentoId="historiaClinica._id" :documentoTipo="'historiaClinica'"
                     @eliminarDocumento="$emit('eliminarDocumento', historiaClinica._id, convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica), 'historiaClinica')" />
             </div>
         </div>
@@ -41,7 +41,7 @@ defineEmits(['eliminarDocumento']);
         <!-- Exploraciones Fisicas -->
         <div v-if="documents.exploracionesFisicas && documents.exploracionesFisicas.length > 0">
             <div v-for="exploracionFisica in documents.exploracionesFisicas" :key="exploracionFisica._id">
-                <DocumentoItem :exploracionFisica="exploracionFisica" 
+                <DocumentoItem :exploracionFisica="exploracionFisica" :documentoId="exploracionFisica._id" :documentoTipo="'exploracionFisica'"
                     @eliminarDocumento="$emit('eliminarDocumento', exploracionFisica._id, convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica), 'exploracionFisica')" />
             </div>
         </div>
@@ -49,7 +49,7 @@ defineEmits(['eliminarDocumento']);
         <!-- Examenes de la Vista -->
         <div v-if="documents.examenesVista && documents.examenesVista.length > 0">
             <div v-for="examenVista in documents.examenesVista" :key="examenVista._id">
-                <DocumentoItem :examenVista="examenVista" 
+                <DocumentoItem :examenVista="examenVista" :documentoId="examenVista._id" :documentoTipo="'examenVista'"
                     @eliminarDocumento="$emit('eliminarDocumento', examenVista._id, convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista), 'examenVista')" />
             </div>
         </div>
@@ -57,7 +57,7 @@ defineEmits(['eliminarDocumento']);
         <!-- Antidopings -->
         <div v-if="documents.antidopings && documents.antidopings.length > 0">
             <div v-for="antidoping in documents.antidopings" :key="antidoping._id">
-                <DocumentoItem :antidoping="antidoping" 
+                <DocumentoItem :antidoping="antidoping" :documentoId="antidoping._id" :documentoTipo="'antidoping'"
                     @eliminarDocumento="$emit('eliminarDocumento', antidoping._id, convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping), 'antidoping')" />
             </div>
         </div>
@@ -65,7 +65,7 @@ defineEmits(['eliminarDocumento']);
         <!-- Certificados -->
         <div v-if="documents.certificados && documents.certificados.length > 0">
             <div v-for="certificado in documents.certificados" :key="certificado._id">
-                <DocumentoItem :certificado="certificado" 
+                <DocumentoItem :certificado="certificado" :documentoId="certificado._id" :documentoTipo="'certificado'"
                     @eliminarDocumento="$emit('eliminarDocumento', certificado._id, convertirFechaISOaDDMMYYYY(certificado.fechaCertificado), 'certificado')" />
             </div>
         </div>
@@ -73,7 +73,7 @@ defineEmits(['eliminarDocumento']);
         <!-- Documentos Externos -->
         <div v-if="documents.documentosExternos && documents.documentosExternos.length > 0">
             <div v-for="documentoExterno in documents.documentosExternos" :key="documentoExterno._id">
-                <DocumentoItem :documentoExterno="documentoExterno" 
+                <DocumentoItem :documentoExterno="documentoExterno" :documentoId="documentoExterno._id" :documentoTipo="'documentoExterno'"
                     @eliminarDocumento="$emit('eliminarDocumento', documentoExterno._id, convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento), 'documentoExterno')" />
             </div>
         </div>
