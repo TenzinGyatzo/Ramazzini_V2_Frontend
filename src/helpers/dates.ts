@@ -5,9 +5,9 @@ function convertirFechaISOaDDMMYYYY(dateString: string): string {
     throw new Error("La fecha proporcionada no es válida.");
   }
 
-  const dia = String(fecha.getDate()).padStart(2, "0"); // Obtiene el día con dos dígitos
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0"); // Los meses empiezan en 0, por eso se suma 1
-  const año = fecha.getFullYear(); // Obtiene el año completo
+  const dia = String(fecha.getUTCDate()).padStart(2, "0"); // Obtiene el día en UTC
+  const mes = String(fecha.getUTCMonth() + 1).padStart(2, "0"); // Mes en UTC (suma 1 porque empieza en 0)
+  const año = fecha.getUTCFullYear(); // Año en UTC
 
   return `${dia}-${mes}-${año}`;
 }
@@ -65,13 +65,14 @@ function calcularAntiguedad(dateString: string): string {
 function formatDateDDMMYYYY(date) {
   if (!date) return '';
 
-  const d = new Date(date);
-  const day = String(d.getDate()).padStart(2, '0'); // Asegura que sea de dos dígitos
-  const month = String(d.getMonth() + 1).padStart(2, '0'); // Los meses son base 0
-  const year = d.getFullYear();
+  const d = new Date(`${date}T00:00:00Z`); // Forzar interpretación UTC
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const year = d.getUTCFullYear();
 
   return `${day}-${month}-${year}`;
 }
+
 
 export {
   convertirFechaISOaDDMMYYYY,

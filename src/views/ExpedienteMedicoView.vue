@@ -4,13 +4,13 @@ import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { useDocumentosStore } from '@/stores/documentos';
+import { useFormDataStore } from '@/stores/formDataStore';
 import GreenButton from '@/components/GreenButton.vue';
 import SliderButton from '@/components/SliderButton.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
-import { calcularEdad } from '@/helpers/dates';
 import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
-import { useDocumentosStore } from '@/stores/documentos';
-import { useFormDataStore } from '@/stores/formDataStore';
+import { calcularEdad } from '@/helpers/dates';
 
 const route = useRoute();
 const router = useRouter();
@@ -49,7 +49,6 @@ const handleDeleteDocument = async () => {
   if (!selectedDocumentId.value || !selectedDocumentType.value) return;
 
   try {
-    // TODO: Llamar a la API para eliminar el documento
     await documentos.deleteDocumentById(
       selectedDocumentType.value,
       trabajadores.currentTrabajadorId!,
@@ -61,6 +60,15 @@ const handleDeleteDocument = async () => {
   } catch (error) {
     console.error("Error al eliminar el documento:", error);
   }
+};
+
+const documentTypeLabels = {
+  aptitud: "Aptitud al Puesto",
+  historiaClinica: "Historia Clínica",
+  exploracionFisica: "Exploración Física",
+  examenVista: "Examen de la Vista",
+  antidoping: "Antidoping",
+  certificado: "Certificado",
 };
 
 onMounted(() => {
@@ -92,7 +100,7 @@ const navigateTo = (routeName, params) => {
       v-if="showDeleteModal && selectedDocumentId && selectedDocumentType"
       :idRegistro="selectedDocumentId"
       :identificacion="selectedDocumentName"
-      :tipoRegistro="selectedDocumentType"
+      :tipoRegistro="documentTypeLabels[selectedDocumentType]"
       @closeModal="toggleDeleteModal"
       @confirmDelete="handleDeleteDocument"
     />

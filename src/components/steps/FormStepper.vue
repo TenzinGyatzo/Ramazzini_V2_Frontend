@@ -326,10 +326,6 @@ export default {
 
       console.log('Datos enviados:', datosLimpios);
 
-      // Si necesitas enviar los datos al backend, aquí usarías `datosLimpios`
-      // Ejemplo:
-      // api.post('/endpoint', datosLimpios);
-
       // Enviar los datos al backend
       documentos.createDocument(documentos.currentTypeOfDocument, trabajadores.currentTrabajadorId, datosLimpios);
 
