@@ -27,8 +27,6 @@ const antidopings = ref([]);
 const nearestAntidoping = ref(null);
 
 onMounted(async () => {
-  formData.resetFormData();
-
   try {
     const response = await DocumentosAPI.getHistoriasClinicas(trabajadores.currentTrabajadorId);
     historiasClinicas.value = response.data;
@@ -53,15 +51,26 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error al obtener los exámenes:', error);
   }
+
+    // Llamar la función de cálculo inicial si ya existe fechaAptitudPuesto
+    if (formData.formDataAptitud.fechaAptitudPuesto) {
+    calculateNearestDocuments(formData.formDataAptitud.fechaAptitudPuesto);
+  }
 });
 
+// Función reutilizable para calcular los documentos más cercanos
+const calculateNearestDocuments = (fechaAptitudPuesto) => {
+  nearestExamenVista.value = findNearestDocument(examenesVista.value, fechaAptitudPuesto, 'fechaExamenVista');
+  nearestHistoriaClinica.value = findNearestDocument(historiasClinicas.value, fechaAptitudPuesto, 'fechaHistoriaClinica');
+  nearestExploracionFisica.value = findNearestDocument(exploracionesFisicas.value, fechaAptitudPuesto, 'fechaExploracionFisica');
+  nearestAntidoping.value = findNearestDocument(antidopings.value, fechaAptitudPuesto, 'fechaAntidoping');
+};
+
+// Watch para reactuar a cambios en la fecha
 watch(
   () => formData.formDataAptitud.fechaAptitudPuesto,
   (newFechaAptitudPuesto) => {
-    nearestExamenVista.value = findNearestDocument(examenesVista.value, newFechaAptitudPuesto, 'fechaExamenVista');
-    nearestHistoriaClinica.value = findNearestDocument(historiasClinicas.value, newFechaAptitudPuesto, 'fechaHistoriaClinica');
-    nearestExploracionFisica.value = findNearestDocument(exploracionesFisicas.value, newFechaAptitudPuesto, 'fechaExploracionFisica');
-    nearestAntidoping.value = findNearestDocument(antidopings.value, newFechaAptitudPuesto, 'fechaAntidoping');
+    calculateNearestDocuments(newFechaAptitudPuesto);
   }
 );
 

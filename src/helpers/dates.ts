@@ -62,7 +62,8 @@ function calcularAntiguedad(dateString: string): string {
   return `${years} años, ${months} meses`;
 }
 
-function formatDateDDMMYYYY(date) {
+
+/* function formatDateDDMMYYYY(date) {
   if (!date) return '';
 
   const d = new Date(`${date}T00:00:00Z`); // Forzar interpretación UTC
@@ -71,7 +72,21 @@ function formatDateDDMMYYYY(date) {
   const year = d.getUTCFullYear();
 
   return `${day}-${month}-${year}`;
-}
+} */
+
+  function formatDateDDMMYYYY(date) {
+    if (!date) return '';
+  
+    const d = new Date(date); // Sin modificar la fecha
+    if (isNaN(d.getTime())) return ''; // Validar si la fecha es válida
+  
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const year = d.getUTCFullYear();
+  
+    return `${day}-${month}-${year}`;
+  }
+  
 
 
 export {

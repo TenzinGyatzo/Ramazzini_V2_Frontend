@@ -6,10 +6,6 @@ console.log('Datos del store en VisualizadorAntidoping:', formData.formDataAntid
 </script>
 
 <template>
-  <div v-if="formData.formDataAntidoping.fechaAntidoping" class="...">
-    <p>Datos del documento:</p>
-    <pre>{{ formData.formDataAntidoping }}</pre>
-  </div>
   <div
     class="border-shadow w-full col-span-1 2xl:col-span-9 text-left rounded-lg p-7 2xl:p-7 transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-lg mx-auto">
     <h2 class="text-lg font-semibold mb-4">Información del Documento</h2>

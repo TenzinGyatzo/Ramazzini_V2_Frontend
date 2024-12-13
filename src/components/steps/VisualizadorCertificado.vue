@@ -17,8 +17,6 @@ const examenesVista = ref([]);
 const nearestExamenVista = ref(null);
 
 onMounted(async () => {
-  formData.resetFormData();
-  
   try {
     const response = await DocumentosAPI.getExamenesVista(trabajadores.currentTrabajadorId);
     examenesVista.value = response.data;

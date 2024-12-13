@@ -36,9 +36,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
       currentDocument.value = null;
 
       const response = await DocumentosAPI.getDocumentById(documentType, trabajadorId, documentId);
-      console.log('Respuesta de la API en fetchDocumentById:', response);
-      currentDocument.value = response.data.data;
-      console.log('Documento recibido en el store:', currentDocument.value);
+      currentDocument.value = response.data;
     } catch (error) {
       console.error(`Error al obtener el documento ${documentId} de tipo ${documentType}:`, error);
     } finally {
@@ -247,6 +245,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
     documentsByYear,
     currentTypeOfDocument,
     currentDocumentId,
+    currentDocument,
     fetchDocumentById,
     fetchAllDocuments,
     setCurrentDocument,

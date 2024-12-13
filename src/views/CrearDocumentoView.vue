@@ -22,8 +22,6 @@ const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 
 onMounted(async () => {
-  console.log('Parámetros de la ruta:', route.params);
-
   const empresaId = String(route.params.idEmpresa);
   const centroTrabajoId = String(route.params.idCentroTrabajo);
   const trabajadorId = String(route.params.idTrabajador);
@@ -44,24 +42,12 @@ onMounted(async () => {
 
   if (documentoId && tipoDocumento) {
     try {
-      // Establece el documento actual en el store y carga los datos desde la API
-      console.log('Parámetros enviados a fetchDocumentById:', {
-        tipoDocumento,
-        trabajadorId: trabajadores.currentTrabajadorId,
-        documentoId,
-      });
-
       await documentos.fetchDocumentById(tipoDocumento, trabajadores.currentTrabajadorId, documentoId);
-      console.log('Documento recibido en el frontend:', documentos.currentDocument); // ¿Está bien ubicado este log?
 
-      console.log('documentos.currentDocument antes de asignar:', documentos.currentDocument);
-      const documento = documentos.currentDocument; // Si no es ref, elimina el .value
-      console.log('Documento después de asignar:', documento);
-
+      const documento = documentos.currentDocument;
 
       if (documento) {
         // Carga los datos en el formDataStore
-        console.log('Datos antes de pasarlos al formDataStore:', documento);
         formData.setFormDataFromDocument(documento, tipoDocumento);
       } else {
         console.error('No se encontraron datos para el documento especificado.');

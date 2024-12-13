@@ -15,12 +15,10 @@ export const useFormDataStore = defineStore('formData', () => {
       console.error('Documento es nulo o indefinido:', documento);
       return;
     }
-    console.log('Seteando datos en formDataStore:', { documento, tipoDocumento });
 
     switch (tipoDocumento) {
       case 'antidoping':
         formDataAntidoping.value = { ...documento };
-        console.log('Datos cargados en formDataAntidoping:', formDataAntidoping.value);
         break;
       case 'aptitud':
         formDataAptitud.value = { ...documento };
@@ -44,10 +42,6 @@ export const useFormDataStore = defineStore('formData', () => {
         console.error('Tipo de documento no reconocido:', tipoDocumento);
         break;
     }
-    console.log('Estado actualizado en formDataStore:', {
-      tipoDocumento,
-      formData: formDataAntidoping.value,
-    });
   };  
 
   const resetFormData = () => {

@@ -90,6 +90,7 @@ onMounted(() => {
 const navigateTo = (routeName, params) => {
   router.push({ name: routeName, params });
   documentos.setCurrentTypeOfDocument(params.tipoDocumento);
+  documentos.currentDocument = null;
 };
 
 </script>

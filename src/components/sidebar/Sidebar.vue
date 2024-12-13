@@ -139,7 +139,8 @@ const documentTypeLabels = {
         }
       }" icon="fas fa-file-pdf" class="leading-5" @click.stop>
         <p>{{ documentTypeLabels[documentos.currentTypeOfDocument] || 'Documento desconocido' }}</p>
-        <p class="text-xs">Creando nuevo</p>
+        <p v-if="documentos.currentDocument" class="text-xs">Editando</p>
+        <p v-else class="text-xs">Creando nuevo</p>
       </SidebarLink>
     </Transition>
 

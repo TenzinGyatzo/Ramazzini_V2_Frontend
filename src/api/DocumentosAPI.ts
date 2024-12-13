@@ -34,9 +34,7 @@ export default {
     },
 
     getDocumentById(documentType: string, trabajadorId: string, documentoId: string) {
-        const response = api.get(`/expedientes/${trabajadorId}/documentos/${documentType}/${documentoId}`);
-        console.log('Respuesta completa de la API:', response);
-        return response;
+        return api.get(`/expedientes/${trabajadorId}/documentos/${documentType}/${documentoId}`);
     },
 
     deleteDocumentById(documentType: string, trabajadorId: string, documentoId: string) {

@@ -1,5 +1,4 @@
 <script setup>
-import { onMounted } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
@@ -10,10 +9,6 @@ const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
 const formData = useFormDataStore();
 const steps = useStepsStore();
-
-onMounted(() => {
-  formData.resetFormData();
-});
 
 const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);

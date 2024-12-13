@@ -1,5 +1,4 @@
 <script setup>
-import { ref, onMounted } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
@@ -11,13 +10,11 @@ const trabajadores = useTrabajadoresStore();
 const formData = useFormDataStore();
 const steps = useStepsStore();
 
-onMounted(() => {
-  formData.resetFormData();
-});
-
 const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
 };
+
+console.log('Datos del store en VisualizadorExamenVista:', formData.formDataExamenVista);
 
 </script>
 
