@@ -1,11 +1,24 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataHistoriaClinica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const diabeticosPP = ref('No');
+
+onMounted(() => {
+    if (documentos.currentDocument) {
+        // Si se está editando un documento, usa los valores existentes
+        diabeticosPP.value = documentos.currentDocument.diabeticosPP || 'No';
+
+    } else {
+        // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
+        diabeticosPP.value = formDataHistoriaClinica.diabeticosPP || 'No';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para diabeticosPP
@@ -28,9 +41,6 @@ watch(diabeticosPP, (newValue) => {
 watch(diabeticosPP, (newValue) => {
     if (newValue === 'No') {
         formDataHistoriaClinica.diabeticosPPEspecificar = 'Negado';
-    }
-    if (newValue === 'Si') {
-        formDataHistoriaClinica.diabeticosPPEspecificar = '';
     }
 });
 </script>

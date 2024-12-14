@@ -15,7 +15,6 @@ const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 
 const editarDocumento = (documentoId, documentoTipo) => {
-  console.log('Editar documento:', { documentoId, documentoTipo });
   router.push({
     name: 'crear-documento',
     params: {

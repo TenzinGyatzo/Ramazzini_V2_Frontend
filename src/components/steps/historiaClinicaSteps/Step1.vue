@@ -1,31 +1,47 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { format } from 'date-fns';
+import { formatDateYYYYMMDD } from '@/helpers/dates';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const { formDataHistoriaClinica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const motivoExamen = ref('Ingreso');
-// Obtener la fecha actual en formato YYYY-MM-DD
 const today = format(new Date(), 'yyyy-MM-dd');
 const todayDDMMYYYY = format(new Date(), 'dd-MM-yyyy');
 
-onMounted(() => {
-  // Establece idTrabajador en formData
-  formDataHistoriaClinica.idTrabajador = trabajadores.currentTrabajadorId;
+// Inicializar la referencia local sincronizada con formData
+const fechaHistoriaClinica = ref(today);
 
-  // Establece usuario creador y/o actualizador en formData
+onMounted(() => {
+  if (documentos.currentDocument) {
+    // Si se está editando un documento, usa los valores existentes
+    motivoExamen.value = documentos.currentDocument.motivoExamen || 'Ingreso';
+    fechaHistoriaClinica.value = formatDateYYYYMMDD(documentos.currentDocument.fechaHistoriaClinica || today);
+  } else {
+    // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
+    motivoExamen.value = formDataHistoriaClinica.motivoExamen || 'Ingreso';
+    fechaHistoriaClinica.value = formatDateYYYYMMDD(formDataHistoriaClinica.fechaHistoriaClinica || today);
+
+    // Configurar valores iniciales en formData si no existen
+    if (!formDataHistoriaClinica.idTrabajador) {
+      formDataHistoriaClinica.idTrabajador = trabajadores.currentTrabajadorId;
+    }
+  }
+  
   formDataHistoriaClinica.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
   formDataHistoriaClinica.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-
-  // Establece rutaPDF en formData cuando aun no se ha seleccionado la fecha
+  
+  // Establece rutaPDF en formData
   const empresa = empresas.currentEmpresa.nombreComercial;
   const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
   const trabajador = trabajadores.currentTrabajador.nombre;
@@ -33,18 +49,10 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Asignar defaults de formulario en caso de que no se haya interactuado con el componente
-  if (!formDataHistoriaClinica.motivoExamen) {
-    formDataHistoriaClinica.motivoExamen = motivoExamen.value;
-  }
-
-  if (!formDataHistoriaClinica.fechaHistoriaClinica) {
-    formDataHistoriaClinica.fechaHistoriaClinica = today;
-  }
+  // Guardar valores en formData antes de desmontar
+  formDataHistoriaClinica.motivoExamen = motivoExamen.value;
+  formDataHistoriaClinica.fechaHistoriaClinica = fechaHistoriaClinica.value;
 });
-
-// Inicializar la referencia local sincronizada con formData
-const fechaHistoriaClinica = ref(today);
 
 // Sincronizar motivoExamen con formData
 watch(motivoExamen, (newValue) => {
@@ -54,8 +62,8 @@ watch(motivoExamen, (newValue) => {
 // Mantener sincronizados los valores
 watch(fechaHistoriaClinica, (newValue) => {
   formDataHistoriaClinica.fechaHistoriaClinica = newValue;
-  
-  // Establece rutaPDF en formData
+
+  // Actualiza rutaPDF en formData
   const empresa = empresas.currentEmpresa.nombreComercial;
   const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
   const trabajador = trabajadores.currentTrabajador.nombre;

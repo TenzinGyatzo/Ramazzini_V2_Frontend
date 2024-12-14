@@ -135,7 +135,8 @@ const documentTypeLabels = {
           idEmpresa: empresas.currentEmpresaId || '',
           idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || '',
           idTrabajador: trabajadores.currentTrabajadorId || '',
-          tipoDocumento: documentos.currentTypeOfDocument
+          tipoDocumento: documentos.currentTypeOfDocument,
+          idDocumento: documentos.currentDocument?._id
         }
       }" icon="fas fa-file-pdf" class="leading-5" @click.stop>
         <p>{{ documentTypeLabels[documentos.currentTypeOfDocument] || 'Documento desconocido' }}</p>

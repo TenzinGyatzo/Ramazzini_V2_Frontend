@@ -1,11 +1,24 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataHistoriaClinica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const alergicos = ref('No');
+
+onMounted(() => {
+    if (documentos.currentDocument) {
+        // Si se está editando un documento, usa los valores existentes
+        alergicos.value = documentos.currentDocument.alergicos || 'No';
+
+    } else {
+        // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
+        alergicos.value = formDataHistoriaClinica.alergicos || 'No';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para alergicos
@@ -28,9 +41,6 @@ watch(alergicos, (newValue) => {
 watch(alergicos, (newValue) => {
     if (newValue === 'No') {
         formDataHistoriaClinica.alergicosEspecificar = 'Negado';
-    }
-    if (newValue === 'Si') {
-        formDataHistoriaClinica.alergicosEspecificar = '';
     }
 });
 </script>

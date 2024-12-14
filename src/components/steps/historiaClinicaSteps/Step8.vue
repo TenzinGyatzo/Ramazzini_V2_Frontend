@@ -1,11 +1,24 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataHistoriaClinica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const epilepticos = ref('No');
+
+onMounted(() => {
+    if (documentos.currentDocument) {
+        // Si se está editando un documento, usa los valores existentes
+        epilepticos.value = documentos.currentDocument.epilepticos || 'No';
+
+    } else {
+        // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
+        epilepticos.value = formDataHistoriaClinica.epilepticos || 'No';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para epilepticos
@@ -28,9 +41,6 @@ watch(epilepticos, (newValue) => {
 watch(epilepticos, (newValue) => {
     if (newValue === 'No') {
         formDataHistoriaClinica.epilepticosEspecificar = 'Negado';
-    }
-    if (newValue === 'Si') {
-        formDataHistoriaClinica.epilepticosEspecificar = '';
     }
 });
 </script>

@@ -1,5 +1,8 @@
 import { defineStore } from "pinia";
 import { ref, markRaw } from "vue";
+import { useTrabajadoresStore } from "./trabajadores";
+
+const trabajadores = useTrabajadoresStore();
 
 export const useStepsStore = defineStore("steps", () => {
   // Lista de pasos
@@ -76,6 +79,24 @@ export const useStepsStore = defineStore("steps", () => {
 
   // Ir a un paso específico
   const goToStep = (stepNumber: number) => {
+    // Se usa el mapa de redirección para compensar la diferencia de pasos entre los trabajadores masculinos y femeninos
+    // debido a los antecedentes Gineco Obstétricos
+    const redirectionMap: Record<number, number> = {
+      42: 28,
+      43: 29,
+      44: 30,
+      45: 31,
+      46: 32,
+    };
+  
+    // Si el paso solicitado está en el mapa de redirección y el trabajador no es femenino
+    if (
+      redirectionMap[stepNumber] &&
+      trabajadores.currentTrabajador?.sexo !== 'Femenino'
+    ) {
+      stepNumber = redirectionMap[stepNumber];
+    }
+  
     if (stepNumber >= 1 && stepNumber <= steps.value.length) {
       currentStep.value = stepNumber;
     } else {

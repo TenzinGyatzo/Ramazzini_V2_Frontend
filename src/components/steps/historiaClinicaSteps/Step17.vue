@@ -1,11 +1,24 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataHistoriaClinica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const obesidad = ref('No');
+
+onMounted(() => {
+    if (documentos.currentDocument) {
+        // Si se está editando un documento, usa los valores existentes
+        obesidad.value = documentos.currentDocument.obesidad || 'No';
+
+    } else {
+        // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
+        obesidad.value = formDataHistoriaClinica.obesidad || 'No';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para obesidad
@@ -28,9 +41,6 @@ watch(obesidad, (newValue) => {
 watch(obesidad, (newValue) => {
     if (newValue === 'No') {
         formDataHistoriaClinica.obesidadEspecificar = 'Negado';
-    }
-    if (newValue === 'Si') {
-        formDataHistoriaClinica.obesidadEspecificar = '';
     }
 });
 </script>

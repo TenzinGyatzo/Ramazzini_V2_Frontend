@@ -1,11 +1,24 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted,onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataHistoriaClinica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const cardiopaticos = ref('No');
+
+onMounted(() => {
+    if (documentos.currentDocument) {
+        // Si se está editando un documento, usa los valores existentes
+        cardiopaticos.value = documentos.currentDocument.cardiopaticos || 'No';
+
+    } else {
+        // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
+        cardiopaticos.value = formDataHistoriaClinica.cardiopaticos || 'No';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para cardiopaticos
@@ -30,7 +43,7 @@ watch(cardiopaticos, (newValue) => {
         formDataHistoriaClinica.cardiopaticosEspecificar = 'Negado';
     }
     if (newValue === 'Si') {
-        formDataHistoriaClinica.cardiopaticosEspecificar = '';
+        formDataHistoriaClinica.cardiopaticosEspecificar = formDataHistoriaClinica.cardiopaticosEspecificar;
     }
 });
 </script>

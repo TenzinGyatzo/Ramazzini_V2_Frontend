@@ -38,8 +38,6 @@ onMounted(async () => {
   const documentoId = route.params.idDocumento;
   const tipoDocumento = route.params.tipoDocumento;
 
-  console.log({ documentoId, tipoDocumento }); // Depuración adicional
-
   if (documentoId && tipoDocumento) {
     try {
       await documentos.fetchDocumentById(tipoDocumento, trabajadores.currentTrabajadorId, documentoId);
@@ -55,9 +53,27 @@ onMounted(async () => {
     } catch (error) {
       console.error('Error al cargar los datos del documento:', error);
     }
+    console.log('Editando');
   } else {
-    console.warn('No se proporcionaron documentoId o tipoDocumento.');
+    console.log('Creando');
     formData.resetFormData(); // Limpia los datos si no hay información para cargar
+  }
+  if (tipoDocumento === 'antidoping') {
+    console.log(formData.formDataAntidoping);
+  } else if (tipoDocumento === 'aptitud') {
+    console.log(formData.formDataAptitud);
+  } else if (tipoDocumento === 'certificado') {
+    console.log(formData.formDataCertificado);
+  } else if (tipoDocumento === 'documento Externo') {
+    console.log(formData.formDataDocumentoExterno);
+  } else if (tipoDocumento === 'examenVista') {
+    console.log(formData.formDataExamenVista);
+  } else if (tipoDocumento === 'exploracionFisica') {
+    console.log(formData.formDataExploracionFisica);
+  } else if (tipoDocumento === 'historiaClinica') {
+    console.log(formData.formDataHistoriaClinica);
+  } else {
+    console.error(`Tipo de documento no reconocido: ${tipoDocumento}`);
   }
 });
 

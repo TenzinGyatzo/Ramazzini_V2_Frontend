@@ -1,11 +1,24 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataHistoriaClinica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const quirurgicos = ref('No');
+
+onMounted(() => {
+    if (documentos.currentDocument) {
+        // Si se está editando un documento, usa los valores existentes
+        quirurgicos.value = documentos.currentDocument.quirurgicos || 'No';
+
+    } else {
+        // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
+        quirurgicos.value = formDataHistoriaClinica.quirurgicos || 'No';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para quirurgicos
@@ -18,7 +31,6 @@ onUnmounted(() => {
     }
 });
 
-
 // Sincronizar quirurgicos con formData
 watch(quirurgicos, (newValue) => {
     formDataHistoriaClinica.quirurgicos = newValue;
@@ -28,9 +40,6 @@ watch(quirurgicos, (newValue) => {
 watch(quirurgicos, (newValue) => {
     if (newValue === 'No') {
         formDataHistoriaClinica.quirurgicosEspecificar = 'Negado';
-    }
-    if (newValue === 'Si') {
-        formDataHistoriaClinica.quirurgicosEspecificar = '';
     }
 });
 </script>

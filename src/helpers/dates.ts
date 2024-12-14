@@ -86,6 +86,19 @@ function calcularAntiguedad(dateString: string): string {
   
     return `${day}-${month}-${year}`;
   }
+
+  function formatDateYYYYMMDD(date) {
+    if (!date) return '';
+  
+    const d = new Date(date); // Sin modificar la fecha
+    if (isNaN(d.getTime())) return ''; // Validar si la fecha es válida
+  
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const year = d.getUTCFullYear();
+  
+    return `${year}-${month}-${day}`;
+  }
   
 
 
@@ -94,5 +107,6 @@ export {
   convertirFechaISOaYYYYMMDD,
   calcularEdad,
   calcularAntiguedad,
-  formatDateDDMMYYYY
+  formatDateDDMMYYYY,
+  formatDateYYYYMMDD
 };

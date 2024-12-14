@@ -1,11 +1,24 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataHistoriaClinica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const hipertensivos = ref('No');
+
+onMounted(() => {
+    if (documentos.currentDocument) {
+        // Si se está editando un documento, usa los valores existentes
+        hipertensivos.value = documentos.currentDocument.hipertensivos || 'No';
+
+    } else {
+        // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
+        hipertensivos.value = formDataHistoriaClinica.hipertensivos || 'No';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para hipertensivos
@@ -30,7 +43,7 @@ watch(hipertensivos, (newValue) => {
         formDataHistoriaClinica.hipertensivosEspecificar = 'Negado';
     }
     if (newValue === 'Si') {
-        formDataHistoriaClinica.hipertensivosEspecificar = '';
+        formDataHistoriaClinica.hipertensivosEspecificar = formDataHistoriaClinica.hipertensivosEspecificar;
     }
 });
 </script>
