@@ -1,11 +1,24 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataHistoriaClinica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const tabaquismo = ref('No');
+
+onMounted(() => {
+    if (documentos.currentDocument) {
+        // Si se está editando un documento, usa los valores existentes
+        tabaquismo.value = documentos.currentDocument.tabaquismo || 'No';
+
+    } else {
+        // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
+        tabaquismo.value = formDataHistoriaClinica.tabaquismo || 'No';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para tabaquismo
@@ -28,9 +41,6 @@ watch(tabaquismo, (newValue) => {
 watch(tabaquismo, (newValue) => {
     if (newValue === 'No') {
         formDataHistoriaClinica.tabaquismoEspecificar = 'Negado';
-    }
-    if (newValue === 'Si') {
-        formDataHistoriaClinica.tabaquismoEspecificar = '';
     }
 });
 </script>

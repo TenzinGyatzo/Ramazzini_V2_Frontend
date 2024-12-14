@@ -1,11 +1,18 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
 
 // Valor local para la pregunta principal
 const cesareas = ref('0 (Ninguna)');
+
+onMounted(() => {
+    // Verificar si formDataHistoriaClinica.cesareas tiene un valor y establecerlo en cesareas
+    if (formDataHistoriaClinica.cesareas) {
+        cesareas.value = formDataHistoriaClinica.cesareas;
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para cesareas

@@ -1,11 +1,27 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
 
 // Valor local para la pregunta principal
 const accidenteLaboral = ref('No');
+
+onMounted(() => {
+    // Verificar si formDataHistoriaClinica.accidenteLaboral tiene un valor y establecerlo en accidenteLaboral
+    if (formDataHistoriaClinica.accidenteLaboral) {
+        accidenteLaboral.value = formDataHistoriaClinica.accidenteLaboral;
+    }
+    if (formDataHistoriaClinica.accidenteLaboralEspecificar) {
+        formDataHistoriaClinica.accidenteLaboralEspecificar = formDataHistoriaClinica.accidenteLaboralEspecificar;
+    }
+    if (formDataHistoriaClinica.descripcionDelDano) {
+        formDataHistoriaClinica.descripcionDelDano = formDataHistoriaClinica.descripcionDelDano;
+    }
+    if (formDataHistoriaClinica.secuelas) {
+        formDataHistoriaClinica.secuelas = formDataHistoriaClinica.secuelas;
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para accidenteLaboral
@@ -37,11 +53,6 @@ watch(accidenteLaboral, (newValue) => {
         formDataHistoriaClinica.accidenteLaboral = 'Negado';
         formDataHistoriaClinica.descripcionDelDano = 'Ninguno';
         formDataHistoriaClinica.secuelas = 'Sin secuelas';
-    }
-    if (newValue === 'Si') {
-        formDataHistoriaClinica.accidenteLaboral = '';
-        formDataHistoriaClinica.descripcionDelDano = '';
-        formDataHistoriaClinica.secuelas = '';
     }
 });
 </script>

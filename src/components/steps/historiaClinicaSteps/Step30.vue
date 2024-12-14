@@ -1,11 +1,18 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
 
 // Valor local para la pregunta principal
 const frecuencia = ref('Regular');
+
+onMounted(() => {
+    // Verificar si formDataHistoriaClinica.frecuencia tiene un valor y establecerlo en frecuencia
+    if (formDataHistoriaClinica.frecuencia) {
+        frecuencia.value = formDataHistoriaClinica.frecuencia;
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para frecuencia

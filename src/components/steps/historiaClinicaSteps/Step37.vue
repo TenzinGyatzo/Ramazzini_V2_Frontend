@@ -1,11 +1,18 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
 
 // Valor local para la pregunta principal
 const dolorMenstrual = ref('Eumenorrea');
+
+onMounted(() => {
+    // Verificar si formDataHistoriaClinica.dolorMenstrual tiene un valor y establecerlo en dolorMenstrual
+    if (formDataHistoriaClinica.dolorMenstrual) {
+        dolorMenstrual.value = formDataHistoriaClinica.dolorMenstrual;
+    }
+})
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para dolorMenstrual

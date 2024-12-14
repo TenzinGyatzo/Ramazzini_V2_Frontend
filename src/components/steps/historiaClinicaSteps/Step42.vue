@@ -1,5 +1,5 @@
 <script setup>
-import { watch, ref } from 'vue';
+import { watch, ref, onMounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
@@ -8,6 +8,13 @@ const empresaAnterior1 = ref('');
 const puestoAnterior1 = ref('');
 const antiguedadAnterior1 = ref('');
 const agentesSeleccionados = ref([]);
+
+onMounted(() => {
+  // Verificar si formDataHistoriaClinica.agentesAnterior1 tiene un valor y establecerlo en agentesSeleccionados
+  if (formDataHistoriaClinica.agentesAnterior1) {
+    agentesSeleccionados.value = formDataHistoriaClinica.agentesAnterior1.split(', ');
+  }
+})
 
 // Sincronizar empresaAnterior1 con formData
 watch(empresaAnterior1, (newValue) => {

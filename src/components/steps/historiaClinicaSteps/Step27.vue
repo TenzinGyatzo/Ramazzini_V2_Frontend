@@ -1,11 +1,24 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataHistoriaClinica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const higienePersonalDeficiente = ref('No');
+
+onMounted(() => {
+    if (documentos.currentDocument) {
+        // Si se está editando un documento, usa los valores existentes
+        higienePersonalDeficiente.value = documentos.currentDocument.higienePersonalDeficiente || 'No';
+
+    } else {
+        // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
+        higienePersonalDeficiente.value = formDataHistoriaClinica.higienePersonalDeficiente || 'No';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para higienePersonalDeficiente
@@ -28,9 +41,6 @@ watch(higienePersonalDeficiente, (newValue) => {
 watch(higienePersonalDeficiente, (newValue) => {
     if (newValue === 'No') {
         formDataHistoriaClinica.higienePersonalDeficienteEspecificar = 'Adecuada';
-    }
-    if (newValue === 'Si') {
-        formDataHistoriaClinica.higienePersonalDeficienteEspecificar = '';
     }
 });
 </script>

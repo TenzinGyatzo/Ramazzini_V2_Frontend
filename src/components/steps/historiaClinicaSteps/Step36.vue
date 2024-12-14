@@ -1,11 +1,18 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
 
 // Valor local para la pregunta principal
 const cantidadDeSangre = ref('Normal');
+
+onMounted(() => {
+    // Verificar si formDataHistoriaClinica.cantidadDeSangre tiene un valor y establecerlo en cantidadDeSangre
+    if (formDataHistoriaClinica.cantidadDeSangre) {
+        cantidadDeSangre.value = formDataHistoriaClinica.cantidadDeSangre;
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para cantidadDeSangre

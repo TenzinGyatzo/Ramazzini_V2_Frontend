@@ -11,7 +11,10 @@ const resumenHistoriaClinicaPregunta = ref('No');
 const resumenHistoriaClinica = ref ('');
 
 onMounted(() => {
-    resumenHistoriaClinica.value = formDataHistoriaClinica.resumenHistoriaClinica;
+    if(formDataHistoriaClinica.resumenHistoriaClinica) {
+        resumenHistoriaClinica.value = formDataHistoriaClinica.resumenHistoriaClinica
+        resumenHistoriaClinicaPregunta.value = 'Si'
+    }
 });
 
 onUnmounted(() => {

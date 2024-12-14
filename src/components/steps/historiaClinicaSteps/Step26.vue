@@ -1,11 +1,24 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataHistoriaClinica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const actividadFisicaDeficiente = ref('No');
+
+onMounted(() => {
+    if (documentos.currentDocument) {
+        // Si se está editando un documento, usa los valores existentes
+        actividadFisicaDeficiente.value = documentos.currentDocument.actividadFisicaDeficiente || 'No';
+
+    } else {
+        // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
+        actividadFisicaDeficiente.value = formDataHistoriaClinica.actividadFisicaDeficiente || 'No';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para actividadFisicaDeficiente
@@ -18,7 +31,6 @@ onUnmounted(() => {
     }
 });
 
-
 // Sincronizar actividadFisicaDeficiente con formData
 watch(actividadFisicaDeficiente, (newValue) => {
     formDataHistoriaClinica.actividadFisicaDeficiente = newValue;
@@ -28,9 +40,6 @@ watch(actividadFisicaDeficiente, (newValue) => {
 watch(actividadFisicaDeficiente, (newValue) => {
     if (newValue === 'No') {
         formDataHistoriaClinica.actividadFisicaDeficienteEspecificar = 'Adecuada';
-    }
-    if (newValue === 'Si') {
-        formDataHistoriaClinica.actividadFisicaDeficienteEspecificar = '';
     }
 });
 </script>

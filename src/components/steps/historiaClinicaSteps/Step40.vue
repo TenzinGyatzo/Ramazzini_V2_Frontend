@@ -1,5 +1,5 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
@@ -8,6 +8,14 @@ const { formDataHistoriaClinica } = useFormDataStore();
 const vidaSexualActivaPregunta = ref('No');
 
 const vidaSexualActiva = ref('');
+
+onMounted(() => {
+    // Verificar si formDataHistoriaClinica.vidaSexualActiva tiene un valor y establecerlo en vidaSexualActiva
+    if (formDataHistoriaClinica.vidaSexualActiva) {
+        vidaSexualActiva.value = formDataHistoriaClinica.vidaSexualActiva;
+        vidaSexualActivaPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para vidaSexualActiva

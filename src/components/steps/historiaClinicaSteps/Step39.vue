@@ -1,5 +1,5 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
@@ -8,6 +8,14 @@ const { formDataHistoriaClinica } = useFormDataStore();
 const planificacionFamiliarPregunta = ref('No');
 
 const planificacionFamiliar = ref('');
+
+onMounted(() => {
+    // Verificar si formDataHistoriaClinica.planificacionFamiliar tiene un valor y establecerlo en planificacionFamiliar
+    if (formDataHistoriaClinica.planificacionFamiliar) {
+        planificacionFamiliar.value = formDataHistoriaClinica.planificacionFamiliar;
+        planificacionFamiliarPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para planificacionFamiliar

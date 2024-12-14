@@ -1,5 +1,5 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
@@ -8,6 +8,14 @@ const { formDataHistoriaClinica } = useFormDataStore();
 const fechaUltimoPapanicolaouPregunta = ref('No');
 
 const fechaUltimoPapanicolaou = ref('');
+
+onMounted(() => {
+    // Verificar si formDataHistoriaClinica.fechaUltimoPapanicolaou tiene un valor y establecerlo en fechaUltimoPapanicolaou
+    if (formDataHistoriaClinica.fechaUltimoPapanicolaou) {
+        fechaUltimoPapanicolaou.value = formDataHistoriaClinica.fechaUltimoPapanicolaou;
+        fechaUltimoPapanicolaouPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para fechaUltimoPapanicolaou

@@ -1,11 +1,18 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
 
 // Valor local para la pregunta principal
 const duracionPromedio = ref('5 días');
+
+onMounted(() => {
+    // Verificar si formDataHistoriaClinica.duracionPromedio tiene un valor y establecerlo en duracionPromedio
+    if (formDataHistoriaClinica.duracionPromedio) {
+        duracionPromedio.value = formDataHistoriaClinica.duracionPromedio;
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para duracionPromedio

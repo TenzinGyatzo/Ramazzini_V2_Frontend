@@ -1,11 +1,18 @@
 <script setup>
-import { watch, ref, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaClinica } = useFormDataStore();
 
 // Valor local para la pregunta principal
 const menarca = ref('12-14 años');
+
+onMounted(() => {
+    // Verificar si formDataHistoriaClinica.menarca tiene un valor y establecerlo en menarca
+    if (formDataHistoriaClinica.menarca) {
+        menarca.value = formDataHistoriaClinica.menarca;
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para menarca
