@@ -1,21 +1,31 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { format } from 'date-fns';
+import { formatDateYYYYMMDD } from '@/helpers/dates';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const { formDataExploracionFisica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Obtener la fecha actual en formato YYYY-MM-DD
 const today = format(new Date(), 'yyyy-MM-dd');
 const todayDDMMYYYY = format(new Date(), 'dd-MM-yyyy');
 
+// Inicializar la referencia local sincronizada con formData
+const fechaExploracionFisica = ref(today);
+
 onMounted(() => {
+  if (documentos.currentDocument) {
+    fechaExploracionFisica.value = formatDateYYYYMMDD(documentos.currentDocument.fechaExploracionFisica || today);
+  }
+
   // Establece idTrabajador en formData
   formDataExploracionFisica.idTrabajador = trabajadores.currentTrabajadorId;
 
@@ -36,9 +46,6 @@ onUnmounted(() => {
     formDataExploracionFisica.fechaExploracionFisica = today;
   }
 })
-
-// Inicializar la referencia local sincronizada con formData
-const fechaExploracionFisica = ref(today);
 
 // Mantener sincronizados los valores
 watch(fechaExploracionFisica, (newValue) => {

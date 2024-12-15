@@ -4,12 +4,19 @@ import { useFormDataStore } from '@/stores/formDataStore';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import DocumentosAPI from '@/api/DocumentosAPI';
 import { findNearestDocument } from '@/helpers/findNearestDocuments';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const trabajadores = useTrabajadoresStore();
 const { formDataAptitud } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la alteracionesSalud principal, inicializado con el valor actual del store
 const alteracionesSalud = ref(formDataAptitud.alteracionesSalud || '');
+
+onMounted(() => {
+    if (documentos.currentDocument) {
+        alteracionesSalud.value = documentos.currentDocument.alteracionesSalud;
+    }});
 
 // Sincronizar el valor seleccionado con formDataAptitud.alteracionesSalud
 watch(alteracionesSalud, (newValue) => {

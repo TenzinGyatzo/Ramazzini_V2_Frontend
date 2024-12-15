@@ -108,7 +108,7 @@ const goToStep = (stepNumber) => {
 
      <div class="w-full mb-4">
         <p class="text-justify">
-            Por lo anterior, se establece que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el' : 'la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> {{ formData.formDataCertificado.impedimentosFisicos ? formData.formDataCertificado.impedimentosFisicos : '[DESCRIPCIÓN DE IMPEDIMENTOS FÍSICOS]' }}. Este certificado de salud no implica ningún tipo de garantía de que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el trabajador' : 'la trabajadora' }}</span> no se lesionará o enfermará en el futuro.
+            Por lo anterior, se establece que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el' : 'la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> <span class="cursor-pointer" @click="goToStep(2)">{{ formData.formDataCertificado.impedimentosFisicos ? formData.formDataCertificado.impedimentosFisicos : '[DESCRIPCIÓN DE IMPEDIMENTOS FÍSICOS]' }}.</span> Este certificado de salud no implica ningún tipo de garantía de que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el trabajador' : 'la trabajadora' }}</span> no se lesionará o enfermará en el futuro.
         </p>
      </div>
      

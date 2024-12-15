@@ -2,16 +2,22 @@
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const trabajadores = useTrabajadoresStore();
 const { formDataCertificado } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const impedimentosFisicosPregunta = ref('No');
 const impedimentosFisicos = ref ('');
 
 onMounted(() => {
-    impedimentosFisicos.value = formDataCertificado.impedimentosFisicos;
+    if (documentos.currentDocument) {
+        if (documentos.currentDocument.impedimentosFisicos !== 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita')
+        impedimentosFisicos.value = documentos.currentDocument.impedimentosFisicos;
+        impedimentosFisicosPregunta.value = 'Si';
+    }
 });
 
 onUnmounted(() => {
@@ -19,8 +25,8 @@ onUnmounted(() => {
     if (!formDataCertificado.impedimentosFisicos) {
         formDataCertificado.impedimentosFisicos =
             trabajadores.currentTrabajador.sexo === 'Femenino'
-                ? 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita.'
-                : 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita.';
+                ? 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita'
+                : 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita';
     }
 });
 
@@ -35,8 +41,8 @@ watch(impedimentosFisicosPregunta, (newValue) => {
     if (newValue === 'No') {
         formDataCertificado.impedimentosFisicos =
             trabajadores.currentTrabajador.sexo === 'Femenino'
-            ? 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita.'
-            : 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita.';
+            ? 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita'
+            : 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita';
     }
     if (newValue === 'Si') {
         formDataCertificado.impedimentosFisicos = impedimentosFisicos.value;

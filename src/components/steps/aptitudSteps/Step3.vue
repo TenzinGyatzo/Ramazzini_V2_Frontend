@@ -1,6 +1,7 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { format } from 'date-fns';
+import { formatDateYYYYMMDD } from '@/helpers/dates';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataAptitud } = useFormDataStore();
@@ -9,6 +10,12 @@ const today = format(new Date(), 'yyyy-MM-dd');
 
 // Inicializar pregunta con el valor actual del store
 const pregunta = ref(formDataAptitud.evaluacionAdicional2 ? 'Si' : 'No');
+
+onMounted(() => {
+    formDataAptitud.evaluacionAdicional2 = formDataAptitud.evaluacionAdicional2 || '';
+    formDataAptitud.fechaEvaluacionAdicional2 = formatDateYYYYMMDD(formDataAptitud.fechaEvaluacionAdicional2) || today;
+    formDataAptitud.resultadosEvaluacionAdicional2 = formDataAptitud.resultadosEvaluacionAdicional2 || '';
+});
 
 // Sincronizar los valores de formDataAptitud en función de la respuesta
 watch(pregunta, () => {

@@ -1,13 +1,24 @@
 <script setup>
-import { ref, watch, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataExamenVista } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 const ojoIzquierdoLejanaSinCorreccion = ref(20);
 const ojoDerechoLejanaSinCorreccion = ref(20);
 const sinCorreccionLejanaInterpretacion = ref('Visión Normal');
 const requiereLentesUsoGeneral = ref('No');
+
+onMounted(() => {
+  if(documentos.currentDocument) {
+    ojoIzquierdoLejanaSinCorreccion.value = documentos.currentDocument.ojoIzquierdoLejanaSinCorreccion;
+    ojoDerechoLejanaSinCorreccion.value = documentos.currentDocument.ojoDerechoLejanaSinCorreccion;
+    sinCorreccionLejanaInterpretacion.value = documentos.currentDocument.sinCorreccionLejanaInterpretacion;
+    requiereLentesUsoGeneral.value = documentos.currentDocument.requiereLentesUsoGeneral;
+  }
+});
 
 onUnmounted(() => {
   formDataExamenVista.ojoIzquierdoLejanaSinCorreccion = ojoIzquierdoLejanaSinCorreccion.value;

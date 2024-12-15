@@ -1,21 +1,28 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { format } from 'date-fns';
+import { formatDateYYYYMMDD } from '@/helpers/dates';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const { formDataExamenVista } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Obtener la fecha actual en formato YYYY-MM-DD
 const today = format(new Date(), 'yyyy-MM-dd');
 const todayDDMMYYYY = format(new Date(), 'dd-MM-yyyy');
 
 onMounted(() => {
+  if (documentos.currentDocument) {
+    fechaExamenVista.value = formatDateYYYYMMDD(documentos.currentDocument.fechaExamenVista || today);
+  }
+
   // Establece idTrabajador en formData
   formDataExamenVista.idTrabajador = trabajadores.currentTrabajadorId;
 

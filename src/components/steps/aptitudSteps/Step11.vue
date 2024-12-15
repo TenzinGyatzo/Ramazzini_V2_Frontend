@@ -1,11 +1,19 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataAptitud } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la medidasPreventivas principal, inicializado con el valor actual del store
 const medidasPreventivas = ref(formDataAptitud.medidasPreventivas || '');
+
+onMounted(() => {
+    if (documentos.currentDocument) {
+        medidasPreventivas.value = documentos.currentDocument.medidasPreventivas;
+    }
+});
 
 // Sincronizar el valor seleccionado con formDataAptitud.medidasPreventivas
 watch(medidasPreventivas, (newValue) => {

@@ -1,12 +1,22 @@
 <script setup>
-import { ref, watch, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataExamenVista } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 const placasCorrectas = ref(14);
 const porcentajeIshihara = ref(100);
 const interpretacionIshihara = ref('Normal');
+
+onMounted(() => {
+  if(documentos.currentDocument) {
+    placasCorrectas.value = documentos.currentDocument.placasCorrectas;
+    porcentajeIshihara.value = documentos.currentDocument.porcentajeIshihara;
+    interpretacionIshihara.value = documentos.currentDocument.interpretacionIshihara;
+  }
+});
 
 onUnmounted(() => {
   formDataExamenVista.placasCorrectas = placasCorrectas.value;

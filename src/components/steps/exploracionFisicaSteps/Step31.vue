@@ -2,16 +2,21 @@
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const trabajadores = useTrabajadoresStore();
 const { formDataExploracionFisica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const resumenExploracionFisicaPregunta = ref('No');
 const resumenExploracionFisica = ref('');
 
 onMounted(() => {
-    resumenExploracionFisica.value = formDataExploracionFisica.resumenExploracionFisica;
+    if (documentos.currentDocument) {
+        resumenExploracionFisica.value = documentos.currentDocument.resumenExploracionFisica;
+        resumenExploracionFisicaPregunta.value = 'Si';
+    }
 });
 
 onUnmounted(() => {

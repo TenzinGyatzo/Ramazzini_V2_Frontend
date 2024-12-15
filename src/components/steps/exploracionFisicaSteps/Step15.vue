@@ -1,16 +1,20 @@
 <script setup>
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataExploracionFisica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const toraxPregunta = ref('No');
 const torax = ref ('');
 
 onMounted(() => {
-  torax.value = formDataExploracionFisica.torax;
-});
+    if (documentos.currentDocument) {
+        torax.value = documentos.currentDocument.torax;
+        toraxPregunta.value = 'Si';
+    }});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para torax

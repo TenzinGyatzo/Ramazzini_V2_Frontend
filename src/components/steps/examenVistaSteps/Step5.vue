@@ -1,13 +1,26 @@
 <script setup>
-import { ref, watch, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataExamenVista } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 const ojoIzquierdoCercanaConCorreccion = ref(20);
 const ojoDerechoCercanaConCorreccion = ref(20);
 const conCorreccionCercanaInterpretacion = ref('Visión Normal');
 const usaLentes = ref('No');
+
+onMounted(() => {
+  if (documentos.currentDocument) {
+    if (documentos.currentDocument.conCorreccionCercanaInterpretacion) {
+      ojoIzquierdoCercanaConCorreccion.value = documentos.currentDocument.ojoIzquierdoCercanaConCorreccion;
+      ojoDerechoCercanaConCorreccion.value = documentos.currentDocument.ojoDerechoCercanaConCorreccion;
+      conCorreccionCercanaInterpretacion.value = documentos.currentDocument.conCorreccionCercanaInterpretacion;
+      usaLentes.value = 'Si';
+    }
+  }
+});
 
 onUnmounted(() => {
   if (usaLentes.value === 'No') {
@@ -17,9 +30,9 @@ onUnmounted(() => {
   } else {
     formDataExamenVista.ojoIzquierdoCercanaConCorreccion = ojoIzquierdoCercanaConCorreccion.value;
     formDataExamenVista.ojoDerechoCercanaConCorreccion = ojoDerechoCercanaConCorreccion.value;
-    formDataExamenVista.conCorreccionCercanaInterpretacion = conCorreccionCercanaInterpretacion.value;    
+    formDataExamenVista.conCorreccionCercanaInterpretacion = conCorreccionCercanaInterpretacion.value;
   }
-})
+});
 
 // Observa el cambio de usaLentes
 watch(usaLentes, (newVal) => {

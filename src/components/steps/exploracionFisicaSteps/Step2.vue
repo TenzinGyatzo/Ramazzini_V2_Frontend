@@ -1,10 +1,12 @@
 <script setup>
-import { ref, watch, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const trabajadores = useTrabajadoresStore();
 const { formDataExploracionFisica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 const peso = ref(80);
 const altura = ref(1.7);
@@ -12,6 +14,17 @@ const indiceMasaCorporal = ref(27.68);
 const categoriaIMC = ref('Sobrepeso');
 const circunferenciaCintura = ref(89);
 const categoriaCircunferenciaCintura = ref('Bajo Riesgo');
+
+onMounted(() => {
+  if (documentos.currentDocument) {
+    peso.value = documentos.currentDocument.peso;
+    altura.value = documentos.currentDocument.altura;
+    indiceMasaCorporal.value = documentos.currentDocument.indiceMasaCorporal;
+    categoriaIMC.value = documentos.currentDocument.categoriaIMC;
+    circunferenciaCintura.value = documentos.currentDocument.circunferenciaCintura;
+    categoriaCircunferenciaCintura.value = documentos.currentDocument.categoriaCircunferenciaCintura; 
+  }
+});
 
 onUnmounted(() => {
   formDataExploracionFisica.peso = peso.value;

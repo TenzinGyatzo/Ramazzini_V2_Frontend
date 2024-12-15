@@ -15,16 +15,16 @@ const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 
 const editarDocumento = (documentoId, documentoTipo) => {
-  router.push({
-    name: 'crear-documento',
-    params: {
-      idEmpresa: empresas.currentEmpresaId,
-      idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId,
-      idTrabajador: trabajadores.currentTrabajadorId,
-      tipoDocumento: documentoTipo,
-      idDocumento: documentoId,
-    },
-  });
+    router.push({
+        name: 'crear-documento',
+        params: {
+            idEmpresa: empresas.currentEmpresaId,
+            idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId,
+            idTrabajador: trabajadores.currentTrabajadorId,
+            tipoDocumento: documentoTipo,
+            idDocumento: documentoId,
+        },
+    });
 };
 
 // If the value is empty or incorrect, the watermark will remain.
@@ -37,7 +37,7 @@ useLicense({ licenseKey });
 // Estados para mostrar el visor y la URL del PDF
 const showPdfViewer = ref(false);
 const pdfUrl = ref('');
-const customLang = ref("es_MX")
+const customLang = ref("es_MX");
 
 const localization = {
     customLang: {
@@ -108,7 +108,7 @@ const localization = {
         zoomPageWidth: 'Ajustar al ancho de la página',
         zoomSelectTooltip: 'Seleccionar nivel de zoom'
     }
-}
+};
 
 // Función para abrir el visor con una ruta dinámica
 const abrirPdf = async (ruta) => {
@@ -209,8 +209,13 @@ defineEmits(['eliminarDocumento']);
                 </div>
                 <div class="flex gap-2 md-lg:block hidden">
                     <div class="w-72">
-                        <p class="leading-5 text-sm px-1">Notas:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1">{{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita.' ? 'No presenta impedimentos fisicos' : certificado.impedimentosFisicos }}</p>
+                        <p class="leading-5 text-sm px-1">Impedimentos Físicos:</p>
+                        <p class="leading-5 font-semibold px-1"
+                            :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'text-gray-800' : 'text-red-500'">
+                            {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'No presenta impedimentos físicos' :
+                            certificado.impedimentosFisicos }}
+                        </p>
+
                     </div>
                 </div>
             </div>
@@ -335,16 +340,13 @@ defineEmits(['eliminarDocumento']);
                 class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
                 <i class="fa-solid fa-download fa-lg"></i>
             </button>
-            <button type="button"
-                @click="editarDocumento(documentoId, documentoTipo)"
+            <button type="button" @click="editarDocumento(documentoId, documentoTipo)"
                 class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
             </button>
 
-            <button type="button"
-                @click="$emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo)"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10"
-            >
+            <button type="button" @click="$emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo)"
+                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
                 <i class="fa-solid fa-trash-can fa-lg"></i>
             </button>
 

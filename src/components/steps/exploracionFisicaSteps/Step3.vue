@@ -1,10 +1,11 @@
 <script setup>
-import { ref, watch, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
-const trabajadores = useTrabajadoresStore();
 const { formDataExploracionFisica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 const tensionArterialSistolica = ref(120);
 const tensionArterialDiastolica = ref(80);
@@ -16,6 +17,20 @@ const categoriaFrecuenciaRespiratoria = ref('Normal');
 const saturacionOxigeno = ref(97);
 const categoriaSaturacionOxigeno = ref('Normal');
 
+onMounted(() => {
+  if (documentos.currentDocument) {
+    tensionArterialSistolica.value = documentos.currentDocument.tensionArterialSistolica;
+    tensionArterialDiastolica.value = documentos.currentDocument.tensionArterialDiastolica;
+    categoriaTensionArterial.value = documentos.currentDocument.categoriaTensionArterial;
+    frecuenciaCardiaca.value = documentos.currentDocument.frecuenciaCardiaca;
+    categoriaFrecuenciaCardiaca.value = documentos.currentDocument.categoriaFrecuenciaCardiaca;
+    frecuenciaRespiratoria.value = documentos.currentDocument.frecuenciaRespiratoria;
+    categoriaFrecuenciaRespiratoria.value = documentos.currentDocument.categoriaFrecuenciaRespiratoria;
+    saturacionOxigeno.value = documentos.currentDocument.saturacionOxigeno;
+    categoriaSaturacionOxigeno.value = documentos.currentDocument.categoriaSaturacionOxigeno;
+  }
+});
+
 onUnmounted(() => {
   formDataExploracionFisica.tensionArterialSistolica = tensionArterialSistolica.value;
   formDataExploracionFisica.tensionArterialDiastolica = tensionArterialDiastolica.value;
@@ -26,7 +41,7 @@ onUnmounted(() => {
   formDataExploracionFisica.categoriaFrecuenciaRespiratoria = categoriaFrecuenciaRespiratoria.value;
   formDataExploracionFisica.saturacionOxigeno = saturacionOxigeno.value;
   formDataExploracionFisica.categoriaSaturacionOxigeno = categoriaSaturacionOxigeno.value;
-})
+});
 
 watch([tensionArterialSistolica, tensionArterialDiastolica, frecuenciaCardiaca, frecuenciaRespiratoria, saturacionOxigeno], () => {
   formDataExploracionFisica.tensionArterialSistolica = tensionArterialSistolica.value;

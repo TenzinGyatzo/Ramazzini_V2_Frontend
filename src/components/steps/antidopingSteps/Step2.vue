@@ -1,8 +1,10 @@
 <script setup>
 import { reactive, watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataAntidoping } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const antidopingResult = ref('No'); // Por defecto "No"
@@ -14,6 +16,17 @@ const drugResults = reactive({
   anfetaminas: "Negativo",
   metanfetaminas: "Negativo",
   opiaceos: "Negativo",
+});
+
+onMounted(() => {
+  if (documentos.currentDocument) {
+    drugResults.marihuana = documentos.currentDocument.marihuana;
+    drugResults.cocaina = documentos.currentDocument.cocaina;
+    drugResults.anfetaminas = documentos.currentDocument.anfetaminas;
+    drugResults.metanfetaminas = documentos.currentDocument.metanfetaminas;
+    drugResults.opiaceos = documentos.currentDocument.opiaceos;
+    antidopingResult.value = 'Si';
+  }
 });
 
 // Inicializar `formData` con valores por defecto al montar el componente

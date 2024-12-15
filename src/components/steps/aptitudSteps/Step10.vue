@@ -2,9 +2,11 @@
 import { ref, watch, onMounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const trabajadores = useTrabajadoresStore();
 const { formDataAptitud } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la resultados principal, inicializado con el valor actual del store
 const resultados = ref(formDataAptitud.resultados || '');
@@ -15,8 +17,12 @@ watch(resultados, (newValue) => {
 });
 
 onMounted(async () => {
-    // Inicializa resultados con textoBase una vez que los datos estén disponibles
-    formDataAptitud.resultados = inicioSugerido;
+    if (documentos.currentDocument) {
+        resultados.value = documentos.currentDocument.resultados;
+    } else {
+        // Inicializa resultados con textoBase una vez que los datos estén disponibles
+        formDataAptitud.resultados = inicioSugerido;
+    }
 });
 
 
@@ -95,14 +101,14 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                     </button>
                     <div v-if="isOpen('clinicamenteAptaSinRestricciones')"
                         class="p-4 border-l-4 border-green-500 bg-gray-100">
-                        <p class="font-semibold text-sm font-light text-gray-700">PASO 1. Usar:</p>
+                        <p class="font-semibold text-sm text-gray-700">PASO 1. Usar:</p>
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
                             @click="copiarTexto('se encuentra CLÍNICAMENTE SANA Y APTA PARA LABORAR SIN RESTRICCIONES ')">
                             se encuentra <span class="font-semibold">CLÍNICAMENTE</span> SANA Y APTA PARA LABORAR SIN
                             RESTRICCIONES.
                         </p>
 
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Especifica según
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Especifica según
                             aplique:</p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-emerald-700 cursor-pointer leading-4">
@@ -118,15 +124,15 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                                 </p>
                             </li>
                         </ul>
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 3. Agregar:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Agregar:</p>
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
                             @click="copiarTexto('La trabajadora parece demostrar actualmente los niveles adecuados de agilidad física, fuerza y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales de su trabajo. ')">
                             La trabajadora parece demostrar actualmente los niveles adecuados de agilidad física, fuerza
                             y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales
                             de su trabajo.
                         </p>
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 4. Por último:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Por último:</p>
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
                             @click="copiarTexto('Cabe señalar que la determinacion de la aptitud para el trabajo es solamante clínica, toda vez que no contamos con analisis de laboratorio en este momento. ')">
                             Cabe señalar que la determinacion de la aptitud para el trabajo es solamante clínica, toda
                             vez que no contamos con analisis de laboratorio en este momento.
@@ -144,14 +150,14 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                     </button>
                     <div v-if="isOpen('medicamenteAptaSinRestricciones')"
                         class="p-4 border-l-4 border-blue-500 bg-gray-100">
-                        <p class="font-semibold text-sm font-light italic text-gray-700">PASO 1. Usar:</p>
+                        <p class="font-semibold text-sm italic text-gray-700">PASO 1. Usar:</p>
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
                             @click="copiarTexto('se encuentra MÉDICAMENTE SANA Y APTA PARA LABORAR SIN RESTRICCIONES ')">
                             se encuentra <span class="font-semibold">MÉDICAMENTE</span> SANA Y APTA PARA LABORAR SIN
                             RESTRICCIONES.
                         </p>
 
-                        <p class="font-semibold text-sm font-light italic text-gray-700 mt-4">PASO 2. Especifica según
+                        <p class="font-semibold text-sm italic text-gray-700 mt-4">PASO 2. Especifica según
                             aplique:</p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-emerald-700 cursor-pointer leading-4">
@@ -167,8 +173,8 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                                 </p>
                             </li>
                         </ul>
-                        <p class="font-semibold text-sm font-light italic text-gray-700 mt-4">PASO 3. Agregar:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
+                        <p class="font-semibold text-sm italic text-gray-700 mt-4">PASO 3. Agregar:</p>
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
                             @click="copiarTexto('La trabajadora parece demostrar actualmente los niveles adecuados de agilidad física, fuerza y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales de su trabajo. ')">
                             La trabajadora parece demostrar actualmente los niveles adecuados de agilidad física, fuerza
                             y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales
@@ -209,7 +215,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             se encuentra <span class="font-semibold">CLÍNICAMENTE</span> APTA PARA LABORAR CON
                             PRECAUCIÓN.
                         </p>
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Especifica según aplique:
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Especifica según aplique:
                         </p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-yellow-700 cursor-pointer leading-4">
@@ -226,7 +232,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             </li>
                         </ul>
                         <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Agregar:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                             @click="copiarTexto('Aunque apta para el trabajo, es esencial destacar que la presencia de ciertas condiciones médicas subyacentes demanda la adopción de precauciones adicionales para salvaguardar su salud y seguridad en el lugar de trabajo.')">
                             Aunque apta para el trabajo, es esencial destacar que la presencia de ciertas condiciones
                             médicas subyacentes demanda la adopción de precauciones adicionales para salvaguardar su
@@ -246,7 +252,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Hipertensión
                         </button>
                         <div v-if="isOpen('hipertension1')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('La individuo presenta un historial de hipertensión arterial, lo cual requiere un seguimiento cuidadoso de su presión sanguínea y la adherencia estricta a su tratamiento médico.')">
                                 La individuo presenta un historial de hipertensión arterial, lo cual requiere un
                                 seguimiento cuidadoso de su presión sanguínea y la adherencia estricta a su tratamiento
@@ -260,7 +266,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Diabetes Tipo II
                         </button>
                         <div v-if="isOpen('diabetes1')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Se observa la presencia de diabetes tipo 2, lo que implica la necesidad de un monitoreo constante de los niveles de glucosa en sangre y una dieta adecuada para mantenerlos bajo control.')">
                                 Se observa la presencia de diabetes tipo 2, lo que implica la necesidad de un monitoreo
                                 constante de los niveles de glucosa en sangre y una dieta adecuada para mantenerlos bajo
@@ -274,7 +280,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Obesidad Clase II
                         </button>
                         <div v-if="isOpen('obesidad1')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El trabajador ha sido diagnosticado con obesidad clase II, lo que aumenta el riesgo de complicaciones metabólicas y cardiovasculares, por lo que se recomienda la implementación de medidas para promover la pérdida de peso y mejorar su estado de salud general.')">
                                 El trabajador ha sido diagnosticado con obesidad clase II, lo que aumenta el riesgo de
                                 complicaciones metabólicas y cardiovasculares, por lo que se recomienda la
@@ -289,7 +295,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Lumbalgia Crónica
                         </button>
                         <div v-if="isOpen('lumbalgia1')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Se ha identificado una historia de lumbalgia persistente, lo que indica la necesidad de evitar actividades que puedan exacerbar el dolor de espalda y la implementación de medidas ergonómicas en el entorno laboral para reducir el riesgo de lesiones.')">
                                 Se ha identificado una historia de lumbalgia persistente, lo que indica la necesidad de
                                 evitar actividades que puedan exacerbar el dolor de espalda y la implementación de
@@ -316,7 +322,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             se encuentra <span class="font-semibold">MÉDICAMENTE</span> APTA PARA LABORAR CON
                             PRECAUCIÓN.
                         </p>
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Especifica según aplique:
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Especifica según aplique:
                         </p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-yellow-700 cursor-pointer leading-4">
@@ -333,7 +339,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             </li>
                         </ul>
                         <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Agregar:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                             @click="copiarTexto('Aunque apta para el trabajo, es esencial destacar que la presencia de ciertas condiciones médicas subyacentes demanda la adopción de precauciones adicionales para salvaguardar su salud y seguridad en el lugar de trabajo.')">
                             Aunque apta para el trabajo, es esencial destacar que la presencia de ciertas condiciones
                             médicas subyacentes demanda la adopción de precauciones adicionales para salvaguardar su
@@ -353,7 +359,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Hipertensión
                         </button>
                         <div v-if="isOpen('hipertension')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('La individuo presenta un historial de hipertensión arterial, lo cual requiere un seguimiento cuidadoso de su presión sanguínea y la adherencia estricta a su tratamiento médico.')">
                                 La individuo presenta un historial de hipertensión arterial, lo cual requiere un
                                 seguimiento cuidadoso de su presión sanguínea y la adherencia estricta a su tratamiento
@@ -367,7 +373,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Diabetes Tipo II
                         </button>
                         <div v-if="isOpen('diabetes')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Se observa la presencia de diabetes tipo 2, lo que implica la necesidad de un monitoreo constante de los niveles de glucosa en sangre y una dieta adecuada para mantenerlos bajo control.')">
                                 Se observa la presencia de diabetes tipo 2, lo que implica la necesidad de un monitoreo
                                 constante de los niveles de glucosa en sangre y una dieta adecuada para mantenerlos bajo
@@ -381,7 +387,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Obesidad Clase II
                         </button>
                         <div v-if="isOpen('obesidad2')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El trabajador ha sido diagnosticado con obesidad clase II, lo que aumenta el riesgo de complicaciones metabólicas y cardiovasculares, por lo que se recomienda la implementación de medidas para promover la pérdida de peso y mejorar su estado de salud general.')">
                                 El trabajador ha sido diagnosticado con obesidad clase II, lo que aumenta el riesgo de
                                 complicaciones metabólicas y cardiovasculares, por lo que se recomienda la
@@ -396,7 +402,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Lumbalgia Crónica
                         </button>
                         <div v-if="isOpen('lumbalgia')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Se ha identificado una historia de lumbalgia persistente, lo que indica la necesidad de evitar actividades que puedan exacerbar el dolor de espalda y la implementación de medidas ergonómicas en el entorno laboral para reducir el riesgo de lesiones.')">
                                 Se ha identificado una historia de lumbalgia persistente, lo que indica la necesidad de
                                 evitar actividades que puedan exacerbar el dolor de espalda y la implementación de
@@ -438,7 +444,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             se encuentra <span class="font-semibold">CLÍNICAMENTE</span> APTA PARA LABORAR CON
                             RESTRICCIONES.
                         </p>
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Especifica según aplique:
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Especifica según aplique:
                         </p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-orange-700 cursor-pointer leading-4">
@@ -455,7 +461,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             </li>
                         </ul>
                         <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Agregar:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                             @click="copiarTexto('Aunque apta para el trabajo, requiere medidas adicionales para garantizar su seguridad y bienestar en el entorno laboral.')">
                             Aunque apta para el trabajo, requiere medidas adicionales para garantizar su seguridad y
                             bienestar en el entorno laboral.
@@ -474,7 +480,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Hernia abdominal
                         </button>
                         <div v-if="isOpen('herniaAbdominal')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El individuo presenta una hernia abdominal, por lo que debe ser valorado por un cirujano. Se recomienda uso en todo momento de faja lumbosacra y asignarle tareas que no impliquen esfuerzo físico excesivo. Asimismo, debe proporcionarse asistencia o equipo adecuado para el manejo de carga.')">
                                 El individuo presenta una hernia abdominal, por lo que debe ser valorado por un
                                 cirujano. Se recomienda uso en todo momento de faja lumbosacra y asignarle tareas que no
@@ -489,7 +495,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Problema espalda
                         </button>
                         <div v-if="isOpen('problemaEspalda')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El individuo debe evitar levantar objetos pesados debido a la condición de su espalda baja, por lo que se recomienda asignar tareas que no impliquen esfuerzo físico excesivo y proporcionar asistencia o equipo adecuado para el manejo de carga.')">
                                 El individuo debe evitar levantar objetos pesados debido a la condición de su espalda
                                 baja, por lo que se recomienda asignar tareas que no impliquen esfuerzo físico excesivo
@@ -503,7 +509,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Várices en piernas
                         </button>
                         <div v-if="isOpen('varices')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Se sugiere la implementación de un horario de trabajo flexible para permitir pausas frecuentes y evitar períodos prolongados de estar de pie, lo cual ayudará a mitigar el dolor crónico en las piernas debido a una condición de várices.')">
                                 Se sugiere la implementación de un horario de trabajo flexible para permitir pausas
                                 frecuentes y evitar períodos prolongados de estar de pie, lo cual ayudará a mitigar el
@@ -517,7 +523,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Malformación mano
                         </button>
                         <div v-if="isOpen('malformacionMano')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Dada a la malformación congénita de la mano izquierda, se recomienda la implementación de tecnologías de asistencia, como dispositivos de ayuda para la manipulación de objetos, así como la adaptación de las tareas laborales para optimizar la funcionalidad y la independencia del individuo en el entorno de trabajo.')">
                                 Dada a la malformación congénita de la mano izquierda, se recomienda la implementación
                                 de tecnologías de asistencia, como dispositivos de ayuda para la manipulación de
@@ -532,7 +538,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Lesión rodilla
                         </button>
                         <div v-if="isOpen('lesionRodilla')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Para adaptarse a una limitación de movilidad causada por una lesión en la rodilla, se sugiere la asignación de un espacio de trabajo accesible y la provisión de una silla ergonómica con soporte lumbar para garantizar comodidad y evitar el deterioro de la condición física.')">
                                 Para adaptarse a una limitación de movilidad causada por una lesión en la rodilla, se
                                 sugiere la asignación de un espacio de trabajo accesible y la provisión de una silla
@@ -560,7 +566,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             se encuentra <span class="font-semibold">MÉDICAMENTE</span> APTA PARA LABORAR CON
                             RESTRICCIONES.
                         </p>
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Especifica según aplique:
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Especifica según aplique:
                         </p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-orange-700 cursor-pointer leading-4">
@@ -577,7 +583,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             </li>
                         </ul>
                         <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Agregar:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                             @click="copiarTexto('Aunque apta para el trabajo, requiere medidas adicionales para garantizar su seguridad y bienestar en el entorno laboral.')">
                             Aunque apta para el trabajo, requiere medidas adicionales para garantizar su seguridad y
                             bienestar en el entorno laboral.
@@ -596,7 +602,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Hernia abdominal
                         </button>
                         <div v-if="isOpen('herniaAbdominal')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El individuo presenta una hernia abdominal, por lo que debe ser valorado por un cirujano. Se recomienda uso en todo momento de faja lumbosacra y asignarle tareas que no impliquen esfuerzo físico excesivo. Asimismo, debe proporcionarse asistencia o equipo adecuado para el manejo de carga.')">
                                 El individuo presenta una hernia abdominal, por lo que debe ser valorado por un
                                 cirujano. Se recomienda uso en todo momento de faja lumbosacra y asignarle tareas que no
@@ -611,7 +617,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Problema espalda
                         </button>
                         <div v-if="isOpen('problemaEspalda')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El individuo debe evitar levantar objetos pesados debido a la condición de su espalda baja, por lo que se recomienda asignar tareas que no impliquen esfuerzo físico excesivo y proporcionar asistencia o equipo adecuado para el manejo de carga.')">
                                 El individuo debe evitar levantar objetos pesados debido a la condición de su espalda
                                 baja, por lo que se recomienda asignar tareas que no impliquen esfuerzo físico excesivo
@@ -625,7 +631,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Várices en piernas
                         </button>
                         <div v-if="isOpen('varices')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Se sugiere la implementación de un horario de trabajo flexible para permitir pausas frecuentes y evitar períodos prolongados de estar de pie, lo cual ayudará a mitigar el dolor crónico en las piernas debido a una condición de várices.')">
                                 Se sugiere la implementación de un horario de trabajo flexible para permitir pausas
                                 frecuentes y evitar períodos prolongados de estar de pie, lo cual ayudará a mitigar el
@@ -639,7 +645,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Malformación mano
                         </button>
                         <div v-if="isOpen('malformacionMano')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Dada a la malformación congénita de la mano izquierda, se recomienda la implementación de tecnologías de asistencia, como dispositivos de ayuda para la manipulación de objetos, así como la adaptación de las tareas laborales para optimizar la funcionalidad y la independencia del individuo en el entorno de trabajo.')">
                                 Dada a la malformación congénita de la mano izquierda, se recomienda la implementación
                                 de tecnologías de asistencia, como dispositivos de ayuda para la manipulación de
@@ -654,7 +660,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Lesión rodilla
                         </button>
                         <div v-if="isOpen('lesionRodilla')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Para adaptarse a una limitación de movilidad causada por una lesión en la rodilla, se sugiere la asignación de un espacio de trabajo accesible y la provisión de una silla ergonómica con soporte lumbar para garantizar comodidad y evitar el deterioro de la condición física.')">
                                 Para adaptarse a una limitación de movilidad causada por una lesión en la rodilla, se
                                 sugiere la asignación de un espacio de trabajo accesible y la provisión de una silla
@@ -679,14 +685,14 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                 <!-- Contenedor del desplegable -->
                 <div v-if="isOpen('guiaNoApta')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white">
                     <div class="p-4 border-l-4 border-red-500 bg-gray-100">
-                        <p class="font-semibold text-sm font-light text-gray-700">PASO 1. Usar:</p>
+                        <p class="font-semibold text-sm text-gray-700">PASO 1. Usar:</p>
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-red-700 cursor-pointer"
                             @click="copiarTexto('se encuentra NO APTA PARA LABORAR en las actividades del puesto al que aspira. ')">
                             se encuentra <span class="font-semibold">NO APTA PARA LABORAR</span> en las actividades del
                             puesto al que aspira.
                         </p>
 
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Explicar detalladamente
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Explicar detalladamente
                             el/los motivo(s):</p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-red-700 cursor-pointer leading-4">
@@ -712,14 +718,14 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                     class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white">
                     <div class="p-4 border-l-4 border-gray-500 bg-gray-100">
 
-                        <p class="font-semibold text-sm font-light text-gray-700">PASO 1. Usar:</p>
+                        <p class="font-semibold text-sm text-gray-700">PASO 1. Usar:</p>
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-blue-700 cursor-pointer"
                             @click="copiarTexto('NO ES POSIBLE CONCLUIR LA APTITUD AL PUESTO ')">
                             NO ES POSIBLE CONCLUIR LA APTITUD AL PUESTO
                         </p>
 
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Explicar:</p>
-                        <p class="font-semibold text-sm font-light text-gray-700">Ejemplos de inicio de explicación</p>
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Explicar:</p>
+                        <p class="font-semibold text-sm text-gray-700">Ejemplos de inicio de explicación</p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-blue-700 cursor-pointer leading-4">
                                 <p class="italic text-sm font-light inline"
@@ -741,8 +747,8 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             </li>
                         </ul>
 
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 3. Indicar:</p>
-                        <p class="font-semibold text-sm font-light text-gray-700">Ejemplos de inicio de indicaciones:
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Indicar:</p>
+                        <p class="font-semibold text-sm text-gray-700">Ejemplos de inicio de indicaciones:
                         </p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-blue-700 cursor-pointer leading-4">
@@ -765,7 +771,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             </li>
                         </ul>
 
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 4. Terminar:</p>
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Terminar:</p>
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-blue-700 cursor-pointer"
                             @click="copiarTexto('antes de volver a evaluar su aptitud para el puesto.')">
                             ...antes de volver a evaluar su aptitud para el puesto.
@@ -803,14 +809,14 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                     </button>
                     <div v-if="isOpen('clinicamenteAptoSinRestricciones')"
                         class="p-4 border-l-4 border-green-500 bg-gray-100">
-                        <p class="font-semibold text-sm font-light text-gray-700">PASO 1. Usar:</p>
+                        <p class="font-semibold text-sm text-gray-700">PASO 1. Usar:</p>
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
                             @click="copiarTexto('se encuentra CLÍNICAMENTE SANO Y APTO PARA LABORAR SIN RESTRICCIONES ')">
                             se encuentra <span class="font-semibold">CLÍNICAMENTE</span> SANO Y APTO PARA LABORAR SIN
                             RESTRICCIONES.
                         </p>
 
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Especifica según
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Especifica según
                             aplique:</p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-emerald-700 cursor-pointer leading-4">
@@ -826,15 +832,15 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                                 </p>
                             </li>
                         </ul>
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 3. Agregar:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Agregar:</p>
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
                             @click="copiarTexto('El trabajador parece demostrar actualmente los niveles adecuados de agilidad física, fuerza y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales de su trabajo. ')">
                             El trabajador parece demostrar actualmente los niveles adecuados de agilidad física, fuerza
                             y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales
                             de su trabajo.
                         </p>
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 4. Por último:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Por último:</p>
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
                             @click="copiarTexto('Cabe señalar que la determinacion de la aptitud para el trabajo es solamante clínica, toda vez que no contamos con analisis de laboratorio en este momento. ')">
                             Cabe señalar que la determinacion de la aptitud para el trabajo es solamante clínica, toda
                             vez que no contamos con analisis de laboratorio en este momento.
@@ -852,14 +858,14 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                     </button>
                     <div v-if="isOpen('medicamenteAptoSinRestricciones')"
                         class="p-4 border-l-4 border-blue-500 bg-gray-100">
-                        <p class="font-semibold text-sm font-light italic text-gray-700">PASO 1. Usar:</p>
+                        <p class="font-semibold text-sm italic text-gray-700">PASO 1. Usar:</p>
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
                             @click="copiarTexto('se encuentra MÉDICAMENTE SANO Y APTO PARA LABORAR SIN RESTRICCIONES ')">
                             se encuentra <span class="font-semibold">MÉDICAMENTE</span> SANO Y APTO PARA LABORAR SIN
                             RESTRICCIONES.
                         </p>
 
-                        <p class="font-semibold text-sm font-light italic text-gray-700 mt-4">PASO 2. Especifica según
+                        <p class="font-semibold text-sm italic text-gray-700 mt-4">PASO 2. Especifica según
                             aplique:</p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-emerald-700 cursor-pointer leading-4">
@@ -875,8 +881,8 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                                 </p>
                             </li>
                         </ul>
-                        <p class="font-semibold text-sm font-light italic text-gray-700 mt-4">PASO 3. Agregar:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
+                        <p class="font-semibold text-sm italic text-gray-700 mt-4">PASO 3. Agregar:</p>
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
                             @click="copiarTexto('El trabajador parece demostrar actualmente los niveles adecuados de agilidad física, fuerza y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales de su trabajo. ')">
                             El trabajador parece demostrar actualmente los niveles adecuados de agilidad física, fuerza
                             y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales
@@ -917,7 +923,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             se encuentra <span class="font-semibold">CLÍNICAMENTE</span> APTO PARA LABORAR CON
                             PRECAUCIÓN.
                         </p>
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Especifica según aplique:
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Especifica según aplique:
                         </p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-yellow-700 cursor-pointer leading-4">
@@ -934,7 +940,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             </li>
                         </ul>
                         <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Agregar:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                             @click="copiarTexto('Aunque apto para el trabajo, es esencial destacar que la presencia de ciertas condiciones médicas subyacentes demanda la adopción de precauciones adicionales para salvaguardar su salud y seguridad en el lugar de trabajo.')">
                             Aunque apto para el trabajo, es esencial destacar que la presencia de ciertas condiciones
                             médicas subyacentes demanda la adopción de precauciones adicionales para salvaguardar su
@@ -954,7 +960,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Hipertensión
                         </button>
                         <div v-if="isOpen('hipertension1')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El individuo presenta un historial de hipertensión arterial, lo cual requiere un seguimiento cuidadoso de su presión sanguínea y la adherencia estricta a su tratamiento médico.')">
                                 El individuo presenta un historial de hipertensión arterial, lo cual requiere un
                                 seguimiento cuidadoso de su presión sanguínea y la adherencia estricta a su tratamiento
@@ -968,7 +974,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Diabetes Tipo II
                         </button>
                         <div v-if="isOpen('diabetes1')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Se observa la presencia de diabetes tipo 2, lo que implica la necesidad de un monitoreo constante de los niveles de glucosa en sangre y una dieta adecuada para mantenerlos bajo control.')">
                                 Se observa la presencia de diabetes tipo 2, lo que implica la necesidad de un monitoreo
                                 constante de los niveles de glucosa en sangre y una dieta adecuada para mantenerlos bajo
@@ -982,7 +988,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Obesidad Clase II
                         </button>
                         <div v-if="isOpen('obesidad1')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El trabajador ha sido diagnosticado con obesidad clase II, lo que aumenta el riesgo de complicaciones metabólicas y cardiovasculares, por lo que se recomienda la implementación de medidas para promover la pérdida de peso y mejorar su estado de salud general.')">
                                 El trabajador ha sido diagnosticado con obesidad clase II, lo que aumenta el riesgo de
                                 complicaciones metabólicas y cardiovasculares, por lo que se recomienda la
@@ -997,7 +1003,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Lumbalgia Crónica
                         </button>
                         <div v-if="isOpen('lumbalgia1')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Se ha identificado una historia de lumbalgia persistente, lo que indica la necesidad de evitar actividades que puedan exacerbar el dolor de espalda y la implementación de medidas ergonómicas en el entorno laboral para reducir el riesgo de lesiones.')">
                                 Se ha identificado una historia de lumbalgia persistente, lo que indica la necesidad de
                                 evitar actividades que puedan exacerbar el dolor de espalda y la implementación de
@@ -1024,7 +1030,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             se encuentra <span class="font-semibold">MÉDICAMENTE</span> APTO PARA LABORAR CON
                             PRECAUCIÓN.
                         </p>
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Especifica según aplique:
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Especifica según aplique:
                         </p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-yellow-700 cursor-pointer leading-4">
@@ -1041,7 +1047,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             </li>
                         </ul>
                         <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Agregar:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                             @click="copiarTexto('Aunque apto para el trabajo, es esencial destacar que la presencia de ciertas condiciones médicas subyacentes demanda la adopción de precauciones adicionales para salvaguardar su salud y seguridad en el lugar de trabajo.')">
                             Aunque apto para el trabajo, es esencial destacar que la presencia de ciertas condiciones
                             médicas subyacentes demanda la adopción de precauciones adicionales para salvaguardar su
@@ -1061,7 +1067,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Hipertensión
                         </button>
                         <div v-if="isOpen('hipertension')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El individuo presenta un historial de hipertensión arterial, lo cual requiere un seguimiento cuidadoso de su presión sanguínea y la adherencia estricta a su tratamiento médico.')">
                                 El individuo presenta un historial de hipertensión arterial, lo cual requiere un
                                 seguimiento cuidadoso de su presión sanguínea y la adherencia estricta a su tratamiento
@@ -1075,7 +1081,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Diabetes Tipo II
                         </button>
                         <div v-if="isOpen('diabetes')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Se observa la presencia de diabetes tipo 2, lo que implica la necesidad de un monitoreo constante de los niveles de glucosa en sangre y una dieta adecuada para mantenerlos bajo control.')">
                                 Se observa la presencia de diabetes tipo 2, lo que implica la necesidad de un monitoreo
                                 constante de los niveles de glucosa en sangre y una dieta adecuada para mantenerlos bajo
@@ -1089,7 +1095,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Obesidad Clase II
                         </button>
                         <div v-if="isOpen('obesidad2')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El trabajador ha sido diagnosticado con obesidad clase II, lo que aumenta el riesgo de complicaciones metabólicas y cardiovasculares, por lo que se recomienda la implementación de medidas para promover la pérdida de peso y mejorar su estado de salud general.')">
                                 El trabajador ha sido diagnosticado con obesidad clase II, lo que aumenta el riesgo de
                                 complicaciones metabólicas y cardiovasculares, por lo que se recomienda la
@@ -1104,7 +1110,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Lumbalgia Crónica
                         </button>
                         <div v-if="isOpen('lumbalgia')" class="p-4 border-l-4 border-yellow-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-yellow-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Se ha identificado una historia de lumbalgia persistente, lo que indica la necesidad de evitar actividades que puedan exacerbar el dolor de espalda y la implementación de medidas ergonómicas en el entorno laboral para reducir el riesgo de lesiones.')">
                                 Se ha identificado una historia de lumbalgia persistente, lo que indica la necesidad de
                                 evitar actividades que puedan exacerbar el dolor de espalda y la implementación de
@@ -1146,7 +1152,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             se encuentra <span class="font-semibold">CLÍNICAMENTE</span> APTO PARA LABORAR CON
                             RESTRICCIONES.
                         </p>
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Especifica según aplique:
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Especifica según aplique:
                         </p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-orange-700 cursor-pointer leading-4">
@@ -1163,7 +1169,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             </li>
                         </ul>
                         <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Agregar:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                             @click="copiarTexto('Aunque apto para el trabajo, requiere medidas adicionales para garantizar su seguridad y bienestar en el entorno laboral.')">
                             Aunque apto para el trabajo, requiere medidas adicionales para garantizar su seguridad y
                             bienestar en el entorno laboral.
@@ -1182,7 +1188,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Hernia abdominal
                         </button>
                         <div v-if="isOpen('herniaAbdominal')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El individuo presenta una hernia abdominal, por lo que debe ser valorado por un cirujano. Se recomienda uso en todo momento de faja lumbosacra y asignarle tareas que no impliquen esfuerzo físico excesivo. Asimismo, debe proporcionarse asistencia o equipo adecuado para el manejo de carga.')">
                                 El individuo presenta una hernia abdominal, por lo que debe ser valorado por un
                                 cirujano. Se recomienda uso en todo momento de faja lumbosacra y asignarle tareas que no
@@ -1197,7 +1203,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Problema espalda
                         </button>
                         <div v-if="isOpen('problemaEspalda')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El individuo debe evitar levantar objetos pesados debido a la condición de su espalda baja, por lo que se recomienda asignar tareas que no impliquen esfuerzo físico excesivo y proporcionar asistencia o equipo adecuado para el manejo de carga.')">
                                 El individuo debe evitar levantar objetos pesados debido a la condición de su espalda
                                 baja, por lo que se recomienda asignar tareas que no impliquen esfuerzo físico excesivo
@@ -1211,7 +1217,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Várices en piernas
                         </button>
                         <div v-if="isOpen('varices')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Se sugiere la implementación de un horario de trabajo flexible para permitir pausas frecuentes y evitar períodos prolongados de estar de pie, lo cual ayudará a mitigar el dolor crónico en las piernas debido a una condición de várices.')">
                                 Se sugiere la implementación de un horario de trabajo flexible para permitir pausas
                                 frecuentes y evitar períodos prolongados de estar de pie, lo cual ayudará a mitigar el
@@ -1225,7 +1231,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Malformación mano
                         </button>
                         <div v-if="isOpen('malformacionMano')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Dada a la malformación congénita de la mano izquierda, se recomienda la implementación de tecnologías de asistencia, como dispositivos de ayuda para la manipulación de objetos, así como la adaptación de las tareas laborales para optimizar la funcionalidad y la independencia del individuo en el entorno de trabajo.')">
                                 Dada a la malformación congénita de la mano izquierda, se recomienda la implementación
                                 de tecnologías de asistencia, como dispositivos de ayuda para la manipulación de
@@ -1240,7 +1246,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Lesión rodilla
                         </button>
                         <div v-if="isOpen('lesionRodilla')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Para adaptarse a una limitación de movilidad causada por una lesión en la rodilla, se sugiere la asignación de un espacio de trabajo accesible y la provisión de una silla ergonómica con soporte lumbar para garantizar comodidad y evitar el deterioro de la condición física.')">
                                 Para adaptarse a una limitación de movilidad causada por una lesión en la rodilla, se
                                 sugiere la asignación de un espacio de trabajo accesible y la provisión de una silla
@@ -1268,7 +1274,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             se encuentra <span class="font-semibold">MÉDICAMENTE</span> APTO PARA LABORAR CON
                             RESTRICCIONES.
                         </p>
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Especifica según aplique:
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Especifica según aplique:
                         </p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-orange-700 cursor-pointer leading-4">
@@ -1285,7 +1291,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             </li>
                         </ul>
                         <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Agregar:</p>
-                        <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                        <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                             @click="copiarTexto('Aunque apto para el trabajo, requiere medidas adicionales para garantizar su seguridad y bienestar en el entorno laboral.')">
                             Aunque apto para el trabajo, requiere medidas adicionales para garantizar su seguridad y
                             bienestar en el entorno laboral.
@@ -1304,7 +1310,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Hernia abdominal
                         </button>
                         <div v-if="isOpen('herniaAbdominal')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El individuo presenta una hernia abdominal, por lo que debe ser valorado por un cirujano. Se recomienda uso en todo momento de faja lumbosacra y asignarle tareas que no impliquen esfuerzo físico excesivo. Asimismo, debe proporcionarse asistencia o equipo adecuado para el manejo de carga.')">
                                 El individuo presenta una hernia abdominal, por lo que debe ser valorado por un
                                 cirujano. Se recomienda uso en todo momento de faja lumbosacra y asignarle tareas que no
@@ -1319,7 +1325,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Problema espalda
                         </button>
                         <div v-if="isOpen('problemaEspalda')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('El individuo debe evitar levantar objetos pesados debido a la condición de su espalda baja, por lo que se recomienda asignar tareas que no impliquen esfuerzo físico excesivo y proporcionar asistencia o equipo adecuado para el manejo de carga.')">
                                 El individuo debe evitar levantar objetos pesados debido a la condición de su espalda
                                 baja, por lo que se recomienda asignar tareas que no impliquen esfuerzo físico excesivo
@@ -1333,7 +1339,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Várices en piernas
                         </button>
                         <div v-if="isOpen('varices')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Se sugiere la implementación de un horario de trabajo flexible para permitir pausas frecuentes y evitar períodos prolongados de estar de pie, lo cual ayudará a mitigar el dolor crónico en las piernas debido a una condición de várices.')">
                                 Se sugiere la implementación de un horario de trabajo flexible para permitir pausas
                                 frecuentes y evitar períodos prolongados de estar de pie, lo cual ayudará a mitigar el
@@ -1347,7 +1353,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Malformación mano
                         </button>
                         <div v-if="isOpen('malformacionMano')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Dada a la malformación congénita de la mano izquierda, se recomienda la implementación de tecnologías de asistencia, como dispositivos de ayuda para la manipulación de objetos, así como la adaptación de las tareas laborales para optimizar la funcionalidad y la independencia del individuo en el entorno de trabajo.')">
                                 Dada a la malformación congénita de la mano izquierda, se recomienda la implementación
                                 de tecnologías de asistencia, como dispositivos de ayuda para la manipulación de
@@ -1362,7 +1368,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Lesión rodilla
                         </button>
                         <div v-if="isOpen('lesionRodilla')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
-                            <p class="italic text-sm font-light mb-4 italic text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
+                            <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
                                 @click="copiarTexto('Para adaptarse a una limitación de movilidad causada por una lesión en la rodilla, se sugiere la asignación de un espacio de trabajo accesible y la provisión de una silla ergonómica con soporte lumbar para garantizar comodidad y evitar el deterioro de la condición física.')">
                                 Para adaptarse a una limitación de movilidad causada por una lesión en la rodilla, se
                                 sugiere la asignación de un espacio de trabajo accesible y la provisión de una silla
@@ -1387,14 +1393,14 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                 <!-- Contenedor del desplegable -->
                 <div v-if="isOpen('guiaNoApto')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white">
                     <div class="p-4 border-l-4 border-red-500 bg-gray-100">
-                        <p class="font-semibold text-sm font-light text-gray-700">PASO 1. Usar:</p>
+                        <p class="font-semibold text-sm text-gray-700">PASO 1. Usar:</p>
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-red-700 cursor-pointer"
                             @click="copiarTexto('se encuentra NO APTO PARA LABORAR en las actividades del puesto al que aspira. ')">
                             se encuentra <span class="font-semibold">NO APTO PARA LABORAR</span> en las actividades del
                             puesto al que aspira.
                         </p>
 
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Explicar detalladamente
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Explicar detalladamente
                             el/los motivo(s):</p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-red-700 cursor-pointer leading-4">
@@ -1420,14 +1426,14 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                     class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white">
                     <div class="p-4 border-l-4 border-gray-500 bg-gray-100">
 
-                        <p class="font-semibold text-sm font-light text-gray-700">PASO 1. Usar:</p>
+                        <p class="font-semibold text-sm text-gray-700">PASO 1. Usar:</p>
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-blue-700 cursor-pointer"
                             @click="copiarTexto('NO ES POSIBLE CONCLUIR LA APTITUD AL PUESTO ')">
                             NO ES POSIBLE CONCLUIR LA APTITUD AL PUESTO
                         </p>
 
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 2. Explicar:</p>
-                        <p class="font-semibold text-sm font-light text-gray-700">Ejemplos de inicio de explicación</p>
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 2. Explicar:</p>
+                        <p class="font-semibold text-sm text-gray-700">Ejemplos de inicio de explicación</p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-blue-700 cursor-pointer leading-4">
                                 <p class="italic text-sm font-light inline"
@@ -1449,8 +1455,8 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             </li>
                         </ul>
 
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 3. Indicar:</p>
-                        <p class="font-semibold text-sm font-light text-gray-700">Ejemplos de inicio de indicaciones:
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Indicar:</p>
+                        <p class="font-semibold text-sm text-gray-700">Ejemplos de inicio de indicaciones:
                         </p>
                         <ul class="list-disc list-inside">
                             <li class="text-gray-700 hover:text-blue-700 cursor-pointer leading-4">
@@ -1473,7 +1479,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             </li>
                         </ul>
 
-                        <p class="font-semibold text-sm font-light text-gray-700 mt-4">PASO 4. Terminar:</p>
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Terminar:</p>
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-blue-700 cursor-pointer"
                             @click="copiarTexto('antes de volver a evaluar su aptitud para el puesto.')">
                             ...antes de volver a evaluar su aptitud para el puesto.

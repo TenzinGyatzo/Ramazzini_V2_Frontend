@@ -1,15 +1,20 @@
 <script setup>
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataExploracionFisica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const marchaPregunta = ref('No');
-const marcha = ref ('');
+const marcha = ref('');
 
 onMounted(() => {
-  marcha.value = formDataExploracionFisica.marcha;
+    if (documentos.currentDocument) {
+        marcha.value = documentos.currentDocument.marcha;
+        marchaPregunta.value = 'Si';
+    }
 });
 
 onUnmounted(() => {
@@ -61,9 +66,7 @@ watch(marchaPregunta, (newValue) => {
             <div class="font-light">
                 <textarea
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                    v-model="formDataExploracionFisica.marcha"
-                    required
-                >
+                    v-model="formDataExploracionFisica.marcha" required>
                 </textarea>
             </div>
         </div>

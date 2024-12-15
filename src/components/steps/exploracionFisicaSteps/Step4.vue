@@ -1,15 +1,20 @@
 <script setup>
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataExploracionFisica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const craneoCaraPregunta = ref('No');
 const craneoCara = ref ('');
 
 onMounted(() => {
-  craneoCara.value = formDataExploracionFisica.craneoCara;
+    if (documentos.currentDocument) {
+        craneoCara.value = documentos.currentDocument.craneoCara;
+        craneoCaraPregunta.value = 'Si';
+    }
 });
 
 onUnmounted(() => {

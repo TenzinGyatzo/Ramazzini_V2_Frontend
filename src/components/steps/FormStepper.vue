@@ -247,6 +247,12 @@ export default {
 
         stepsStore.setSteps(historiaClinicaSteps);
       }
+
+        // Verifica si se está editando
+      if (documentos.currentDocument) {
+        // Si se está editando, mostrar mensaje final
+        stepsStore.currentStep = stepsStore.steps.length + 1;
+      }
     });
 
     // Manejo de eventos de teclado

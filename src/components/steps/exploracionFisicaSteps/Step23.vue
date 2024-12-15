@@ -1,16 +1,20 @@
 <script setup>
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataExploracionFisica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const movimientosColumnaPregunta = ref('No');
 const movimientosColumna = ref ('');
 
 onMounted(() => {
-  movimientosColumna.value = formDataExploracionFisica.movimientosColumna;
-});
+    if (documentos.currentDocument) {
+        movimientosColumna.value = documentos.currentDocument.movimientosColumna;
+        movimientosColumnaPregunta.value = 'Si';
+    }});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para movimientosColumna

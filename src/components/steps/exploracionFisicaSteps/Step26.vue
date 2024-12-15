@@ -1,16 +1,20 @@
 <script setup>
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataExploracionFisica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const nevosPregunta = ref('No');
 const nevos = ref ('');
 
 onMounted(() => {
-  nevos.value = formDataExploracionFisica.nevos;
-});
+    if (documentos.currentDocument) {
+        nevos.value = documentos.currentDocument.nevos;
+        nevosPregunta.value = 'Si';
+    }});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para nevos

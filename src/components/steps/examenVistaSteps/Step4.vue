@@ -1,13 +1,26 @@
 <script setup>
-import { ref, watch, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataExamenVista } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 const ojoIzquierdoLejanaConCorreccion = ref(20);
 const ojoDerechoLejanaConCorreccion = ref(20);
 const conCorreccionLejanaInterpretacion = ref('Visión Normal');
 const usaLentes = ref('No');
+
+onMounted(() => {
+  if (documentos.currentDocument) {
+    if (documentos.currentDocument.conCorreccionLejanaInterpretacion) {
+      ojoIzquierdoLejanaConCorreccion.value = documentos.currentDocument.ojoIzquierdoLejanaConCorreccion;
+      ojoDerechoLejanaConCorreccion.value = documentos.currentDocument.ojoDerechoLejanaConCorreccion;
+      conCorreccionLejanaInterpretacion.value = documentos.currentDocument.conCorreccionLejanaInterpretacion;
+      usaLentes.value = 'Si';
+    }
+  }
+});
 
 onUnmounted(() => {
   if (usaLentes.value === 'No') {
@@ -17,9 +30,9 @@ onUnmounted(() => {
   } else {
     formDataExamenVista.ojoIzquierdoLejanaConCorreccion = ojoIzquierdoLejanaConCorreccion.value;
     formDataExamenVista.ojoDerechoLejanaConCorreccion = ojoDerechoLejanaConCorreccion.value;
-    formDataExamenVista.conCorreccionLejanaInterpretacion = conCorreccionLejanaInterpretacion.value;    
+    formDataExamenVista.conCorreccionLejanaInterpretacion = conCorreccionLejanaInterpretacion.value;
   }
-})
+});
 
 // Observa el cambio de usaLentes
 watch(usaLentes, (newVal) => {

@@ -1,8 +1,14 @@
 <script setup>
 import { formatDateDDMMYYYY } from '@/helpers/dates';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useStepsStore } from '@/stores/steps';
+
 const formData = useFormDataStore();
-console.log('Datos del store en VisualizadorAntidoping:', formData.formDataAntidoping);
+const steps = useStepsStore();
+
+const goToStep = (stepNumber) => {
+  steps.goToStep(stepNumber);
+};
 </script>
 
 <template>
@@ -17,27 +23,27 @@ console.log('Datos del store en VisualizadorAntidoping:', formData.formDataAntid
         </tr>
       </thead>
       <tbody>
-        <tr class="odd:bg-white even:bg-gray-50">
+        <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(1)">
           <td class="px-2 py-1 border border-gray-300 font-medium">Fecha Antidoping</td>
           <td class="px-2 py-1 border border-gray-300">{{ formatDateDDMMYYYY(formData.formDataAntidoping.fechaAntidoping) }}</td>
         </tr>
-        <tr class="odd:bg-white even:bg-gray-50">
+        <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
           <td class="px-2 py-1 border border-gray-300 font-medium">Marihuana</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.marihuana }}</td>
         </tr>
-        <tr class="odd:bg-white even:bg-gray-50">
+        <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
           <td class="px-2 py-1 border border-gray-300 font-medium">Cocaína</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.cocaina }}</td>
         </tr>
-        <tr class="odd:bg-white even:bg-gray-50">
+        <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
           <td class="px-2 py-1 border border-gray-300 font-medium">Anfetaminas</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.anfetaminas }}</td>
         </tr>
-        <tr class="odd:bg-white even:bg-gray-50">
+        <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
           <td class="px-2 py-1 border border-gray-300 font-medium">Metanfetaminas</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.metanfetaminas }}</td>
         </tr>
-        <tr class="odd:bg-white even:bg-gray-50">
+        <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
           <td class="px-2 py-1 border border-gray-300 font-medium">Opiáceos</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.opiaceos }}</td>
         </tr>
@@ -46,3 +52,14 @@ console.log('Datos del store en VisualizadorAntidoping:', formData.formDataAntid
     </table>
   </div>
 </template>
+
+<style scoped>
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.cursor-pointer:hover {
+  background-color: #f0f0f0;
+  /* Cambia el color según tu diseño */
+}
+</style>

@@ -1,16 +1,20 @@
 <script setup>
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { useDocumentosStore } from '@/stores/documentos';
 
 const { formDataExploracionFisica } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
 const equilibrioPregunta = ref('No');
 const equilibrio = ref ('');
 
 onMounted(() => {
-  equilibrio.value = formDataExploracionFisica.equilibrio;
-});
+    if (documentos.currentDocument) {
+        equilibrio.value = documentos.currentDocument.equilibrio;
+        equilibrioPregunta.value = 'Si';
+    }});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para equilibrio
