@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
@@ -71,13 +71,13 @@ const documentTypeLabels = {
   certificado: "Certificado",
 };
 
-onMounted(() => {
+const fetchData = () => {
   const empresaId = String(route.params.idEmpresa);
   const centroTrabajoId = String(route.params.idCentroTrabajo);
   const trabajadorId = String(route.params.idTrabajador);
+
   documentos.fetchAllDocuments(trabajadorId);
 
-  // Setear los ID actuales en el store
   empresas.currentEmpresaId = empresaId;
   empresas.fetchEmpresaById(empresaId);
   centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;
@@ -85,7 +85,16 @@ onMounted(() => {
   trabajadores.currentTrabajadorId = trabajadorId;
   trabajadores.fetchTrabajadorById(empresaId, centroTrabajoId, trabajadorId);
   formData.resetFormData();
-});
+};
+
+onMounted(fetchData);
+
+watch(
+      () => route.params,
+      () => {
+        fetchData();
+      }
+    );
 
 const navigateTo = (routeName, params) => {
   router.push({ name: routeName, params });
@@ -97,14 +106,9 @@ const navigateTo = (routeName, params) => {
 
 <template>
   <Transition appear name="fade">
-    <ModalEliminar
-      v-if="showDeleteModal && selectedDocumentId && selectedDocumentType"
-      :idRegistro="selectedDocumentId"
-      :identificacion="selectedDocumentName"
-      :tipoRegistro="documentTypeLabels[selectedDocumentType]"
-      @closeModal="toggleDeleteModal"
-      @confirmDelete="handleDeleteDocument"
-    />
+    <ModalEliminar v-if="showDeleteModal && selectedDocumentId && selectedDocumentType" :idRegistro="selectedDocumentId"
+      :identificacion="selectedDocumentName" :tipoRegistro="documentTypeLabels[selectedDocumentType]"
+      @closeModal="toggleDeleteModal" @confirmDelete="handleDeleteDocument" />
   </Transition>
 
   <div class="p-5 grid gap-5">
@@ -166,13 +170,9 @@ const navigateTo = (routeName, params) => {
       <div v-else>
         <div v-if="documentos.documentsByYear && Object.keys(documentos.documentsByYear).length"
           class="grid grid-cols-1 gap-6">
-          <GrupoDocumentos
-            v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
-            :key="year"
-            :documents="documentos.documentsByYear[year]"
-            :year="year"
-            @eliminarDocumento="toggleDeleteModal"
-          />
+          <GrupoDocumentos v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
+            :key="year" :documents="documentos.documentsByYear[year]" :year="year"
+            @eliminarDocumento="toggleDeleteModal" />
         </div>
         <h1 v-else
           class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700">Esta
