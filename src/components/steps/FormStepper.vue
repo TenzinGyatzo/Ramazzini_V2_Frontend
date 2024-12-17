@@ -1,6 +1,8 @@
 <script>
+import axios from 'axios';
 import { onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
@@ -108,6 +110,7 @@ import Step46HistoriaClinica from '../steps/historiaClinicaSteps/Step46.vue';
 export default {
   components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Certificado, Step2Certificado, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica },
   setup() {
+    const empresas = useEmpresasStore();
     const trabajadores = useTrabajadoresStore();
     const formData = useFormDataStore();
     const documentos = useDocumentosStore();
@@ -248,7 +251,7 @@ export default {
         stepsStore.setSteps(historiaClinicaSteps);
       }
 
-        // Verifica si se está editando
+      // Verifica si se está editando
       if (documentos.currentDocument) {
         // Si se está editando, mostrar mensaje final
         stepsStore.currentStep = stepsStore.steps.length + 1;
@@ -305,9 +308,13 @@ export default {
       return result;
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
       let datosLimpios;
 
+      console.log("Inicio de handleSubmit...");
+      console.log("Tipo de documento actual:", documentos.currentTypeOfDocument);
+
+      // Limpiar datos del formulario según el tipo de documento
       if (documentos.currentTypeOfDocument === 'antidoping') {
         datosLimpios = limpiarValoresUndefined(formData.formDataAntidoping);
       } else if (documentos.currentTypeOfDocument === 'aptitud') {
@@ -330,18 +337,46 @@ export default {
       // Convertir todas las fechas en los datos al formato ISO
       datosLimpios = convertirFechasAISO(datosLimpios);
 
-      console.log('Datos enviados:', datosLimpios);
+      try {
+        console.log("Enviando datos al backend para crear el documento...");
+        const response = await documentos.createDocument(
+          documentos.currentTypeOfDocument,
+          trabajadores.currentTrabajadorId,
+          datosLimpios
+        );
 
-      // Enviar los datos al backend
-      documentos.createDocument(documentos.currentTypeOfDocument, trabajadores.currentTrabajadorId, datosLimpios);
+        console.log("Respuesta del backend (creación del documento):", response);
+        if (!response || !response.data || !response.data._id) {
+          throw new Error('La respuesta del backend no contiene un ID válido');
+        }
+
+        const createdDocumentId = response.data._id;	
+        console.log("ID del documento creado:", createdDocumentId);
+
+        // Llamada al backend para generar el informe
+        const apiEndpoint = `http://localhost:3000/informes/${documentos.currentTypeOfDocument}/${empresas.currentEmpresaId}/${trabajadores.currentTrabajadorId}/${createdDocumentId}`;
+        console.log("Llamando al endpoint de generación del informe:", apiEndpoint);
+
+        const informeResponse = await axios.get(apiEndpoint);
+        console.log("Ruta del PDF generada por el backend:", informeResponse.data.ruta);
+
+        // alert(`El informe se ha generado y guardado en: ${informeResponse.data.ruta}`);
+
+      } catch (error) {
+        console.error('Error en el proceso de creación o generación del informe:', error);
+        if (error.response) {
+          console.error('Detalles del error (respuesta del backend):', error.response.data);
+        }
+      }
 
       // Reiniciar el estado del formulario después de enviar
       formData.resetFormData();
-      console.log('Datos reseteados');
+      console.log("Formulario reseteado.");
 
       documentos.currentTypeOfDocument = null;
       router.back();
     };
+
 
     return {
       stepsStore,

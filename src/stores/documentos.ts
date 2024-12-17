@@ -221,13 +221,17 @@ export const useDocumentosStore = defineStore("documentos", () => {
   async function createDocument(documentType: string, trabajadorId: string, data: any) {
     try {
       loading.value = true;
-      await DocumentosAPI.createDocument(documentType, trabajadorId, data);
+      const response = await DocumentosAPI.createDocument(documentType, trabajadorId, data);
+      console.log('Respuesta del backend en el store:', response); // Depuración adicional
+      return response.data; // Retorna solo los datos relevantes
     } catch (error) {
-      console.log(error);
+      console.error('Error al crear el documento en el store:', error);
+      throw error;
     } finally {
       loading.value = false;
     }
   }
+  
 
   async function deleteDocumentById(documentType: string, trabajadorId: string, documentId: string) {
     try {

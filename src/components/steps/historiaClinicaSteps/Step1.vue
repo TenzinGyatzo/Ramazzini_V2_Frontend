@@ -17,7 +17,6 @@ const documentos = useDocumentosStore();
 // Valor local para la pregunta principal
 const motivoExamen = ref('Ingreso');
 const today = format(new Date(), 'yyyy-MM-dd');
-const todayDDMMYYYY = format(new Date(), 'dd-MM-yyyy');
 
 // Inicializar la referencia local sincronizada con formData
 const fechaHistoriaClinica = ref(today);
@@ -45,7 +44,7 @@ onMounted(() => {
   const empresa = empresas.currentEmpresa.nombreComercial;
   const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
   const trabajador = trabajadores.currentTrabajador.nombre;
-  formDataHistoriaClinica.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/Historia-Clinica ${todayDDMMYYYY}.pdf`;
+  formDataHistoriaClinica.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
 });
 
 onUnmounted(() => {
@@ -62,12 +61,6 @@ watch(motivoExamen, (newValue) => {
 // Mantener sincronizados los valores
 watch(fechaHistoriaClinica, (newValue) => {
   formDataHistoriaClinica.fechaHistoriaClinica = newValue;
-
-  // Actualiza rutaPDF en formData
-  const empresa = empresas.currentEmpresa.nombreComercial;
-  const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
-  const trabajador = trabajadores.currentTrabajador.nombre;
-  formDataHistoriaClinica.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/Historia-Clinica ${formDataHistoriaClinica.fechaHistoriaClinica}.pdf`;
 });
 </script>
 

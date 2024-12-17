@@ -16,7 +16,6 @@ const documentos = useDocumentosStore();
 
 // Obtener la fecha actual en formato YYYY-MM-DD
 const today = format(new Date(), 'yyyy-MM-dd');
-const todayDDMMYYYY = format(new Date(), 'dd-MM-yyyy');
 
 onMounted(() => {
   if (documentos.currentDocument) {
@@ -34,7 +33,7 @@ onMounted(() => {
   const empresa = empresas.currentEmpresa.nombreComercial;
   const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
   const trabajador = trabajadores.currentTrabajador.nombre;
-  formDataExamenVista.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/Examen Vista ${todayDDMMYYYY}.pdf`;
+  formDataExamenVista.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
 });
 
 onUnmounted(() => {
@@ -50,12 +49,6 @@ const fechaExamenVista = ref(today);
 // Mantener sincronizados los valores
 watch(fechaExamenVista, (newValue) => {
   formDataExamenVista.fechaExamenVista = newValue;
-
-  // Establece rutaPDF en formData
-  const empresa = empresas.currentEmpresa.nombreComercial;
-  const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
-  const trabajador = trabajadores.currentTrabajador.nombre;
-  formDataExamenVista.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/Examen Vista ${formDataExamenVista.fechaExamenVista}.pdf`;
 });
 </script>
 

@@ -16,7 +16,6 @@ const documentos = useDocumentosStore();
 
 // Obtener la fecha actual en formato YYYY-MM-DD
 const today = format(new Date(), 'yyyy-MM-dd');
-const todayDDMMYYYY = format(new Date(), 'dd-MM-yyyy');
 
 // Inicializar la referencia local sincronizada con formData
 const fechaCertificado = ref(today);
@@ -37,7 +36,7 @@ onMounted(() => {
   const empresa = empresas.currentEmpresa.nombreComercial;
   const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
   const trabajador = trabajadores.currentTrabajador.nombre;
-  formDataCertificado.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/Certificado ${todayDDMMYYYY}.pdf`;
+  formDataCertificado.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
 });
 
 onUnmounted(() => {
@@ -50,12 +49,6 @@ onUnmounted(() => {
 // Mantener sincronizados los valores
 watch(fechaCertificado, (newValue) => {
   formDataCertificado.fechaCertificado = newValue;
-
-  // Establece rutaPDF en formData
-  const empresa = empresas.currentEmpresa.nombreComercial;
-  const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
-  const trabajador = trabajadores.currentTrabajador.nombre;
-  formDataCertificado.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/Certificado ${formDataCertificado.fechaCertificado}.pdf`;
 });
 </script>
 
