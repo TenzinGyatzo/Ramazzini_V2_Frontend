@@ -1,4 +1,5 @@
 <script setup>
+import axios from 'axios';
 import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
 import { ref } from 'vue';
 import { VPdfViewer, Locales, useLicense } from '@vue-pdf-viewer/viewer';
@@ -110,26 +111,29 @@ const localization = {
     }
 };
 
-// Función para abrir el visor con una ruta dinámica
-const abrirPdf = async (ruta) => {
-    const fullPath = `/${ruta}`; // Construir la ruta absoluta
+const abrirPdf = async (ruta, nombrePDF) => {
+    // Sanear la ruta y el nombre del archivo para eliminar dobles diagonales
+    const sanitizedRuta = ruta.replace(/\/+/g, '/'); // Reemplaza múltiples '/' por una sola
+    const sanitizedNombrePDF = nombrePDF.replace(/\/+/g, '/'); // Reemplaza múltiples '/' por una sola
+
+    // Generar la URL de forma explícita usando `new URL`
+    const fullPath = new URL(`${sanitizedRuta}${sanitizedNombrePDF}`, 'http://localhost:3000');
 
     try {
-        // Verificar si el archivo existe y es un PDF
-        const response = await fetch(fullPath, { method: 'HEAD' });
+        const response = await axios.get(fullPath.href, { responseType: 'blob' }); // Solicitud GET
+        const contentType = response.headers['content-type'];
 
-        if (response.ok && response.headers.get('Content-Type') === 'application/pdf') {
-            // Si el archivo existe y es un PDF, abrir el visor
-            pdfUrl.value = fullPath;
-            showPdfViewer.value = true;
+        if (response.status === 200 && contentType === 'application/pdf') {
+            pdfUrl.value = fullPath.href; // Actualiza tu variable de URL
+            showPdfViewer.value = true; // Muestra el visor PDF
         } else {
-            // Si no es un PDF o no existe, mostrar alerta
+            console.warn('El archivo no es un PDF o no existe.');
             alert('El archivo PDF no existe o no es válido.');
         }
     } catch (error) {
-        // Manejo de errores de red u otros problemas
+        console.error('Error al intentar cargar el archivo PDF:', error.message);
         alert('Ocurrió un error al intentar cargar el archivo PDF.');
-    }
+    } 
 };
 
 // Función para cerrar el visor
@@ -169,7 +173,11 @@ defineEmits(['eliminarDocumento']);
                     class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
                     type="checkbox" name="" id="">
             </div>
-            <div v-if="typeof antidoping === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+            <div v-if="typeof antidoping === 'object'"
+                class="my-1 mx-1 flex gap-2 items-center h-full"
+                @click="abrirPdf(
+                    `${antidoping.rutaPDF}`, 
+                    `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`)">
                 <div class="min-w-32 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">Antidoping</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -185,7 +193,12 @@ defineEmits(['eliminarDocumento']);
                 </div>
             </div>
 
-            <div v-if="typeof aptitud === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+            <div v-if="typeof aptitud === 'object'" 
+                class="my-1 mx-1 flex gap-2 items-center h-full"
+                @click="abrirPdf(
+                    `${aptitud.rutaPDF}`, 
+                    `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`)"
+            >
                 <div class="min-w-32 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">Aptitud al Puesto</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -201,7 +214,12 @@ defineEmits(['eliminarDocumento']);
                 </div>
             </div>
 
-            <div v-if="typeof certificado === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+            <div v-if="typeof certificado === 'object'" 
+                class="my-1 mx-1 flex gap-2 items-center h-full"
+                @click="abrirPdf(
+                    `${certificado.rutaPDF}`, 
+                    `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`)"
+            >
                 <div class="min-w-32 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">Certificado</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -220,7 +238,12 @@ defineEmits(['eliminarDocumento']);
                 </div>
             </div>
 
-            <div v-if="typeof documentoExterno === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+            <div v-if="typeof documentoExterno === 'object'" 
+                class="my-1 mx-1 flex gap-2 items-center h-full"
+                @click="abrirPdf(
+                    `${documentoExterno.rutaPDF}`, 
+                    `Documento Externo ${convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumentoExterno)}.pdf`)"
+            >
                 <div class="min-w-32 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">{{ documentoExterno.nombreDocumento }}</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -238,7 +261,12 @@ defineEmits(['eliminarDocumento']);
                 </div>
             </div>
 
-            <div v-if="typeof examenVista === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+            <div v-if="typeof examenVista === 'object'" 
+                class="my-1 mx-1 flex gap-2 items-center h-full"
+                @click="abrirPdf(
+                    `${examenVista.rutaPDF}`, 
+                    `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`)" 
+            >
                 <div class="min-w-30 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">Examen de la Vista</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -278,7 +306,10 @@ defineEmits(['eliminarDocumento']);
                 </div>
             </div>
 
-            <div v-if="typeof exploracionFisica === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+            <div v-if="typeof exploracionFisica === 'object'"
+                class="my-1 mx-1 flex gap-2 items-center h-full"
+                @click="abrirPdf(`${exploracionFisica.rutaPDF}`, `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`) "
+            >
                 <div class="min-w-30 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">Exploración Física</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -308,9 +339,12 @@ defineEmits(['eliminarDocumento']);
 
             <div v-if="typeof historiaClinica === 'object'"
                 class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer"
-                @click="abrirPdf(`${historiaClinica.rutaPDF}`)">
+                @click="abrirPdf(
+                    `${historiaClinica.rutaPDF}`, 
+                    `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`)"
+            >
                 <div class="min-w-30 sm:min-w-44">
-                    <p class="leading-5 text-lg sm:text-xl font-medium">Historia Clínica</p>
+                    <p class="leading-5 text-lg sm:text-xl font-medium">Historia Clinica</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
                         convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica) }}</p>
                 </div>

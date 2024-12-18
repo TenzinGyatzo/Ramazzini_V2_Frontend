@@ -38,6 +38,18 @@ onUnmounted(() => {
 watch(drugResults, (newValues) => {
   Object.assign(formDataAntidoping, newValues);
 });
+
+watch(antidopingResult, (newValue) => {
+  if (newValue === 'No') {
+    Object.assign(drugResults, {
+      marihuana: "Negativo",
+      cocaina: "Negativo",
+      anfetaminas: "Negativo",
+      metanfetaminas: "Negativo",
+      opiaceos: "Negativo",
+    });
+  }
+});
 </script>
 
 <template>
