@@ -28,6 +28,62 @@ const editarDocumento = (documentoId, documentoTipo) => {
     });
 };
 
+// URL base donde se almacenan los documentos
+const BASE_URL = 'http://localhost:3000';
+
+// Función dinámica para descargar un archivo basado en el documento
+const descargarArchivo = async (documento, tipoDocumento) => {
+    if (!documento || !documento.rutaPDF) {
+        alert('El archivo PDF no está disponible o no es válido.');
+        return;
+    }
+
+    const rutaPDF = documento.rutaPDF;
+
+    let fecha = '';
+
+    if (documento.fechaAntidoping) {
+        fecha = convertirFechaISOaDDMMYYYY(documento.fechaAntidoping);
+    } else if(documento.fechaAptitudPuesto) {
+        fecha = convertirFechaISOaDDMMYYYY(documento.fechaAptitudPuesto);
+    } else if(documento.fechaCertificado) {
+        fecha = convertirFechaISOaDDMMYYYY(documento.fechaCertificado);
+    } else if(documento.fechaExamenVista) {
+        fecha = convertirFechaISOaDDMMYYYY(documento.fechaExamenVista);
+    } else if(documento.fechaExploracionFisica) {
+        fecha = convertirFechaISOaDDMMYYYY(documento.fechaExploracionFisica);
+    } else if(documento.fechaHistoriaClinica) {
+        fecha = convertirFechaISOaDDMMYYYY(documento.fechaHistoriaClinica);
+    } 
+
+    const nombreArchivo = `${tipoDocumento} ${fecha}.pdf`;
+
+    try {
+        // Construir la URL completa concatenando el nombre del archivo
+        const urlCompleta = `${BASE_URL}/${rutaPDF}${nombreArchivo}`;
+
+        // Realizar la solicitud con Axios para obtener el archivo como Blob
+        const response = await axios.get(encodeURI(urlCompleta), {
+            responseType: 'blob', // Indica que la respuesta será un Blob
+        });
+
+        // Crear un enlace temporal y forzar la descarga
+        const blob = response.data;
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = nombreArchivo;
+        document.body.appendChild(link);
+        link.click();
+
+        // Limpiar el enlace temporal
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    } catch (error) {
+        console.error('Error al descargar el archivo:', error);
+        alert('Ocurrió un error al intentar descargar el archivo.');
+    }
+};
+
 // If the value is empty or incorrect, the watermark will remain.
 const licenseKey = import.meta.env.VITE_VPV_LICENSE ?? '102d64ec-006b-4fd6-8850-a00a050703ad';
 
@@ -133,7 +189,7 @@ const abrirPdf = async (ruta, nombrePDF) => {
     } catch (error) {
         console.error('Error al intentar cargar el archivo PDF:', error.message);
         alert('Ocurrió un error al intentar cargar el archivo PDF.');
-    } 
+    }
 };
 
 // Función para cerrar el visor
@@ -173,11 +229,9 @@ defineEmits(['eliminarDocumento']);
                     class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
                     type="checkbox" name="" id="">
             </div>
-            <div v-if="typeof antidoping === 'object'"
-                class="my-1 mx-1 flex gap-2 items-center h-full"
-                @click="abrirPdf(
-                    `${antidoping.rutaPDF}`, 
-                    `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`)">
+            <div v-if="typeof antidoping === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
+                `${antidoping.rutaPDF}`,
+                `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`)">
                 <div class="min-w-32 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">Antidoping</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -193,12 +247,9 @@ defineEmits(['eliminarDocumento']);
                 </div>
             </div>
 
-            <div v-if="typeof aptitud === 'object'" 
-                class="my-1 mx-1 flex gap-2 items-center h-full"
-                @click="abrirPdf(
-                    `${aptitud.rutaPDF}`, 
-                    `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`)"
-            >
+            <div v-if="typeof aptitud === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
+                `${aptitud.rutaPDF}`,
+                `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`)">
                 <div class="min-w-32 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">Aptitud al Puesto</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -214,12 +265,9 @@ defineEmits(['eliminarDocumento']);
                 </div>
             </div>
 
-            <div v-if="typeof certificado === 'object'" 
-                class="my-1 mx-1 flex gap-2 items-center h-full"
-                @click="abrirPdf(
-                    `${certificado.rutaPDF}`, 
-                    `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`)"
-            >
+            <div v-if="typeof certificado === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
+                `${certificado.rutaPDF}`,
+                `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`)">
                 <div class="min-w-32 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">Certificado</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -230,7 +278,7 @@ defineEmits(['eliminarDocumento']);
                         <p class="leading-5 text-sm px-1">Impedimentos Físicos:</p>
                         <p class="leading-5 font-semibold px-1"
                             :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'text-gray-800' : 'text-red-500'">
-                            {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'No presenta impedimentos físicos' :
+                            {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar elpuesto que actualmente solicita' ? 'No presenta impedimentos físicos' :
                             certificado.impedimentosFisicos }}
                         </p>
 
@@ -238,12 +286,9 @@ defineEmits(['eliminarDocumento']);
                 </div>
             </div>
 
-            <div v-if="typeof documentoExterno === 'object'" 
-                class="my-1 mx-1 flex gap-2 items-center h-full"
-                @click="abrirPdf(
-                    `${documentoExterno.rutaPDF}`, 
-                    `Documento Externo ${convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumentoExterno)}.pdf`)"
-            >
+            <div v-if="typeof documentoExterno === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
+                `${documentoExterno.rutaPDF}`,
+                `Documento Externo ${convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumentoExterno)}.pdf`)">
                 <div class="min-w-32 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">{{ documentoExterno.nombreDocumento }}</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -261,12 +306,9 @@ defineEmits(['eliminarDocumento']);
                 </div>
             </div>
 
-            <div v-if="typeof examenVista === 'object'" 
-                class="my-1 mx-1 flex gap-2 items-center h-full"
-                @click="abrirPdf(
-                    `${examenVista.rutaPDF}`, 
-                    `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`)" 
-            >
+            <div v-if="typeof examenVista === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
+                `${examenVista.rutaPDF}`,
+                `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`)">
                 <div class="min-w-30 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">Examen de la Vista</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -306,10 +348,8 @@ defineEmits(['eliminarDocumento']);
                 </div>
             </div>
 
-            <div v-if="typeof exploracionFisica === 'object'"
-                class="my-1 mx-1 flex gap-2 items-center h-full"
-                @click="abrirPdf(`${exploracionFisica.rutaPDF}`, `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`) "
-            >
+            <div v-if="typeof exploracionFisica === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full"
+                @click="abrirPdf(`${exploracionFisica.rutaPDF}`, `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`)">
                 <div class="min-w-30 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">Exploración Física</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -338,11 +378,9 @@ defineEmits(['eliminarDocumento']);
             </div>
 
             <div v-if="typeof historiaClinica === 'object'"
-                class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer"
-                @click="abrirPdf(
-                    `${historiaClinica.rutaPDF}`, 
-                    `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`)"
-            >
+                class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer" @click="abrirPdf(
+                    `${historiaClinica.rutaPDF}`,
+                    `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`)">
                 <div class="min-w-30 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">Historia Clinica</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -370,10 +408,24 @@ defineEmits(['eliminarDocumento']);
         </div>
 
         <div class="flex gap-1 sm:gap-1 md:gap-2 lg:gap-4 mx-2">
-            <button type="button"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
-                <i class="fa-solid fa-download fa-lg"></i>
-            </button>
+            <!-- Botón de descarga dinámico -->
+            <template v-for="(documento, key) in { 
+                'Antidoping': antidoping, 
+                'Aptitud': aptitud, 
+                'Certificado': certificado, 
+                'Documento Externo': documentoExterno, 
+                'Examen Vista': examenVista, 
+                'Exploracion Fisica': exploracionFisica, 
+                'Historia Clinica': historiaClinica 
+            }" :key="key">
+                <button
+                    v-if="documento && documento.rutaPDF"
+                    @click="descargarArchivo(documento, key)"
+                    type="button"
+                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-10">
+                    <i class="fa-solid fa-download fa-lg"></i>
+                </button>
+            </template>
             <button type="button" @click="editarDocumento(documentoId, documentoTipo)"
                 class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
