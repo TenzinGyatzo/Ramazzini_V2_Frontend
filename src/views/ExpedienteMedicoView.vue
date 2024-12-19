@@ -8,6 +8,7 @@ import { useDocumentosStore } from '@/stores/documentos';
 import { useFormDataStore } from '@/stores/formDataStore';
 import GreenButton from '@/components/GreenButton.vue';
 import SliderButton from '@/components/SliderButton.vue';
+import ModalCargaDocumentoExterno from '@/components/ModalCargaDocumentoExterno.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
 import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
 import { calcularEdad } from '@/helpers/dates';
@@ -20,10 +21,15 @@ const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 
+const showDocumentoExternoModal = ref(false);
 const showDeleteModal = ref(false); // Controla la visibilidad del modal
 const selectedDocumentId = ref<string | null>(null); // ID del documento seleccionado
 const selectedDocumentName = ref<string>(''); // Valor inicial como cadena vacía
 const selectedDocumentType = ref<string | null>(null); // Tipo del documento seleccionado
+
+const toggleDocumentoExternoModal = () => {
+  showDocumentoExternoModal.value = !showDocumentoExternoModal.value;
+};
 
 const toggleDeleteModal = (
   documentId: string | null = null,
@@ -106,6 +112,10 @@ const navigateTo = (routeName, params) => {
 
 <template>
   <Transition appear name="fade">
+    <ModalCargaDocumentoExterno v-if="showDocumentoExternoModal" @closeDocumentoExternoModal="toggleDocumentoExternoModal" />
+  </Transition>
+
+  <Transition appear name="fade">
     <ModalEliminar v-if="showDeleteModal && selectedDocumentId && selectedDocumentType" :idRegistro="selectedDocumentId"
       :identificacion="selectedDocumentName" :tipoRegistro="documentTypeLabels[selectedDocumentType]"
       @closeModal="toggleDeleteModal" @confirmDelete="handleDeleteDocument" />
@@ -146,7 +156,7 @@ const navigateTo = (routeName, params) => {
         tipoDocumento: 'certificado'
       })" />
       <div class="w-full flex justify-center">
-        <SliderButton class="align-self-center" text="Documento Externo" />
+        <SliderButton class="align-self-center" text="Documento Externo" @click="toggleDocumentoExternoModal" @closeModal="toggleDocumentoExternoModal"/>
       </div>
 
     </div>
