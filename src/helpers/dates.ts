@@ -62,18 +62,6 @@ function calcularAntiguedad(dateString: string): string {
   return `${years} años, ${months} meses`;
 }
 
-
-/* function formatDateDDMMYYYY(date) {
-  if (!date) return '';
-
-  const d = new Date(`${date}T00:00:00Z`); // Forzar interpretación UTC
-  const day = String(d.getUTCDate()).padStart(2, '0');
-  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const year = d.getUTCFullYear();
-
-  return `${day}-${month}-${year}`;
-} */
-
   function formatDateDDMMYYYY(date) {
     if (!date) return '';
   
@@ -100,6 +88,28 @@ function calcularAntiguedad(dateString: string): string {
     return `${year}-${month}-${day}`;
   }
   
+  function convertirYYYYMMDDaISO(dateString) {
+    if (!dateString) {
+      throw new Error("La fecha proporcionada no es válida o está vacía.");
+    }
+  
+    // Dividimos el string en partes (YYYY, MM, DD)
+    const [year, month, day] = dateString.split("-").map(Number);
+  
+    // Validamos que los valores sean correctos
+    if (!year || !month || !day || month > 12 || day > 31) {
+      throw new Error("La fecha proporcionada no tiene un formato válido (YYYY-MM-DD).");
+    }
+  
+    // Crear una fecha en UTC
+    const fecha = new Date(Date.UTC(year, month - 1, day));
+  
+    if (isNaN(fecha.getTime())) {
+      throw new Error("La fecha no pudo ser convertida a ISO.");
+    }
+  
+    return fecha.toISOString(); // Convertimos la fecha a formato ISO
+  }
 
 
 export {
@@ -108,5 +118,6 @@ export {
   calcularEdad,
   calcularAntiguedad,
   formatDateDDMMYYYY,
-  formatDateYYYYMMDD
+  formatDateYYYYMMDD,
+  convertirYYYYMMDDaISO
 };

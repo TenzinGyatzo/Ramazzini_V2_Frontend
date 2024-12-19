@@ -1,11 +1,17 @@
 <script setup>
+import { ref } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { useDocumentosStore } from '@/stores/documentos';
+import { convertirYYYYMMDDaISO } from '@/helpers/dates';
 
 const { currentEmpresa } = useEmpresasStore();
 const { currentCentroTrabajo } = useCentrosTrabajoStore();
 const { currentTrabajador } = useTrabajadoresStore();
+const documentos = useDocumentosStore();
+
+const fileExtension = ref('');
 
 const tiposDocumentos = [
     "Prueba(s) de laboratorio",
@@ -20,9 +26,28 @@ const tiposDocumentos = [
 
 const emit = defineEmits(['closeDocumentoExternoModal']);
 
+const updateFileExtension = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const extension = file.name.split(".").pop();
+        fileExtension.value = extension;
+        console.log("Archivo seleccionado:", file.name);
+        console.log("Extensión detectada:", extension);
+      } else {
+        fileExtension.value = "";
+        console.log("No se seleccionó ningún archivo.");
+      }
+    };
+
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
+  // Convertir la fecha del campo fechaDocumento a formato ISO
+  if (data.fechaDocumento) {
+    data.fechaDocumento = convertirYYYYMMDDaISO(data.fechaDocumento);
+  }
   console.log('Datos del formulario:', data);
+  documentos.createDocument('documentoExterno', currentTrabajador._id,  data);
+  closeModal();
 };
 
 // Limpiar la vista previa cuando se cierre el modal
@@ -68,10 +93,13 @@ const closeModal = () => {
             :validation-messages="{ required: 'Este campo es obligatorio' }" />
 
           <FormKit type="file" label="Seleccionar documento a subir (.pdf, .jpg, .jpeg, .png)" name="file" accept=".pdf, .jpg, .jpeg, .png"
-            multiple="false" validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }" />
+            multiple="false" validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
+            @change="updateFileExtension" />
 
           <!-- Campos ocultos y botón de enviar -->
+          <FormKit type="hidden" name="extension" v-model="fileExtension" />
           <FormKit type="hidden" name="rutaPDF" :value="`expedientes-medicos/${currentEmpresa.nombreComercial}/${currentCentroTrabajo.nombreCentro}/${currentTrabajador.nombre}`" />
+          <FormKit type="hidden" name="idTrabajador" :value="currentTrabajador._id" />
           <FormKit type="hidden" name="createdBy" :value="'6650f38308ac3beedf5ac41b'" />
           <FormKit type="hidden" name="updatedBy" :value="'6650f38308ac3beedf5ac41b'" />
 
