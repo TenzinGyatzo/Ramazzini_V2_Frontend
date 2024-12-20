@@ -198,6 +198,11 @@ const cerrarPdf = () => {
     pdfUrl.value = '';
 };
 
+const abrirModal = () => {
+    // showModal.value = true;
+    console.log('Abriendo modal');
+};
+
 defineProps({
     documentoId: {
         type: String,
@@ -288,7 +293,7 @@ defineEmits(['eliminarDocumento']);
 
             <div v-if="typeof documentoExterno === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
                 `${documentoExterno.rutaPDF}`,
-                `Documento Externo ${convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumentoExterno)}.pdf`)">
+                `Documento Externo ${convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento)}.pdf`)">
                 <div class="min-w-32 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">{{ documentoExterno.nombreDocumento }}</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -419,6 +424,13 @@ defineEmits(['eliminarDocumento']);
                 'Historia Clinica': historiaClinica 
             }" :key="key">
                 <button
+                    v-if="documento && documento.rutaDocumento"
+                    @click="descargarArchivo(documento, key)"
+                    type="button"
+                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-10">
+                    <i class="fa-solid fa-download fa-lg"></i>
+                </button>
+                <button
                     v-if="documento && documento.rutaPDF"
                     @click="descargarArchivo(documento, key)"
                     type="button"
@@ -426,10 +438,16 @@ defineEmits(['eliminarDocumento']);
                     <i class="fa-solid fa-download fa-lg"></i>
                 </button>
             </template>
-            <button type="button" @click="editarDocumento(documentoId, documentoTipo)"
+
+            <button v-if="documentoTipo === 'documentoExterno'" type="button" @click="abrirModal()"
                 class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
             </button>
+            <button v-else type="button" @click="editarDocumento(documentoId, documentoTipo)"
+                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
+                <i class="fa-regular fa-pen-to-square fa-lg"></i>
+            </button>
+
 
             <button type="button" @click="$emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo)"
                 class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">

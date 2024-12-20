@@ -30,7 +30,7 @@ const updateFileExtension = (event) => {
       const file = event.target.files[0];
       if (file) {
         const extension = file.name.split(".").pop();
-        fileExtension.value = extension;
+        fileExtension.value = `.${extension}`;
         console.log("Archivo seleccionado:", file.name);
         console.log("Extensión detectada:", extension);
       } else {
@@ -98,7 +98,7 @@ const closeModal = () => {
 
           <!-- Campos ocultos y botón de enviar -->
           <FormKit type="hidden" name="extension" v-model="fileExtension" />
-          <FormKit type="hidden" name="rutaPDF" :value="`expedientes-medicos/${currentEmpresa.nombreComercial}/${currentCentroTrabajo.nombreCentro}/${currentTrabajador.nombre}`" />
+          <FormKit type="hidden" name="rutaDocumento" :value="`expedientes-medicos/${currentEmpresa.nombreComercial}/${currentCentroTrabajo.nombreCentro}/${currentTrabajador.nombre}`" />
           <FormKit type="hidden" name="idTrabajador" :value="currentTrabajador._id" />
           <FormKit type="hidden" name="createdBy" :value="'6650f38308ac3beedf5ac41b'" />
           <FormKit type="hidden" name="updatedBy" :value="'6650f38308ac3beedf5ac41b'" />
