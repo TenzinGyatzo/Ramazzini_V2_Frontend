@@ -112,7 +112,8 @@ const navigateTo = (routeName, params) => {
 
 <template>
   <Transition appear name="fade">
-    <ModalCargaDocumentoExterno v-if="showDocumentoExternoModal" @closeDocumentoExternoModal="toggleDocumentoExternoModal" />
+    <ModalCargaDocumentoExterno v-if="showDocumentoExternoModal" 
+    @closeDocumentoExternoModal="toggleDocumentoExternoModal" @updateData="fetchData" />
   </Transition>
 
   <Transition appear name="fade">

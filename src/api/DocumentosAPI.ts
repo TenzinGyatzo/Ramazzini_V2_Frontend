@@ -33,6 +33,11 @@ export default {
         return api.post(`/expedientes/${trabajadorId}/documentos/${documentType}/crear`, data);
     },
 
+    uploadExternalDocument(trabajadorId: string, formData: FormData) {
+        console.log('URL de la solicitud:', `/expedientes/${trabajadorId}/documentos/documentoExterno/subir`);
+        return api.post(`/expedientes/${trabajadorId}/documentos/documentoExterno/subir`, formData);
+    },
+
     getDocumentById(documentType: string, trabajadorId: string, documentoId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/${documentType}/${documentoId}`);
     },

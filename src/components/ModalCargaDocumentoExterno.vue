@@ -4,6 +4,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
+import { format } from 'date-fns';
 import { convertirYYYYMMDDaISO } from '@/helpers/dates';
 
 const { currentEmpresa } = useEmpresasStore();
@@ -12,32 +13,31 @@ const { currentTrabajador } = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 
 const fileExtension = ref('');
+const today = ref(format(new Date(), 'yyyy-MM-dd'));
 
 const tiposDocumentos = [
-    "Prueba(s) de laboratorio",
-    "Estudio de Gabinete",
-    "Imagenología",
-    "Fotografía de prueba rápida",
-    "Identificación",
-    "Receta médica",
-    "Formato específico",
-    "Otro",
-  ];
+  "Prueba(s) de laboratorio",
+  "Estudio de Gabinete",
+  "Imagenología",
+  "Fotografía de prueba rápida",
+  "Identificación",
+  "Receta médica",
+  "Formato específico",
+  "Otro",
+];
 
-const emit = defineEmits(['closeDocumentoExternoModal']);
+const emit = defineEmits(['closeDocumentoExternoModal', 'updateData']);
 
 const updateFileExtension = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const extension = file.name.split(".").pop();
-        fileExtension.value = `.${extension}`;
-        console.log("Archivo seleccionado:", file.name);
-        console.log("Extensión detectada:", extension);
-      } else {
-        fileExtension.value = "";
-        console.log("No se seleccionó ningún archivo.");
-      }
-    };
+  const file = event.target.files[0];
+  if (file) {
+    const extension = file.name.split(".").pop();
+    fileExtension.value = `.${extension}`;
+  } else {
+    fileExtension.value = "";
+    console.warn("No se seleccionó ningún archivo.");
+  }
+};
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
@@ -45,15 +45,35 @@ const handleSubmit = async (data) => {
   if (data.fechaDocumento) {
     data.fechaDocumento = convertirYYYYMMDDaISO(data.fechaDocumento);
   }
-  console.log('Datos del formulario:', data);
-  documentos.createDocument('documentoExterno', currentTrabajador._id,  data);
+
+  // Crear una instancia de FormData
+  const formData = new FormData();
+  Object.keys(data).forEach((key) => {
+    formData.append(key, data[key]);
+  });
+
+  // Verificar si el archivo está presente y agregarlo a FormData
+  const fileInput = document.querySelector('input[name="file"]');
+  if (fileInput && fileInput.files[0]) {
+    formData.append('file', fileInput.files[0]);
+  }
+
+  // Mostrar el contenido de FormData para depuración
+  console.log('Contenido de FormData:');
+  for (let pair of formData.entries()) {
+    console.log(`${pair[0]}: ${pair[1]}`);
+  }
+
+  // Llamar a la función en el store
+  await documentos.uploadExternalDocument(currentTrabajador._id, formData);
+
   closeModal();
 };
 
 // Limpiar la vista previa cuando se cierre el modal
 const closeModal = () => {
-  console.log('Se ejecuta closeModal');
   emit('closeDocumentoExternoModal');
+  emit('updateData');
 };
 </script>
 
@@ -78,27 +98,27 @@ const closeModal = () => {
         <hr class="mt-2 mb-3">
 
         <FormKit type="form" :actions="false" incomplete-message="Por favor complete todos los campos"
-        @submit="handleSubmit">
-          <FormKit type="select" label="Tipo de Documento" name="tipoDocumento" placeholder="Seleccione un tipo de documento"
-            :options="tiposDocumentos" validation="required"
+          @submit="handleSubmit">
+          <FormKit type="select" label="Tipo de Documento" name="tipoDocumento"
+            placeholder="Seleccione un tipo de documento" :options="tiposDocumentos" validation="required"
             :validation-messages="{ required: 'Este campo es obligatorio' }" />
 
           <FormKit type="text" label="Nombre del Documento" name="nombreDocumento" validation="required"
             :validation-messages="{ required: 'Este campo es obligatorio' }" />
 
           <FormKit type="date" label="Fecha de emisión del documento" name="fechaDocumento" validation="required"
-            :validation-messages="{ required: 'Este campo es obligatorio' }" />
+            :validation-messages="{ required: 'Este campo es obligatorio' }" v-model="today" />
 
-          <FormKit type="text" label="Agregar notas (opcional)" name="notasDocumento" validation="required"
-            :validation-messages="{ required: 'Este campo es obligatorio' }" />
+          <FormKit type="text" label="Agregar notas (opcional)" name="notasDocumento" />
 
-          <FormKit type="file" label="Seleccionar documento a subir (.pdf, .jpg, .jpeg, .png)" name="file" accept=".pdf, .jpg, .jpeg, .png"
-            multiple="false" validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
-            @change="updateFileExtension" />
+          <FormKit type="file" label="Seleccionar documento a subir (.pdf, .jpg, .jpeg, .png)" name="file"
+            accept=".pdf, .jpg, .jpeg, .png" multiple="false" validation="required"
+            :validation-messages="{ required: 'Este campo es obligatorio' }" @change="updateFileExtension" />
 
           <!-- Campos ocultos y botón de enviar -->
           <FormKit type="hidden" name="extension" v-model="fileExtension" />
-          <FormKit type="hidden" name="rutaDocumento" :value="`expedientes-medicos/${currentEmpresa.nombreComercial}/${currentCentroTrabajo.nombreCentro}/${currentTrabajador.nombre}`" />
+          <FormKit type="hidden" name="rutaDocumento"
+            :value="`expedientes-medicos/${currentEmpresa.nombreComercial}/${currentCentroTrabajo.nombreCentro}/${currentTrabajador.nombre}`" />
           <FormKit type="hidden" name="idTrabajador" :value="currentTrabajador._id" />
           <FormKit type="hidden" name="createdBy" :value="'6650f38308ac3beedf5ac41b'" />
           <FormKit type="hidden" name="updatedBy" :value="'6650f38308ac3beedf5ac41b'" />

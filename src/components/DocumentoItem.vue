@@ -33,12 +33,22 @@ const BASE_URL = 'http://localhost:3000';
 
 // Función dinámica para descargar un archivo basado en el documento
 const descargarArchivo = async (documento, tipoDocumento) => {
-    if (!documento || !documento.rutaPDF) {
-        alert('El archivo PDF no está disponible o no es válido.');
+    console.log(documento.rutaDocumento);
+    console.log(tipoDocumento);
+
+    let rutaPDF = '';
+
+    if (tipoDocumento === 'Documento Externo' && !documento.rutaDocumento) {
+        alert('El archivo PDF no está disponible o no es válido. 1');
+        rutaPDF = documento.rutaDocumento;
+        return
+    }
+    
+    if (tipoDocumento !== 'Documento Externo' && !documento.rutaPDF) {
+        alert('El archivo PDF no está disponible o no es válido. 2');
+        rutaPDF = documento.rutaPDF;
         return;
     }
-
-    const rutaPDF = documento.rutaPDF;
 
     let fecha = '';
 
@@ -303,7 +313,7 @@ defineEmits(['eliminarDocumento']);
                     <div class="min-w-72">
                         <p class="leading-5 text-sm px-1">Notas:</p>
                         <p class="leading-5 font-semibold text-gray-800 px-1">
-                            {{ documentoExterno.notasDocumento && documentoExterno.notasDocumento.trim() !== '' ?
+                            {{ documentoExterno.notasDocumento.trim() !== '' && documentoExterno.notasDocumento.trim() !== 'undefined' ?
                                 documentoExterno.notasDocumento : 'Presionar editar para agregar notas &nbsp&nbsp --->'
                             }}
                         </p>

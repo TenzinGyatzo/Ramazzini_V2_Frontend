@@ -231,8 +231,20 @@ export const useDocumentosStore = defineStore("documentos", () => {
       loading.value = false;
     }
   }
-  
 
+  async function uploadExternalDocument(trabajadorId: string, formData: FormData) {
+    try {
+      loading.value = true;
+      const response = await DocumentosAPI.uploadExternalDocument(trabajadorId, formData);
+      return response.data; // Retorna solo los datos relevantes
+    } catch (error) {
+      console.error('Error al crear el documento en el store:', error);
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
+  
   async function deleteDocumentById(documentType: string, trabajadorId: string, documentId: string) {
     try {
       loading.value = true;
@@ -256,6 +268,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
     setCurrentTypeOfDocument,
     resetCurrentTypeOfDocument,
     createDocument,
+    uploadExternalDocument,
     deleteDocumentById
   };
 });
