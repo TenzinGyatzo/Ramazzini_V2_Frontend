@@ -33,7 +33,7 @@ onMounted(() => {
   const empresa = empresas.currentEmpresa.nombreComercial;
   const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
   const trabajador = trabajadores.currentTrabajador.nombre;
-  formDataAntidoping.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
+  formDataAntidoping.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}`;
 });
 
 onUnmounted(() => {

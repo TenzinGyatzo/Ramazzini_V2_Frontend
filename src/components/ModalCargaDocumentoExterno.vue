@@ -59,10 +59,10 @@ const handleSubmit = async (data) => {
   }
 
   // Mostrar el contenido de FormData para depuración
-  console.log('Contenido de FormData:');
+  /* console.log('Contenido de FormData:');
   for (let pair of formData.entries()) {
     console.log(`${pair[0]}: ${pair[1]}`);
-  }
+  } */
 
   // Llamar a la función en el store
   await documentos.uploadExternalDocument(currentTrabajador._id, formData);

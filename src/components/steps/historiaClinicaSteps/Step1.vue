@@ -44,7 +44,7 @@ onMounted(() => {
   const empresa = empresas.currentEmpresa.nombreComercial;
   const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
   const trabajador = trabajadores.currentTrabajador.nombre;
-  formDataHistoriaClinica.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
+  formDataHistoriaClinica.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}`;
 });
 
 onUnmounted(() => {

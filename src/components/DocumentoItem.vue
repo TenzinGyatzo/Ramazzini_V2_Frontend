@@ -33,65 +33,74 @@ const BASE_URL = 'http://localhost:3000';
 
 // Función dinámica para descargar un archivo basado en el documento
 const descargarArchivo = async (documento, tipoDocumento) => {
-    console.log(documento.rutaDocumento);
-    console.log(tipoDocumento);
-
-    let rutaPDF = '';
-
-    if (tipoDocumento === 'Documento Externo' && !documento.rutaDocumento) {
-        alert('El archivo PDF no está disponible o no es válido. 1');
-        rutaPDF = documento.rutaDocumento;
-        return
-    }
-    
-    if (tipoDocumento !== 'Documento Externo' && !documento.rutaPDF) {
-        alert('El archivo PDF no está disponible o no es válido. 2');
-        rutaPDF = documento.rutaPDF;
-        return;
-    }
-
-    let fecha = '';
-
-    if (documento.fechaAntidoping) {
-        fecha = convertirFechaISOaDDMMYYYY(documento.fechaAntidoping);
-    } else if(documento.fechaAptitudPuesto) {
-        fecha = convertirFechaISOaDDMMYYYY(documento.fechaAptitudPuesto);
-    } else if(documento.fechaCertificado) {
-        fecha = convertirFechaISOaDDMMYYYY(documento.fechaCertificado);
-    } else if(documento.fechaExamenVista) {
-        fecha = convertirFechaISOaDDMMYYYY(documento.fechaExamenVista);
-    } else if(documento.fechaExploracionFisica) {
-        fecha = convertirFechaISOaDDMMYYYY(documento.fechaExploracionFisica);
-    } else if(documento.fechaHistoriaClinica) {
-        fecha = convertirFechaISOaDDMMYYYY(documento.fechaHistoriaClinica);
-    } 
-
-    const nombreArchivo = `${tipoDocumento} ${fecha}.pdf`;
-
     try {
-        // Construir la URL completa concatenando el nombre del archivo
-        const urlCompleta = `${BASE_URL}/${rutaPDF}${nombreArchivo}`;
+        const ruta = obtenerRutaDocumento(documento, tipoDocumento);
+        if (!ruta) {
+            alert('El documento no está disponible o no es válido.');
+            return;
+        }
 
-        // Realizar la solicitud con Axios para obtener el archivo como Blob
-        const response = await axios.get(encodeURI(urlCompleta), {
-            responseType: 'blob', // Indica que la respuesta será un Blob
-        });
+        const fecha = obtenerFechaDocumento(documento) || 'SinFecha';
+        const nombreArchivo = obtenerNombreArchivo(documento, tipoDocumento, fecha);
 
-        // Crear un enlace temporal y forzar la descarga
-        const blob = response.data;
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = nombreArchivo;
-        document.body.appendChild(link);
-        link.click();
+        await descargarYGuardarArchivo(ruta, nombreArchivo);
 
-        // Limpiar el enlace temporal
-        document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
     } catch (error) {
         console.error('Error al descargar el archivo:', error);
         alert('Ocurrió un error al intentar descargar el archivo.');
     }
+};
+
+const obtenerRutaDocumento = (documento, tipoDocumento) => {
+    if (tipoDocumento === 'Documento Externo') {
+        return documento.rutaDocumento || null;
+    }
+    return documento.rutaPDF || null;
+};
+
+const obtenerFechaDocumento = (documento) => {
+    const camposFecha = [
+        'fechaAntidoping',
+        'fechaAptitudPuesto',
+        'fechaCertificado',
+        'fechaExamenVista',
+        'fechaExploracionFisica',
+        'fechaHistoriaClinica',
+        'fechaDocumento',
+    ];
+
+    for (const campo of camposFecha) {
+        if (documento[campo]) {
+            return convertirFechaISOaDDMMYYYY(documento[campo]);
+        }
+    }
+    return null;
+};
+
+const obtenerNombreArchivo = (documento, tipoDocumento, fecha) => {
+    if (tipoDocumento === 'Documento Externo') {
+        return `${documento.nombreDocumento || 'Documento'} ${fecha}.pdf`;
+    }
+    return `${tipoDocumento} ${fecha}.pdf`;
+};
+
+const descargarYGuardarArchivo = async (ruta, nombreArchivo) => {
+    const urlCompleta = `${BASE_URL}/${ruta}/${nombreArchivo}`;
+
+    const response = await axios.get(encodeURI(urlCompleta), {
+        responseType: 'blob',
+    });
+
+    const blob = response.data;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = nombreArchivo;
+
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
 };
 
 // If the value is empty or incorrect, the watermark will remain.
@@ -183,7 +192,7 @@ const abrirPdf = async (ruta, nombrePDF) => {
     const sanitizedNombrePDF = nombrePDF.replace(/\/+/g, '/'); // Reemplaza múltiples '/' por una sola
 
     // Generar la URL de forma explícita usando `new URL`
-    const fullPath = new URL(`${sanitizedRuta}${sanitizedNombrePDF}`, 'http://localhost:3000');
+    const fullPath = new URL(`${sanitizedRuta}/${sanitizedNombrePDF}`, 'http://localhost:3000');
 
     try {
         const response = await axios.get(fullPath.href, { responseType: 'blob' }); // Solicitud GET
@@ -208,11 +217,6 @@ const cerrarPdf = () => {
     pdfUrl.value = '';
 };
 
-const abrirModal = () => {
-    // showModal.value = true;
-    console.log('Abriendo modal');
-};
-
 defineProps({
     documentoId: {
         type: String,
@@ -231,7 +235,7 @@ defineProps({
     historiaClinica: [Object, String]
 });
 
-defineEmits(['eliminarDocumento']);
+defineEmits(['eliminarDocumento', 'abrirModalUpdate']);
 
 </script>
 
@@ -293,17 +297,17 @@ defineEmits(['eliminarDocumento']);
                         <p class="leading-5 text-sm px-1">Impedimentos Físicos:</p>
                         <p class="leading-5 font-semibold px-1"
                             :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'text-gray-800' : 'text-red-500'">
-                            {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar elpuesto que actualmente solicita' ? 'No presenta impedimentos físicos' :
-                            certificado.impedimentosFisicos }}
+                            {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar elpuesto que actualmente solicita' ? 'No presenta impedimentos físicos' : certificado.impedimentosFisicos }}
                         </p>
 
                     </div>
                 </div>
             </div>
 
-            <div v-if="typeof documentoExterno === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
-                `${documentoExterno.rutaPDF}`,
-                `Documento Externo ${convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento)}.pdf`)">
+            <div v-if="typeof documentoExterno === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full"
+                @click="abrirPdf(
+                    `${documentoExterno.rutaDocumento}`,
+                    `${documentoExterno.nombreDocumento} ${convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento)}.pdf`)">
                 <div class="min-w-32 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">{{ documentoExterno.nombreDocumento }}</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -313,7 +317,8 @@ defineEmits(['eliminarDocumento']);
                     <div class="min-w-72">
                         <p class="leading-5 text-sm px-1">Notas:</p>
                         <p class="leading-5 font-semibold text-gray-800 px-1">
-                            {{ documentoExterno.notasDocumento.trim() !== '' && documentoExterno.notasDocumento.trim() !== 'undefined' ?
+                            {{ documentoExterno.notasDocumento.trim() !== '' && documentoExterno.notasDocumento.trim()
+                                !== 'undefined' ?
                                 documentoExterno.notasDocumento : 'Presionar editar para agregar notas &nbsp&nbsp --->'
                             }}
                         </p>
@@ -424,40 +429,38 @@ defineEmits(['eliminarDocumento']);
 
         <div class="flex gap-1 sm:gap-1 md:gap-2 lg:gap-4 mx-2">
             <!-- Botón de descarga dinámico -->
-            <template v-for="(documento, key) in { 
-                'Antidoping': antidoping, 
-                'Aptitud': aptitud, 
-                'Certificado': certificado, 
-                'Documento Externo': documentoExterno, 
-                'Examen Vista': examenVista, 
-                'Exploracion Fisica': exploracionFisica, 
-                'Historia Clinica': historiaClinica 
+            <template v-for="(documento, key) in {
+                'Antidoping': antidoping,
+                'Aptitud': aptitud,
+                'Certificado': certificado,
+                'Documento Externo': documentoExterno,
+                'Examen Vista': examenVista,
+                'Exploracion Fisica': exploracionFisica,
+                'Historia Clinica': historiaClinica
             }" :key="key">
-                <button
-                    v-if="documento && documento.rutaDocumento"
-                    @click="descargarArchivo(documento, key)"
+                <button v-if="documento && documento.rutaDocumento" @click="descargarArchivo(documento, key)"
                     type="button"
                     class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-10">
                     <i class="fa-solid fa-download fa-lg"></i>
                 </button>
-                <button
-                    v-if="documento && documento.rutaPDF"
-                    @click="descargarArchivo(documento, key)"
-                    type="button"
+                <button v-if="documento && documento.rutaPDF" @click="descargarArchivo(documento, key)" type="button"
                     class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-10">
                     <i class="fa-solid fa-download fa-lg"></i>
                 </button>
             </template>
 
-            <button v-if="documentoTipo === 'documentoExterno'" type="button" @click="abrirModal()"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
+            <button v-if="documentoTipo === 'documentoExterno'" type="button"
+                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10"
+                @click="() => {
+                    console.log('documentoExterno emitido:', documentoExterno);
+                    $emit('abrirModalUpdate', documentoExterno);
+                }">
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
             </button>
             <button v-else type="button" @click="editarDocumento(documentoId, documentoTipo)"
                 class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
             </button>
-
 
             <button type="button" @click="$emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo)"
                 class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">

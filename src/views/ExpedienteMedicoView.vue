@@ -9,6 +9,7 @@ import { useFormDataStore } from '@/stores/formDataStore';
 import GreenButton from '@/components/GreenButton.vue';
 import SliderButton from '@/components/SliderButton.vue';
 import ModalCargaDocumentoExterno from '@/components/ModalCargaDocumentoExterno.vue';
+import ModalUpdateDocumentoExterno from '@/components/ModalUpdateDocumentoExterno.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
 import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
 import { calcularEdad } from '@/helpers/dates';
@@ -22,13 +23,32 @@ const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 
 const showDocumentoExternoModal = ref(false);
+const showDocumentoExternoUpdateModal = ref(false);
 const showDeleteModal = ref(false); // Controla la visibilidad del modal
 const selectedDocumentId = ref<string | null>(null); // ID del documento seleccionado
 const selectedDocumentName = ref<string>(''); // Valor inicial como cadena vacía
 const selectedDocumentType = ref<string | null>(null); // Tipo del documento seleccionado
+const selectedDocumentData = ref(null);
 
 const toggleDocumentoExternoModal = () => {
   showDocumentoExternoModal.value = !showDocumentoExternoModal.value;
+};
+
+// Función para manejar la apertura del modal
+const openUpdateModal = (documentData) => {
+  console.log('Datos recibidos en openUpdateModal:', documentData);
+  if (documentData) {
+    // Clonar los datos antes de asignarlos
+    selectedDocumentData.value = { ...documentData };
+    console.log('selectedDocumentData preparado para el modal:', selectedDocumentData.value);
+    toggleDocumentoExternoUpdateModal();
+  } else {
+    console.warn('No se recibieron datos válidos para abrir el modal');
+  }
+};
+
+const toggleDocumentoExternoUpdateModal = () => {
+  showDocumentoExternoUpdateModal.value = !showDocumentoExternoUpdateModal.value;
 };
 
 const toggleDeleteModal = (
@@ -75,6 +95,7 @@ const documentTypeLabels = {
   examenVista: "Examen de la Vista",
   antidoping: "Antidoping",
   certificado: "Certificado",
+  documentoExterno: "Documento Externo"
 };
 
 const fetchData = () => {
@@ -93,14 +114,26 @@ const fetchData = () => {
   formData.resetFormData();
 };
 
+watch(
+  () => selectedDocumentData.value,
+  (newData) => {
+    console.log("selectedDocumentData cambiado:", newData);
+    if (newData === null) {
+      console.trace("selectedDocumentData fue establecido a null");
+    }
+  },
+  { immediate: true }
+);
+
+
 onMounted(fetchData);
 
 watch(
-      () => route.params,
-      () => {
-        fetchData();
-      }
-    );
+  () => route.params,
+  () => {
+    fetchData();
+  }
+);
 
 const navigateTo = (routeName, params) => {
   router.push({ name: routeName, params });
@@ -108,12 +141,23 @@ const navigateTo = (routeName, params) => {
   documentos.currentDocument = null;
 };
 
+const testDocumentData = ref({
+  nombreDocumento: 'Prueba',
+  tipoDocumento: 'Test',
+  fechaDocumento: '2024-12-21',
+  notasDocumento: 'Notas de prueba',
+});
 </script>
 
 <template>
   <Transition appear name="fade">
-    <ModalCargaDocumentoExterno v-if="showDocumentoExternoModal" 
-    @closeDocumentoExternoModal="toggleDocumentoExternoModal" @updateData="fetchData" />
+    <ModalCargaDocumentoExterno v-if="showDocumentoExternoModal"
+      @closeDocumentoExternoModal="toggleDocumentoExternoModal" @updateData="fetchData" />
+  </Transition>
+
+  <Transition appear name="fade">
+    <ModalUpdateDocumentoExterno v-if="showDocumentoExternoUpdateModal" :initialData="testDocumentData"
+      @closeDocumentoExternoUpdateModal="toggleDocumentoExternoUpdateModal" />
   </Transition>
 
   <Transition appear name="fade">
@@ -157,7 +201,8 @@ const navigateTo = (routeName, params) => {
         tipoDocumento: 'certificado'
       })" />
       <div class="w-full flex justify-center">
-        <SliderButton class="align-self-center" text="Documento Externo" @click="toggleDocumentoExternoModal" @closeModal="toggleDocumentoExternoModal"/>
+        <SliderButton class="align-self-center" text="Documento Externo" @click="toggleDocumentoExternoModal"
+          @closeModal="toggleDocumentoExternoModal" />
       </div>
 
     </div>
@@ -183,7 +228,7 @@ const navigateTo = (routeName, params) => {
           class="grid grid-cols-1 gap-6">
           <GrupoDocumentos v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
             :key="year" :documents="documentos.documentsByYear[year]" :year="year"
-            @eliminarDocumento="toggleDeleteModal" />
+            @eliminarDocumento="toggleDeleteModal" @abrirModalUpdate="openUpdateModal" />
         </div>
         <h1 v-else
           class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700">Esta
