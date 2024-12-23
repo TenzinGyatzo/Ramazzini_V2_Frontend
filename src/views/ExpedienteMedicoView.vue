@@ -28,23 +28,9 @@ const showDeleteModal = ref(false); // Controla la visibilidad del modal
 const selectedDocumentId = ref<string | null>(null); // ID del documento seleccionado
 const selectedDocumentName = ref<string>(''); // Valor inicial como cadena vacía
 const selectedDocumentType = ref<string | null>(null); // Tipo del documento seleccionado
-const selectedDocumentData = ref(null);
 
 const toggleDocumentoExternoModal = () => {
   showDocumentoExternoModal.value = !showDocumentoExternoModal.value;
-};
-
-// Función para manejar la apertura del modal
-const openUpdateModal = (documentData) => {
-  console.log('Datos recibidos en openUpdateModal:', documentData);
-  if (documentData) {
-    // Clonar los datos antes de asignarlos
-    selectedDocumentData.value = { ...documentData };
-    console.log('selectedDocumentData preparado para el modal:', selectedDocumentData.value);
-    toggleDocumentoExternoUpdateModal();
-  } else {
-    console.warn('No se recibieron datos válidos para abrir el modal');
-  }
 };
 
 const toggleDocumentoExternoUpdateModal = () => {
@@ -114,18 +100,6 @@ const fetchData = () => {
   formData.resetFormData();
 };
 
-watch(
-  () => selectedDocumentData.value,
-  (newData) => {
-    console.log("selectedDocumentData cambiado:", newData);
-    if (newData === null) {
-      console.trace("selectedDocumentData fue establecido a null");
-    }
-  },
-  { immediate: true }
-);
-
-
 onMounted(fetchData);
 
 watch(
@@ -141,12 +115,7 @@ const navigateTo = (routeName, params) => {
   documentos.currentDocument = null;
 };
 
-const testDocumentData = ref({
-  nombreDocumento: 'Prueba',
-  tipoDocumento: 'Test',
-  fechaDocumento: '2024-12-21',
-  notasDocumento: 'Notas de prueba',
-});
+
 </script>
 
 <template>
@@ -156,8 +125,8 @@ const testDocumentData = ref({
   </Transition>
 
   <Transition appear name="fade">
-    <ModalUpdateDocumentoExterno v-if="showDocumentoExternoUpdateModal" :initialData="testDocumentData"
-      @closeDocumentoExternoUpdateModal="toggleDocumentoExternoUpdateModal" />
+    <ModalUpdateDocumentoExterno v-if="showDocumentoExternoUpdateModal"
+      @closeModalUpdate="toggleDocumentoExternoUpdateModal" />
   </Transition>
 
   <Transition appear name="fade">
@@ -228,10 +197,10 @@ const testDocumentData = ref({
           class="grid grid-cols-1 gap-6">
           <GrupoDocumentos v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
             :key="year" :documents="documentos.documentsByYear[year]" :year="year"
-            @eliminarDocumento="toggleDeleteModal" @abrirModalUpdate="openUpdateModal" />
+            @eliminarDocumento="toggleDeleteModal" @abrirModalUpdate="toggleDocumentoExternoUpdateModal"/>
         </div>
         <h1 v-else
-          class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700">Esta
+          class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700">Este
           trabajador aun no tiene documentos registrados</h1>
       </div>
     </Transition>

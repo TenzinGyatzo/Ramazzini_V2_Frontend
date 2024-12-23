@@ -81,10 +81,7 @@ defineEmits(['abrirModalUpdate', 'eliminarDocumento']);
                 <DocumentoItem :documentoExterno="documentoExterno" :documentoId="documentoExterno._id"
                     :documentoTipo="'documentoExterno'"
                     @eliminarDocumento="$emit('eliminarDocumento', documentoExterno._id, convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento), 'documentoExterno')"
-                    @abrirModalUpdate="(data) => {
-                        console.log('Evento recibido en GrupoDocumentos:', data);
-                        $emit('abrirModalUpdate', data);
-                    }" />
+                    @abrirModalUpdate="$emit('abrirModalUpdate')" />
             </div>
         </div>
     </div>

@@ -235,7 +235,7 @@ defineProps({
     historiaClinica: [Object, String]
 });
 
-defineEmits(['eliminarDocumento', 'abrirModalUpdate']);
+defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
 
 </script>
 
@@ -297,7 +297,8 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate']);
                         <p class="leading-5 text-sm px-1">Impedimentos Físicos:</p>
                         <p class="leading-5 font-semibold px-1"
                             :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'text-gray-800' : 'text-red-500'">
-                            {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar elpuesto que actualmente solicita' ? 'No presenta impedimentos físicos' : certificado.impedimentosFisicos }}
+                            {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'No presenta impedimentos físicos' :
+                            certificado.impedimentosFisicos }}
                         </p>
 
                     </div>
@@ -452,9 +453,9 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate']);
             <button v-if="documentoTipo === 'documentoExterno'" type="button"
                 class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10"
                 @click="() => {
-                    console.log('documentoExterno emitido:', documentoExterno);
-                    $emit('abrirModalUpdate', documentoExterno);
-                }">
+                    documentos.fetchDocumentById(documentoTipo, trabajadores.currentTrabajador._id, documentoExterno._id);
+                    $emit('abrirModalUpdate');
+                }" >
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
             </button>
             <button v-else type="button" @click="editarDocumento(documentoId, documentoTipo)"

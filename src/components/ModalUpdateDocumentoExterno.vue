@@ -2,20 +2,12 @@
 import { ref, watch } from 'vue';
 import { format } from 'date-fns';
 import { convertirYYYYMMDDaISO } from '@/helpers/dates';
+import { useDocumentosStore } from '@/stores/documentos';
 
-// Props para recibir datos precargados
-defineProps({
-  initialData: {
-    type: Object,
-    required: false, // Cambia a false si no quieres errores si no llega el prop
-    default: () => ({})
-  }
-});
-
-console.log('initialData recibido en ModalUpdateDocumentoExterno:', initialData);
+const documentos = useDocumentosStore();
 
 // Emit para cerrar modal y actualizar datos
-const emit = defineEmits(['closeDocumentoExternoModal', 'updateData']);
+const emit = defineEmits(['closeModalUpdate', 'updateData']);
 
 // Referencias para campos editables
 const nombreDocumento = ref('');
@@ -25,16 +17,13 @@ const tipoDocumento = ref('');
 
 // Inicialización de datos con valores precargados
 watch(
-  () => initialData,
+  () => documentos.currentDocument,
   (newData) => {
-    console.log("Watcher activado con:", newData); // Debugging
     if (newData && Object.keys(newData).length > 0) {
       nombreDocumento.value = newData.nombreDocumento || '';
       tipoDocumento.value = newData.tipoDocumento || '';
-      fechaDocumento.value = newData.fechaDocumento || '';
+      fechaDocumento.value = format(newData.fechaDocumento, 'yyyy-MM-dd') || '';
       notasDocumento.value = newData.notasDocumento || '';
-    } else {
-      console.warn('initialData no tiene datos válidos:', newData);
     }
   },
   { immediate: true }
@@ -66,7 +55,7 @@ const handleSubmit = async () => {
   // Log para verificar datos antes de enviar
   console.log('Datos enviados:', updatedData);
 
- // Lógica para actualizar el documento en el store
+  // Lógica para actualizar el documento en el store
   // Llamar a la función en el store o servicio
   // Ejemplo:
   // await documentos.updateDocument(currentTrabajador._id, updatedData);
@@ -76,7 +65,7 @@ const handleSubmit = async () => {
 
 // Limpiar la vista previa cuando se cierre el modal
 const closeModal = () => {
-  emit('closeDocumentoExternoModal');
+  emit('closeModalUpdate');
   emit('updateData');
 };
 </script>
@@ -117,12 +106,12 @@ const closeModal = () => {
           <FormKit type="submit">
             <span>Guardar Cambios</span>
           </FormKit>
-          <button
-            class="text-xl mt-2 w-full rounded-lg bg-white font-semibold text-gray-800 shadow-sm ring-2 ring-inset ring-gray-300 hover:bg-gray-100 p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg flex-1"
-            @click="closeModal">
-            Cerrar
-          </button>
         </FormKit>
+        <button
+          class="text-xl mt-2 w-full rounded-lg bg-white font-semibold text-gray-800 shadow-sm ring-2 ring-inset ring-gray-300 hover:bg-gray-100 p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg flex-1"
+          @click="closeModal">
+          Cerrar
+        </button>
       </div>
     </Transition>
   </div>
