@@ -46,6 +46,11 @@ const handleSubmit = async (data) => {
     data.fechaDocumento = convertirYYYYMMDDaISO(data.fechaDocumento);
   }
 
+  // Asegurarse de que 'notasDocumento' sea una cadena vacía si está indefinida o null
+  if (!data.notasDocumento) {
+    data.notasDocumento = '';
+  }
+
   // Crear una instancia de FormData
   const formData = new FormData();
   Object.keys(data).forEach((key) => {
@@ -67,13 +72,13 @@ const handleSubmit = async (data) => {
   // Llamar a la función en el store
   await documentos.uploadExternalDocument(currentTrabajador._id, formData);
 
+  emit('updateData');
   closeModal();
 };
 
 // Limpiar la vista previa cuando se cierre el modal
 const closeModal = () => {
   emit('closeDocumentoExternoModal');
-  emit('updateData');
 };
 </script>
 

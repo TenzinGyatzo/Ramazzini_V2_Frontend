@@ -115,7 +115,6 @@ const navigateTo = (routeName, params) => {
   documentos.currentDocument = null;
 };
 
-
 </script>
 
 <template>
@@ -126,7 +125,7 @@ const navigateTo = (routeName, params) => {
 
   <Transition appear name="fade">
     <ModalUpdateDocumentoExterno v-if="showDocumentoExternoUpdateModal"
-      @closeModalUpdate="toggleDocumentoExternoUpdateModal" />
+      @closeModalUpdate="toggleDocumentoExternoUpdateModal" @updateData="fetchData"/>
   </Transition>
 
   <Transition appear name="fade">

@@ -1,29 +1,35 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { format } from 'date-fns';
-import { convertirYYYYMMDDaISO } from '@/helpers/dates';
+import { convertirYYYYMMDDaISO, convertirFechaISOaYYYYMMDD } from '@/helpers/dates';
+import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
 
+const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 
 // Emit para cerrar modal y actualizar datos
 const emit = defineEmits(['closeModalUpdate', 'updateData']);
 
 // Referencias para campos editables
+const idDocumento = ref('');
 const nombreDocumento = ref('');
 const fechaDocumento = ref('');
 const notasDocumento = ref('');
 const tipoDocumento = ref('');
+const idTrabajador = ref('');
 
 // Inicialización de datos con valores precargados
 watch(
   () => documentos.currentDocument,
   (newData) => {
     if (newData && Object.keys(newData).length > 0) {
+      idDocumento.value = newData._id || '';
       nombreDocumento.value = newData.nombreDocumento || '';
-      tipoDocumento.value = newData.tipoDocumento || '';
-      fechaDocumento.value = format(newData.fechaDocumento, 'yyyy-MM-dd') || '';
+      fechaDocumento.value = convertirFechaISOaYYYYMMDD(newData.fechaDocumento) || '';
       notasDocumento.value = newData.notasDocumento || '';
+      tipoDocumento.value = newData.tipoDocumento || '';
+      idTrabajador.value = newData.idTrabajador || '';
     }
   },
   { immediate: true }
@@ -42,31 +48,31 @@ const tiposDocumentos = [
 
 // Función para manejar el envío del formulario
 const handleSubmit = async () => {
-
-  fechaDocumento.value = convertirYYYYMMDDaISO(fechaDocumento.value);
+  const fechaISO = convertirYYYYMMDDaISO(fechaDocumento.value);
 
   const updatedData = {
+    _id: idDocumento.value,
     nombreDocumento: nombreDocumento.value,
-    fechaDocumento: fechaDocumento.value,
+    fechaDocumento: fechaISO,
     notasDocumento: notasDocumento.value,
     tipoDocumento: tipoDocumento.value,
+    idTrabajador: idTrabajador.value
   };
 
-  // Log para verificar datos antes de enviar
-  console.log('Datos enviados:', updatedData);
+  await documentos.updateDocument(
+    'documentoExterno',
+    trabajadores.currentTrabajadorId,
+    updatedData._id,
+    updatedData
+  );
 
-  // Lógica para actualizar el documento en el store
-  // Llamar a la función en el store o servicio
-  // Ejemplo:
-  // await documentos.updateDocument(currentTrabajador._id, updatedData);
-
-  closeModal();
+  emit('updateData');
+  closeModal(); 
 };
 
 // Limpiar la vista previa cuando se cierre el modal
 const closeModal = () => {
   emit('closeModalUpdate');
-  emit('updateData');
 };
 </script>
 
