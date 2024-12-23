@@ -222,10 +222,22 @@ export const useDocumentosStore = defineStore("documentos", () => {
     try {
       loading.value = true;
       const response = await DocumentosAPI.createDocument(documentType, trabajadorId, data);
-      console.log('Respuesta del backend en el store:', response); // Depuración adicional
       return response.data; // Retorna solo los datos relevantes
     } catch (error) {
       console.error('Error al crear el documento en el store:', error);
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function updateDocument(documentType: string, trabajadorId: string, documentId: string, data: any) {
+    try {
+      loading.value = true;
+      const response = await DocumentosAPI.updateDocument(documentType, trabajadorId, documentId, data);
+      return response.data; // Retorna solo los datos relevantes
+    } catch (error) {
+      console.error('Error al actualizar el documento en el store:', error);
       throw error;
     } finally {
       loading.value = false;
@@ -268,6 +280,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
     setCurrentTypeOfDocument,
     resetCurrentTypeOfDocument,
     createDocument,
+    updateDocument,
     uploadExternalDocument,
     deleteDocumentById
   };

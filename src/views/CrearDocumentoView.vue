@@ -68,37 +68,30 @@ onMounted(async () => {
     formData.formDataAntidoping.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataAntidoping.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataAntidoping.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-    console.log(formData.formDataAntidoping);
   } else if (tipoDocumento === 'aptitud') {
     formData.formDataAptitud.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataAptitud.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataAptitud.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-    console.log(formData.formDataAptitud);
   } else if (tipoDocumento === 'certificado') {
     formData.formDataCertificado.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataCertificado.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataCertificado.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-    console.log(formData.formDataCertificado);
   } else if (tipoDocumento === 'documento Externo') {
     formData.formDataDocumentoExterno.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataDocumentoExterno.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataDocumentoExterno.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-    console.log(formData.formDataDocumentoExterno);
   } else if (tipoDocumento === 'examenVista') {
     formData.formDataExamenVista.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataExamenVista.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataExamenVista.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-    console.log(formData.formDataExamenVista);
   } else if (tipoDocumento === 'exploracionFisica') {
     formData.formDataExploracionFisica.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataExploracionFisica.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataExploracionFisica.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-    console.log(formData.formDataExploracionFisica);
   } else if (tipoDocumento === 'historiaClinica') {
     formData.formDataHistoriaClinica.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataHistoriaClinica.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
     formData.formDataHistoriaClinica.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-    console.log(formData.formDataHistoriaClinica);
   } else {
     console.error(`Tipo de documento no reconocido: ${tipoDocumento}`);
   }

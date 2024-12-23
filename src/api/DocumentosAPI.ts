@@ -33,6 +33,10 @@ export default {
         return api.post(`/expedientes/${trabajadorId}/documentos/${documentType}/crear`, data);
     },
 
+    updateDocument(documentType: string, trabajadorId: string, documentId: string, data: any) {
+        return api.patch(`/expedientes/${trabajadorId}/documentos/${documentType}/actualizar/${documentId}`, data);
+    },
+
     uploadExternalDocument(trabajadorId: string, formData: FormData) {
         console.log('URL de la solicitud:', `/expedientes/${trabajadorId}/documentos/documentoExterno/subir`);
         return api.post(`/expedientes/${trabajadorId}/documentos/documentoExterno/subir`, formData);

@@ -145,7 +145,7 @@ export default {
         stepsStore.setSteps([
           { component: Step1Certificado, name: 'Paso 1' },
           { component: Step2Certificado, name: 'Paso 2' },
-        ])
+        ]);
       } else if (documentos.currentTypeOfDocument === 'examenVista') {
         stepsStore.setSteps([
           { component: Step1ExamenVista, name: 'Paso 1' },
@@ -311,9 +311,6 @@ export default {
     const handleSubmit = async () => {
       let datosLimpios;
 
-      console.log("Inicio de handleSubmit...");
-      console.log("Tipo de documento actual:", documentos.currentTypeOfDocument);
-
       // Limpiar datos del formulario según el tipo de documento
       if (documentos.currentTypeOfDocument === 'antidoping') {
         datosLimpios = limpiarValoresUndefined(formData.formDataAntidoping);
@@ -337,30 +334,39 @@ export default {
       // Convertir todas las fechas en los datos al formato ISO
       datosLimpios = convertirFechasAISO(datosLimpios);
 
-      try {
-        console.log("Enviando datos al backend para crear el documento...");
-        const response = await documentos.createDocument(
-          documentos.currentTypeOfDocument,
-          trabajadores.currentTrabajadorId,
-          datosLimpios
-        );
+      console.log('Datos limpios para enviar al backend:', datosLimpios);
 
-        console.log("Respuesta del backend (creación del documento):", response);
+      try {
+        let response;
+        if (datosLimpios._id) {
+          // Actualizar el documento
+          response = await documentos.updateDocument(
+            documentos.currentTypeOfDocument,
+            trabajadores.currentTrabajadorId,
+            datosLimpios._id,
+            datosLimpios
+          );
+        } else {
+
+          // Crear un nuevo documento
+          response = await documentos.createDocument(
+            documentos.currentTypeOfDocument,
+            trabajadores.currentTrabajadorId,
+            datosLimpios
+          );
+        }
+
         if (!response || !response.data || !response.data._id) {
           throw new Error('La respuesta del backend no contiene un ID válido');
         }
 
-        const createdDocumentId = response.data._id;	
-        console.log("ID del documento creado:", createdDocumentId);
+        const documentId = response.data._id;
 
         // Llamada al backend para generar el informe
-        const apiEndpoint = `http://localhost:3000/informes/${documentos.currentTypeOfDocument}/${empresas.currentEmpresaId}/${trabajadores.currentTrabajadorId}/${createdDocumentId}`;
-        console.log("Llamando al endpoint de generación del informe:", apiEndpoint);
+        const apiEndpoint = `http://localhost:3000/informes/${documentos.currentTypeOfDocument}/${empresas.currentEmpresaId}/${trabajadores.currentTrabajadorId}/${documentId}`;
 
         const informeResponse = await axios.get(apiEndpoint);
-        console.log("Ruta del PDF generada por el backend:", informeResponse.data.ruta);
-
-        // alert(`El informe se ha generado y guardado en: ${informeResponse.data.ruta}`);
+        console.log("Respuesta del backend para el informe:", informeResponse.data);
 
       } catch (error) {
         console.error('Error en el proceso de creación o generación del informe:', error);
@@ -371,7 +377,6 @@ export default {
 
       // Reiniciar el estado del formulario después de enviar
       formData.resetFormData();
-      console.log("Formulario reseteado.");
 
       documentos.currentTypeOfDocument = null;
       router.back();
