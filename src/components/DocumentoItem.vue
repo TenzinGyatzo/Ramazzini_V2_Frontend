@@ -217,6 +217,52 @@ const cerrarPdf = () => {
     pdfUrl.value = '';
 };
 
+// Función para abrir un documento externo
+const abrirDocumentoExterno = async (documento) => {
+    const extension = obtenerExtensionArchivo(documento); // Determina la extensión del archivo
+    const isImage = ['png', 'jpg', 'jpeg'].includes(extension);
+
+    const rutaCompleta = construirRutaCompleta(documento); // Construye la ruta completa
+
+    if (isImage) {
+        abrirImagen(rutaCompleta);
+    } else {
+        abrirPdf(documento.rutaDocumento, `${documento.nombreDocumento} ${convertirFechaISOaDDMMYYYY(documento.fechaDocumento)}.pdf`);
+    }
+};
+
+// Función para obtener la extensión del archivo
+const obtenerExtensionArchivo = (documento) => {
+    const nombreArchivo = `${documento.nombreDocumento} ${convertirFechaISOaDDMMYYYY(documento.fechaDocumento)}${documento.extension}`;
+    const archivo = documento.rutaDocumento.includes('.') ? documento.rutaDocumento.split('/').pop() : nombreArchivo;
+    return archivo.split('.').pop().toLowerCase();
+};
+
+// Función para construir la ruta completa
+const construirRutaCompleta = (documento) => {
+    const nombreArchivo = `${documento.nombreDocumento} ${convertirFechaISOaDDMMYYYY(documento.fechaDocumento)}${documento.extension}`;
+    if (documento.rutaDocumento.endsWith(nombreArchivo)) {
+        return `${BASE_URL}/${documento.rutaDocumento}`; // Ruta ya incluye el nombre del archivo
+    }
+    return `${BASE_URL}/${documento.rutaDocumento}/${nombreArchivo}`; // Agrega el nombre del archivo
+};
+
+// Estado para el visor de imágenes
+const showImageViewer = ref(false);
+const imageUrl = ref('');
+
+// Función para abrir el visor de imágenes
+const abrirImagen = (rutaCompleta) => {
+    imageUrl.value = `${rutaCompleta}`;
+    showImageViewer.value = true;
+};
+
+// Función para cerrar el visor de imágenes
+const cerrarImagen = () => {
+    showImageViewer.value = false;
+    imageUrl.value = '';
+};
+
 defineProps({
     documentoId: {
         type: String,
@@ -306,9 +352,7 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
             </div>
 
             <div v-if="typeof documentoExterno === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full"
-                @click="abrirPdf(
-                    `${documentoExterno.rutaDocumento}`,
-                    `${documentoExterno.nombreDocumento} ${convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento)}.pdf`)">
+                @click="abrirDocumentoExterno(documentoExterno)">
                 <div class="min-w-32 sm:min-w-44">
                     <p class="leading-5 text-lg sm:text-xl font-medium">{{ documentoExterno.nombreDocumento }}</p>
                     <p class="leading-5 text-sm sm:text-base text-gray-500">{{
@@ -441,17 +485,17 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
             }" :key="key">
                 <button v-if="documento && documento.rutaDocumento" @click="descargarArchivo(documento, key)"
                     type="button"
-                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-10">
+                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-5">
                     <i class="fa-solid fa-download fa-lg"></i>
                 </button>
                 <button v-if="documento && documento.rutaPDF" @click="descargarArchivo(documento, key)" type="button"
-                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-10">
+                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-5">
                     <i class="fa-solid fa-download fa-lg"></i>
                 </button>
             </template>
 
             <button v-if="documentoTipo === 'documentoExterno'" type="button"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10"
+                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5"
                 @click="() => {
                     documentos.fetchDocumentById(documentoTipo, trabajadores.currentTrabajador._id, documentoExterno._id);
                     $emit('abrirModalUpdate');
@@ -459,12 +503,12 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
             </button>
             <button v-else type="button" @click="editarDocumento(documentoId, documentoTipo)"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
+                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5">
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
             </button>
 
             <button type="button" @click="$emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo)"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-10">
+                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5">
                 <i class="fa-solid fa-trash-can fa-lg"></i>
             </button>
 
@@ -487,6 +531,26 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
         <div :style="{ width: '90%', height: '90%' }" class="bg-white rounded shadow-lg relative">
             <VPdfViewer :src="pdfUrl" :initialThumbnails-visible="true" :initialScale="2" locale="customLang"
                 :localization="localization" />
+        </div>
+    </div>
+
+    <!-- Visor de Imágenes -->
+    <div v-if="showImageViewer"
+        class="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-75 flex justify-center items-center z-50"
+        @click.self="cerrarImagen">
+        <!-- Botón para cerrar -->
+        <div class="absolute top-2 right-2">
+            <button class="bg-red-600 text-white text-sm px-4 py-2 rounded shadow-lg hover:bg-red-500 transition"
+                @click="cerrarImagen">
+                Cerrar
+            </button>
+        </div>
+
+        <!-- Contenedor de la imagen -->
+        <div class="relative bg-white rounded shadow-lg">
+            <h1 class="text-2xl text-center text-gray-800 p-2">Documento Externo</h1>
+            <hr>
+            <img :src="imageUrl" alt="Vista previa del documento" class="max-w-full max-h-screen rounded" />
         </div>
     </div>
 
