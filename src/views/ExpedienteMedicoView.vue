@@ -30,7 +30,6 @@ const selectedDocumentName = ref<string>(''); // Valor inicial como cadena vací
 const selectedDocumentType = ref<string | null>(null); // Tipo del documento seleccionado
 const selectedRoutes = ref<string[]>([]);
 
-
 const toggleDocumentoExternoModal = () => {
   showDocumentoExternoModal.value = !showDocumentoExternoModal.value;
 };
@@ -117,6 +116,26 @@ const navigateTo = (routeName, params) => {
   documentos.currentDocument = null;
 };
 
+const documentOrder = {
+    'Aptitud': 1,
+    'Historia Clinica': 2,
+    'Exploracion Fisica': 3,
+    'Examen Vista': 4,
+    'Antidoping': 5,
+    'Certificado': 6,
+    'Documento Externo': 7,
+};
+
+const getDocumentType = (route) => {
+    if (route.includes('Aptitud')) return 'Aptitud';
+    if (route.includes('Historia Clinica')) return 'Historia Clinica';
+    if (route.includes('Exploracion Fisica')) return 'Exploracion Fisica';
+    if (route.includes('Examen Vista')) return 'Examen Vista';
+    if (route.includes('Antidoping')) return 'Antidoping';
+    if (route.includes('Certificado')) return 'Certificado';
+    return 'Documento Externo'; // Para cualquier otro caso
+};
+
 const toggleRouteSelection = (route: string, isSelected: boolean) => {
     if (isSelected) {
         if (!selectedRoutes.value.includes(route)) {
@@ -125,7 +144,18 @@ const toggleRouteSelection = (route: string, isSelected: boolean) => {
     } else {
         selectedRoutes.value = selectedRoutes.value.filter(r => r !== route);
     }
-    console.log('Rutas seleccionadas:', selectedRoutes.value);
+
+    // Ordenar las rutas seleccionadas
+    const orderedRoutes = selectedRoutes.value.sort((a, b) => {
+        const aType = getDocumentType(a);
+        const bType = getDocumentType(b);
+        
+        return (documentOrder[aType] || Infinity) - (documentOrder[bType] || Infinity);
+    });
+
+    // Aquí puedes enviar orderedRoutes al backend
+    // Por ejemplo:
+    // sendRoutesToBackend(orderedRoutes);
 };
 
 </script>
@@ -210,7 +240,7 @@ const toggleRouteSelection = (route: string, isSelected: boolean) => {
           <GrupoDocumentos v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
             :key="year" :documents="documentos.documentsByYear[year]" :year="year"
             @eliminarDocumento="toggleDeleteModal" @abrirModalUpdate="toggleDocumentoExternoUpdateModal"
-            :toggleRouteSelection="toggleRouteSelection"/>
+            :toggleRouteSelection="toggleRouteSelection" :selectedRoutes="selectedRoutes"/>
         </div>
         <h1 v-else
           class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700">Este

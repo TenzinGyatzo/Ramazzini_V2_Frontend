@@ -1,13 +1,14 @@
 <script setup>
 import axios from 'axios';
 import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
-import { ref } from 'vue';
+import { ref, defineProps } from 'vue';
 import { VPdfViewer, Locales, useLicense } from '@vue-pdf-viewer/viewer';
 import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
+import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento } from '@/helpers/rutas.ts';
 
 const router = useRouter();
 const empresas = useEmpresasStore();
@@ -49,39 +50,6 @@ const descargarArchivo = async (documento, tipoDocumento) => {
         console.error('Error al descargar el archivo:', error);
         alert('Ocurrió un error al intentar descargar el archivo.');
     }
-};
-
-const obtenerRutaDocumento = (documento, tipoDocumento) => {
-    if (tipoDocumento === 'Documento Externo') {
-        return documento.rutaDocumento || null;
-    }
-    return documento.rutaPDF || null;
-};
-
-const obtenerFechaDocumento = (documento) => {
-    const camposFecha = [
-        'fechaAntidoping',
-        'fechaAptitudPuesto',
-        'fechaCertificado',
-        'fechaExamenVista',
-        'fechaExploracionFisica',
-        'fechaHistoriaClinica',
-        'fechaDocumento',
-    ];
-
-    for (const campo of camposFecha) {
-        if (documento[campo]) {
-            return convertirFechaISOaDDMMYYYY(documento[campo]);
-        }
-    }
-    return null;
-};
-
-const obtenerNombreArchivo = (documento, tipoDocumento, fecha) => {
-    if (tipoDocumento === 'Documento Externo') {
-        return `${documento.nombreDocumento || 'Documento'} ${fecha}.pdf`;
-    }
-    return `${tipoDocumento} ${fecha}.pdf`;
 };
 
 const descargarYGuardarArchivo = async (ruta, nombreArchivo) => {
@@ -263,22 +231,31 @@ const cerrarImagen = () => {
     imageUrl.value = '';
 };
 
-const handleCheckboxChange = (event) => {
+const handleCheckboxChange = (event, documento, tipoDocumento) => {
     const isChecked = event.target.checked;
-    const ruta = obtenerRutaDocumento(); // Define cómo obtener la ruta del documento
+    const rutaBase = obtenerRutaDocumento(documento, tipoDocumento); // Define cómo obtener la ruta del documento
+
+    const fecha = obtenerFechaDocumento(documento) || 'SinFecha';
+    const nombreArchivo = obtenerNombreArchivo(documento, tipoDocumento, fecha);
+
+    const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
 
     if (ruta) {
-        toggleRouteSelection(ruta, isChecked);
+        props.toggleRouteSelection(ruta, isChecked);
     }
 };
 
-defineProps({
+const props = defineProps({
     documentoId: {
         type: String,
         required: true,
     },
     documentoTipo: {
         type: String,
+        required: true,
+    },
+    isSelected: {
+        type: Boolean,
         required: true,
     },
     toggleRouteSelection: {
@@ -291,7 +268,7 @@ defineProps({
     documentoExterno: [Object, String],
     examenVista: [Object, String],
     exploracionFisica: [Object, String],
-    historiaClinica: [Object, String]
+    historiaClinica: [Object, String],
 });
 
 defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
@@ -302,184 +279,227 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
     <div
         class="ring-1 ring-gray-200 border-t-0 bg-white hover:bg-gray-50 shadow-lg flex justify-between items-center p-2 transition-transform duration-300 ease-in-out cursor-pointer">
         <div class="flex items-center">
-            <div class="mx-2">
-                <input
-                    class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
-                    type="checkbox" @change="(event) => handleCheckboxChange(event)">
-            </div>
-            <div v-if="typeof antidoping === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
-                `${antidoping.rutaPDF}`,
-                `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`)">
-                <div class="min-w-32 sm:min-w-44">
-                    <p class="leading-5 text-lg sm:text-xl font-medium">Antidoping</p>
-                    <p class="leading-5 text-sm sm:text-base text-gray-500">{{
-                        convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping) }}</p>
+            <div v-if="typeof antidoping === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+                <div class="ml-1">
+                    <input
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        @change="(event) => handleCheckboxChange(event, antidoping, 'Antidoping')">
                 </div>
-                <div class="flex gap-2 md-lg:block hidden">
-                    <div class="w-72">
-                        <p class="leading-5 text-sm px-1">Resultados:</p>
-                        <p v-if="antidoping.marihuana === 'Positivo' || antidoping.cocaina === 'Positivo' || antidoping.anfetaminas === 'Positivo' || antidoping.metanfetaminas === 'Positivo' || antidoping.opiaceos === 'Positivo'"
-                            class="leading-5 font-semibold text-red-500 px-1">Positivo</p>
-                        <p v-else class="leading-5 font-semibold text-gray-800 px-1"> Negativo a cinco parámetros</p>
+                <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
+                    `${antidoping.rutaPDF}`,
+                    `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`)">
+                    <div class="min-w-32 sm:min-w-44">
+                        <p class="leading-5 text-lg sm:text-xl font-medium">Antidoping</p>
+                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                            convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping) }}</p>
+                    </div>
+                    <div class="flex gap-2 md-lg:block hidden">
+                        <div class="w-72">
+                            <p class="leading-5 text-sm px-1">Resultados:</p>
+                            <p v-if="antidoping.marihuana === 'Positivo' || antidoping.cocaina === 'Positivo' || antidoping.anfetaminas === 'Positivo' || antidoping.metanfetaminas === 'Positivo' || antidoping.opiaceos === 'Positivo'"
+                                class="leading-5 font-semibold text-red-500 px-1">Positivo</p>
+                            <p v-else class="leading-5 font-semibold text-gray-800 px-1"> Negativo a cinco parámetros</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div v-if="typeof aptitud === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
-                `${aptitud.rutaPDF}`,
-                `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`)">
-                <div class="min-w-32 sm:min-w-44">
-                    <p class="leading-5 text-lg sm:text-xl font-medium">Aptitud al Puesto</p>
-                    <p class="leading-5 text-sm sm:text-base text-gray-500">{{
-                        convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto) }}</p>
+            <div v-if="typeof aptitud === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+                <div class="ml-1">
+                    <input
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        @change="(event) => handleCheckboxChange(event, aptitud, 'Aptitud')">
                 </div>
-                <div class="flex gap-2 md-lg:block hidden">
-                    <div class="w-72">
-                        <p class="leading-5 text-sm px-1">Resultado:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1"
-                            :class="aptitud.aptitudPuesto === 'No Apto' ? 'text-red-500' : 'text-gray-800'">{{
-                                aptitud.aptitudPuesto }}</p>
+                <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
+                    `${aptitud.rutaPDF}`,
+                    `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`)">
+                    <div class="min-w-32 sm:min-w-44">
+                        <p class="leading-5 text-lg sm:text-xl font-medium">Aptitud al Puesto</p>
+                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                            convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto) }}</p>
+                    </div>
+                    <div class="flex gap-2 md-lg:block hidden">
+                        <div class="w-72">
+                            <p class="leading-5 text-sm px-1">Resultado:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1"
+                                :class="aptitud.aptitudPuesto === 'No Apto' ? 'text-red-500' : 'text-gray-800'">{{
+                                    aptitud.aptitudPuesto }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div v-if="typeof certificado === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
-                `${certificado.rutaPDF}`,
-                `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`)">
-                <div class="min-w-32 sm:min-w-44">
-                    <p class="leading-5 text-lg sm:text-xl font-medium">Certificado</p>
-                    <p class="leading-5 text-sm sm:text-base text-gray-500">{{
-                        convertirFechaISOaDDMMYYYY(certificado.fechaCertificado) }}</p>
+            <div v-if="typeof certificado === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+                <div class="ml-1">
+                    <input
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        @change="(event) => handleCheckboxChange(event, certificado, 'Certificado')">
                 </div>
-                <div class="flex gap-2 md-lg:block hidden">
-                    <div class="w-72">
-                        <p class="leading-5 text-sm px-1">Impedimentos Físicos:</p>
-                        <p class="leading-5 font-semibold px-1"
-                            :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'text-gray-800' : 'text-red-500'">
-                            {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'No presenta impedimentos físicos' :
-                            certificado.impedimentosFisicos }}
-                        </p>
+                <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
+                    `${certificado.rutaPDF}`,
+                    `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`)">
+                    <div class="min-w-32 sm:min-w-44">
+                        <p class="leading-5 text-lg sm:text-xl font-medium">Certificado</p>
+                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                            convertirFechaISOaDDMMYYYY(certificado.fechaCertificado) }}</p>
+                    </div>
+                    <div class="flex gap-2 md-lg:block hidden">
+                        <div class="w-72">
+                            <p class="leading-5 text-sm px-1">Impedimentos Físicos:</p>
+                            <p class="leading-5 font-semibold px-1"
+                                :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'text-gray-800' : 'text-red-500'">
+                                {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'No presenta impedimentos físicos' :
+                                certificado.impedimentosFisicos }}
+                            </p>
 
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div v-if="typeof documentoExterno === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full"
-                @click="abrirDocumentoExterno(documentoExterno)">
-                <div class="min-w-32 sm:min-w-44">
-                    <p class="leading-5 text-lg sm:text-xl font-medium">{{ documentoExterno.nombreDocumento }}</p>
-                    <p class="leading-5 text-sm sm:text-base text-gray-500">{{
-                        convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento) }}</p>
+            <div v-if="typeof documentoExterno === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+                <div class="ml-1">
+                    <input
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        @change="(event) => handleCheckboxChange(event, documentoExterno, 'Documento Externo')">
                 </div>
-                <div class="flex gap-2 md-lg:block hidden">
-                    <div class="min-w-72">
-                        <p class="leading-5 text-sm px-1">Notas:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1">
-                            {{ documentoExterno.notasDocumento.trim() !== '' && documentoExterno.notasDocumento.trim()
-                                !== 'undefined' ?
-                                documentoExterno.notasDocumento : 'Presionar editar para agregar notas &nbsp&nbsp --->'
-                            }}
-                        </p>
+                <div class="my-1 mx-1 flex gap-2 items-center h-full"
+                    @click="abrirDocumentoExterno(documentoExterno)">
+                    <div class="min-w-32 sm:min-w-44">
+                        <p class="leading-5 text-lg sm:text-xl font-medium">{{ documentoExterno.nombreDocumento }}</p>
+                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                            convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento) }}</p>
+                    </div>
+                    <div class="flex gap-2 md-lg:block hidden">
+                        <div class="min-w-72">
+                            <p class="leading-5 text-sm px-1">Notas:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1">
+                                {{ documentoExterno.notasDocumento.trim() !== '' && documentoExterno.notasDocumento.trim()
+                                    !== 'undefined' ?
+                                    documentoExterno.notasDocumento : 'Presionar editar para agregar notas &nbsp&nbsp --->'
+                                }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div v-if="typeof examenVista === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+                <div class="ml-1">
+                    <input
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        @change="(event) => handleCheckboxChange(event, examenVista, 'Examen Vista')">
+                </div>
+                <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
+                    `${examenVista.rutaPDF}`,
+                    `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`)">
+                    <div class="min-w-30 sm:min-w-44">
+                        <p class="leading-5 text-lg sm:text-xl font-medium">Examen de la Vista</p>
+                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                            convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista) }}</p>
+                    </div>
+                    <div v-if="!examenVista.ojoIzquierdoLejanaConCorreccion && !examenVista.ojoDerechoLejanaConCorreccion"
+                        class="flex gap-2 md-lg:block hidden">
+                        <div class="w-72 md-lg:block hidden">
+                            <p class="leading-5 text-sm px-1">Resultados:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1"
+                                :class="examenVista.sinCorreccionLejanaInterpretacion === 'Visión moderadamente reducida' || examenVista.sinCorreccionLejanaInterpretacion === 'Visión significativamente reducida' || examenVista.sinCorreccionLejanaInterpretacion === 'Visión muy reducida' ? 'text-red-500' : 'text-gray-800'">
+                                {{ examenVista.sinCorreccionLejanaInterpretacion }}</p>
+                        </div>
+                    </div>
+                    <div v-else class="flex gap-2">
+                        <div class="w-72 md-lg:block hidden">
+                            <p class="leading-5 text-sm px-1">Resultados:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1">{{
+                                examenVista.conCorreccionLejanaInterpretacion }} corregida</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 2xl:block hidden">
+                        <div class="w-72">
+                            <p class="leading-5 text-sm px-1">Requiere Lentes:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1"
+                                :class="examenVista.requiereLentesUsoGeneral === 'Si' ? 'text-red-500' : 'text-gray-800'">{{
+                                    examenVista.requiereLentesUsoGeneral }}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 xl:block hidden">
+                        <div class="w-72">
+                            <p class="leading-5 text-sm px-1">Ishihara:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1"
+                                :class="examenVista.porcentajeIshihara < 80 ? 'text-red-500' : 'text-gray-800'">{{
+                                    examenVista.porcentajeIshihara }}% - {{ examenVista.interpretacionIshihara }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div v-if="typeof examenVista === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
-                `${examenVista.rutaPDF}`,
-                `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`)">
-                <div class="min-w-30 sm:min-w-44">
-                    <p class="leading-5 text-lg sm:text-xl font-medium">Examen de la Vista</p>
-                    <p class="leading-5 text-sm sm:text-base text-gray-500">{{
-                        convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista) }}</p>
+            <div v-if="typeof exploracionFisica === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+                <div class="ml-1">
+                    <input
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        @change="(event) => handleCheckboxChange(event, exploracionFisica, 'Exploracion Fisica')">
                 </div>
-                <div v-if="!examenVista.ojoIzquierdoLejanaConCorreccion && !examenVista.ojoDerechoLejanaConCorreccion"
-                    class="flex gap-2 md-lg:block hidden">
-                    <div class="w-72 md-lg:block hidden">
-                        <p class="leading-5 text-sm px-1">Resultados:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1"
-                            :class="examenVista.sinCorreccionLejanaInterpretacion === 'Visión moderadamente reducida' || examenVista.sinCorreccionLejanaInterpretacion === 'Visión significativamente reducida' || examenVista.sinCorreccionLejanaInterpretacion === 'Visión muy reducida' ? 'text-red-500' : 'text-gray-800'">
-                            {{ examenVista.sinCorreccionLejanaInterpretacion }}</p>
+                <div class="my-1 mx-1 flex gap-2 items-center h-full"
+                    @click="abrirPdf(`${exploracionFisica.rutaPDF}`, `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`)">
+                    <div class="min-w-30 sm:min-w-44">
+                        <p class="leading-5 text-lg sm:text-xl font-medium">Exploración Física</p>
+                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                            convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica) }}</p>
                     </div>
-                </div>
-                <div v-else class="flex gap-2">
-                    <div class="w-72 md-lg:block hidden">
-                        <p class="leading-5 text-sm px-1">Resultados:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1">{{
-                            examenVista.conCorreccionLejanaInterpretacion }} corregida</p>
-                    </div>
-                </div>
-                <div class="flex gap-2 2xl:block hidden">
-                    <div class="w-72">
-                        <p class="leading-5 text-sm px-1">Requiere Lentes:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1"
-                            :class="examenVista.requiereLentesUsoGeneral === 'Si' ? 'text-red-500' : 'text-gray-800'">{{
-                                examenVista.requiereLentesUsoGeneral }}</p>
-                    </div>
-                </div>
-                <div class="flex gap-2 xl:block hidden">
-                    <div class="w-72">
-                        <p class="leading-5 text-sm px-1">Ishihara:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1"
-                            :class="examenVista.porcentajeIshihara < 80 ? 'text-red-500' : 'text-gray-800'">{{
-                                examenVista.porcentajeIshihara }}% - {{ examenVista.interpretacionIshihara }}</p>
+                    <div class="flex gap-2">
+                        <div class="w-72 xl:block hidden">
+                            <p class="leading-5 text-sm px-1">Categoría IMC:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1"
+                                :class="exploracionFisica.indiceMasaCorporal >= 30 ? 'text-red-500' : 'text-gray-800'">{{
+                                    exploracionFisica.indiceMasaCorporal }} - {{ exploracionFisica.categoriaIMC }}</p>
+                        </div>
+                        <div class="w-72 2xl:block hidden">
+                            <p class="leading-5 text-sm px-1">Tension Arterial:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1"
+                                :class="exploracionFisica.categoriaTensionArterial === 'Hipertensión moderada' || exploracionFisica.categoriaTensionArterial === 'Hipertensión severa' ? 'text-red-500' : 'text-gray-800'">
+                                {{ exploracionFisica.categoriaTensionArterial }}</p>
+                        </div>
+                        <div class="w-72 md-lg:block hidden">
+                            <p class="leading-5 text-sm px-1">Resumen:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1"
+                                :class="exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' || exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'text-gray-800' : 'text-red-500'">
+                                {{ exploracionFisica.resumenExploracionFisica }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div v-if="typeof exploracionFisica === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full"
-                @click="abrirPdf(`${exploracionFisica.rutaPDF}`, `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`)">
-                <div class="min-w-30 sm:min-w-44">
-                    <p class="leading-5 text-lg sm:text-xl font-medium">Exploración Física</p>
-                    <p class="leading-5 text-sm sm:text-base text-gray-500">{{
-                        convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica) }}</p>
+            <div v-if="typeof historiaClinica === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer">
+                <div class="ml-1">
+                    <input
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        @change="(event) => handleCheckboxChange(event, historiaClinica, 'Historia Clinica')">
                 </div>
-                <div class="flex gap-2">
-                    <div class="w-72 xl:block hidden">
-                        <p class="leading-5 text-sm px-1">Categoría IMC:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1"
-                            :class="exploracionFisica.indiceMasaCorporal >= 30 ? 'text-red-500' : 'text-gray-800'">{{
-                                exploracionFisica.indiceMasaCorporal }} - {{ exploracionFisica.categoriaIMC }}</p>
+                <div class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer" @click="abrirPdf(
+                        `${historiaClinica.rutaPDF}`,
+                        `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`)">
+                    <div class="min-w-30 sm:min-w-44">
+                        <p class="leading-5 text-lg sm:text-xl font-medium">Historia Clinica</p>
+                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                            convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica) }}</p>
                     </div>
-                    <div class="w-72 2xl:block hidden">
-                        <p class="leading-5 text-sm px-1">Tension Arterial:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1"
-                            :class="exploracionFisica.categoriaTensionArterial === 'Hipertensión moderada' || exploracionFisica.categoriaTensionArterial === 'Hipertensión severa' ? 'text-red-500' : 'text-gray-800'">
-                            {{ exploracionFisica.categoriaTensionArterial }}</p>
-                    </div>
-                    <div class="w-72 md-lg:block hidden">
-                        <p class="leading-5 text-sm px-1">Resumen:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1"
-                            :class="exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' || exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'text-gray-800' : 'text-red-500'">
-                            {{ exploracionFisica.resumenExploracionFisica }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div v-if="typeof historiaClinica === 'object'"
-                class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer" @click="abrirPdf(
-                    `${historiaClinica.rutaPDF}`,
-                    `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`)">
-                <div class="min-w-30 sm:min-w-44">
-                    <p class="leading-5 text-lg sm:text-xl font-medium">Historia Clinica</p>
-                    <p class="leading-5 text-sm sm:text-base text-gray-500">{{
-                        convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica) }}</p>
-                </div>
-                <div class="flex gap-2">
-                    <div class="w-72 xl:block hidden">
-                        <p class="leading-5 text-sm px-1">Evaluacion:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1">{{ historiaClinica.motivoExamen }}</p>
-                    </div>
-                    <div class="w-72 2xl:block hidden">
-                        <p class="leading-5 text-sm px-1">Accidente Laboral:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1"
-                            :class="historiaClinica.accidenteLaboralEspecificar !== 'Niega haber sufrido accidentes' ? 'text-red-500' : 'text-gray-800'">
-                            {{ historiaClinica.accidenteLaboralEspecificar }}</p>
-                    </div>
-                    <div class="w-72 md-lg:block hidden">
-                        <p class="leading-5 text-sm px-1">Resumen:</p>
-                        <p class="leading-5 font-semibold text-gray-800 px-1"
-                            :class="historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' || historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'text-gray-800' : 'text-red-500'">
-                            {{ historiaClinica.resumenHistoriaClinica }}</p>
+                    <div class="flex gap-2">
+                        <div class="w-72 xl:block hidden">
+                            <p class="leading-5 text-sm px-1">Evaluacion:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1">{{ historiaClinica.motivoExamen }}</p>
+                        </div>
+                        <div class="w-72 2xl:block hidden">
+                            <p class="leading-5 text-sm px-1">Accidente Laboral:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1"
+                                :class="historiaClinica.accidenteLaboralEspecificar !== 'Niega haber sufrido accidentes' ? 'text-red-500' : 'text-gray-800'">
+                                {{ historiaClinica.accidenteLaboralEspecificar }}</p>
+                        </div>
+                        <div class="w-72 md-lg:block hidden">
+                            <p class="leading-5 text-sm px-1">Resumen:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1"
+                                :class="historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' || historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'text-gray-800' : 'text-red-500'">
+                                {{ historiaClinica.resumenHistoriaClinica }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
