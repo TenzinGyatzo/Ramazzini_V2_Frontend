@@ -263,6 +263,15 @@ const cerrarImagen = () => {
     imageUrl.value = '';
 };
 
+const handleCheckboxChange = (event) => {
+    const isChecked = event.target.checked;
+    const ruta = obtenerRutaDocumento(); // Define cómo obtener la ruta del documento
+
+    if (ruta) {
+        toggleRouteSelection(ruta, isChecked);
+    }
+};
+
 defineProps({
     documentoId: {
         type: String,
@@ -270,6 +279,10 @@ defineProps({
     },
     documentoTipo: {
         type: String,
+        required: true,
+    },
+    toggleRouteSelection: {
+        type: Function,
         required: true,
     },
     antidoping: [Object, String],
@@ -292,7 +305,7 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
             <div class="mx-2">
                 <input
                     class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
-                    type="checkbox" name="" id="">
+                    type="checkbox" @change="(event) => handleCheckboxChange(event)">
             </div>
             <div v-if="typeof antidoping === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
                 `${antidoping.rutaPDF}`,

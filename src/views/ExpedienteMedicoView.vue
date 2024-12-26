@@ -28,6 +28,8 @@ const showDeleteModal = ref(false); // Controla la visibilidad del modal
 const selectedDocumentId = ref<string | null>(null); // ID del documento seleccionado
 const selectedDocumentName = ref<string>(''); // Valor inicial como cadena vacía
 const selectedDocumentType = ref<string | null>(null); // Tipo del documento seleccionado
+const selectedRoutes = ref<string[]>([]);
+
 
 const toggleDocumentoExternoModal = () => {
   showDocumentoExternoModal.value = !showDocumentoExternoModal.value;
@@ -115,6 +117,17 @@ const navigateTo = (routeName, params) => {
   documentos.currentDocument = null;
 };
 
+const toggleRouteSelection = (route: string, isSelected: boolean) => {
+    if (isSelected) {
+        if (!selectedRoutes.value.includes(route)) {
+            selectedRoutes.value.push(route);
+        }
+    } else {
+        selectedRoutes.value = selectedRoutes.value.filter(r => r !== route);
+    }
+    console.log('Rutas seleccionadas:', selectedRoutes.value);
+};
+
 </script>
 
 <template>
@@ -196,7 +209,8 @@ const navigateTo = (routeName, params) => {
           class="grid grid-cols-1 gap-6">
           <GrupoDocumentos v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
             :key="year" :documents="documentos.documentsByYear[year]" :year="year"
-            @eliminarDocumento="toggleDeleteModal" @abrirModalUpdate="toggleDocumentoExternoUpdateModal"/>
+            @eliminarDocumento="toggleDeleteModal" @abrirModalUpdate="toggleDocumentoExternoUpdateModal"
+            :toggleRouteSelection="toggleRouteSelection"/>
         </div>
         <h1 v-else
           class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700">Este

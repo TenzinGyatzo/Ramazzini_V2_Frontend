@@ -2,11 +2,22 @@
 import type { DocumentsByYear } from '@/stores/documentos';
 import DocumentoItem from './DocumentoItem.vue';
 import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
+import type { PropType } from 'vue';
 
-defineProps<{
-    documents: DocumentsByYear[string];
-    year: string;
-}>();
+defineProps({
+    documents: {
+        type: Object as PropType<DocumentsByYear[string]>,
+        required: true,
+    },
+    year: {
+        type: String as PropType<string>,
+        required: true,
+    },
+    toggleRouteSelection: {
+        type: Function as PropType<(route: string, isSelected: boolean) => void>,
+        required: true,
+    },
+});
 
 defineEmits(['abrirModalUpdate', 'eliminarDocumento']);
 </script>
@@ -28,7 +39,7 @@ defineEmits(['abrirModalUpdate', 'eliminarDocumento']);
         <!-- Aptitudes -->
         <div v-if="documents.aptitudes && documents.aptitudes.length > 0">
             <div v-for="aptitud in documents.aptitudes" :key="aptitud._id">
-                <DocumentoItem :aptitud="aptitud" :documentoId="aptitud._id" :documentoTipo="'aptitud'"
+                <DocumentoItem :aptitud="aptitud" :documentoId="aptitud._id" :documentoTipo="'aptitud'" :toggleRouteSelection="toggleRouteSelection"
                     @eliminarDocumento="$emit('eliminarDocumento', aptitud._id, convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto), 'aptitud')" />
             </div>
         </div>
@@ -37,7 +48,7 @@ defineEmits(['abrirModalUpdate', 'eliminarDocumento']);
         <div v-if="documents.historiasClinicas && documents.historiasClinicas.length > 0">
             <div v-for="historiaClinica in documents.historiasClinicas" :key="historiaClinica._id">
                 <DocumentoItem :historiaClinica="historiaClinica" :documentoId="historiaClinica._id"
-                    :documentoTipo="'historiaClinica'"
+                    :documentoTipo="'historiaClinica'" :toggleRouteSelection="toggleRouteSelection"
                     @eliminarDocumento="$emit('eliminarDocumento', historiaClinica._id, convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica), 'historiaClinica')" />
             </div>
         </div>
@@ -46,7 +57,7 @@ defineEmits(['abrirModalUpdate', 'eliminarDocumento']);
         <div v-if="documents.exploracionesFisicas && documents.exploracionesFisicas.length > 0">
             <div v-for="exploracionFisica in documents.exploracionesFisicas" :key="exploracionFisica._id">
                 <DocumentoItem :exploracionFisica="exploracionFisica" :documentoId="exploracionFisica._id"
-                    :documentoTipo="'exploracionFisica'"
+                    :documentoTipo="'exploracionFisica'" :toggleRouteSelection="toggleRouteSelection"
                     @eliminarDocumento="$emit('eliminarDocumento', exploracionFisica._id, convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica), 'exploracionFisica')" />
             </div>
         </div>
@@ -54,7 +65,7 @@ defineEmits(['abrirModalUpdate', 'eliminarDocumento']);
         <!-- Examenes de la Vista -->
         <div v-if="documents.examenesVista && documents.examenesVista.length > 0">
             <div v-for="examenVista in documents.examenesVista" :key="examenVista._id">
-                <DocumentoItem :examenVista="examenVista" :documentoId="examenVista._id" :documentoTipo="'examenVista'"
+                <DocumentoItem :examenVista="examenVista" :documentoId="examenVista._id" :documentoTipo="'examenVista'" :toggleRouteSelection="toggleRouteSelection"
                     @eliminarDocumento="$emit('eliminarDocumento', examenVista._id, convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista), 'examenVista')" />
             </div>
         </div>
@@ -62,7 +73,7 @@ defineEmits(['abrirModalUpdate', 'eliminarDocumento']);
         <!-- Antidopings -->
         <div v-if="documents.antidopings && documents.antidopings.length > 0">
             <div v-for="antidoping in documents.antidopings" :key="antidoping._id">
-                <DocumentoItem :antidoping="antidoping" :documentoId="antidoping._id" :documentoTipo="'antidoping'"
+                <DocumentoItem :antidoping="antidoping" :documentoId="antidoping._id" :documentoTipo="'antidoping'" :toggleRouteSelection="toggleRouteSelection"
                     @eliminarDocumento="$emit('eliminarDocumento', antidoping._id, convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping), 'antidoping')" />
             </div>
         </div>
@@ -70,7 +81,7 @@ defineEmits(['abrirModalUpdate', 'eliminarDocumento']);
         <!-- Certificados -->
         <div v-if="documents.certificados && documents.certificados.length > 0">
             <div v-for="certificado in documents.certificados" :key="certificado._id">
-                <DocumentoItem :certificado="certificado" :documentoId="certificado._id" :documentoTipo="'certificado'"
+                <DocumentoItem :certificado="certificado" :documentoId="certificado._id" :documentoTipo="'certificado'" :toggleRouteSelection="toggleRouteSelection"
                     @eliminarDocumento="$emit('eliminarDocumento', certificado._id, convertirFechaISOaDDMMYYYY(certificado.fechaCertificado), 'certificado')" />
             </div>
         </div>
@@ -79,7 +90,7 @@ defineEmits(['abrirModalUpdate', 'eliminarDocumento']);
         <div v-if="documents.documentosExternos && documents.documentosExternos.length > 0">
             <div v-for="documentoExterno in documents.documentosExternos" :key="documentoExterno._id">
                 <DocumentoItem :documentoExterno="documentoExterno" :documentoId="documentoExterno._id"
-                    :documentoTipo="'documentoExterno'"
+                    :documentoTipo="'documentoExterno'" :toggleRouteSelection="toggleRouteSelection"
                     @eliminarDocumento="$emit('eliminarDocumento', documentoExterno._id, convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento), 'documentoExterno')"
                     @abrirModalUpdate="$emit('abrirModalUpdate')" />
             </div>
