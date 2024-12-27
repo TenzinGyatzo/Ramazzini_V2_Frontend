@@ -27,7 +27,7 @@ const handleSubmit = async (data) => {
     updatedBy: data.updatedBy // TODO: Obtener el ID del usuario actual
   };
 
-  console.log('Centro de trabajo:', centroTrabajoData);
+  // console.log('Centro de trabajo:', centroTrabajoData);
 
   try {
     if (centrosTrabajo.currentCentroTrabajo?._id) {

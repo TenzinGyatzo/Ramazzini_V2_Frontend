@@ -54,9 +54,9 @@ onMounted(async () => {
     } catch (error) {
       console.error('Error al cargar los datos del documento:', error);
     }
-    console.log('Editando');
+    // console.log('Editando');
   } else {
-    console.log('Creando');
+    // console.log('Creando');
     formData.resetFormData(); // Limpia los datos si no hay información para cargar
   }
 

@@ -1,5 +1,11 @@
 <script setup>
 import { ref } from "vue";
+import axios from "axios";
+import { useTrabajadoresStore } from "@/stores/trabajadores";
+
+const trabajadores = useTrabajadoresStore();
+
+const today = new Date();
 
 const documentOrder = {
   Aptitud: 1,
@@ -31,7 +37,7 @@ const props = defineProps({
 
 const isVisible = ref(true);
 
-const handleClick = () => {
+const handleClick = async () => {
   // Ordenar las rutas seleccionadas
   const orderedRoutes = props.selectedRoutes.sort((a, b) => {
     const aType = getDocumentType(a);
@@ -42,11 +48,36 @@ const handleClick = () => {
     );
   });
 
-  console.log("Rutas ordenadas: ", orderedRoutes);
+  // console.log("Rutas ordenadas: ", orderedRoutes);
 
-  // Aquí puedes enviar orderedRoutes al backend
-  // Por ejemplo:
-  // sendRoutesToBackend(orderedRoutes);
+  try {
+    // Enviar las rutas ordenadas al backend
+    const response = await axios.post(
+      'http://localhost:3000/document-merger/merge',
+      { filePaths: orderedRoutes },
+      { responseType: 'blob' } // Necesario para manejar la respuesta como un archivo
+    );
+
+    // Convertir la respuesta a Blob (archivo PDF)
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+
+    // Crear un enlace de descarga para el archivo PDF
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${trabajadores.currentTrabajador.nombre} ${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+
+    // Limpiar el enlace temporal
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+
+    // console.log('PDF descargado exitosamente');
+  } catch (error) {
+    console.error('Error al enviar las rutas al backend:', error);
+    alert('Hubo un error al fusionar los documentos. Intente nuevamente.');
+  }
 };
 </script>
 

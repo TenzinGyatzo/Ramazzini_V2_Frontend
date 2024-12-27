@@ -38,7 +38,6 @@ export default {
     },
 
     uploadExternalDocument(trabajadorId: string, formData: FormData) {
-        console.log('URL de la solicitud:', `/expedientes/${trabajadorId}/documentos/documentoExterno/subir`);
         return api.post(`/expedientes/${trabajadorId}/documentos/documentoExterno/subir`, formData);
     },
 

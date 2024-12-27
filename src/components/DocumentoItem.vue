@@ -1,7 +1,7 @@
 <script setup>
 import axios from 'axios';
 import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
-import { ref, defineProps } from 'vue';
+import { ref } from 'vue';
 import { VPdfViewer, Locales, useLicense } from '@vue-pdf-viewer/viewer';
 import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';

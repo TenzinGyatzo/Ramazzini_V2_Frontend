@@ -9,7 +9,7 @@ export const obtenerRutaDocumento = (documento, tipoDocumento) => {
 
 export const obtenerNombreArchivo = (documento, tipoDocumento, fecha) => {
     if (tipoDocumento === 'Documento Externo') {
-        return `${documento.nombreDocumento || 'Documento'} ${fecha}.pdf`;
+        return `${documento.nombreDocumento || 'Documento'} ${fecha}${documento.extension}`;
     }
     return `${tipoDocumento} ${fecha}.pdf`;
 };
