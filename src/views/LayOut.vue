@@ -23,8 +23,6 @@ const route = useRoute();
       </a>
     </Transition>
 
-
-
     <Transition appear mode="out-in" name="slide-up">
       <div v-if="route.path === '/'" class="flex flex-col items-center">
         <h1
@@ -69,6 +67,19 @@ const route = useRoute();
 .slide-up-leave-to {
   opacity: 0;
   transform: translateY(-30px);
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.5s ease-out;
+}
+
+.slide-down-enter-from {
+  transform: translateY(-130px);
+}
+
+.slide-down-leave-to {
+  transform: translateY(-130px);
 }
 
 .fade-enter-from,

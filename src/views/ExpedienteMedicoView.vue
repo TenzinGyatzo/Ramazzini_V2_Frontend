@@ -12,6 +12,7 @@ import ModalCargaDocumentoExterno from '@/components/ModalCargaDocumentoExterno.
 import ModalUpdateDocumentoExterno from '@/components/ModalUpdateDocumentoExterno.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
 import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
+import SlidingButtonPanel from '@/components/SlidingButtonPanel.vue';
 import { calcularEdad } from '@/helpers/dates';
 
 const route = useRoute();
@@ -116,26 +117,6 @@ const navigateTo = (routeName, params) => {
   documentos.currentDocument = null;
 };
 
-const documentOrder = {
-    'Aptitud': 1,
-    'Historia Clinica': 2,
-    'Exploracion Fisica': 3,
-    'Examen Vista': 4,
-    'Antidoping': 5,
-    'Certificado': 6,
-    'Documento Externo': 7,
-};
-
-const getDocumentType = (route) => {
-    if (route.includes('Aptitud')) return 'Aptitud';
-    if (route.includes('Historia Clinica')) return 'Historia Clinica';
-    if (route.includes('Exploracion Fisica')) return 'Exploracion Fisica';
-    if (route.includes('Examen Vista')) return 'Examen Vista';
-    if (route.includes('Antidoping')) return 'Antidoping';
-    if (route.includes('Certificado')) return 'Certificado';
-    return 'Documento Externo'; // Para cualquier otro caso
-};
-
 const toggleRouteSelection = (route: string, isSelected: boolean) => {
     if (isSelected) {
         if (!selectedRoutes.value.includes(route)) {
@@ -144,23 +125,17 @@ const toggleRouteSelection = (route: string, isSelected: boolean) => {
     } else {
         selectedRoutes.value = selectedRoutes.value.filter(r => r !== route);
     }
-
-    // Ordenar las rutas seleccionadas
-    const orderedRoutes = selectedRoutes.value.sort((a, b) => {
-        const aType = getDocumentType(a);
-        const bType = getDocumentType(b);
-        
-        return (documentOrder[aType] || Infinity) - (documentOrder[bType] || Infinity);
-    });
-
-    // Aquí puedes enviar orderedRoutes al backend
-    // Por ejemplo:
-    // sendRoutesToBackend(orderedRoutes);
 };
 
 </script>
 
 <template>
+   <div class="relative flex justify-center md:justify-start">
+    <Transition appear name="slide-down">
+      <SlidingButtonPanel v-if="selectedRoutes.length >= 1" 
+        :selectedRoutes="selectedRoutes"/>
+    </Transition>
+  </div>
   <Transition appear name="fade">
     <ModalCargaDocumentoExterno v-if="showDocumentoExternoModal"
       @closeDocumentoExternoModal="toggleDocumentoExternoModal" @updateData="fetchData" />
