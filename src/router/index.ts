@@ -1,13 +1,27 @@
 import { createRouter, createWebHistory } from "vue-router";
 import LayOut from "../views/LayOut.vue";
 
+const isAuthenticated = () => !!localStorage.getItem('auth');
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/LoginView.vue'),
+    },
+    {
       path: "/",
       name: "inicio",
       component: LayOut,
+      beforeEnter: (to, from, next) => {
+        if (isAuthenticated()) {
+          next();
+        } else {
+          next('/login');
+        }
+      },
       children: [
         {
           path: "empresas",
@@ -42,6 +56,15 @@ const router = createRouter({
       ],
     },
   ],
+});
+
+// Configuración del guardia global
+router.beforeEach((to, from, next) => {
+  if (to.name !== 'login' && !isAuthenticated()) {
+    next('/login'); // Redirige al login si no está autenticado
+  } else {
+    next(); // Permite continuar si está autenticado
+  }
 });
 
 export default router;
