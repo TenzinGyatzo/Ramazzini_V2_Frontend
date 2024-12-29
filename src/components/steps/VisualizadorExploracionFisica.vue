@@ -192,7 +192,7 @@ const goToStep = (stepNumber) => {
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
-            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 text-left">-</th>
+            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
             <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
           </tr>
         </thead>
@@ -237,7 +237,7 @@ const goToStep = (stepNumber) => {
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
-            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 text-left">-</th>
+            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
             <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
           </tr>
         </thead>
@@ -277,7 +277,7 @@ const goToStep = (stepNumber) => {
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
-            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 text-left">-</th>
+            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
             <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
           </tr>
         </thead>
@@ -297,7 +297,7 @@ const goToStep = (stepNumber) => {
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
-            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 text-left">-</th>
+            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
             <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
           </tr>
         </thead>
@@ -317,7 +317,7 @@ const goToStep = (stepNumber) => {
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
-            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 text-left">-</th>
+            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
             <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
           </tr>
         </thead>
@@ -357,7 +357,7 @@ const goToStep = (stepNumber) => {
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
-            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 text-left">-</th>
+            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
             <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
           </tr>
         </thead>
@@ -382,7 +382,7 @@ const goToStep = (stepNumber) => {
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
-            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 text-left">-</th>
+            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
             <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
           </tr>
         </thead>
@@ -412,7 +412,7 @@ const goToStep = (stepNumber) => {
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
-            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 text-left">-</th>
+            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
             <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
           </tr>
         </thead>

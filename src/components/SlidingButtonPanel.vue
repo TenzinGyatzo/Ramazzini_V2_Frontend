@@ -53,7 +53,7 @@ const handleClick = async () => {
   try {
     // Enviar las rutas ordenadas al backend
     const response = await axios.post(
-      'http://localhost:3000/document-merger/merge',
+      `${import.meta.env.VITE_API_URL}/document-merger/merge`,
       { filePaths: orderedRoutes },
       { responseType: 'blob' } // Necesario para manejar la respuesta como un archivo
     );

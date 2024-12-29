@@ -334,7 +334,7 @@ export default {
       // Convertir todas las fechas en los datos al formato ISO
       datosLimpios = convertirFechasAISO(datosLimpios);
 
-      console.log('Datos limpios para enviar al backend:', datosLimpios);
+      // console.log('Datos limpios para enviar al backend:', datosLimpios);
 
       try {
         let response;
@@ -363,10 +363,10 @@ export default {
         const documentId = response.data._id;
 
         // Llamada al backend para generar el informe
-        const apiEndpoint = `http://localhost:3000/informes/${documentos.currentTypeOfDocument}/${empresas.currentEmpresaId}/${trabajadores.currentTrabajadorId}/${documentId}`;
+        const apiEndpoint = `${import.meta.env.VITE_API_URL}/informes/${documentos.currentTypeOfDocument}/${empresas.currentEmpresaId}/${trabajadores.currentTrabajadorId}/${documentId}`;
 
         const informeResponse = await axios.get(apiEndpoint);
-        console.log("Respuesta del backend para el informe:", informeResponse.data);
+       // console.log("Respuesta del backend para el informe:", informeResponse.data);
 
       } catch (error) {
         console.error('Error en el proceso de creación o generación del informe:', error);

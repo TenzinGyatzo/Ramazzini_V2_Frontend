@@ -34,19 +34,6 @@ onMounted(() => {
   }
 });
 
-/* onBeforeUnmount(() => {
-  if (dataTableInstance) {
-    try {
-      dataTableInstance.destroy(); // Asegúrate de destruir la instancia antes de que Vue elimine el DOM
-    } catch (error) {
-      console.error("Error destruyendo la instancia de DataTable:", error);
-    } finally {
-      dataTableInstance = null; // Limpia la referencia
-    }
-  }
-}); */
-
-
 </script>
 
 <template>

@@ -30,7 +30,7 @@ const editarDocumento = (documentoId, documentoTipo) => {
 };
 
 // URL base donde se almacenan los documentos
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 // Función dinámica para descargar un archivo basado en el documento
 const descargarArchivo = async (documento, tipoDocumento) => {
@@ -72,7 +72,7 @@ const descargarYGuardarArchivo = async (ruta, nombreArchivo) => {
 };
 
 // If the value is empty or incorrect, the watermark will remain.
-const licenseKey = import.meta.env.VITE_VPV_LICENSE ?? '102d64ec-006b-4fd6-8850-a00a050703ad';
+const licenseKey = import.meta.env.VITE_VPV_LICENSE;
 
 // useLicense must be used here to ensure proper license 
 // initialization before the component renders.
@@ -81,7 +81,6 @@ useLicense({ licenseKey });
 // Estados para mostrar el visor y la URL del PDF
 const showPdfViewer = ref(false);
 const pdfUrl = ref('');
-const customLang = ref("es_MX");
 
 const localization = {
     customLang: {
@@ -160,7 +159,7 @@ const abrirPdf = async (ruta, nombrePDF) => {
     const sanitizedNombrePDF = nombrePDF.replace(/\/+/g, '/'); // Reemplaza múltiples '/' por una sola
 
     // Generar la URL de forma explícita usando `new URL`
-    const fullPath = new URL(`${sanitizedRuta}/${sanitizedNombrePDF}`, 'http://localhost:3000');
+    const fullPath = new URL(`${sanitizedRuta}/${sanitizedNombrePDF}`, import.meta.env.VITE_API_URL);
 
     try {
         const response = await axios.get(fullPath.href, { responseType: 'blob' }); // Solicitud GET

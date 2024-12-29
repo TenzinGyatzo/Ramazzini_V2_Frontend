@@ -20,7 +20,6 @@ export const useUserStore = defineStore("user", () => {
     onMounted(async () => {
         try {
             const { data } = await AuthAPI.auth();
-            console.log(data);
             user.value = data; // Asegúrate de que `data` coincide con el tipo User
         } catch (error) {
             console.error(error);
