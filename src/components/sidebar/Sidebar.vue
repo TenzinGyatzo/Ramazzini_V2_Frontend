@@ -85,7 +85,7 @@ const documentTypeLabels = {
       </div>
     </h1>
     <Transition appear name="enter-left-exit-bounce">
-      <SidebarLink v-if="route.path !== '/'" to="/empresas" icon="fas fa-industry" :class="{ 'fade-in': isMounted }"
+      <SidebarLink v-if="route.path !== '/' && route.path !== '/login'" to="/empresas" icon="fas fa-industry" :class="{ 'fade-in': isMounted }"
         @click.stop>
         <p>Empresas</p>
         <p class="text-sm">Ver todas las empresas</p>

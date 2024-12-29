@@ -11,12 +11,11 @@ const errorMessage = ref("");
 
 const handleLogin = async () => {
   try {
-    console.log(username.value, password.value);
     const response = await AuthAPI.login(username.value, password.value);
-    console.log(response.data);
+    const token = response.data.token;
     if (response.status === 200 || response.status === 201) {
       // Manejar autenticación y redirección
-      localStorage.setItem("auth", "true");
+      localStorage.setItem("AUTH_TOKEN", token);
       router.push("/");
     }
   } catch (error) {

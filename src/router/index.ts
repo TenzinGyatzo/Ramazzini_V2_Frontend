@@ -1,27 +1,21 @@
 import { createRouter, createWebHistory } from "vue-router";
 import LayOut from "../views/LayOut.vue";
-
-const isAuthenticated = () => !!localStorage.getItem('auth');
+import AuthAPI from "@/api/AuthAPI";
+import axios from "axios";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/login',
-      name: 'login',
-      component: () => import('../views/LoginView.vue'),
+      path: "/login",
+      name: "login",
+      component: () => import("../views/LoginView.vue"),
     },
     {
       path: "/",
       name: "inicio",
       component: LayOut,
-      beforeEnter: (to, from, next) => {
-        if (isAuthenticated()) {
-          next();
-        } else {
-          next('/login');
-        }
-      },
+      meta: { requiresAuth: true },
       children: [
         {
           path: "empresas",
@@ -59,11 +53,23 @@ const router = createRouter({
 });
 
 // Configuración del guardia global
-router.beforeEach((to, from, next) => {
-  if (to.name !== 'login' && !isAuthenticated()) {
-    next('/login'); // Redirige al login si no está autenticado
+router.beforeEach(async (to, from, next) => {
+  const requiresAuth = to.matched.some((url) => url.meta.requiresAuth);
+  if (requiresAuth) {
+    try {
+      await AuthAPI.auth();
+      next();
+    } catch (error) {
+      // Verificar que error es un objeto con la propiedad `response`
+      if (axios.isAxiosError(error) && error.response) {
+        console.log('No autorizado');
+      } else {
+        console.error("Error inesperado:", error);
+      }
+      next("/login");
+    }
   } else {
-    next(); // Permite continuar si está autenticado
+    next();
   }
 });
 
