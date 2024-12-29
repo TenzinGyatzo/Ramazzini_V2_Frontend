@@ -5,9 +5,10 @@ import AuthAPI from "@/api/AuthAPI";
 import axios from "axios";
 
 const router = useRouter();
-const username = ref("edgar");
-const password = ref("Ramazzini702850");
+const username = ref("");
+const password = ref("");
 const errorMessage = ref("");
+const showPassword = ref(false);
 
 const handleLogin = async () => {
   try {
@@ -22,7 +23,13 @@ const handleLogin = async () => {
     // Verificar que error es un objeto con la propiedad `response`
     if (axios.isAxiosError(error) && error.response) {
       console.log(error.response.data.message);
-      errorMessage.value = "Credenciales incorrectas";
+      if (error.response.data.message === 'El usuario no existe') {
+        errorMessage.value = "El usuario no existe";
+      } else if (error.response.data.message === 'Contraseña incorrecta') {
+        errorMessage.value = "Contraseña incorrecta";
+      } else {
+        errorMessage.value = "Credenciales incorrectas";
+      }
     } else {
       console.error("Error inesperado:", error);
       errorMessage.value = "Ocurrió un error inesperado";
@@ -33,39 +40,47 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div
-    class="flex flex-col items-center justify-center min-h-screen bg-gray-100"
-  >
+  <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
     <form
       @submit.prevent="handleLogin"
-      class="bg-white p-8 rounded shadow-md w-1/3"
+      class="bg-white p-8 rounded-2xl shadow-md w-1/3 max-w-lg"
     >
-      <h1 class="text-2xl font-bold mb-4">Iniciar Sesión</h1>
+      <h1 class="text-2xl font-semibold mb-4 text-gray-800">Iniciar Sesión</h1>
       <div class="mb-4">
-        <label for="username" class="block text-sm font-medium text-gray-700"
+        <label for="username" class="block text-sm lg:text-base font-medium text-gray-700"
           >Usuario</label
         >
         <input
           v-model="username"
           id="username"
           type="text"
-          class="w-full mt-1 p-2 border rounded"
+          class="w-full mt-1 p-2 border rounded focus:outline-none focus:border-emerald-500"
         />
       </div>
-      <div class="mb-4">
-        <label for="password" class="block text-sm font-medium text-gray-700"
+      <div class="mb-4 relative">
+        <label for="password" class="block text-sm lg:text-base font-medium text-gray-700"
           >Contraseña</label
         >
-        <input
-          v-model="password"
-          id="password"
-          type="password"
-          class="w-full mt-1 p-2 border rounded"
-        />
+        <div class="relative">
+          <input
+            v-model="password"
+            id="password"
+            :type="showPassword ? 'text' : 'password'"
+            class="w-full mt-1 p-2 pr-10 border rounded focus:outline-none focus:border-emerald-500"
+          />
+          <button
+            type="button"
+            @click="showPassword = !showPassword"
+            class="absolute inset-y-0 right-2 top-1 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+          >
+            <span v-if="showPassword"><i class="fa-regular fa-eye-slash"></i></span>
+            <span v-else><i class="fa-regular fa-eye"></i></span>
+          </button>
+        </div>
       </div>
       <button
         type="submit"
-        class="w-full bg-emerald-600 text-white py-2 rounded hover:bg-emerald-700"
+        class="w-full sm:text-xl md:text-2xl bg-emerald-600 hover:bg-emerald-700 text-white uppercase rounded-lg px-8 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200"
       >
         Entrar
       </button>

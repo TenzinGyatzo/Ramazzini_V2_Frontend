@@ -26,7 +26,7 @@ const route = useRoute();
     </Transition>
 
     <Transition appear mode="out-in" name="slide-up">
-      <div v-if="route.path === '/'" class="flex flex-col items-center">
+      <div v-if="route.path === '/' || route.path === '/login'" class="flex flex-col items-center">
         <h1
           class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl py-5 text-center  text-slate-700 font-medium">
           Ramazzini</h1>

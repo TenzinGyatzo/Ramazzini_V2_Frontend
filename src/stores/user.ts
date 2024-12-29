@@ -29,10 +29,13 @@ export const useUserStore = defineStore("user", () => {
 
     // Computed para obtener el nombre de usuario
     const getUsername = computed(() => {
-        return user.value?.username
-            ? user.value.username.charAt(0).toUpperCase() + user.value.username.slice(1)
-            : '';
+        if (!user.value?.username) return '';
+        return user.value.username
+            .split(' ') // Dividir en palabras
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalizar cada palabra
+            .join(' '); // Unirlas de nuevo
     });
+    
     
     function logout() {
         user.value = null;
