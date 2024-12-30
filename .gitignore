@@ -32,3 +32,4 @@ coverage
 # Ignorar archivos de configuración local
 .env
 .env.local
+.env.production
