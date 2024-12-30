@@ -117,7 +117,7 @@ function setCategoriaCircunferenciaCintura() {
         <label for="peso">Peso (Kg)</label>
         <input type="number"
           class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="peso" min="45" max="200">
+          v-model="peso" min="45" max="200" step="0.1">
       </div>
       <div>
         <label for="altura">Altura (m)</label>
