@@ -41,6 +41,7 @@ const updateFileExtension = (event) => {
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
+
   // Convertir la fecha del campo fechaDocumento a formato ISO
   if (data.fechaDocumento) {
     data.fechaDocumento = convertirYYYYMMDDaISO(data.fechaDocumento);
@@ -49,6 +50,7 @@ const handleSubmit = async (data) => {
   // Asegurarse de que 'notasDocumento' sea una cadena vacía si está indefinida o null
   if (!data.notasDocumento) {
     data.notasDocumento = '';
+  } else {
   }
 
   // Crear una instancia de FormData
@@ -61,19 +63,23 @@ const handleSubmit = async (data) => {
   const fileInput = document.querySelector('input[name="file"]');
   if (fileInput && fileInput.files[0]) {
     formData.append('file', fileInput.files[0]);
+  } else {
   }
 
   // Mostrar el contenido de FormData para depuración
-  /* console.log('Contenido de FormData:');
   for (let pair of formData.entries()) {
-    console.log(`${pair[0]}: ${pair[1]}`);
-  } */
+  }
 
-  // Llamar a la función en el store
-  await documentos.uploadExternalDocument(currentTrabajador._id, formData);
+  try {
+    // Llamar a la función en el store
+    await documentos.uploadExternalDocument(currentTrabajador._id, formData);
 
-  emit('updateData');
-  closeModal();
+    emit('updateData');
+
+    closeModal();
+  } catch (error) {
+    console.error('Error al subir el documento:', error);
+  }
 };
 
 // Limpiar la vista previa cuando se cierre el modal

@@ -32,16 +32,20 @@ const editarDocumento = (documentoId, documentoTipo) => {
 // URL base donde se almacenan los documentos
 const BASE_URL = import.meta.env.VITE_API_URL;
 
-// Función dinámica para descargar un archivo basado en el documento
+// Función dinámica para descargar un archivo basado en el documento// Función dinámica para descargar un archivo basado en el documento
 const descargarArchivo = async (documento, tipoDocumento) => {
     try {
+
         const ruta = obtenerRutaDocumento(documento, tipoDocumento);
+
         if (!ruta) {
+            console.warn('El documento no está disponible o no es válido:', { documento, tipoDocumento });
             alert('El documento no está disponible o no es válido.');
             return;
         }
 
         const fecha = obtenerFechaDocumento(documento) || 'SinFecha';
+
         const nombreArchivo = obtenerNombreArchivo(documento, tipoDocumento, fecha);
 
         await descargarYGuardarArchivo(ruta, nombreArchivo);
@@ -53,23 +57,31 @@ const descargarArchivo = async (documento, tipoDocumento) => {
 };
 
 const descargarYGuardarArchivo = async (ruta, nombreArchivo) => {
-    const urlCompleta = `${BASE_URL}/${ruta}/${nombreArchivo}`;
+    try {
+        const urlCompleta = `${BASE_URL}/${ruta}/${nombreArchivo}`;
 
-    const response = await axios.get(encodeURI(urlCompleta), {
-        responseType: 'blob',
-    });
+        const response = await axios.get(encodeURI(urlCompleta), {
+            responseType: 'blob',
+        });
 
-    const blob = response.data;
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = nombreArchivo;
+        const blob = response.data;
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = nombreArchivo;
 
-    document.body.appendChild(link);
-    link.click();
+        document.body.appendChild(link);
 
-    document.body.removeChild(link);
-    URL.revokeObjectURL(link.href);
+        link.click();
+
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+
+    } catch (error) {
+        console.error('Error al descargar o guardar el archivo:', error);
+        throw error;
+    }
 };
+
 
 // If the value is empty or incorrect, the watermark will remain.
 const licenseKey = import.meta.env.VITE_VPV_LICENSE;
@@ -163,13 +175,14 @@ const abrirPdf = async (ruta, nombrePDF) => {
 
     try {
         const response = await axios.get(fullPath.href, { responseType: 'blob' }); // Solicitud GET
+
         const contentType = response.headers['content-type'];
 
         if (response.status === 200 && contentType === 'application/pdf') {
             pdfUrl.value = fullPath.href; // Actualiza tu variable de URL
             showPdfViewer.value = true; // Muestra el visor PDF
         } else {
-            console.warn('El archivo no es un PDF o no existe.');
+            console.warn('El archivo no es un PDF o no existe.', { status: response.status, contentType });
             alert('El archivo PDF no existe o no es válido.');
         }
     } catch (error) {

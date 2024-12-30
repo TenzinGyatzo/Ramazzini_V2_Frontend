@@ -366,7 +366,7 @@ export default {
         const apiEndpoint = `${import.meta.env.VITE_API_URL}/informes/${documentos.currentTypeOfDocument}/${empresas.currentEmpresaId}/${trabajadores.currentTrabajadorId}/${documentId}`;
 
         const informeResponse = await axios.get(apiEndpoint);
-       // console.log("Respuesta del backend para el informe:", informeResponse.data);
+        // console.log("Respuesta del backend para el informe:", informeResponse.data);
 
       } catch (error) {
         console.error('Error en el proceso de creación o generación del informe:', error);
