@@ -1,7 +1,7 @@
 
 export const findNearestDocument = (documents, referenceDateField, dateField) => {
     if (!referenceDateField || !documents.length) {
-      console.log('No hay fecha válida o el array de documentos está vacío.');
+      // console.log('No hay fecha válida o el array de documentos está vacío.');
       return null;
     }
   
