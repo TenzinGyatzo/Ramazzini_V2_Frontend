@@ -1,7 +1,7 @@
 <script setup>
 import axios from 'axios';
 import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
-import { ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { VPdfViewer, Locales, useLicense } from '@vue-pdf-viewer/viewer';
 import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
@@ -285,6 +285,34 @@ const props = defineProps({
 
 defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
 
+////////////////////////////////////////////
+// Estado para la anchura de la ventana
+const windowWidth = ref(window.innerWidth);
+
+// Actualizar la anchura de la ventana al cambiar de tamaño
+const updateWindowWidth = () => {
+    windowWidth.value = window.innerWidth;
+};
+
+// Agregar y eliminar el listener de eventos
+onMounted(() => window.addEventListener('resize', updateWindowWidth));
+onUnmounted(() => window.removeEventListener('resize', updateWindowWidth));
+
+/// Computed para las condiciones responsivas
+const isExtraLargeScreen = computed(() => windowWidth.value >= 1280);
+const isLargeScreen = computed(() => windowWidth.value >= 1024 && windowWidth.value < 1280);
+const isMediumScreen = computed(() => windowWidth.value >= 768 && windowWidth.value < 1024);
+const isSmallScreen = computed(() => windowWidth.value < 768);
+
+// Valores dinámicos para initialThumbnails-visible y initialScale
+const initialThumbnailsVisible = computed(() => isLargeScreen.value || isExtraLargeScreen.value);
+const initialScale = computed(() => {
+  if (isExtraLargeScreen.value) return 2; // >= 1280px
+  if (isLargeScreen.value) return 1.75;   // 1024px - 1279px
+  if (isMediumScreen.value) return 1.4;   // 768px - 1023px
+  return 0.8;                               // < 768px
+});
+///////////////////////////////////////////
 </script>
 
 <template>
@@ -294,7 +322,8 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
             <div v-if="typeof antidoping === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
                 <div class="ml-1">
                     <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
+                        type="checkbox" :checked="isSelected"
                         @change="(event) => handleCheckboxChange(event, antidoping, 'Antidoping')">
                 </div>
                 <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
@@ -310,7 +339,8 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                             <p class="leading-5 text-sm px-1">Resultados:</p>
                             <p v-if="antidoping.marihuana === 'Positivo' || antidoping.cocaina === 'Positivo' || antidoping.anfetaminas === 'Positivo' || antidoping.metanfetaminas === 'Positivo' || antidoping.opiaceos === 'Positivo'"
                                 class="leading-5 font-semibold text-red-500 px-1">Positivo</p>
-                            <p v-else class="leading-5 font-semibold text-gray-800 px-1"> Negativo a cinco parámetros</p>
+                            <p v-else class="leading-5 font-semibold text-gray-800 px-1"> Negativo a cinco parámetros
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -319,7 +349,8 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
             <div v-if="typeof aptitud === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
                 <div class="ml-1">
                     <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
+                        type="checkbox" :checked="isSelected"
                         @change="(event) => handleCheckboxChange(event, aptitud, 'Aptitud')">
                 </div>
                 <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
@@ -344,7 +375,8 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
             <div v-if="typeof certificado === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
                 <div class="ml-1">
                     <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
+                        type="checkbox" :checked="isSelected"
                         @change="(event) => handleCheckboxChange(event, certificado, 'Certificado')">
                 </div>
                 <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
@@ -372,11 +404,11 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
             <div v-if="typeof documentoExterno === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
                 <div class="ml-1">
                     <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
+                        type="checkbox" :checked="isSelected"
                         @change="(event) => handleCheckboxChange(event, documentoExterno, 'Documento Externo')">
                 </div>
-                <div class="my-1 mx-1 flex gap-2 items-center h-full"
-                    @click="abrirDocumentoExterno(documentoExterno)">
+                <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirDocumentoExterno(documentoExterno)">
                     <div class="min-w-18 sm:min-w-44">
                         <p class="leading-5 text-sm sm:text-xl font-medium">{{ documentoExterno.nombreDocumento }}</p>
                         <p class="leading-5 text-xs sm:text-base text-gray-500">{{
@@ -386,7 +418,8 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                         <div class="min-w-72">
                             <p class="leading-5 text-sm px-1">Notas:</p>
                             <p class="leading-5 font-semibold text-gray-800 px-1">
-                                {{ documentoExterno.notasDocumento.trim() !== '' && documentoExterno.notasDocumento.trim()
+                                {{ documentoExterno.notasDocumento.trim() !== '' &&
+                                    documentoExterno.notasDocumento.trim()
                                     !== 'undefined' ?
                                     documentoExterno.notasDocumento : 'Presionar editar para agregar notas &nbsp&nbsp --->'
                                 }}
@@ -395,11 +428,12 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                     </div>
                 </div>
             </div>
-            
+
             <div v-if="typeof examenVista === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
                 <div class="ml-1">
                     <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
+                        type="checkbox" :checked="isSelected"
                         @change="(event) => handleCheckboxChange(event, examenVista, 'Examen Vista')">
                 </div>
                 <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
@@ -430,7 +464,8 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                         <div class="w-72">
                             <p class="leading-5 text-sm px-1">Requiere Lentes:</p>
                             <p class="leading-5 font-semibold text-gray-800 px-1"
-                                :class="examenVista.requiereLentesUsoGeneral === 'Si' ? 'text-red-500' : 'text-gray-800'">{{
+                                :class="examenVista.requiereLentesUsoGeneral === 'Si' ? 'text-red-500' : 'text-gray-800'">
+                                {{
                                     examenVista.requiereLentesUsoGeneral }}</p>
                         </div>
                     </div>
@@ -448,7 +483,8 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
             <div v-if="typeof exploracionFisica === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
                 <div class="ml-1">
                     <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
+                        type="checkbox" :checked="isSelected"
                         @change="(event) => handleCheckboxChange(event, exploracionFisica, 'Exploracion Fisica')">
                 </div>
                 <div class="my-1 mx-1 flex gap-2 items-center h-full"
@@ -462,7 +498,8 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                         <div class="w-72 xl:block hidden">
                             <p class="leading-5 text-sm px-1">Categoría IMC:</p>
                             <p class="leading-5 font-semibold text-gray-800 px-1"
-                                :class="exploracionFisica.indiceMasaCorporal >= 30 ? 'text-red-500' : 'text-gray-800'">{{
+                                :class="exploracionFisica.indiceMasaCorporal >= 30 ? 'text-red-500' : 'text-gray-800'">
+                                {{
                                     exploracionFisica.indiceMasaCorporal }} - {{ exploracionFisica.categoriaIMC }}</p>
                         </div>
                         <div class="w-72 2xl:block hidden">
@@ -481,15 +518,17 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                 </div>
             </div>
 
-            <div v-if="typeof historiaClinica === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer">
+            <div v-if="typeof historiaClinica === 'object'"
+                class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer">
                 <div class="ml-1">
                     <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10" type="checkbox" :checked="isSelected"
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
+                        type="checkbox" :checked="isSelected"
                         @change="(event) => handleCheckboxChange(event, historiaClinica, 'Historia Clinica')">
                 </div>
                 <div class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer" @click="abrirPdf(
-                        `${historiaClinica.rutaPDF}`,
-                        `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`)">
+                    `${historiaClinica.rutaPDF}`,
+                    `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`)">
                     <div class="min-w-18 sm:min-w-44">
                         <p class="leading-5 text-sm sm:text-xl font-medium">Historia Clinica</p>
                         <p class="leading-5 text-xs sm:text-base text-gray-500">{{
@@ -544,7 +583,7 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                 @click="() => {
                     documentos.fetchDocumentById(documentoTipo, trabajadores.currentTrabajador._id, documentoExterno._id);
                     $emit('abrirModalUpdate');
-                }" >
+                }">
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
             </button>
             <button v-else type="button" @click="editarDocumento(documentoId, documentoTipo)"
@@ -574,8 +613,8 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
 
         <!-- Contenedor del visor de PDF -->
         <div :style="{ width: '90%', height: '90%' }" class="bg-white rounded shadow-lg relative">
-            <VPdfViewer :src="pdfUrl" :initialThumbnails-visible="true" :initialScale="2" locale="customLang"
-                :localization="localization" />
+            <VPdfViewer :src="pdfUrl" :initialThumbnails-visible="initialThumbnailsVisible" :initialScale="initialScale"
+                locale="customLang" :localization="localization" />
         </div>
     </div>
 
@@ -600,3 +639,21 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
     </div>
 
 </template>
+
+<style>
+@media (max-width: 768px) {
+    /* Pantallas pequeñas (sm) */
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+    /* Pantallas medianas (md) */
+}
+
+@media (min-width: 1024px) and (max-width: 1280px) {
+    /* Pantallas grandes (md) */
+}
+
+@media (min-width: 1280px) {
+    /* Pantallas extra grandes (xl) */
+}
+</style>
