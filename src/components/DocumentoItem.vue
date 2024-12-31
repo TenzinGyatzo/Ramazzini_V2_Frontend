@@ -289,7 +289,7 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
 
 <template>
     <div
-        class="ring-1 ring-gray-200 border-t-0 bg-white hover:bg-gray-50 shadow-lg flex justify-between items-center p-2 transition-transform duration-300 ease-in-out cursor-pointer">
+        class="ring-1 ring-gray-200 border-t-0 bg-white hover:bg-gray-50 shadow-lg flex justify-between items-center md:p-2 transition-transform duration-300 ease-in-out cursor-pointer">
         <div class="flex items-center">
             <div v-if="typeof antidoping === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
                 <div class="ml-1">
@@ -300,9 +300,9 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                 <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
                     `${antidoping.rutaPDF}`,
                     `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`)">
-                    <div class="min-w-32 sm:min-w-44">
-                        <p class="leading-5 text-lg sm:text-xl font-medium">Antidoping</p>
-                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                    <div class="min-w-18 sm:min-w-44">
+                        <p class="leading-5 text-sm sm:text-xl font-medium">Antidoping</p>
+                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
                             convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping) }}</p>
                     </div>
                     <div class="flex gap-2 md-lg:block hidden">
@@ -325,9 +325,9 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                 <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
                     `${aptitud.rutaPDF}`,
                     `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`)">
-                    <div class="min-w-32 sm:min-w-44">
-                        <p class="leading-5 text-lg sm:text-xl font-medium">Aptitud al Puesto</p>
-                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                    <div class="min-w-18 sm:min-w-44">
+                        <p class="leading-5 text-sm sm:text-xl font-medium">Aptitud al Puesto</p>
+                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
                             convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto) }}</p>
                     </div>
                     <div class="flex gap-2 md-lg:block hidden">
@@ -350,9 +350,9 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                 <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
                     `${certificado.rutaPDF}`,
                     `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`)">
-                    <div class="min-w-32 sm:min-w-44">
-                        <p class="leading-5 text-lg sm:text-xl font-medium">Certificado</p>
-                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                    <div class="min-w-18 sm:min-w-44">
+                        <p class="leading-5 text-sm sm:text-xl font-medium">Certificado</p>
+                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
                             convertirFechaISOaDDMMYYYY(certificado.fechaCertificado) }}</p>
                     </div>
                     <div class="flex gap-2 md-lg:block hidden">
@@ -377,9 +377,9 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                 </div>
                 <div class="my-1 mx-1 flex gap-2 items-center h-full"
                     @click="abrirDocumentoExterno(documentoExterno)">
-                    <div class="min-w-32 sm:min-w-44">
-                        <p class="leading-5 text-lg sm:text-xl font-medium">{{ documentoExterno.nombreDocumento }}</p>
-                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                    <div class="min-w-18 sm:min-w-44">
+                        <p class="leading-5 text-sm sm:text-xl font-medium">{{ documentoExterno.nombreDocumento }}</p>
+                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
                             convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento) }}</p>
                     </div>
                     <div class="flex gap-2 md-lg:block hidden">
@@ -405,9 +405,9 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                 <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
                     `${examenVista.rutaPDF}`,
                     `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`)">
-                    <div class="min-w-30 sm:min-w-44">
-                        <p class="leading-5 text-lg sm:text-xl font-medium">Examen de la Vista</p>
-                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                    <div class="min-w-18 sm:min-w-44">
+                        <p class="leading-5 text-sm sm:text-xl font-medium">Examen de la Vista</p>
+                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
                             convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista) }}</p>
                     </div>
                     <div v-if="!examenVista.ojoIzquierdoLejanaConCorreccion && !examenVista.ojoDerechoLejanaConCorreccion"
@@ -453,9 +453,9 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                 </div>
                 <div class="my-1 mx-1 flex gap-2 items-center h-full"
                     @click="abrirPdf(`${exploracionFisica.rutaPDF}`, `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`)">
-                    <div class="min-w-30 sm:min-w-44">
-                        <p class="leading-5 text-lg sm:text-xl font-medium">Exploración Física</p>
-                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                    <div class="min-w-18 sm:min-w-44">
+                        <p class="leading-5 text-sm sm:text-xl font-medium">Exploración Física</p>
+                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
                             convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica) }}</p>
                     </div>
                     <div class="flex gap-2">
@@ -490,9 +490,9 @@ defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
                 <div class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer" @click="abrirPdf(
                         `${historiaClinica.rutaPDF}`,
                         `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`)">
-                    <div class="min-w-30 sm:min-w-44">
-                        <p class="leading-5 text-lg sm:text-xl font-medium">Historia Clinica</p>
-                        <p class="leading-5 text-sm sm:text-base text-gray-500">{{
+                    <div class="min-w-18 sm:min-w-44">
+                        <p class="leading-5 text-sm sm:text-xl font-medium">Historia Clinica</p>
+                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
                             convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica) }}</p>
                     </div>
                     <div class="flex gap-2">

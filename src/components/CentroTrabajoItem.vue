@@ -24,7 +24,7 @@ defineEmits<{
 
 <template>
     <div v-if="centro && empresa">
-        <div class="w-full px-6 py-2 grid grid-cols-1 gap-2 2xl:grid-cols-10 2xl:gap-8">
+        <div class="w-full md:px-6 md:py-2 grid grid-cols-1 gap-2 2xl:grid-cols-10 2xl:gap-8">
             <button type="button"
                 class="border-shadow w-full col-span-1 2xl:col-span-9 text-left rounded-lg p-5 2xl:p-7 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 shadow-md hover:shadow-xl bg-gray-50 hover:bg-gray-100"
                 @click="router.push({ name: 'trabajadores', params: { idEmpresa: empresa._id, idCentroTrabajo: centro._id } })">

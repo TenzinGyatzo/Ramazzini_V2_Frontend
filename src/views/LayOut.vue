@@ -10,7 +10,7 @@ const route = useRoute();
 </script>
 
 <template>
-  <main class="flex flex-col items-center p-10 w-full overflow-x-auto">
+  <main class="flex flex-col items-center p-4 md:p-10 md:w-full overflow-x-auto">
     <div v-if="empresas.currentEmpresa?.logotipoEmpresa?.data"
       class="fixed top-0 right-0 h-16 w-16 md:h-32 md:w-32 rounded z-0 flex items-center justify-center overflow-hidden">
       <img :src="'/uploads/logos/' + empresas.currentEmpresa?.logotipoEmpresa?.data"

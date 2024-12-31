@@ -43,7 +43,7 @@ const handleLogin = async () => {
   <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
     <form
       @submit.prevent="handleLogin"
-      class="bg-white p-8 rounded-2xl shadow-md w-1/3 max-w-lg"
+      class="bg-white p-8 rounded-2xl shadow-md w-10/12 md:w-1/2 lg:w-1/3 lg:max-w-lg"
     >
       <h1 class="text-2xl font-semibold mb-4 text-gray-800">Iniciar Sesión</h1>
       <div class="mb-4">

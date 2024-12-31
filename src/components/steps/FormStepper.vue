@@ -413,12 +413,12 @@ export default {
     <div v-if="stepsStore.currentStep <= stepsStore.steps.length && stepsStore.steps.length > 0"
       class="flex justify-between mt-6">
       <button :class="{ invisible: stepsStore.currentStep === 1 }" @click="stepsStore.previousStep"
-        class="px-4 py-2 text-white rounded-lg bg-gray-500 hover:bg-gray-600 transition-all duration-300">
+        class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-gray-500 hover:bg-gray-600 transition-all duration-300">
         &lt; Anterior
       </button>
 
       <button :class="{ invisible: stepsStore.currentStep > stepsStore.steps.length }" @click="stepsStore.nextStep"
-        class="px-4 py-2 text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-all duration-300">
+        class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-all duration-300">
         Siguiente &gt;
       </button>
     </div>
@@ -433,11 +433,11 @@ export default {
           </p>
           <div class="flex justify-between">
             <button @click="stepsStore.previousStep"
-              class="px-4 py-2 text-white rounded-lg bg-gray-500 hover:bg-gray-600 transition-all duration-300 shadow-md">
+              class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-gray-500 hover:bg-gray-600 transition-all duration-300 shadow-md">
               &lt; Anterior
             </button>
             <button @click="handleSubmit"
-              class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-transform duration-200 ease-in-out hover:scale-110 glow-animation">
+              class="px-4 py-2 text-xs md:text-base rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-transform duration-200 ease-in-out hover:scale-110 glow-animation">
               Crear PDF
             </button>
           </div>

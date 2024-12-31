@@ -80,7 +80,7 @@ onMounted(() => {
   </Transition>
   <div class="w-full p-5 space-y-5">
     <div class="flex flex-col items-center">
-      <GreenButton text="Nuevo Centro de Trabajo +" @click="openModal(null)" />
+      <GreenButton text="Nuevo Centro +" @click="openModal(null)" />
     </div>
     <Transition appear mode="out-in" name="slide-up">
       <div v-if="centrosTrabajo.loading">
