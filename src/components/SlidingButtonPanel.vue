@@ -105,7 +105,7 @@ const handleClick = async () => {
             d="M16 17l-4 4m0 0l-4-4m4 4V3"
           />
         </svg>
-        <span class="text-lg sm:text-lg md:text-base"
+        <span class="text-sm sm:text-base md:text-lg lg:text-lg"
           >Combinar y descargar</span
         >
       </span>

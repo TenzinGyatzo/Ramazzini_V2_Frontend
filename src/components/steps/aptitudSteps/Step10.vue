@@ -80,7 +80,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
             <div class="space-y-2">
                 <!-- Botón principal -->
                 <button
-                    class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                    class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                     @click="toggle('guiaAptaSinRestricciones')">
                     Apta Sin Restricciones
                 </button>
@@ -92,7 +92,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 
                     <!-- Subopción: Clínicamente Apta -->
                     <button
-                        class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                        class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                         @click="toggle('clinicamenteAptaSinRestricciones')">
                         Clínicamente Apta
                         <i class="fa-regular fa-circle-question" tabindex="0"
@@ -126,22 +126,22 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </ul>
                         <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Agregar:</p>
                         <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
-                            @click="copiarTexto('La trabajadora parece demostrar actualmente los niveles adecuados de agilidad física, fuerza y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales de su trabajo. ')">
+                            @click="copiarTexto('La trabajadora parece demostrar actualmente los niveles adecuados de agilidad física, fuerza y capacidad cardiorrespiratoria requeridos para realizar de forma segura las tareas esenciales de su trabajo. ')">
                             La trabajadora parece demostrar actualmente los niveles adecuados de agilidad física, fuerza
-                            y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales
+                            y capacidad cardiorrespiratoria requeridos para realizar de forma segura las tareas esenciales
                             de su trabajo.
                         </p>
                         <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Por último:</p>
                         <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
-                            @click="copiarTexto('Cabe señalar que la determinacion de la aptitud para el trabajo es solamante clínica, toda vez que no contamos con analisis de laboratorio en este momento. ')">
-                            Cabe señalar que la determinacion de la aptitud para el trabajo es solamante clínica, toda
-                            vez que no contamos con analisis de laboratorio en este momento.
+                            @click="copiarTexto('Cabe señalar que la determinación de la aptitud para el trabajo es solamente clínica, toda vez que no contamos con análisis de laboratorio en este momento. ')">
+                            Cabe señalar que la determinación de la aptitud para el trabajo es solamente clínica, toda
+                            vez que no contamos con análisis de laboratorio en este momento.
                         </p>
                     </div>
 
                     <!-- Subopción: Medicamente Apta -->
                     <button
-                        class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                        class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('medicamenteAptaSinRestricciones')">
                         Médicamente Apta
                         <i class="fa-regular fa-circle-question" tabindex="0"
@@ -175,9 +175,9 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </ul>
                         <p class="font-semibold text-sm italic text-gray-700 mt-4">PASO 3. Agregar:</p>
                         <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
-                            @click="copiarTexto('La trabajadora parece demostrar actualmente los niveles adecuados de agilidad física, fuerza y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales de su trabajo. ')">
+                            @click="copiarTexto('La trabajadora parece demostrar actualmente los niveles adecuados de agilidad física, fuerza y capacidad cardiorrespiratoria requeridos para realizar de forma segura las tareas esenciales de su trabajo. ')">
                             La trabajadora parece demostrar actualmente los niveles adecuados de agilidad física, fuerza
-                            y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales
+                            y capacidad cardiorrespiratoria requeridos para realizar de forma segura las tareas esenciales
                             de su trabajo.
                         </p>
                     </div>
@@ -188,7 +188,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
             <div class="space-y-2">
                 <!-- Botón principal -->
                 <button
-                    class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                    class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                     @click="toggle('guiaAptoConPrecaucion')">
                     Apta Con Precaución
                 </button>
@@ -200,7 +200,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 
                     <!-- Subopción: Clínicamente apta -->
                     <button
-                        class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                        class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('clinicamenteAptoConPrecaucion')">
                         Clínicamente apta
                         <i class="fa-regular fa-circle-question" tabindex="0"
@@ -238,16 +238,12 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             médicas subyacentes demanda la adopción de precauciones adicionales para salvaguardar su
                             salud y seguridad en el lugar de trabajo.
                         </p>
-                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:
-                            <i class="fa-regular fa-circle-question" tabindex="0"
-                                @mouseover="showTooltip('Se debe explicar detalladamente cuáles son las condiciones médicas que condicionan a la trabajadora a estar vigilando su salud con mayor frecuencia.')"
-                                @mouseleave="hideTooltip"></i>
-                        </p>
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:</p>
 
                         <!-- Ejemplos -->
                         <p class="font-semibold text-gray-700 mb-2">Ejemplos:</p>
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                             @click="toggle('hipertension1')">
                             Hipertensión
                         </button>
@@ -261,7 +257,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('diabetes1')">
                             Diabetes Tipo II
                         </button>
@@ -275,7 +271,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('obesidad1')">
                             Obesidad Clase II
                         </button>
@@ -290,7 +286,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('lumbalgia1')">
                             Lumbalgia Crónica
                         </button>
@@ -307,7 +303,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 
                     <!-- Subopción: Médicamente apta -->
                     <button
-                        class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                        class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('medicamenteAptoConPrecaucion')">
                         Médicamente apta
                         <i class="fa-regular fa-circle-question" tabindex="0"
@@ -345,16 +341,12 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             médicas subyacentes demanda la adopción de precauciones adicionales para salvaguardar su
                             salud y seguridad en el lugar de trabajo.
                         </p>
-                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:
-                            <i class="fa-regular fa-circle-question" tabindex="0"
-                                @mouseover="showTooltip('Se debe explicar detalladamente cuáles son las condiciones médicas que condicionan a la trabajadora a estar vigilando su salud con mayor frecuencia.')"
-                                @mouseleave="hideTooltip"></i>
-                        </p>
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:</p>
 
                         <!-- Ejemplos -->
                         <p class="font-semibold text-gray-700 mb-2">Ejemplos:</p>
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                             @click="toggle('hipertension')">
                             Hipertensión
                         </button>
@@ -368,7 +360,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('diabetes')">
                             Diabetes Tipo II
                         </button>
@@ -382,7 +374,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('obesidad2')">
                             Obesidad Clase II
                         </button>
@@ -397,7 +389,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('lumbalgia')">
                             Lumbalgia Crónica
                         </button>
@@ -417,7 +409,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
             <div class="space-y-2">
                 <!-- Botón principal -->
                 <button
-                    class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                    class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                     @click="toggle('guiaAptaConRestricciones')">
                     Apta Con Restricciones
                 </button>
@@ -429,7 +421,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 
                     <!-- Subopción: Clínicamente apta -->
                     <button
-                        class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                        class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('clinicamenteAptoConPrecaucion')">
                         Clínicamente apta
                         <i class="fa-regular fa-circle-question" tabindex="0"
@@ -466,16 +458,12 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Aunque apta para el trabajo, requiere medidas adicionales para garantizar su seguridad y
                             bienestar en el entorno laboral.
                         </p>
-                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:
-                            <i class="fa-regular fa-circle-question" tabindex="0"
-                                @mouseover="showTooltip('Se debe explicar detalladamente cuáles son las condiciones médicas que condicionan a la trabajadora a estar vigilando su salud con mayor frecuencia.')"
-                                @mouseleave="hideTooltip"></i>
-                        </p>
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:</p>
 
                         <!-- Ejemplos -->
                         <p class="font-semibold text-gray-700 mb-2">Ejemplos:</p>
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                             @click="toggle('herniaAbdominal')">
                             Hernia abdominal
                         </button>
@@ -490,7 +478,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('problemaEspalda')">
                             Problema espalda
                         </button>
@@ -504,7 +492,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('varices')">
                             Várices en piernas
                         </button>
@@ -518,7 +506,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('malformacionMano')">
                             Malformación mano
                         </button>
@@ -533,7 +521,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('lesionRodilla')">
                             Lesión rodilla
                         </button>
@@ -551,7 +539,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 
                     <!-- Subopción: Médicamente apta -->
                     <button
-                        class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                        class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('medicamenteAptoConPrecaucion')">
                         Clínicamente apta
                         <i class="fa-regular fa-circle-question" tabindex="0"
@@ -588,16 +576,12 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Aunque apta para el trabajo, requiere medidas adicionales para garantizar su seguridad y
                             bienestar en el entorno laboral.
                         </p>
-                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:
-                            <i class="fa-regular fa-circle-question" tabindex="0"
-                                @mouseover="showTooltip('Se debe explicar detalladamente cuáles son las condiciones médicas que condicionan a la trabajadora a estar vigilando su salud con mayor frecuencia.')"
-                                @mouseleave="hideTooltip"></i>
-                        </p>
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:</p>
 
                         <!-- Ejemplos -->
                         <p class="font-semibold text-gray-700 mb-2">Ejemplos:</p>
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                             @click="toggle('herniaAbdominal')">
                             Hernia abdominal
                         </button>
@@ -612,7 +596,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('problemaEspalda')">
                             Problema espalda
                         </button>
@@ -626,7 +610,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('varices')">
                             Várices en piernas
                         </button>
@@ -640,7 +624,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('malformacionMano')">
                             Malformación mano
                         </button>
@@ -655,7 +639,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('lesionRodilla')">
                             Lesión rodilla
                         </button>
@@ -788,7 +772,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
             <div class="space-y-2">
                 <!-- Botón principal -->
                 <button
-                    class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                    class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                     @click="toggle('guiaAptoSinRestricciones')">
                     Apto Sin Restricciones
                 </button>
@@ -800,12 +784,9 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 
                     <!-- Subopción: Clínicamente Apto -->
                     <button
-                        class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                        class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                         @click="toggle('clinicamenteAptoSinRestricciones')">
                         Clínicamente Apto
-                        <i class="fa-regular fa-circle-question" tabindex="0"
-                            @mouseover="showTooltip('Se refiere a la evaluación basada únicamente en los síntomas, signos y la historia clínica del paciente.')"
-                            @mouseleave="hideTooltip"></i>
                     </button>
                     <div v-if="isOpen('clinicamenteAptoSinRestricciones')"
                         class="p-4 border-l-4 border-green-500 bg-gray-100">
@@ -834,27 +815,24 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </ul>
                         <p class="font-semibold text-sm text-gray-700 mt-4">PASO 3. Agregar:</p>
                         <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
-                            @click="copiarTexto('El trabajador parece demostrar actualmente los niveles adecuados de agilidad física, fuerza y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales de su trabajo. ')">
+                            @click="copiarTexto('El trabajador parece demostrar actualmente los niveles adecuados de agilidad física, fuerza y capacidad cardiorrespiratoria requeridos para realizar de forma segura las tareas esenciales de su trabajo. ')">
                             El trabajador parece demostrar actualmente los niveles adecuados de agilidad física, fuerza
-                            y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales
+                            y capacidad cardiorrespiratoria requeridos para realizar de forma segura las tareas esenciales
                             de su trabajo.
                         </p>
                         <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Por último:</p>
                         <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
-                            @click="copiarTexto('Cabe señalar que la determinacion de la aptitud para el trabajo es solamante clínica, toda vez que no contamos con analisis de laboratorio en este momento. ')">
-                            Cabe señalar que la determinacion de la aptitud para el trabajo es solamante clínica, toda
-                            vez que no contamos con analisis de laboratorio en este momento.
+                            @click="copiarTexto('Cabe señalar que la determinación de la aptitud para el trabajo es solamente clínica, toda vez que no contamos con análisis de laboratorio en este momento. ')">
+                            Cabe señalar que la determinación de la aptitud para el trabajo es solamente clínica, toda
+                            vez que no contamos con análisis de laboratorio en este momento.
                         </p>
                     </div>
 
                     <!-- Subopción: Medicamente Apto -->
                     <button
-                        class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                        class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('medicamenteAptoSinRestricciones')">
                         Médicamente Apto
-                        <i class="fa-regular fa-circle-question" tabindex="0"
-                            @mouseover="showTooltip('Se refiere a la evaluación del estado de salud teniendo en cuenta aspectos médicos más amplios...')"
-                            @mouseleave="hideTooltip"></i>
                     </button>
                     <div v-if="isOpen('medicamenteAptoSinRestricciones')"
                         class="p-4 border-l-4 border-blue-500 bg-gray-100">
@@ -883,9 +861,9 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </ul>
                         <p class="font-semibold text-sm italic text-gray-700 mt-4">PASO 3. Agregar:</p>
                         <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
-                            @click="copiarTexto('El trabajador parece demostrar actualmente los niveles adecuados de agilidad física, fuerza y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales de su trabajo. ')">
+                            @click="copiarTexto('El trabajador parece demostrar actualmente los niveles adecuados de agilidad física, fuerza y capacidad cardiorrespiratoria requeridos para realizar de forma segura las tareas esenciales de su trabajo. ')">
                             El trabajador parece demostrar actualmente los niveles adecuados de agilidad física, fuerza
-                            y capacidad cardiorespiratora requeridos para realizar de forma segura las tareas esenciales
+                            y capacidad cardiorrespiratoria requeridos para realizar de forma segura las tareas esenciales
                             de su trabajo.
                         </p>
                     </div>
@@ -896,7 +874,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
             <div class="space-y-2">
                 <!-- Botón principal -->
                 <button
-                    class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                    class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                     @click="toggle('guiaAptoConPrecaucion')">
                     Apto Con Precaución
                 </button>
@@ -908,12 +886,9 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 
                     <!-- Subopción: Clínicamente Apto -->
                     <button
-                        class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                        class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('clinicamenteAptoConPrecaucion')">
                         Clínicamente Apto
-                        <i class="fa-regular fa-circle-question" tabindex="0"
-                            @mouseover="showTooltip('Se refiere a la evaluación basada únicamente en los síntomas, signos y la historia clínica del paciente.')"
-                            @mouseleave="hideTooltip"></i>
                     </button>
                     <div v-if="isOpen('clinicamenteAptoConPrecaucion')"
                         class="p-4 border-l-4 border-yellow-500 bg-gray-100">
@@ -946,16 +921,12 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             médicas subyacentes demanda la adopción de precauciones adicionales para salvaguardar su
                             salud y seguridad en el lugar de trabajo.
                         </p>
-                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:
-                            <i class="fa-regular fa-circle-question" tabindex="0"
-                                @mouseover="showTooltip('Se debe explicar detalladamente cuáles son las condiciones médicas que condicionan a la trabajadora a estar vigilando su salud con mayor frecuencia.')"
-                                @mouseleave="hideTooltip"></i>
-                        </p>
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:</p>
 
                         <!-- Ejemplos -->
                         <p class="font-semibold text-gray-700 mb-2">Ejemplos:</p>
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                             @click="toggle('hipertension1')">
                             Hipertensión
                         </button>
@@ -969,7 +940,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('diabetes1')">
                             Diabetes Tipo II
                         </button>
@@ -983,7 +954,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('obesidad1')">
                             Obesidad Clase II
                         </button>
@@ -998,7 +969,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('lumbalgia1')">
                             Lumbalgia Crónica
                         </button>
@@ -1015,12 +986,9 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 
                     <!-- Subopción: Médicamente Apto -->
                     <button
-                        class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                        class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('medicamenteAptoConPrecaucion')">
                         Médicamente Apto
-                        <i class="fa-regular fa-circle-question" tabindex="0"
-                            @mouseover="showTooltip('Se refiere a la evaluación del estado de salud teniendo en cuenta aspectos médicos más amplios, como resultados de pruebas de laboratorio, estudios de imagenología y otros análisis médicos.')"
-                            @mouseleave="hideTooltip"></i>
                     </button>
                     <div v-if="isOpen('medicamenteAptoConPrecaucion')"
                         class="p-4 border-l-4 border-blue-500 bg-gray-100">
@@ -1053,16 +1021,12 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             médicas subyacentes demanda la adopción de precauciones adicionales para salvaguardar su
                             salud y seguridad en el lugar de trabajo.
                         </p>
-                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:
-                            <i class="fa-regular fa-circle-question" tabindex="0"
-                                @mouseover="showTooltip('Se debe explicar detalladamente cuáles son las condiciones médicas que condicionan a la trabajadora a estar vigilando su salud con mayor frecuencia.')"
-                                @mouseleave="hideTooltip"></i>
-                        </p>
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:</p>
 
                         <!-- Ejemplos -->
                         <p class="font-semibold text-gray-700 mb-2">Ejemplos:</p>
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                             @click="toggle('hipertension')">
                             Hipertensión
                         </button>
@@ -1076,7 +1040,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('diabetes')">
                             Diabetes Tipo II
                         </button>
@@ -1090,7 +1054,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('obesidad2')">
                             Obesidad Clase II
                         </button>
@@ -1105,7 +1069,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('lumbalgia')">
                             Lumbalgia Crónica
                         </button>
@@ -1125,7 +1089,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
             <div class="space-y-2">
                 <!-- Botón principal -->
                 <button
-                    class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                    class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                     @click="toggle('guiaAptoConRestricciones')">
                     Apto Con Restricciones
                 </button>
@@ -1137,14 +1101,11 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 
                     <!-- Subopción: Clínicamente Apto -->
                     <button
-                        class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg"
-                        @click="toggle('clinicamenteAptoConPrecaucion')">
+                        class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
+                        @click="toggle('clinicamenteAptoConPrecaucion2')">
                         Clínicamente Apto
-                        <i class="fa-regular fa-circle-question" tabindex="0"
-                            @mouseover="showTooltip('Se refiere a la evaluación basada únicamente en los síntomas, signos y la historia clínica del paciente.')"
-                            @mouseleave="hideTooltip"></i>
                     </button>
-                    <div v-if="isOpen('clinicamenteAptoConPrecaucion')"
+                    <div v-if="isOpen('clinicamenteAptoConPrecaucion2')"
                         class="p-4 border-l-4 border-orange-500 bg-gray-100">
                         <p class="font-semibold text-sm text-gray-700">PASO 1. Usar:</p>
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-orange-700 cursor-pointer"
@@ -1174,16 +1135,12 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Aunque apto para el trabajo, requiere medidas adicionales para garantizar su seguridad y
                             bienestar en el entorno laboral.
                         </p>
-                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:
-                            <i class="fa-regular fa-circle-question" tabindex="0"
-                                @mouseover="showTooltip('Se debe explicar detalladamente cuáles son las condiciones médicas que condicionan al trabajador a estar vigilando su salud con mayor frecuencia.')"
-                                @mouseleave="hideTooltip"></i>
-                        </p>
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:</p>
 
                         <!-- Ejemplos -->
                         <p class="font-semibold text-gray-700 mb-2">Ejemplos:</p>
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                             @click="toggle('herniaAbdominal')">
                             Hernia abdominal
                         </button>
@@ -1198,7 +1155,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('problemaEspalda')">
                             Problema espalda
                         </button>
@@ -1212,7 +1169,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('varices')">
                             Várices en piernas
                         </button>
@@ -1226,7 +1183,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('malformacionMano')">
                             Malformación mano
                         </button>
@@ -1241,7 +1198,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('lesionRodilla')">
                             Lesión rodilla
                         </button>
@@ -1259,14 +1216,11 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 
                     <!-- Subopción: Médicamente Apto -->
                     <button
-                        class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg"
-                        @click="toggle('medicamenteAptoConPrecaucion')">
-                        Clínicamente Apto
-                        <i class="fa-regular fa-circle-question" tabindex="0"
-                            @mouseover="showTooltip('Se refiere a la evaluación basada únicamente en los síntomas, signos y la historia clínica del paciente.')"
-                            @mouseleave="hideTooltip"></i>
+                        class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
+                        @click="toggle('medicamenteAptoConPrecaucion2')">
+                        Médicamente Apto
                     </button>
-                    <div v-if="isOpen('medicamenteAptoConPrecaucion')"
+                    <div v-if="isOpen('medicamenteAptoConPrecaucion2')"
                         class="p-4 border-l-4 border-orange-500 bg-gray-100">
                         <p class="font-semibold text-sm text-gray-700">PASO 1. Usar:</p>
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-orange-700 cursor-pointer"
@@ -1296,16 +1250,12 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                             Aunque apto para el trabajo, requiere medidas adicionales para garantizar su seguridad y
                             bienestar en el entorno laboral.
                         </p>
-                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:
-                            <i class="fa-regular fa-circle-question" tabindex="0"
-                                @mouseover="showTooltip('Se debe explicar detalladamente cuáles son las condiciones médicas que condicionan al trabajador a estar vigilando su salud con mayor frecuencia.')"
-                                @mouseleave="hideTooltip"></i>
-                        </p>
+                        <p class="font-semibold text-sm text-gray-700 mt-4">PASO 4. Explicar detalles:</p>
 
                         <!-- Ejemplos -->
                         <p class="font-semibold text-gray-700 mb-2">Ejemplos:</p>
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                             @click="toggle('herniaAbdominal')">
                             Hernia abdominal
                         </button>
@@ -1320,7 +1270,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('problemaEspalda')">
                             Problema espalda
                         </button>
@@ -1334,7 +1284,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('varices')">
                             Várices en piernas
                         </button>
@@ -1348,7 +1298,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('malformacionMano')">
                             Malformación mano
                         </button>
@@ -1363,7 +1313,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         </div>
 
                         <button
-                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                            class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                             @click="toggle('lesionRodilla')">
                             Lesión rodilla
                         </button>

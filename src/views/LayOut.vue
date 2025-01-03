@@ -17,7 +17,7 @@ const route = useRoute();
         :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial" class="max-h-full max-w-full object-contain p-2">
     </div>
     <Transition appear mode="out-in" name="slide-up">
-      <a v-if="route.path === '/'" href="/" class="w-full sm:w-1/2 md:1/3 lg:w-1/4 xl:w-1/5 2xl:w-1/6 mt-14">
+      <a v-if="route.path === '/'" href="/" class="w-1/2 sm:w-1/3 md:1/3 lg:w-1/4 xl:w-1/5 2xl:w-1/6 mt-14">
         <img src="/img/logosRamazzini/RamazziniBrand.png" alt="Ramazzini-Logo" class="w-full" />
       </a>
       <a v-else href="/" class="w-2/3 sm:w-1/2 md:1/3 lg:w-1/4 xl:w-1/5 2xl:w-1/6 mt-3 mb-5">
