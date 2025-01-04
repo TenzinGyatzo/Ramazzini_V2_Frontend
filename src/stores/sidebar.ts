@@ -24,7 +24,10 @@ export const useSidebarStore = defineStore("sidebar", () => {
   }
   
 
-  const collapsed = ref(localStorage.getItem("sidebarCollapsed") === "true");
+  const collapsed = ref(
+    localStorage.getItem("sidebarCollapsed") === "true" || !localStorage.getItem("sidebarCollapsed")
+  );
+  
 
   const isSmallScreen = ref(window.innerWidth < 640);
 
