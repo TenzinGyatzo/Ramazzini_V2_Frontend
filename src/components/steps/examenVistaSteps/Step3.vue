@@ -55,7 +55,7 @@ function obtenerInterpretacion(valor) {
   if (valor == 10) {
     return "Visión excepcional";
   } else if (valor == 20) {
-    return "Visión normal";
+    return "Visión Normal";
   } else if (valor == 30) {
     return "Visión ligeramente reducida";
   } else if (valor == 40) {
