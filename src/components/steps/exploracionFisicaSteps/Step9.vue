@@ -11,10 +11,16 @@ const cuelloPregunta = ref('No');
 const cuello = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.cuello === '') {
         cuello.value = documentos.currentDocument.cuello;
         cuelloPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.cuello) {
+        cuello.value = formDataExploracionFisica.cuello;
+        cuelloPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para cuello

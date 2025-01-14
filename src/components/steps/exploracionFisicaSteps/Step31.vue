@@ -13,8 +13,13 @@ const resumenExploracionFisicaPregunta = ref('No');
 const resumenExploracionFisica = ref('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.resumenExploracionFisica === '') {
         resumenExploracionFisica.value = documentos.currentDocument.resumenExploracionFisica;
+        resumenExploracionFisicaPregunta.value = 'Si';
+    }
+
+    if (formDataExploracionFisica.resumenExploracionFisica) {
+        resumenExploracionFisica.value = formDataExploracionFisica.resumenExploracionFisica;
         resumenExploracionFisicaPregunta.value = 'Si';
     }
 });

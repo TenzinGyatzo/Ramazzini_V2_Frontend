@@ -20,11 +20,12 @@ onMounted(async () => {
     if (documentos.currentDocument) {
         resultados.value = documentos.currentDocument.resultados;
     } else {
-        // Inicializa resultados con textoBase una vez que los datos estén disponibles
-        formDataAptitud.resultados = inicioSugerido;
+        if (!formDataAptitud.resultados) {
+            formDataAptitud.resultados = inicioSugerido;
+        }
+        resultados.value = formDataAptitud.resultados;
     }
 });
-
 
 const openSections = ref({});
 

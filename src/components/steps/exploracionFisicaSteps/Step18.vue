@@ -11,10 +11,16 @@ const rodillasPregunta = ref('No');
 const rodillas = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.rodillas === '') {
         rodillas.value = documentos.currentDocument.rodillas;
         rodillasPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.rodillas) {
+        rodillas.value = formDataExploracionFisica.rodillas;
+        rodillasPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para rodillas

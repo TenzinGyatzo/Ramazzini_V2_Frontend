@@ -11,8 +11,13 @@ const sensibilidadPregunta = ref('No');
 const sensibilidad = ref('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.sensibilidad === '') {
         sensibilidad.value = documentos.currentDocument.sensibilidad;
+        sensibilidadPregunta.value = 'Si';
+    }
+
+    if (formDataExploracionFisica.sensibilidad) {
+        sensibilidad.value = formDataExploracionFisica.sensibilidad;
         sensibilidadPregunta.value = 'Si';
     }
 });

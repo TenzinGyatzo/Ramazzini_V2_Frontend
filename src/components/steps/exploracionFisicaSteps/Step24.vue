@@ -11,10 +11,16 @@ const lesionesPielPregunta = ref('No');
 const lesionesPiel = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.lesionesPiel === '') {
         lesionesPiel.value = documentos.currentDocument.lesionesPiel;
         lesionesPielPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.lesionesPiel) {
+        lesionesPiel.value = formDataExploracionFisica.lesionesPiel;
+        lesionesPielPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para lesionesPiel

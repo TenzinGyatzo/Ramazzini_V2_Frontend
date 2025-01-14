@@ -11,10 +11,16 @@ const cicatricesPregunta = ref('No');
 const cicatrices = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.cicatrices === '') {
         cicatrices.value = documentos.currentDocument.cicatrices;
         cicatricesPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.cicatrices) {
+        cicatrices.value = formDataExploracionFisica.cicatrices;
+        cicatricesPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para cicatrices

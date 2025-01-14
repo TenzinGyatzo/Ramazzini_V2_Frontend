@@ -451,7 +451,7 @@ export default {
 <style scoped>
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: all 0.5s ease, filter 0.5s ease;
+  transition: all 0.3s ease, filter 0.3s ease;
 }
 
 .fade-slide-enter-from {

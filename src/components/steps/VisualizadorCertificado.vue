@@ -23,6 +23,34 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error al obtener los exámenes:', error);
   }
+
+  if (formData.formDataCertificado.fechaCertificado) {
+    const referenceDate = new Date(formData.formDataCertificado.fechaCertificado);
+
+    if (isNaN(referenceDate.getTime())) {
+      console.error('Fecha del certificado no válida:', formData.formDataCertificado.fechaCertificado);
+      nearestExamenVista.value = null;
+      return;
+    }
+
+    // Procesar solo si las fechas son válidas
+    nearestExamenVista.value = examenesVista.value.reduce((closest, current) => {
+      const currentDate = current.fechaExamenVista ? new Date(current.fechaExamenVista) : null;
+
+      if (!currentDate || isNaN(currentDate.getTime())) {
+        console.error('Fecha de examen no válida:', current.fechaExamenVista);
+        return closest; // Ignorar exámenes con fechas inválidas
+      }
+
+      const currentDiff = Math.abs(currentDate - referenceDate);
+      const closestDiff = closest
+        ? Math.abs(new Date(closest.fechaExamenVista) - referenceDate)
+        : Infinity;
+
+      return currentDiff < closestDiff ? current : closest;
+    }, null);
+    
+  }
 });
 
 watch(
@@ -102,7 +130,7 @@ const goToStep = (stepNumber) => {
 
      <div class="w-full mb-4">
         <p class="text-justify">
-            Que, habiendo practicado reconocimiento médico en esta fecha, al C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad, <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'lo encontré íntegro' : 'la encontré íntegra' }}</span> físicamente, sin defectos ni anomalías del aparato locomotor, con agudeza visual{{ nearestExamenVista ? ` OI: 20/${nearestExamenVista?.ojoIzquierdoCercanaSinCorreccion} y OD: 20/${nearestExamenVista?.ojoDerechoCercanaSinCorreccion},` : ',' }} campo visual, profundidad de campo, estereopsis y percepción cromática sin alteraciones; agudeza auditiva, aparato respiratorio y aparato locomotor íntegros, el examen neurológico reveló buena coordinación y reflejos.
+            Que, habiendo practicado reconocimiento médico en esta fecha, al C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad, <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'lo encontré íntegro' : 'la encontré íntegra' }}</span> físicamente, sin defectos ni anomalías del aparato locomotor, con agudeza visual{{ nearestExamenVista ? ` OI: 20/${nearestExamenVista?.ojoIzquierdoLejanaSinCorreccion} y OD: 20/${nearestExamenVista?.ojoDerechoLejanaSinCorreccion},` : ',' }} campo visual, profundidad de campo, estereopsis y percepción cromática sin alteraciones; agudeza auditiva, aparato respiratorio y aparato locomotor íntegros, el examen neurológico reveló buena coordinación y reflejos.
         </p>
      </div>
 

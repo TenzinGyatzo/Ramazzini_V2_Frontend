@@ -11,8 +11,13 @@ const craneoCaraPregunta = ref('No');
 const craneoCara = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.craneoCara === '') {
         craneoCara.value = documentos.currentDocument.craneoCara;
+        craneoCaraPregunta.value = 'Si';
+    }
+
+    if (formDataExploracionFisica.craneoCara) {
+        craneoCara.value = formDataExploracionFisica.craneoCara;
         craneoCaraPregunta.value = 'Si';
     }
 });

@@ -16,7 +16,8 @@ const alteracionesSalud = ref(formDataAptitud.alteracionesSalud || '');
 onMounted(() => {
     if (documentos.currentDocument) {
         alteracionesSalud.value = documentos.currentDocument.alteracionesSalud;
-    }});
+    }
+});
 
 // Sincronizar el valor seleccionado con formDataAptitud.alteracionesSalud
 watch(alteracionesSalud, (newValue) => {
@@ -35,40 +36,28 @@ const nearestExamenVista = ref(null);
 
 onMounted(async () => {
     try {
-        const response = await DocumentosAPI.getHistoriasClinicas(trabajadores.currentTrabajadorId);
-        historiasClinicas.value = response.data;
+        // Obtener los datos necesarios
+        const responseHistorias = await DocumentosAPI.getHistoriasClinicas(trabajadores.currentTrabajadorId);
+        historiasClinicas.value = responseHistorias.data;
         nearestHistoriaClinica.value = findNearestDocument(historiasClinicas.value, formDataAptitud.fechaAptitudPuesto, 'fechaHistoriaClinica');
-    } catch (error) {
-        console.error('Error al obtener los exámenes:', error);
-    }
-    try {
-        const response = await DocumentosAPI.getExploracionesFisicas(trabajadores.currentTrabajadorId);
-        exploracionesFisicas.value = response.data;
+
+        const responseExploraciones = await DocumentosAPI.getExploracionesFisicas(trabajadores.currentTrabajadorId);
+        exploracionesFisicas.value = responseExploraciones.data;
         nearestExploracionFisica.value = findNearestDocument(exploracionesFisicas.value, formDataAptitud.fechaAptitudPuesto, 'fechaExploracionFisica');
-    } catch (error) {
-        console.error('Error al obtener los exámenes:', error);
-    }
-    try {
-        const response = await DocumentosAPI.getExamenesVista(trabajadores.currentTrabajadorId);
-        examenesVista.value = response.data;
+
+        const responseExamenes = await DocumentosAPI.getExamenesVista(trabajadores.currentTrabajadorId);
+        examenesVista.value = responseExamenes.data;
         nearestExamenVista.value = findNearestDocument(examenesVista.value, formDataAptitud.fechaAptitudPuesto, 'fechaExamenVista');
+
+        // Inicializa alteracionesSalud solo si está vacío
+        if (!formDataAptitud.alteracionesSalud) {
+            formDataAptitud.alteracionesSalud = textoBase.value;
+        }
+        alteracionesSalud.value = formDataAptitud.alteracionesSalud;
     } catch (error) {
-        console.error('Error al obtener los exámenes:', error);
+        console.error('Error al obtener los documentos:', error);
     }
-
-    // Inicializa alteracionesSalud con textoBase una vez que los datos estén disponibles
-    formDataAptitud.alteracionesSalud = textoBase.value;
 });
-
-
-// Función para copiar el texto al portapapeles
-const copiarTexto = (texto) => {
-    navigator.clipboard.writeText(texto).then(() => {
-        // alert('Texto copiado al portapapeles');
-    }).catch((err) => {
-        console.error('Error al copiar el texto: ', err);
-    });
-};
 
 // Generar el texto dinámico basado en la información
 const textoBase = computed(() => {
@@ -111,8 +100,17 @@ const textoBase = computed(() => {
     }
     tensionArterialTexto += ` con una medición de ${tensionArterialSistolica}/${tensionArterialDiastolica} mmHg.`;
 
+    const categoriaIMCMap = {
+        "Bajo peso": "peso bajo",
+        "Normal": "peso normal",
+        "Sobrepeso": "sobrepeso",
+        "Obesidad clase I": "obesidad clase I",
+        "Obesidad clase II": "obesidad clase II",
+        "Obesidad clase III": "obesidad clase III",
+    };
+
     // Construcción del texto base
-    let texto = `${sexo === 'Femenino' ? 'La trabajadora' : 'El trabajador'} presenta ${categoriaIMC.toLowerCase()} con un índice de masa corporal (IMC) de ${indiceMasaCorporal}. Tiene una circunferencia de cintura de ${circunferenciaCintura} cm por lo que tiene ${riesgoCintura} Presenta ${tensionArterialTexto}`;
+    let texto = `${sexo === 'Femenino' ? 'La trabajadora' : 'El trabajador'} presenta ${categoriaIMCMap[categoriaIMC] || categoriaIMC} con un índice de masa corporal (IMC) de ${indiceMasaCorporal}. Tiene una circunferencia de cintura de ${circunferenciaCintura} cm por lo que tiene ${riesgoCintura} Presenta ${tensionArterialTexto}`;
 
     // Información adicional del examen de vista
     if (nearestExamenVista.value) {

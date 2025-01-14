@@ -11,10 +11,16 @@ const tobillosPiesPregunta = ref('No');
 const tobillosPies = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.tobillosPies === '') {
         tobillosPies.value = documentos.currentDocument.tobillosPies;
         tobillosPiesPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.tobillosPies) {
+        tobillosPies.value = formDataExploracionFisica.tobillosPies;
+        tobillosPiesPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para tobillosPies

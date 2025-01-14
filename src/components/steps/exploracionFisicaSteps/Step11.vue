@@ -11,10 +11,16 @@ const codosPregunta = ref('No');
 const codos = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.codos === '') {
         codos.value = documentos.currentDocument.codos;
         codosPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.codos) {
+        codos.value = formDataExploracionFisica.codos;
+        codosPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para codos

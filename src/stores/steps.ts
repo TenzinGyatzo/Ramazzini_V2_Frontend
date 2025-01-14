@@ -28,9 +28,15 @@ export const useStepsStore = defineStore("steps", () => {
     const visibleInputs = Array.from(
       document.querySelectorAll("input:required, textarea:required")
     )
-      // Aseguramos que TypeScript trate cada elemento como un HTMLInputElement o HTMLTextAreaElement
+      // Filtrar inputs visibles y vacíos, excluyendo los específicos
       .filter((input) => {
         const element = input as HTMLInputElement | HTMLTextAreaElement;
+  
+        // Excluir inputs con un atributo específico
+        if (element.hasAttribute("data-skip-validation")) {
+          return false; // Excluir este input del proceso de validación
+        }
+  
         return element.offsetParent !== null && !element.value.trim();
       });
   
@@ -40,8 +46,7 @@ export const useStepsStore = defineStore("steps", () => {
     }
   
     return true;
-  };
-  
+  };  
 
   // Avanzar al siguiente paso
   const nextStep = () => {

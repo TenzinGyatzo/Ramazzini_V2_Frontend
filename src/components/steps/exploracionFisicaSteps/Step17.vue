@@ -11,10 +11,16 @@ const caderaPregunta = ref('No');
 const cadera = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.cadera === '') {
         cadera.value = documentos.currentDocument.cadera;
         caderaPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.cadera) {
+        cadera.value = formDataExploracionFisica.cadera;
+        caderaPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para cadera

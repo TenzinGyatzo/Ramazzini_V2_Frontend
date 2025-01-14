@@ -11,8 +11,13 @@ const marchaPregunta = ref('No');
 const marcha = ref('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.marcha === '') {
         marcha.value = documentos.currentDocument.marcha;
+        marchaPregunta.value = 'Si';
+    }
+
+    if (formDataExploracionFisica.marcha) {
+        marcha.value = formDataExploracionFisica.marcha;
         marchaPregunta.value = 'Si';
     }
 });

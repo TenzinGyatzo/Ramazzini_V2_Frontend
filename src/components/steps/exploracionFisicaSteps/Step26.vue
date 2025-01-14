@@ -11,10 +11,16 @@ const nevosPregunta = ref('No');
 const nevos = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.nevos === '') {
         nevos.value = documentos.currentDocument.nevos;
         nevosPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.nevos) {
+        nevos.value = formDataExploracionFisica.nevos;
+        nevosPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para nevos

@@ -11,10 +11,16 @@ const bocaPregunta = ref('No');
 const boca = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.boca === '') {
         boca.value = documentos.currentDocument.boca;
         bocaPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.boca) {
+        boca.value = formDataExploracionFisica.boca;
+        bocaPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para boca

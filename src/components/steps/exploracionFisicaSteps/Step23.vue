@@ -11,10 +11,16 @@ const movimientosColumnaPregunta = ref('No');
 const movimientosColumna = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.movimientosColumna === '') {
         movimientosColumna.value = documentos.currentDocument.movimientosColumna;
         movimientosColumnaPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.movimientosColumna) {
+        movimientosColumna.value = formDataExploracionFisica.movimientosColumna;
+        movimientosColumnaPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para movimientosColumna

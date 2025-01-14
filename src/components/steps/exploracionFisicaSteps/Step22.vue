@@ -11,10 +11,16 @@ const inspeccionColumnaPregunta = ref('No');
 const inspeccionColumna = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.inspeccionColumna === '') {
         inspeccionColumna.value = documentos.currentDocument.inspeccionColumna;
         inspeccionColumnaPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.inspeccionColumna) {
+        inspeccionColumna.value = formDataExploracionFisica.inspeccionColumna;
+        inspeccionColumnaPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para inspeccionColumna

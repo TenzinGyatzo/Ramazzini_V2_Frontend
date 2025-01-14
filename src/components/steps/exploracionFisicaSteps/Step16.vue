@@ -11,10 +11,16 @@ const abdomenPregunta = ref('No');
 const abdomen = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.abdomen === '') {
         abdomen.value = documentos.currentDocument.abdomen;
         abdomenPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.abdomen) {
+        abdomen.value = formDataExploracionFisica.abdomen;
+        abdomenPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para abdomen

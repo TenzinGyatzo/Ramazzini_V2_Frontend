@@ -11,10 +11,16 @@ const hombrosPregunta = ref('No');
 const hombros = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.hombros === '') {
         hombros.value = documentos.currentDocument.hombros;
         hombrosPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.hombros) {
+        hombros.value = formDataExploracionFisica.hombros;
+        hombrosPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para hombros

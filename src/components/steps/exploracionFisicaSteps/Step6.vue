@@ -11,10 +11,16 @@ const oidosPregunta = ref('No');
 const oidos = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.oidos === '') {
         oidos.value = documentos.currentDocument.oidos;
         oidosPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.oidos) {
+        oidos.value = formDataExploracionFisica.oidos;
+        oidosPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para oidos

@@ -11,8 +11,13 @@ const coordinacionPregunta = ref('No');
 const coordinacion = ref('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.coordinacion === '') {
         coordinacion.value = documentos.currentDocument.coordinacion;
+        coordinacionPregunta.value = 'Si';
+    }
+
+    if (formDataExploracionFisica.coordinacion) {
+        coordinacion.value = formDataExploracionFisica.coordinacion;
         coordinacionPregunta.value = 'Si';
     }
 });

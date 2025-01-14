@@ -11,10 +11,16 @@ const vascularEInferioresPregunta = ref('No');
 const vascularEInferiores = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.vascularEInferiores === '') {
         vascularEInferiores.value = documentos.currentDocument.vascularEInferiores;
         vascularEInferioresPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.vascularEInferiores) {
+        vascularEInferiores.value = formDataExploracionFisica.vascularEInferiores;
+        vascularEInferioresPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para vascularEInferiores

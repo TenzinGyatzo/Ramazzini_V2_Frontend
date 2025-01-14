@@ -11,10 +11,16 @@ const manosPregunta = ref('No');
 const manos = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.manos === '') {
         manos.value = documentos.currentDocument.manos;
         manosPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.manos) {
+        manos.value = formDataExploracionFisica.manos;
+        manosPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para manos

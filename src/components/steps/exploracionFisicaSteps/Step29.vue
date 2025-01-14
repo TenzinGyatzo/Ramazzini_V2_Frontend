@@ -11,10 +11,16 @@ const equilibrioPregunta = ref('No');
 const equilibrio = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.equilibrio === '') {
         equilibrio.value = documentos.currentDocument.equilibrio;
         equilibrioPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.equilibrio) {
+        equilibrio.value = formDataExploracionFisica.equilibrio;
+        equilibrioPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para equilibrio

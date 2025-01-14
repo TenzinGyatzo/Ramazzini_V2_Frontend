@@ -11,10 +11,16 @@ const ojosPregunta = ref('No');
 const ojos = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.ojos === '') {
         ojos.value = documentos.currentDocument.ojos;
         ojosPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.ojos) {
+        ojos.value = formDataExploracionFisica.ojos;
+        ojosPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para ojos

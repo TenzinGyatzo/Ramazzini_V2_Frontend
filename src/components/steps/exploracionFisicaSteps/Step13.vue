@@ -11,10 +11,16 @@ const neurologicoESuperioresPregunta = ref('No');
 const neurologicoESuperiores = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.neurologicoESuperiores === '') {
         neurologicoESuperiores.value = documentos.currentDocument.neurologicoESuperiores;
         neurologicoESuperioresPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.neurologicoESuperiores) {
+        neurologicoESuperiores.value = formDataExploracionFisica.neurologicoESuperiores;
+        neurologicoESuperioresPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para neurologicoESuperiores

@@ -8,52 +8,21 @@ const { formDataAptitud } = useFormDataStore();
 
 const today = format(new Date(), 'yyyy-MM-dd');
 
-// Inicializar pregunta con el valor actual del store
-const pregunta = ref(formDataAptitud.evaluacionAdicional5 ? 'Si' : 'No');
-
 onMounted(() => {
     formDataAptitud.evaluacionAdicional5 = formDataAptitud.evaluacionAdicional5 || '';
     formDataAptitud.fechaEvaluacionAdicional5 = formatDateYYYYMMDD(formDataAptitud.fechaEvaluacionAdicional5) || today;
     formDataAptitud.resultadosEvaluacionAdicional5 = formDataAptitud.resultadosEvaluacionAdicional5 || '';
 });
 
-// Sincronizar los valores de formDataAptitud en función de la respuesta
-watch(pregunta, () => {
-    if (pregunta.value === 'No') {
-        formDataAptitud.evaluacionAdicional5 = null;
-        formDataAptitud.fechaEvaluacionAdicional5 = null;
-        formDataAptitud.resultadosEvaluacionAdicional5 = null;
-    } else {
-        formDataAptitud.evaluacionAdicional5 = formDataAptitud.evaluacionAdicional5 || '';
-        formDataAptitud.fechaEvaluacionAdicional5 = formDataAptitud.fechaEvaluacionAdicional5 || today;
-        formDataAptitud.resultadosEvaluacionAdicional5 = formDataAptitud.resultadosEvaluacionAdicional5 || '';
-    }
-});
 </script>
 
 <template>
     <h1 class="font-bold mb-4 text-gray-800 leading-5">Evaluación Adicional 5</h1>
-    <!-- Pregunta principal -->
-    <div class="mb-4">
-        <p class="font-medium mb-1 text-gray-800 leading-5">¿Agregar evaluación adicional 5?
-        </p>
-        <div class="flex items-center space-x-6 font-light">
-            <label class="flex items-center space-x-2">
-                <input type="radio" value="No" v-model="pregunta" class="form-radio accent-emerald-600" />
-                <span>No</span>
-            </label>
-            <label class="flex items-center space-x-2">
-                <input type="radio" value="Si" v-model="pregunta" class="form-radio accent-emerald-600" />
-                <span>Si</span>
-            </label>
-        </div>
-    </div>
-    <!-- Opciones adicionales, solo visibles si el resultado es "Sí" -->
-    <div v-if="pregunta === 'Si'">
+    <div>
         <div class="mb-4">
             <p class="font-medium mb-1 text-gray-800 leading-5">Nombre de evaluación, prueba o estudio:</p>
             <div class="font-light mb-4">
-                <input type="text"
+                <input type="text" data-skip-validation
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     v-model="formDataAptitud.evaluacionAdicional5" required>
             </div>
@@ -66,7 +35,7 @@ watch(pregunta, () => {
             <p class="font-medium mb-1 text-gray-800 leading-5">Resumen de resultados y/o alteraciones encontradas:
             </p>
             <div class="font-light mb-4">
-                <input type="text"
+                <input type="text" data-skip-validation
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     v-model="formDataAptitud.resultadosEvaluacionAdicional5" required>
             </div>

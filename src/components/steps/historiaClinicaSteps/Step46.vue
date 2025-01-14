@@ -38,8 +38,8 @@ watch(resumenHistoriaClinicaPregunta, (newValue) => {
     if (newValue === 'No') {
         formDataHistoriaClinica.resumenHistoriaClinica =
             trabajadores.currentTrabajador.sexo === 'Femenino'
-                ? 'Se encuentra clínicamente asintomática'
-                : 'Se encuentra clínicamente asintomático';
+                ? 'Se refiere actualmente asintomática'
+                : 'Se refiere actualmente asintomático';
     }
     if (newValue === 'Si') {
         formDataHistoriaClinica.resumenHistoriaClinica = resumenHistoriaClinica.value;

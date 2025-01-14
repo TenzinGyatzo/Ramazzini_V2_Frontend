@@ -11,10 +11,16 @@ const toraxPregunta = ref('No');
 const torax = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.torax === '') {
         torax.value = documentos.currentDocument.torax;
         toraxPregunta.value = 'Si';
-    }});
+    }
+
+    if (formDataExploracionFisica.torax) {
+        torax.value = formDataExploracionFisica.torax;
+        toraxPregunta.value = 'Si';
+    }
+});
 
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para torax

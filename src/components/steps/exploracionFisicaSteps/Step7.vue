@@ -11,11 +11,16 @@ const narizPregunta = ref('No');
 const nariz = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument) {
+    if (documentos.currentDocument && documentos.currentDocument.nariz === '') {
         nariz.value = documentos.currentDocument.nariz;
         narizPregunta.value = 'Si';
-    }});
+    }
 
+    if (formDataExploracionFisica.nariz) {
+        nariz.value = formDataExploracionFisica.nariz;
+        narizPregunta.value = 'Si';
+    }
+});
 onUnmounted(() => {
     // Asegurar que formData tenga un valor inicial para nariz
     if (!formDataExploracionFisica.nariz) {
