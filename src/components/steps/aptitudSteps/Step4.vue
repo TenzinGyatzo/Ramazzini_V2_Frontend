@@ -22,20 +22,20 @@ onMounted(() => {
         <div class="mb-4">
             <p class="font-medium mb-1 text-gray-800 leading-5">Nombre de evaluación, prueba o estudio:</p>
             <div class="font-light mb-4">
-                <input type="text" data-skip-validation
+                <input type="text" name="nombreEvaluacion" data-skip-validation
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     v-model="formDataAptitud.evaluacionAdicional3" required>
             </div>
             <p class="font-medium mb-1 text-gray-800 leading-5">Fecha de resultados:</p>
             <div class="font-light mb-4">
-                <input type="date"
+                <input type="date" name="fechaEvaluacion" data-skip-validation
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     v-model="formDataAptitud.fechaEvaluacionAdicional3" required>
             </div>
             <p class="font-medium mb-1 text-gray-800 leading-5">Resumen de resultados y/o alteraciones encontradas:
             </p>
             <div class="font-light mb-4">
-                <input type="text" data-skip-validation
+                <input type="text" name="resultadosEvaluacion" data-skip-validation
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     v-model="formDataAptitud.resultadosEvaluacionAdicional3" required>
             </div>
