@@ -10,21 +10,10 @@ const trabajadores = useTrabajadoresStore();
 const { formDataAptitud } = useFormDataStore();
 const documentos = useDocumentosStore();
 
-// Valor local para la alteracionesSalud principal, inicializado con el valor actual del store
-const alteracionesSalud = ref(formDataAptitud.alteracionesSalud || '');
+// Valor local para alteracionesSalud
+const alteracionesSalud = ref('');
 
-onMounted(() => {
-    if (documentos.currentDocument) {
-        alteracionesSalud.value = documentos.currentDocument.alteracionesSalud;
-    }
-});
-
-// Sincronizar el valor seleccionado con formDataAptitud.alteracionesSalud
-watch(alteracionesSalud, (newValue) => {
-    formDataAptitud.alteracionesSalud = newValue;
-});
-
-// Lógica para traerse la data de los documentos con fecha más cercana a la aptitud
+// Documentos más cercanos
 const historiasClinicas = ref([]);
 const nearestHistoriaClinica = ref(null);
 
@@ -33,31 +22,6 @@ const nearestExploracionFisica = ref(null);
 
 const examenesVista = ref([]);
 const nearestExamenVista = ref(null);
-
-onMounted(async () => {
-    try {
-        // Obtener los datos necesarios
-        const responseHistorias = await DocumentosAPI.getHistoriasClinicas(trabajadores.currentTrabajadorId);
-        historiasClinicas.value = responseHistorias.data;
-        nearestHistoriaClinica.value = findNearestDocument(historiasClinicas.value, formDataAptitud.fechaAptitudPuesto, 'fechaHistoriaClinica');
-
-        const responseExploraciones = await DocumentosAPI.getExploracionesFisicas(trabajadores.currentTrabajadorId);
-        exploracionesFisicas.value = responseExploraciones.data;
-        nearestExploracionFisica.value = findNearestDocument(exploracionesFisicas.value, formDataAptitud.fechaAptitudPuesto, 'fechaExploracionFisica');
-
-        const responseExamenes = await DocumentosAPI.getExamenesVista(trabajadores.currentTrabajadorId);
-        examenesVista.value = responseExamenes.data;
-        nearestExamenVista.value = findNearestDocument(examenesVista.value, formDataAptitud.fechaAptitudPuesto, 'fechaExamenVista');
-
-        // Inicializa alteracionesSalud solo si está vacío
-        if (!formDataAptitud.alteracionesSalud) {
-            formDataAptitud.alteracionesSalud = textoBase.value;
-        }
-        alteracionesSalud.value = formDataAptitud.alteracionesSalud;
-    } catch (error) {
-        console.error('Error al obtener los documentos:', error);
-    }
-});
 
 // Generar el texto dinámico basado en la información
 const textoBase = computed(() => {
@@ -78,7 +42,6 @@ const textoBase = computed(() => {
 
     const { sinCorreccionLejanaInterpretacion, porcentajeIshihara } = nearestExamenVista.value || {};
 
-    // Categoría de circunferencia de cintura personalizada
     let riesgoCintura = '';
     if (categoriaCircunferenciaCintura === 'Bajo Riesgo') {
         riesgoCintura = 'riesgo bajo de desarrollar enfermedades cardiometabólicas.';
@@ -90,7 +53,6 @@ const textoBase = computed(() => {
         riesgoCintura = 'riesgo no clasificado de desarrollar enfermedades cardiometabólicas.';
     }
 
-    // Personalización de tensión arterial
     let tensionArterialTexto = '';
     const categoriasTensionArterialValidas = ['óptima', 'normal', 'alta'];
     if (categoriasTensionArterialValidas.includes(categoriaTensionArterial.toLowerCase())) {
@@ -109,21 +71,48 @@ const textoBase = computed(() => {
         "Obesidad clase III": "obesidad clase III",
     };
 
-    // Construcción del texto base
     let texto = `${sexo === 'Femenino' ? 'La trabajadora' : 'El trabajador'} presenta ${categoriaIMCMap[categoriaIMC] || categoriaIMC} con un índice de masa corporal (IMC) de ${indiceMasaCorporal}. Tiene una circunferencia de cintura de ${circunferenciaCintura} cm por lo que tiene ${riesgoCintura} Presenta ${tensionArterialTexto}`;
 
-    // Información adicional del examen de vista
     if (nearestExamenVista.value) {
         texto += ` Tiene una ${sinCorreccionLejanaInterpretacion.toLowerCase()}${porcentajeIshihara < 80 ? ' y padece daltonismo' : ' y tiene una visión cromática normal'}.`;
     }
 
-    // Información adicional de historia clínica y exploración física
     texto += ` ${nearestHistoriaClinica.value?.resumenHistoriaClinica || ''}. ${nearestExploracionFisica.value?.resumenExploracionFisica || ''}.`;
 
     return texto;
 });
 
+// Actualizar siempre alteracionesSalud al cambiar los documentos más cercanos
+const actualizarAlteracionesSalud = () => {
+    formDataAptitud.alteracionesSalud = textoBase.value;
+    alteracionesSalud.value = textoBase.value;
+};
+
+onMounted(async () => {
+    try {
+        const responseHistorias = await DocumentosAPI.getHistoriasClinicas(trabajadores.currentTrabajadorId);
+        historiasClinicas.value = responseHistorias.data;
+        nearestHistoriaClinica.value = findNearestDocument(historiasClinicas.value, formDataAptitud.fechaAptitudPuesto, 'fechaHistoriaClinica');
+
+        const responseExploraciones = await DocumentosAPI.getExploracionesFisicas(trabajadores.currentTrabajadorId);
+        exploracionesFisicas.value = responseExploraciones.data;
+        nearestExploracionFisica.value = findNearestDocument(exploracionesFisicas.value, formDataAptitud.fechaAptitudPuesto, 'fechaExploracionFisica');
+
+        const responseExamenes = await DocumentosAPI.getExamenesVista(trabajadores.currentTrabajadorId);
+        examenesVista.value = responseExamenes.data;
+        nearestExamenVista.value = findNearestDocument(examenesVista.value, formDataAptitud.fechaAptitudPuesto, 'fechaExamenVista');
+
+        actualizarAlteracionesSalud();
+    } catch (error) {
+        console.error('Error al obtener los documentos:', error);
+    }
+});
+
+// Monitorear cambios en nearestHistoriaClinica y nearestExploracionFisica
+watch([nearestHistoriaClinica, nearestExploracionFisica], actualizarAlteracionesSalud);
 </script>
+
+
 
 <template>
     <h1 class="font-bold mb-4 text-gray-800 leading-5">Aptitud al Puesto</h1>
@@ -136,16 +125,5 @@ const textoBase = computed(() => {
                 v-model="formDataAptitud.alteracionesSalud" :placeholder="textoBase || 'Cargando datos...'" required>
             </textarea>
         </div>
-<!--         <div>
-            <p class="font-medium mb-1 text-gray-800 leading-5">Texto base sugerido: </p>
-            <p v-if="!nearestExploracionFisica || !nearestHistoriaClinica"
-                class="text-sm font-light italic text-gray-700">
-                Cargando texto base...
-            </p>
-            <p v-else class="text-sm font-light mb-4 italic text-gray-700 hover:text-emerald-700 cursor-pointer leading-5 text-justify"
-               @click="copiarTexto(textoBase)">
-                {{ textoBase }}
-            </p>
-        </div> -->
     </div>
 </template>
