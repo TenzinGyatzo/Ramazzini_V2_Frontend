@@ -14,6 +14,16 @@ onMounted(() => {
     formDataAptitud.resultadosEvaluacionAdicional6 = formDataAptitud.resultadosEvaluacionAdicional6 || '';
 });
 
+const evaluacionSugerencias = [
+    'Tipo de Sangre',
+    'Audiometría',
+    'Espirometría',
+    'Estudios de laboratorio',
+    'Rx simple de tórax',
+    'Rx columna lumbar',
+    'Electrocardiograma',
+];
+
 </script>
 
 <template>
@@ -22,9 +32,17 @@ onMounted(() => {
         <div class="mb-4">
             <p class="font-medium mb-1 text-gray-800 leading-5">Nombre de evaluación, prueba o estudio:</p>
             <div class="font-light mb-4">
+                <!-- Input con lista de sugerencias -->
                 <input type="text" name="nombreEvaluacion" data-skip-validation
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                    v-model="formDataAptitud.evaluacionAdicional6" required>
+                    v-model="formDataAptitud.evaluacionAdicional6" required
+                    list="evaluaciones-sugerencias">
+                <!-- Datalist con opciones -->
+                <datalist id="evaluaciones-sugerencias">
+                    <option v-for="sugerencia in evaluacionSugerencias" :key="sugerencia" :value="sugerencia">
+                        {{ sugerencia }}
+                    </option>
+                </datalist>
             </div>
             <p class="font-medium mb-1 text-gray-800 leading-5">Fecha de resultados:</p>
             <div class="font-light mb-4">
