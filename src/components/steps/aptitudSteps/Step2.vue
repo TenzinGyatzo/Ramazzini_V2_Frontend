@@ -24,6 +24,17 @@ const evaluacionSugerencias = [
     'Electrocardiograma',
 ];
 
+const resultadosSugerencias = [
+    'O RH Positivo',
+    'O RH Negativo',
+    'A RH Positivo',
+    'A RH Negativo',
+    'B RH Positivo',
+    'B RH Negativo',
+    'AB RH Positivo',
+    'AB RH Negativo',
+];
+
 </script>
 
 
@@ -54,9 +65,17 @@ const evaluacionSugerencias = [
             <p class="font-medium mb-1 text-gray-800 leading-5">Resumen de resultados y/o alteraciones encontradas:
             </p>
             <div class="font-light mb-4">
+                <!-- Input con lista de sugerencias -->
                 <input type="text" name="resultadosEvaluacion" data-skip-validation
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                    v-model="formDataAptitud.resultadosEvaluacionAdicional1" required>
+                    v-model="formDataAptitud.resultadosEvaluacionAdicional1" required
+                    list="resultados-sugerencias">
+                <!-- Datalist con opciones -->
+                <datalist id="resultados-sugerencias">
+                    <option v-for="sugerencia in resultadosSugerencias" :key="sugerencia" :value="sugerencia">
+                        {{ sugerencia }}
+                    </option>
+                </datalist>
             </div>
         </div>
     </div>
