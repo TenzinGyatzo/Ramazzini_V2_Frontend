@@ -1,13 +1,29 @@
 <script lang="ts" setup>
-import { RouterView, useRoute } from 'vue-router';
-import { useUserStore } from '@/stores/user';
-import { useEmpresasStore } from '@/stores/empresas';
+import { onMounted, watch } from "vue";
+import { useUserStore } from "@/stores/user";
+import { useProveedorSaludStore } from "@/stores/proveedorSalud";
+import { useEmpresasStore } from "@/stores/empresas";
+import { useRoute } from "vue-router";
 
 const user = useUserStore();
+const proveedorSaludStore = useProveedorSaludStore();
 const empresas = useEmpresasStore();
-
 const route = useRoute();
+
+onMounted(() => {
+    // Escucha los cambios en el usuario para cargar proveedor de salud
+    watch(
+        () => user.user,
+        (user) => {
+            if (user?.idProveedorSalud) {
+                proveedorSaludStore.loadProveedorSalud(user.idProveedorSalud);
+            }
+        },
+        { immediate: true } // Ejecutar inmediatamente si ya hay datos cargados
+    );
+});
 </script>
+
 
 <template>
   <main class="flex flex-col items-center p-4 md:p-10 md:w-full overflow-x-auto">
@@ -33,22 +49,51 @@ const route = useRoute();
         <p class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl xl:w-2/3 py-2 text-center text-gray-600">La
           aplicación para la creación y gestión de informes de exámenes médicos laborales.</p>
         <p class="text-gray-600 text-lg my-4">Hola, {{ user.getUsername }}</p>
-        <div class="flex flex-col items-center sm:flex-row gap-2 md:gap-3 lg:gap-4 p-1">
-          <a href="/empresas" class="flex justify-center">
-            <button
-              class="sm:text-xl md:text-2xl bg-emerald-600 hover:bg-emerald-700 text-white uppercase rounded-lg px-8 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200">
-              COMENZAR
-            </button>
-          </a>
-          <a href="/empresas" class="flex justify-center">
-            <button
-              class="sm:text-xl md:text-2xl border-2 border-gray-300 hover:bg-red-600 text-gray-800 uppercase rounded-lg px-4 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200"
-              @click="user.logout"  
-            >
-              CERRAR SESIÓN
-            </button>
-          </a>
+        <div class="grid gap-4 mb-20">
+          <div class="flex justify-center">
+            <a href="/empresas" class="w-full">
+              <button
+                class="w-full text-xl sm:text-2xl md:text-3xl bg-emerald-600 hover:bg-emerald-700 text-white uppercase rounded-lg px-28 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200">
+                COMENZAR
+              </button>
+            </a>
+          </div>
+
+          <div class="flex justify-center">
+            <a href="/login">
+              <button
+                class=" text-sm sm:text-base md:text-lg border-2 border-gray-300 hover:bg-red-600 text-gray-800 uppercase rounded-lg px-4 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200"
+                @click="user.logout">
+                CERRAR SESIÓN
+              </button>
+            </a>
+          </div>
         </div>
+
+        <!-- Sección de Configuración -->
+        <div class="grid gap-2 bg-gray-100 p-6 rounded-lg shadow-md">
+          <!-- Encabezado -->
+          <div class="text-center">
+            <p class="text-base sm:text-lg font-medium text-gray-700">Personaliza tus informes</p>
+          </div>
+
+          <!-- Botones -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <a href="/medico-firmante" class="flex justify-center">
+              <button
+                class="w-full sm:text-sm md:text-base bg-cyan-500 hover:bg-cyan-600 text-white uppercase rounded-lg px-6 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
+                MEDICO FIRMANTE
+              </button>
+            </a>
+            <a href="/perfil-proveedor" class="flex justify-center">
+              <button
+                class="w-full sm:text-sm md:text-base bg-orange-500 hover:bg-orange-600 text-white uppercase rounded-lg px-8 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
+                PROVEEDOR
+              </button>
+            </a>
+          </div>
+        </div>
+
       </div>
 
       <div v-else class="w-full max-w-screen-2xl">

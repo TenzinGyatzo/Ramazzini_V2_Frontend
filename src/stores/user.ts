@@ -5,9 +5,10 @@ import { useRouter } from "vue-router";
 
 // Define el tipo para el objeto usuario
 interface User {
+    _id: string;
     username: string;
     role: string;
-    _id: string;
+    idProveedorSalud?: string;
 }
 
 // Define el store
@@ -21,6 +22,7 @@ export const useUserStore = defineStore("user", () => {
         try {
             const { data } = await AuthAPI.auth();
             user.value = data; // Asegúrate de que `data` coincide con el tipo User
+            console.log('Usuario', user.value);
         } catch (error) {
             console.error(error);
         }

@@ -18,6 +18,11 @@ const router = createRouter({
       meta: { requiresAuth: true },
       children: [
         {
+          path: "perfil-proveedor",
+          name: "perfil-proveedor",
+          component: () => import("../views/PerfilProveedorView.vue"),
+        },
+        {
           path: "empresas",
           name: "empresas",
           component: () => import("../views/EmpresasView.vue"),
