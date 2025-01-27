@@ -29,13 +29,14 @@ const handleFileChange = (event) => {
 const handleSubmit = async (data) => {
     const formData = new FormData();
 
-    formData.append('nombreComercial', data.nombreComercial);
-    formData.append('razonSocial', data.razonSocial);
+    formData.append('nombre', data.nombre);
     formData.append('RFC', data.RFC);
+    formData.append('perfilProveedorSalud', data.perfilProveedorSalud);
+    formData.append('nombreComercial', data.nombreComercial);
     formData.append('direccion', data.direccion);
-    formData.append('ciudad', data.ciudad);
-    formData.append('municipio', data.municipio);
     formData.append('estado', data.estado);
+    formData.append('municipio', data.municipio);
+    formData.append('ciudad', data.ciudad);
     formData.append('codigoPostal', data.codigoPostal);
     formData.append('telefono', data.telefono);
     formData.append('correoElectronico', data.correoElectronico);
@@ -81,6 +82,22 @@ const volver = () => {
     router.push({ name: 'inicio' });
 };
 
+const perfiles = [
+    'Médico único de empresa',
+    'Médico independiente que brinda servicios a empresas',
+    'Empresa de salud ocupacional',
+    'Equipo Médico Interno de la Empresa',
+    'Otro',
+];
+
+const estadosDeMexico = [
+    "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas",
+    "Chihuahua", "Coahuila", "Colima", "Durango", "Guanajuato", "Guerrero", "Hidalgo",
+    "Jalisco", "Estado de México", "Michoacán", "Morelos", "Nayarit", "Nuevo León",
+    "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa",
+    "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz", "Yucatán", "Zacatecas"
+];
+
 </script>
 
 <template>
@@ -93,47 +110,60 @@ const volver = () => {
                     <!-- <h1 class="text-3xl text-center">Cargando proveedor...</h1> -->
                 </div>
                 <div v-else>
-                    <h1 class="text-3xl">Proveedor de Servicios de Salud</h1>
+                    <h1 class="text-3xl">Perfil de Proveedor de Servicios de Salud Ocupacional</h1>
                     <hr class="mt-2 mb-3">
 
                     <FormKit type="form" :actions="false"
                         incomplete-message="Por favor, valide que los datos sean correctos*" @submit="handleSubmit">
-                        <FormKit type="text" label="Nombre Comercial*" name="nombreComercial"
-                            placeholder="Nombre comercial del proveedor" validation="required"
-                            :validation-messages="{ required: 'Este campo es obligatorio' }"
-                            :value="proveedorSalud.proveedorSalud.nombreComercial" />
+
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-                            <FormKit type="text" label="Razón Social" name="razonSocial"
-                                placeholder="Razón social del proveedor"
-                                :value="proveedorSalud.proveedorSalud?.razonSocial" />
+
+                            <FormKit type="text" label="Razón Social, nombre o denominación*" name="nombre"
+                                placeholder="¿Cual es tu nombre, denominación o razón social?" validation="required"
+                                :validation-messages="{ required: 'Este campo es obligatorio' }"
+                                :value="proveedorSalud.proveedorSalud.nombre" />
+
                             <FormKit type="text" label="RFC" name="RFC" placeholder="RFC del proveedor"
                                 validation="rfcValidation"
                                 :validation-messages="{ rfcValidation: 'El RFC ingresado no es válido.' }"
                                 :value="proveedorSalud.proveedorSalud?.RFC" />
-                            <FormKit type="text" label="Dirección (Calle y número)" name="direccion"
-                                placeholder="Dirección del proveedor"
-                                :value="proveedorSalud.proveedorSalud?.direccion" />
-                            <FormKit type="text" label="Ciudad" name="ciudad" placeholder="Ciudad del proveedor"
-                                :value="proveedorSalud.proveedorSalud?.ciudad" />
+
+                            <FormKit type="select" label="Perfil de proveedor*" name="perfilProveedorSalud"
+                                placeholder="Selecciona el que te describa mejor:" :options="perfiles"
+                                validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
+                                :value="proveedorSalud.proveedorSalud.perfilProveedorSalud" />
+
+                            <FormKit type="select" label="Estado" name="estado" placeholder="Seleccione un estado"
+                                :options="estadosDeMexico" validation="required"
+                                :validation-messages="{ required: 'Este campo es obligatorio' }"
+                                :value="proveedorSalud.proveedorSalud?.estado || ''" />
+
                             <FormKit type="text" label="Municipio" name="municipio"
                                 placeholder="Municipio del proveedor"
                                 :value="proveedorSalud.proveedorSalud?.municipio" />
-                            <FormKit type="text" label="Estado" name="estado" placeholder="Estado del proveedor"
-                                :value="proveedorSalud.proveedorSalud?.estado" />
+
                             <FormKit type="text" label="Código Postal" name="codigoPostal"
                                 placeholder="Código postal del proveedor" validation="postalCodeValidation"
                                 :value="proveedorSalud.proveedorSalud?.codigoPostal"
                                 :validation-messages="{ postalCodeValidation: 'El código postal debe tener 5 dígitos.' }" />
+
+                            <FormKit type="text" label="Dirección (Calle y número)" name="direccion"
+                                placeholder="Dirección del proveedor"
+                                :value="proveedorSalud.proveedorSalud?.direccion" />
+
                             <FormKit type="text" label="Teléfono" name="telefono" placeholder="Teléfono del proveedor"
                                 validation="phoneValidation" :value="proveedorSalud.proveedorSalud?.telefono"
                                 :validation-messages="{ phoneValidation: 'El número de teléfono debe tener 10 dígitos.' }" />
+
                             <FormKit type="text" label="Correo Electrónico" name="correoElectronico"
                                 placeholder="Correo electrónico del proveedor" validation="mailValidation"
                                 :value="proveedorSalud.proveedorSalud?.correoElectronico"
                                 :validation-messages="{ mailValidation: 'El correo electrónico ingresado no es válido.' }" />
+
                             <FormKit type="text" label="Sitio Web" name="sitioWeb" placeholder="Sitio web del proveedor"
                                 validation="urlValidation" :value="proveedorSalud.proveedorSalud?.sitioWeb"
                                 :validation-messages="{ urlValidation: 'El sitio web ingresado no es válido.' }" />
+
                         </div>
 
                         <FormKit type="file" label="Logotipo" name="logotipoEmpresa" accept=".png, .jpg, .jpeg, .svg"
@@ -163,8 +193,7 @@ const volver = () => {
                         <hr class="my-3">
                         <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                             <!-- Botón de Volver -->
-                            <button
-                                type="button"
+                            <button type="button"
                                 class="text-lg w-full sm:w-1/2 rounded-lg bg-white font-medium text-gray-800 shadow-sm ring-2 ring-inset ring-gray-300 hover:bg-gray-100 p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg mb-1"
                                 @click="volver">
                                 Volver
@@ -198,5 +227,4 @@ const volver = () => {
 .fade-slow-leave-active {
     transition-delay: 250ms;
 }
-
 </style>
