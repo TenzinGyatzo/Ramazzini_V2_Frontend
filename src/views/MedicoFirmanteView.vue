@@ -1,9 +1,11 @@
 <script setup>
 import { ref, inject } from 'vue';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
+import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
 
 const medicoFirmante = useMedicoFirmanteStore();
+const user = useUserStore();
 const router = useRouter();
 
 const firmaPreview = ref(null);
@@ -36,7 +38,7 @@ const handleSubmit = async (data) => {
     formData.append('numeroCedulaEspecialista', data.numeroCedulaEspecialista);
     formData.append('nombreCredencialAdicional', data.nombreCredencialAdicional);
     formData.append('numeroCredencialAdicional', data.numeroCredencialAdicional);
-    formData.append('idUser', data.idUser);
+    formData.append('idUser', user._id);
 
     if (firmaArchivo.value) {
         formData.append('firma', firmaArchivo.value);
@@ -65,7 +67,7 @@ const handleSubmit = async (data) => {
         // Usar el ID devuelto por el backend para recargar los datos
         const idMedicoFirmante = response.data._id || medicoFirmante.medicoFirmante._id;
         if (idMedicoFirmante) {
-            await medicoFirmante.loadMedicoFirmante(idMedicoFirmante);
+            await medicoFirmante.loadMedicoFirmanteById(idMedicoFirmante);
         }
 
     } catch (error) {
