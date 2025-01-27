@@ -23,6 +23,11 @@ const router = createRouter({
           component: () => import("../views/PerfilProveedorView.vue"),
         },
         {
+          path: "medico-firmante",
+          name: "medico-firmante",
+          component: () => import("../views/MedicoFirmanteView.vue"),
+        },
+        {
           path: "empresas",
           name: "empresas",
           component: () => import("../views/EmpresasView.vue"),

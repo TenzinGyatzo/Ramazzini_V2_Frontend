@@ -20,6 +20,14 @@ const urlValidation = ({ value }) => {
   const urlRegex = /^(?![.-])(?!.*[.-]{2})(?=.*\.)[a-zA-Z0-9.-]+(?<![.-])$/;
   return urlRegex.test(value.trim());
 };
+const cedulaProfesionalValidation = ({ value }) => {
+  const cedulaNumberRegex = /^[0-9]{6}$/;
+  return cedulaNumberRegex.test(value.trim());
+};
+const cedulaEspecialistaValidation = ({ value }) => {
+  const cedulaNumberRegex = /^[0-9]{7}$/;
+  return cedulaNumberRegex.test(value.trim());
+};
 
 const config = {
   config: {
@@ -46,6 +54,8 @@ const config = {
       phoneValidation,
       mailValidation,
       urlValidation,
+      cedulaProfesionalValidation,
+      cedulaEspecialistaValidation,
     },
   },
 };

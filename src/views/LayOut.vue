@@ -2,11 +2,13 @@
 import { onMounted, watch } from "vue";
 import { useUserStore } from "@/stores/user";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
+import { useMedicoFirmanteStore } from "@/stores/medicoFirmante";
 import { useEmpresasStore } from "@/stores/empresas";
 import { useRoute } from "vue-router";
 
 const user = useUserStore();
 const proveedorSaludStore = useProveedorSaludStore();
+const medicoFirmanteStore = useMedicoFirmanteStore();
 const empresas = useEmpresasStore();
 const route = useRoute();
 
@@ -17,6 +19,9 @@ onMounted(() => {
         (user) => {
             if (user?.idProveedorSalud) {
                 proveedorSaludStore.loadProveedorSalud(user.idProveedorSalud);
+            }
+            if (user?._id){
+              medicoFirmanteStore.loadMedicoFirmante(user._id);
             }
         },
         { immediate: true } // Ejecutar inmediatamente si ya hay datos cargados

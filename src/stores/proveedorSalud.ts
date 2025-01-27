@@ -39,6 +39,19 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         }
     }
 
+    async function createProveedor(proveedorSaludData: ProveedorSalud) {
+        try {
+            loading.value = true;
+            const { data } = await ProveedorSaludAPI.createProveedor(proveedorSaludData);
+            proveedorSalud.value = data;
+            // console.log("Proveedor Salud", proveedorSalud.value);
+        } catch (error) {
+            console.error("Error al cargar proveedor de salud:", error);
+        } finally {
+            loading.value = false;
+        }
+    }
+
     async function updateProveedorById(idProveedorSalud: string, proveedorSaludData: ProveedorSalud) {
         try {
             loading.value = true;
@@ -53,24 +66,11 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         }
     }
 
-    async function createProveedor(proveedorSaludData: ProveedorSalud) {
-        try {
-            loading.value = true;
-            const { data } = await ProveedorSaludAPI.createProveedor(proveedorSaludData);
-            proveedorSalud.value = data;
-            // console.log("Proveedor Salud", proveedorSalud.value);
-        } catch (error) {
-            console.error("Error al cargar proveedor de salud:", error);
-        } finally {
-            loading.value = false;
-        }
-    }
-
     return {
         proveedorSalud,
         loading,
         loadProveedorSalud,
-        updateProveedorById,
         createProveedor,
+        updateProveedorById,
     };
 });

@@ -32,12 +32,10 @@ const handleSubmit = async (data) => {
     formData.append('nombre', data.nombre);
     formData.append('RFC', data.RFC);
     formData.append('perfilProveedorSalud', data.perfilProveedorSalud);
-    formData.append('nombreComercial', data.nombreComercial);
-    formData.append('direccion', data.direccion);
     formData.append('estado', data.estado);
     formData.append('municipio', data.municipio);
-    formData.append('ciudad', data.ciudad);
     formData.append('codigoPostal', data.codigoPostal);
+    formData.append('direccion', data.direccion);
     formData.append('telefono', data.telefono);
     formData.append('correoElectronico', data.correoElectronico);
     formData.append('sitioWeb', data.sitioWeb);
@@ -133,7 +131,7 @@ const estadosDeMexico = [
                                 validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
                                 :value="proveedorSalud.proveedorSalud.perfilProveedorSalud" />
 
-                            <FormKit type="select" label="Estado" name="estado" placeholder="Seleccione un estado"
+                            <FormKit type="select" label="Estado" name="estado" placeholder="Seleccione su estado"
                                 :options="estadosDeMexico" validation="required"
                                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                                 :value="proveedorSalud.proveedorSalud?.estado || ''" />
@@ -143,15 +141,15 @@ const estadosDeMexico = [
                                 :value="proveedorSalud.proveedorSalud?.municipio" />
 
                             <FormKit type="text" label="Código Postal" name="codigoPostal"
-                                placeholder="Código postal del proveedor" validation="postalCodeValidation"
+                                placeholder="Ej. 44100" validation="postalCodeValidation"
                                 :value="proveedorSalud.proveedorSalud?.codigoPostal"
                                 :validation-messages="{ postalCodeValidation: 'El código postal debe tener 5 dígitos.' }" />
 
-                            <FormKit type="text" label="Dirección (Calle y número)" name="direccion"
-                                placeholder="Dirección del proveedor"
+                            <FormKit type="text" label="Dirección (Calle, número y colonia)" name="direccion"
+                                placeholder="Ej. Calle Madero #123, Colonia Centro"
                                 :value="proveedorSalud.proveedorSalud?.direccion" />
 
-                            <FormKit type="text" label="Teléfono" name="telefono" placeholder="Teléfono del proveedor"
+                            <FormKit type="text" label="Teléfono" name="telefono" placeholder="10 dígitos"
                                 validation="phoneValidation" :value="proveedorSalud.proveedorSalud?.telefono"
                                 :validation-messages="{ phoneValidation: 'El número de teléfono debe tener 10 dígitos.' }" />
 
