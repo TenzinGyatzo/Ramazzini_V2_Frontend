@@ -44,14 +44,12 @@ export const useMedicoFirmanteStore = defineStore("medicoFirmante", () => {
 
     async function loadMedicoFirmante(idUsuario: string) {
         try {
-            console.log("Buscando Médico Firmante por idUsuario:", idUsuario);
             loading.value = true;
     
-            // Cambia la llamada a la API para buscar por idUsuario
             const { data } = await MedicoFirmanteAPI.getMedicoFirmanteByUserId(idUsuario);
     
-            medicoFirmante.value = data || null;
-            console.log("Médico Firmante encontrado:", medicoFirmante.value);
+            medicoFirmante.value = data.data;
+            console.log("Médico Firmante:", medicoFirmante.value);
         } catch (error) {
         // Verificar si el error es de tipo AxiosError
             if (axios.isAxiosError(error)) {

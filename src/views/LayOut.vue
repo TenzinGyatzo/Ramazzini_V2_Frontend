@@ -54,7 +54,7 @@ onMounted(() => {
         <p class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl xl:w-2/3 py-2 text-center text-gray-600">La
           aplicación para la creación y gestión de informes de exámenes médicos laborales.</p>
         <p class="text-gray-600 text-lg my-4">Hola, {{ user.getUsername }}</p>
-        <div class="grid gap-4 mb-20">
+        <div class="grid gap-4 mb-10">
           <div class="flex justify-center">
             <a href="/empresas" class="w-full">
               <button

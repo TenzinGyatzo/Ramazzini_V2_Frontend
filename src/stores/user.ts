@@ -23,6 +23,9 @@ export const useUserStore = defineStore("user", () => {
             const { data } = await AuthAPI.auth();
             user.value = data; // Asegúrate de que `data` coincide con el tipo User
             console.log('Usuario', user.value);
+
+            // Guardar el usuario en localStorage
+            localStorage.setItem('user', JSON.stringify(user.value));
         } catch (error) {
             console.error(error);
         }

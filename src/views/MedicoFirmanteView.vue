@@ -1,11 +1,9 @@
 <script setup>
 import { ref, inject } from 'vue';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
-import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
 
 const medicoFirmante = useMedicoFirmanteStore();
-const user = useUserStore();
 const router = useRouter();
 
 const firmaPreview = ref(null);
@@ -28,6 +26,10 @@ const handleFileChange = (event) => {
     }
 };
 
+const user = ref(
+    JSON.parse(localStorage.getItem('user')) || null // Recuperar usuario guardado o establecer null si no existe
+);
+
 const handleSubmit = async (data) => {
     const formData = new FormData();
 
@@ -38,7 +40,7 @@ const handleSubmit = async (data) => {
     formData.append('numeroCedulaEspecialista', data.numeroCedulaEspecialista);
     formData.append('nombreCredencialAdicional', data.nombreCredencialAdicional);
     formData.append('numeroCredencialAdicional', data.numeroCredencialAdicional);
-    formData.append('idUser', user._id);
+    formData.append('idUser', user.value._id);
 
     if (firmaArchivo.value) {
         formData.append('firma', firmaArchivo.value);
