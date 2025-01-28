@@ -31,52 +31,66 @@ const user = ref(
 );
 
 const handleSubmit = async (data) => {
+
     const formData = new FormData();
 
-    formData.append('nombre', data.nombre);
+    // Agregar solo los campos con valores definidos
+    Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") {
+        formData.append(key, value);
+        }
+    });
+    formData.append('idUser', user.value._id);
+  
+    /* formData.append('nombre', data.nombre);
     formData.append('tituloProfesional', data.tituloProfesional);
     formData.append('numeroCedulaProfesional', data.numeroCedulaProfesional);
     formData.append('especialistaSaludTrabajo', data.especialistaSaludTrabajo);
     formData.append('numeroCedulaEspecialista', data.numeroCedulaEspecialista);
     formData.append('nombreCredencialAdicional', data.nombreCredencialAdicional);
     formData.append('numeroCredencialAdicional', data.numeroCredencialAdicional);
-    formData.append('idUser', user.value._id);
+    formData.append('idUser', user.value._id); */
 
     if (firmaArchivo.value) {
         formData.append('firma', firmaArchivo.value);
     }
 
     // Depuramos el contenido de FormData
-    for (let [key, value] of formData.entries()) {
+    /* for (let [key, value] of formData.entries()) {
         console.log(`${key}:`, value);
-    }
+    } */
 
     try {
         let response;
-
         if (medicoFirmante.medicoFirmante._id) {
-            // Actualizar medico existente
+            console.log("Actualizando");
+            console.log('medicoFirmante._id', medicoFirmante.medicoFirmante._id);
             response = await medicoFirmante.updateMedicoFirmanteById(medicoFirmante.medicoFirmante._id, formData);
         } else {
-            // Crear nuevo medico
+            console.log("Creando");
+            console.log('medicoFirmante._id', medicoFirmante.medicoFirmante._id);
             response = await medicoFirmante.createMedicoFirmante(formData);
         }
 
+        // Mostrar mensaje de éxito en el toast
         toast.open({
             message: response.message,
         });
 
         // Usar el ID devuelto por el backend para recargar los datos
         const idMedicoFirmante = response.data._id || medicoFirmante.medicoFirmante._id;
+
         if (idMedicoFirmante) {
             await medicoFirmante.loadMedicoFirmanteById(idMedicoFirmante);
+        } else {
+            console.warn("No se pudo obtener el ID del médico firmante. No se cargaron nuevos datos.");
         }
 
     } catch (error) {
-        console.error('Error al crear o actualizar el médico firmante:', error);
-        alert('Hubo un error al crear o actualizar el médico firmante, por favor intente nuevamente.');
+        console.error("Error al crear o actualizar el médico firmante:", error);
     }
 };
+
 
 const volver = () => {
     router.push({ name: 'inicio' });

@@ -42,13 +42,14 @@ export const useMedicoFirmanteStore = defineStore("medicoFirmante", () => {
         }
     }
 
-    async function loadMedicoFirmante(idUsuario: string) {
+    async function loadMedicoFirmante(idUser: string) {
+        console.log("Solicitando medico firmante por usuario...", idUser);
         try {
             loading.value = true;
     
-            const { data } = await MedicoFirmanteAPI.getMedicoFirmanteByUserId(idUsuario);
-    
-            medicoFirmante.value = data.data;
+            const { data } = await MedicoFirmanteAPI.getMedicoFirmanteByUserId(idUser);
+            console.log("Respuesta del servidor:", data);
+            medicoFirmante.value = data;
             console.log("Médico Firmante:", medicoFirmante.value);
         } catch (error) {
         // Verificar si el error es de tipo AxiosError
@@ -76,7 +77,7 @@ export const useMedicoFirmanteStore = defineStore("medicoFirmante", () => {
             const { data } = await MedicoFirmanteAPI.createMedicoFirmante(medicoFirmanteData);
             medicoFirmante.value = data;
             console.log("Medico Firmante", medicoFirmante.value);
-            return medicoFirmanteData;
+            return data;
         } catch (error) {
             console.error("Error al cargar médico firmante:", error);
         } finally {
@@ -90,7 +91,7 @@ export const useMedicoFirmanteStore = defineStore("medicoFirmante", () => {
             const { data } = await MedicoFirmanteAPI.updateMedicoFirmanteById(idMedicoFirmante, medicoFirmanteData);
             medicoFirmante.value = data;
             console.log("Medico Firmante", medicoFirmante.value);
-            return medicoFirmanteData;
+            return data;
         } catch (error) {
             console.error("Error al cargar médico firmante:", error);
         } finally {

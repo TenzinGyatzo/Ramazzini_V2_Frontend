@@ -5,8 +5,8 @@ export default {
         return medicoFirmante.get(`obtener-medico/${medicoFirmanteId}`);
     },
 
-    getMedicoFirmanteByUserId(idUsuario: string) {
-        return medicoFirmante.get(`obtener-medico-por-usuario/${idUsuario}`);
+    getMedicoFirmanteByUserId(idUser: string) {
+        return medicoFirmante.get(`obtener-medico-por-usuario/${idUser}`);
     },
 
     updateMedicoFirmanteById(medicoFirmanteId: string, medicoFirmanteData: any) {
