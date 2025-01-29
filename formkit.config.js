@@ -21,11 +21,11 @@ const urlValidation = ({ value }) => {
   return urlRegex.test(value.trim());
 };
 const cedulaProfesionalValidation = ({ value }) => {
-  const cedulaNumberRegex = /^[0-9]{6}$/;
+  const cedulaNumberRegex = /^[0-9]{6,8}$/;
   return cedulaNumberRegex.test(value.trim());
 };
 const cedulaEspecialistaValidation = ({ value }) => {
-  const cedulaNumberRegex = /^[0-9]{7}$/;
+  const cedulaNumberRegex = /^[0-9]{7,8}$/;
   return cedulaNumberRegex.test(value.trim());
 };
 

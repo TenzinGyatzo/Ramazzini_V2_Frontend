@@ -43,12 +43,10 @@ export const useMedicoFirmanteStore = defineStore("medicoFirmante", () => {
     }
 
     async function loadMedicoFirmante(idUser: string) {
-        console.log("Solicitando medico firmante por usuario...", idUser);
         try {
             loading.value = true;
     
             const { data } = await MedicoFirmanteAPI.getMedicoFirmanteByUserId(idUser);
-            console.log("Respuesta del servidor:", data);
             medicoFirmante.value = data;
             console.log("Médico Firmante:", medicoFirmante.value);
         } catch (error) {

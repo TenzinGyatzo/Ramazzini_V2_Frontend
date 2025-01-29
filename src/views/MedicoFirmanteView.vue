@@ -37,11 +37,11 @@ const handleSubmit = async (data) => {
     // Agregar solo los campos con valores definidos
     Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== "") {
-        formData.append(key, value);
+            formData.append(key, value);
         }
     });
     formData.append('idUser', user.value._id);
-  
+
     /* formData.append('nombre', data.nombre);
     formData.append('tituloProfesional', data.tituloProfesional);
     formData.append('numeroCedulaProfesional', data.numeroCedulaProfesional);
@@ -56,9 +56,9 @@ const handleSubmit = async (data) => {
     }
 
     // Depuramos el contenido de FormData
-    /* for (let [key, value] of formData.entries()) {
+    for (let [key, value] of formData.entries()) {
         console.log(`${key}:`, value);
-    } */
+    }
 
     try {
         let response;
@@ -105,7 +105,6 @@ const siONo = ['Si', 'No'];
     <Transition appear name="fade-slow">
         <div
             class="relative bg-white text-gray-900 w-full max-w-5xl p-10 rounded-lg shadow-slate-900 max-h-[82vh] overflow-y-auto mx-auto">
-
             <Transition appear name="fade-slow">
                 <div v-if="medicoFirmante.loading">
                     <!-- <h1 class="text-3xl text-center">Cargando medico...</h1> -->
@@ -116,7 +115,7 @@ const siONo = ['Si', 'No'];
 
                     <FormKit type="form" :actions="false"
                         incomplete-message="Por favor, valide que los datos sean correctos*" @submit="handleSubmit">
-                        
+
                         <FormKit type="text" label="Nombre Completo" name="nombre"
                             placeholder="Ej. Juan Alfonso Perez Galeana" validation="required"
                             :validation-messages="{ required: 'Este campo es obligatorio' }"
@@ -124,21 +123,22 @@ const siONo = ['Si', 'No'];
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
 
-                            <FormKit type="select" label="Título Profesional" name="tituloProfesional" placeholder='Selecciona "Dr." o "Dra."'
-                                :options="titulos" :value="medicoFirmante.medicoFirmante?.tituloProfesional" />
+                            <FormKit type="select" label="Título Profesional" name="tituloProfesional"
+                                placeholder='Selecciona "Dr." o "Dra."' :options="titulos"
+                                :value="medicoFirmante.medicoFirmante?.tituloProfesional" />
 
                             <FormKit type="text" label="Número de Cédula Profesional" name="numeroCedulaProfesional"
-                                placeholder="Ej. 142988" :value="medicoFirmante.medicoFirmante?.numeroCedulaProfesional"
-                                :validation-messages="{ cedulaProfesionalValidation: 'El número de cédula profesional debe tener 6 dígitos.' }" />
+                                placeholder="Ej. 142988" validation="cedulaProfesionalValidation" :value="medicoFirmante.medicoFirmante?.numeroCedulaProfesional"
+                                :validation-messages="{ cedulaProfesionalValidation: 'El número de cédula profesional debe tener entre 6 y 8 dígitos.' }" />
 
                             <FormKit type="select" label="Especialista en Medicina del Trabajo"
                                 name="especialistaSaludTrabajo" placeholder="¿Es especialista en Medicina del Trabajo"
                                 :options="siONo" :value="medicoFirmante.medicoFirmante?.especialistaSaludTrabajo" />
 
                             <FormKit type="text" label="Cédula de Especialidad en Medicina del Trabajo"
-                                name="numeroCedulaEspecialista" placeholder="Ej. 3425572"
+                                name="numeroCedulaEspecialista" placeholder="Ej. 3425572" validation="cedulaEspecialistaValidation"
                                 :value="medicoFirmante.medicoFirmante?.numeroCedulaEspecialista"
-                                :validation-messages="{ cedulaEspecialistaValidation: 'El número de cédula de especialidad debe tener 7 dígitos.' }" />
+                                :validation-messages="{ cedulaEspecialistaValidation: 'El número de cédula de especialidad debe tener entre 7 y 8 dígitos.' }" />
 
                             <FormKit type="text" label="Credencial Adicional" name="nombreCredencialAdicional"
                                 placeholder="Ej. Certificado ante el Consejo Mexicano de Medicina del Trabajo"
@@ -149,7 +149,7 @@ const siONo = ['Si', 'No'];
                                 :value="medicoFirmante.medicoFirmante?.numeroCredencialAdicional" />
                         </div>
 
-                        <FormKit type="file" label="Firma" name="firma" accept=".png, .jpg, .jpeg, .svg"
+                        <FormKit type="file" label="Firma (.png sin fondo)" name="firma" accept=".png, .jpg, .jpeg, .svg"
                             multiple="false" @change="handleFileChange" />
 
                         <!-- Mostrar la vista previa de la firma -->

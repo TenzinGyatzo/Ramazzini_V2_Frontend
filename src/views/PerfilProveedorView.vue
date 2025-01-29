@@ -137,200 +137,107 @@ const estadosDeMexico = [
 <template>
   <Transition appear name="fade-slow">
     <div
-      class="relative bg-white text-gray-900 w-full max-w-5xl p-10 rounded-lg shadow-slate-900 max-h-[82vh] overflow-y-auto mx-auto"
-    >
+      class="relative bg-white text-gray-900 w-full max-w-5xl p-10 rounded-lg shadow-slate-900 max-h-[82vh] overflow-y-auto mx-auto">
       <Transition appear name="fade-slow">
         <div v-if="proveedorSalud.loading">
           <!-- <h1 class="text-3xl text-center">Cargando proveedor...</h1> -->
         </div>
         <div v-else>
-          <h1 class="text-3xl">
-            Perfil de Proveedor de Servicios de Salud Ocupacional
-          </h1>
+          <h1 class="text-3xl">Perfil de Proveedor de Servicios de Salud Ocupacional</h1>
           <hr class="mt-2 mb-3" />
 
-          <FormKit
-            type="form"
-            :actions="false"
-            incomplete-message="Por favor, valide que los datos sean correctos*"
-            @submit="handleSubmit"
-          >
+          <FormKit type="form" :actions="false" incomplete-message="Por favor, valide que los datos sean correctos*"
+            @submit="handleSubmit">
+            
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-              <FormKit
-                type="text"
-                label="Razón Social, nombre o denominación*"
-                name="nombre"
-                placeholder="¿Cual es tu nombre, denominación o razón social?"
-                validation="required"
+              <FormKit type="text" label="Razón Social, nombre o denominación*" name="nombre"
+                placeholder="¿Cual es tu nombre, denominación o razón social?" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
-                :value="proveedorSalud.proveedorSalud.nombre"
-              />
+                :value="proveedorSalud.proveedorSalud.nombre" />
 
-              <FormKit
-                type="text"
-                label="RFC"
-                name="RFC"
-                placeholder="RFC del proveedor"
-                validation="required|rfcValidation"
-                :validation-messages="{
+              <FormKit type="text" label="RFC" name="RFC" placeholder="RFC del proveedor"
+                validation="required|rfcValidation" :validation-messages="{
                   required: 'Este campo es obligatorio',
                   rfcValidation: 'El RFC ingresado no es válido.',
-                }"
-                :value="proveedorSalud.proveedorSalud?.RFC"
-              />
+                }" :value="proveedorSalud.proveedorSalud?.RFC" />
 
-              <FormKit
-                type="select"
-                label="Perfil de proveedor*"
-                name="perfilProveedorSalud"
-                placeholder="Selecciona el que te describa mejor:"
-                :options="perfiles"
-                validation="required"
+              <FormKit type="select" label="Perfil de proveedor*" name="perfilProveedorSalud"
+                placeholder="Selecciona el que te describa mejor:" :options="perfiles" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
-                :value="proveedorSalud.proveedorSalud.perfilProveedorSalud"
-              />
+                :value="proveedorSalud.proveedorSalud.perfilProveedorSalud" />
 
-              <FormKit
-                type="select"
-                label="Estado"
-                name="estado"
-                placeholder="Seleccione su estado"
-                :options="estadosDeMexico"
-                :value="proveedorSalud.proveedorSalud?.estado || ''"
-              />
+              <FormKit type="select" label="Estado" name="estado" placeholder="Seleccione su estado"
+                :options="estadosDeMexico" :value="proveedorSalud.proveedorSalud?.estado || ''" />
 
-              <FormKit
-                type="text"
-                label="Municipio"
-                name="municipio"
-                placeholder="Municipio del proveedor"
-                :value="proveedorSalud.proveedorSalud?.municipio"
-              />
+              <FormKit type="text" label="Municipio" name="municipio" placeholder="Municipio del proveedor"
+                :value="proveedorSalud.proveedorSalud?.municipio" />
 
-              <FormKit
-                type="text"
-                label="Código Postal"
-                name="codigoPostal"
-                placeholder="Ej. 44100"
-                validation="postalCodeValidation"
-                :value="proveedorSalud.proveedorSalud?.codigoPostal"
+              <FormKit type="text" label="Código Postal" name="codigoPostal" placeholder="Ej. 44100"
+                validation="postalCodeValidation" :value="proveedorSalud.proveedorSalud?.codigoPostal"
                 :validation-messages="{
                   postalCodeValidation:
                     'El código postal debe tener 5 dígitos.',
-                }"
-              />
+                }" />
 
-              <FormKit
-                type="text"
-                label="Dirección (Calle, número y colonia)"
-                name="direccion"
-                placeholder="Ej. Calle Madero #123, Colonia Centro"
-                :value="proveedorSalud.proveedorSalud?.direccion"
-              />
+              <FormKit type="text" label="Dirección (Calle, número y colonia)" name="direccion"
+                placeholder="Ej. Calle Madero #123, Colonia Centro" :value="proveedorSalud.proveedorSalud?.direccion" />
 
-              <FormKit
-                type="text"
-                label="Teléfono"
-                name="telefono"
-                placeholder="10 dígitos"
-                validation="phoneValidation"
-                :value="proveedorSalud.proveedorSalud?.telefono"
-                :validation-messages="{
+              <FormKit type="text" label="Teléfono" name="telefono" placeholder="10 dígitos"
+                validation="phoneValidation" :value="proveedorSalud.proveedorSalud?.telefono" :validation-messages="{
                   phoneValidation:
                     'El número de teléfono debe tener 10 dígitos.',
-                }"
-              />
+                }" />
 
-              <FormKit
-                type="text"
-                label="Correo Electrónico"
-                name="correoElectronico"
-                placeholder="Correo electrónico del proveedor"
-                validation="mailValidation"
-                :value="proveedorSalud.proveedorSalud?.correoElectronico"
-                :validation-messages="{
+              <FormKit type="text" label="Correo Electrónico" name="correoElectronico"
+                placeholder="Correo electrónico del proveedor" validation="mailValidation"
+                :value="proveedorSalud.proveedorSalud?.correoElectronico" :validation-messages="{
                   mailValidation:
                     'El correo electrónico ingresado no es válido.',
-                }"
-              />
+                }" />
 
-              <FormKit
-                type="text"
-                label="Sitio Web"
-                name="sitioWeb"
-                placeholder="Sitio web del proveedor"
-                validation="urlValidation"
-                :value="proveedorSalud.proveedorSalud?.sitioWeb"
-                :validation-messages="{
+              <FormKit type="text" label="Sitio Web" name="sitioWeb" placeholder="Sitio web del proveedor"
+                validation="urlValidation" :value="proveedorSalud.proveedorSalud?.sitioWeb" :validation-messages="{
                   urlValidation: 'El sitio web ingresado no es válido.',
-                }"
-              />
+                }" />
             </div>
 
-            <FormKit
-              type="file"
-              label="Logotipo"
-              name="logotipoEmpresa"
-              accept=".png, .jpg, .jpeg, .svg"
-              multiple="false"
-              @change="handleFileChange"
-            />
+            <FormKit type="file" label="Logotipo" name="logotipoEmpresa" accept=".png, .jpg, .jpeg, .svg"
+              multiple="false" @change="handleFileChange" />
 
             <!-- Mostrar la vista previa del logotipo -->
             <div class="flex flex-row justify-center items-center gap-4">
-              <div
-                v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data"
-                class="w-1/2 flex flex-col items-center"
-              >
+              <div v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data" class="w-1/2 flex flex-col items-center">
                 <p class="font-medium text-lg text-gray-700">
                   Logotipo actual:
                 </p>
-                <img
-                  :src="
-                    '/uploads/providers-logos/' +
-                    proveedorSalud.proveedorSalud.logotipoEmpresa?.data +
-                    '?t=' +
-                    Date.now()
-                  "
-                  :alt="
-                    'Logo de ' + proveedorSalud.proveedorSalud.nombreComercial
-                  "
-                  class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"
-                />
+                <img :src="'/uploads/providers-logos/' +
+                  proveedorSalud.proveedorSalud.logotipoEmpresa?.data +
+                  '?t=' +
+                  Date.now()
+                  " :alt="'Logo de ' + proveedorSalud.proveedorSalud.nombreComercial
+                    " class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />
               </div>
 
               <Transition appear name="fade-slow">
-                <div
-                  v-if="logotipoPreview"
-                  class="w-1/2 flex flex-col items-center"
-                >
-                  <p
-                    v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data"
-                    class="font-medium text-lg text-gray-700"
-                  >
+                <div v-if="logotipoPreview" class="w-1/2 flex flex-col items-center">
+                  <p v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data"
+                    class="font-medium text-lg text-gray-700">
                     Logotipo nuevo:
                   </p>
                   <p v-else class="font-medium text-lg text-gray-700">
                     Logotipo:
                   </p>
-                  <img
-                    :src="logotipoPreview"
-                    alt="Vista previa del logotipo"
-                    class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"
-                  />
+                  <img :src="logotipoPreview" alt="Vista previa del logotipo"
+                    class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />
                 </div>
               </Transition>
             </div>
             <hr class="my-3" />
-            <div
-              class="flex flex-col sm:flex-row justify-between items-center gap-2"
-            >
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
               <!-- Botón de Volver -->
-              <button
-                type="button"
+              <button type="button"
                 class="text-lg w-full sm:w-1/2 rounded-lg bg-white font-medium text-gray-800 shadow-sm ring-2 ring-inset ring-gray-300 hover:bg-gray-100 p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg mb-1"
-                @click="volver"
-              >
+                @click="volver">
                 Volver
               </button>
               <!-- Botón de Actualizar -->

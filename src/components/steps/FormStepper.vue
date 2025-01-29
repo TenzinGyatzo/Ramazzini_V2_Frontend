@@ -1,6 +1,6 @@
 <script>
 import axios from 'axios';
-import { onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -308,6 +308,11 @@ export default {
       return result;
     }
 
+    const user = ref(
+        JSON.parse(localStorage.getItem('user')) || null // Recuperar usuario guardado o establecer null si no existe
+    );
+    console.log('Usuario:', user.value);
+
     const handleSubmit = async () => {
       let datosLimpios;
 
@@ -363,7 +368,7 @@ export default {
         const documentId = response.data._id;
 
         // Llamada al backend para generar el informe
-        const apiEndpoint = `${import.meta.env.VITE_API_URL}/informes/${documentos.currentTypeOfDocument}/${empresas.currentEmpresaId}/${trabajadores.currentTrabajadorId}/${documentId}`;
+        const apiEndpoint = `${import.meta.env.VITE_API_URL}/informes/${documentos.currentTypeOfDocument}/${empresas.currentEmpresaId}/${trabajadores.currentTrabajadorId}/${documentId}/${user.value._id}`;
 
         const informeResponse = await axios.get(apiEndpoint);
         // console.log("Respuesta del backend para el informe:", informeResponse.data);
