@@ -12,6 +12,7 @@ onMounted(() => {
   if (!dataTableInstance) {
     dataTableInstance = new DataTablesCore('#customTable', {
       select: true,
+      order: [[0, 'desc']],
       /* fixedColumns:{
         leftColumns: 2
       }, */
