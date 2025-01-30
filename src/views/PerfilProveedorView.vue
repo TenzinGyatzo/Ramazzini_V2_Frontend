@@ -201,7 +201,7 @@ const estadosDeMexico = [
                 }" />
             </div>
 
-            <FormKit type="file" label="Logotipo" name="logotipoEmpresa" accept=".png, .jpg, .jpeg, .svg"
+            <FormKit type="file" label="Logotipo (Asegura que sea .png sin fondo, cuadrada, de al menos 500 x 500px, con el menor espacio posible entre el logo y el borde de la imagen)" name="logotipoEmpresa" accept=".png, .jpg, .jpeg, .svg"
               multiple="false" @change="handleFileChange" />
 
             <!-- Mostrar la vista previa del logotipo -->

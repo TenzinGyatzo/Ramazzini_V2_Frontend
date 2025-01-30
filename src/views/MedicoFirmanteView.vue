@@ -141,7 +141,7 @@ const siONo = ['Si', 'No'];
                                 :validation-messages="{ cedulaEspecialistaValidation: 'El número de cédula de especialidad debe tener entre 7 y 8 dígitos.' }" />
 
                             <FormKit type="text" label="Credencial Adicional" name="nombreCredencialAdicional"
-                                placeholder="Ej. Certificado ante el Consejo Mexicano de Medicina del Trabajo"
+                                placeholder="Ej. Certificado Consejo Mex. de Med. Trab."
                                 :value="medicoFirmante.medicoFirmante?.nombreCredencialAdicional" />
 
                             <FormKit type="text" label="Número de Credencial Adicional" name="numeroCredencialAdicional"
