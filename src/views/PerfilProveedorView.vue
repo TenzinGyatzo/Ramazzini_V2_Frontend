@@ -210,7 +210,7 @@ const estadosDeMexico = [
                 <p class="font-medium text-lg text-gray-700">
                   Logotipo actual:
                 </p>
-                <img :src="'/uploads/providers-logos/' +
+                <img :src="'http://localhost:3000/assets/providers-logos/' +
                   proveedorSalud.proveedorSalud.logotipoEmpresa?.data +
                   '?t=' +
                   Date.now()

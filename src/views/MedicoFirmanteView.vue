@@ -156,8 +156,8 @@ const siONo = ['Si', 'No'];
                         <div class="flex flex-row justify-center items-center gap-4">
                             <div v-if="medicoFirmante.medicoFirmante?.firma?.data"
                                 class="w-1/2 flex flex-col items-center">
-                                <p class="font-medium text-lg text-gray-700">Logotipo actual:</p>
-                                <img :src="'/uploads/signatories/' + medicoFirmante.medicoFirmante.firma?.data + '?t=' + Date.now()"
+                                <p class="font-medium text-lg text-gray-700">Firma actual:</p>
+                                <img :src="'http://localhost:3000/assets/signatories/' + medicoFirmante.medicoFirmante.firma?.data + '?t=' + Date.now()"
                                     :alt="'Logo de ' + medicoFirmante.medicoFirmante.nombre"
                                     class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />
                             </div>
@@ -166,7 +166,7 @@ const siONo = ['Si', 'No'];
                                 <div v-if="firmaPreview" class="w-1/2 flex flex-col items-center">
                                     <p v-if="medicoFirmante.medicoFirmante?.firma?.data"
                                         class="font-medium text-lg text-gray-700">
-                                        Firma actual:</p>
+                                        Firma Nueva:</p>
                                     <p v-else class="font-medium text-lg text-gray-700">Firma:</p>
                                     <img :src="firmaPreview" alt="Vista previa de la firma"
                                         class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />
