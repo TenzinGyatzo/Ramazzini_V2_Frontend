@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, inject, watch, onMounted } from 'vue';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 import { useRouter } from 'vue-router';
 
@@ -9,7 +9,29 @@ const router = useRouter();
 const firmaPreview = ref(null);
 const firmaArchivo = ref(null);
 
+// Inicializa los valores del formulario desde el store al montar el componente
+const especialistaSaludTrabajo = ref("No");
+const numeroCedulaEspecialista = ref("");
+
+// Observa los cambios en medicoFirmante.medicoFirmante y precarga los valores cuando estén disponibles
+watch(
+    () => medicoFirmante.medicoFirmante,
+    (nuevoMedicoFirmante) => {
+        if (nuevoMedicoFirmante) {
+            especialistaSaludTrabajo.value = nuevoMedicoFirmante.especialistaSaludTrabajo || "No";
+            numeroCedulaEspecialista.value = nuevoMedicoFirmante.numeroCedulaEspecialista || "";
+        }
+    },
+    { immediate: true } // Ejecutar inmediatamente al montar el componente
+);
+
 const toast = inject('toast');
+
+watch(especialistaSaludTrabajo, (newValue) => {
+    if (newValue === 'No') {
+        numeroCedulaEspecialista.value = "";
+    }
+});
 
 const handleFileChange = (event) => {
     const file = event?.target?.files?.[0];
@@ -34,22 +56,19 @@ const handleSubmit = async (data) => {
 
     const formData = new FormData();
 
+    // Si el campo está vacío, que se agregue como cadena vacia
+    if (numeroCedulaEspecialista.value === "") {
+        formData.append('numeroCedulaEspecialista', "");
+    }
+
     // Agregar solo los campos con valores definidos
     Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== "") {
             formData.append(key, value);
         }
     });
-    formData.append('idUser', user.value._id);
 
-    /* formData.append('nombre', data.nombre);
-    formData.append('tituloProfesional', data.tituloProfesional);
-    formData.append('numeroCedulaProfesional', data.numeroCedulaProfesional);
-    formData.append('especialistaSaludTrabajo', data.especialistaSaludTrabajo);
-    formData.append('numeroCedulaEspecialista', data.numeroCedulaEspecialista);
-    formData.append('nombreCredencialAdicional', data.nombreCredencialAdicional);
-    formData.append('numeroCredencialAdicional', data.numeroCredencialAdicional);
-    formData.append('idUser', user.value._id); */
+    formData.append('idUser', user.value._id);
 
     if (firmaArchivo.value) {
         formData.append('firma', firmaArchivo.value);
@@ -63,12 +82,8 @@ const handleSubmit = async (data) => {
     try {
         let response;
         if (medicoFirmante.medicoFirmante._id) {
-            console.log("Actualizando");
-            console.log('medicoFirmante._id', medicoFirmante.medicoFirmante._id);
             response = await medicoFirmante.updateMedicoFirmanteById(medicoFirmante.medicoFirmante._id, formData);
         } else {
-            console.log("Creando");
-            console.log('medicoFirmante._id', medicoFirmante.medicoFirmante._id);
             response = await medicoFirmante.createMedicoFirmante(formData);
         }
 
@@ -133,11 +148,12 @@ const siONo = ['Si', 'No'];
 
                             <FormKit type="select" label="Especialista en Medicina del Trabajo"
                                 name="especialistaSaludTrabajo" placeholder="¿Es especialista en Medicina del Trabajo"
-                                :options="siONo" :value="medicoFirmante.medicoFirmante?.especialistaSaludTrabajo" />
+                                :options="siONo" v-model="especialistaSaludTrabajo" />
 
                             <FormKit type="text" label="Cédula de Especialidad en Medicina del Trabajo"
                                 name="numeroCedulaEspecialista" placeholder="Ej. 3425572" validation="cedulaEspecialistaValidation"
-                                :value="medicoFirmante.medicoFirmante?.numeroCedulaEspecialista"
+                                :disabled="especialistaSaludTrabajo !== 'Si'"
+                                v-model="numeroCedulaEspecialista"
                                 :validation-messages="{ cedulaEspecialistaValidation: 'El número de cédula de especialidad debe tener entre 7 y 8 dígitos.' }" />
 
                             <FormKit type="text" label="Credencial Adicional" name="nombreCredencialAdicional"

@@ -103,9 +103,10 @@ const closeModal = () => {
             <FormKit type="text" label="Razón Social*" name="razonSocial" placeholder="Razón social de la empresa"
               validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
               :value="empresas.currentEmpresa?.razonSocial || ''" />
-            <FormKit type="text" label="RFC*" name="RFC" placeholder="RFC" validation="required"
-              :validation-messages="{ required: 'Este campo es obligatorio' }"
-              :value="empresas.currentEmpresa?.RFC || ''" />
+            <FormKit type="text" label="RFC*" name="RFC" placeholder="RFC" validation="required|rfcValidation" :validation-messages="{
+                  required: 'Este campo es obligatorio',
+                  rfcValidation: 'El RFC ingresado no es válido.',
+                }" :value="empresas.currentEmpresa?.RFC || ''" />
             <FormKit type="text" label="Giro de la empresa*" name="giroDeEmpresa" placeholder="Giro de la Empresa"
               validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
               :value="empresas.currentEmpresa?.giroDeEmpresa || ''" />

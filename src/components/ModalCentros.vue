@@ -86,8 +86,10 @@ const closeModal = () => {
               validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
               :value="centrosTrabajo.currentCentroTrabajo?.direccionCentro || ''" />
             <FormKit type="text" label="Código Postal*" name="codigoPostal" placeholder="5 dígitos"
-              validation="required|length:5"
-              :validation-messages="{ required: 'Este campo es obligatorio', length: 'El código postal debe tener 5 dígitos' }"
+            validation="required|postalCodeValidation" :validation-messages="{
+                  required: 'Este campo es obligatorio',
+                  postalCodeValidation: 'El código postal debe tener 5 dígitos.',
+                }"
               :value="centrosTrabajo.currentCentroTrabajo?.codigoPostal || ''" />
             <FormKit type="select" label="Estado*" name="estado" placeholder="Seleccione un estado"
               :options="estadosDeMexico" validation="required"
