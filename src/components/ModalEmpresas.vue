@@ -1,13 +1,32 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
 const empresas = useEmpresasStore();
+const proveedorSaludStore = useProveedorSaludStore();
 const emit = defineEmits(['closeModal']);
 
 // Propiedades reactivas para el logotipo
 const logotipoPreview = ref(null);  // Para la vista previa de la imagen
 const logotipoArchivo = ref(null);  // Para el archivo cargado
+
+const user = ref(
+    JSON.parse(localStorage.getItem('user')) || null // Recuperar usuario guardado o establecer null si no existe
+);
+
+watch(
+    () => user.user,
+    (user) => {
+        if (user?.idProveedorSalud) {
+            proveedorSaludStore.loadProveedorSalud(user.idProveedorSalud);
+        }
+        if (user?._id){
+          medicoFirmanteStore.loadMedicoFirmante(user._id);
+        }
+    },
+    { immediate: true } // Ejecutar inmediatamente si ya hay datos cargados
+);
 
 // Función que se ejecuta cuando el usuario selecciona un archivo
 const handleFileChange = (event) => {
@@ -37,6 +56,7 @@ const handleSubmit = async (data) => {
   formData.append('baseOperaciones', 'Los Mochis'); // TODO: Ajustar valor "Pruevas" o "Los Mochis" según el usuario
   formData.append('createdBy', '6650f38308ac3beedf5ac41b'); // TODO: Obtener el ID del usuario actual
   formData.append('updatedBy', '6650f38308ac3beedf5ac41b'); // TODO: Obtener el ID del usuario actual
+  formData.append('idProveedorSalud', proveedorSaludStore.proveedorSalud._id);
 
   // Añadir el archivo del logotipo si existe
   if (logotipoArchivo.value) {
@@ -55,7 +75,7 @@ const handleSubmit = async (data) => {
       await empresas.createEmpresa(formData);
     }
     emit('closeModal');
-    empresas.fetchEmpresas();
+    empresas.fetchEmpresas(proveedorSaludStore.proveedorSalud._id);
   } catch (error) {
     console.error('Error al crear o actualizar la empresa:', error);
     alert('Hubo un error al crear o actualizar la empresa, por favor intente nuevamente.');

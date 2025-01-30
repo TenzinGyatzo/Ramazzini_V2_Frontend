@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import EmpresaItem from '@/components/EmpresaItem.vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import GreenButton from '@/components/GreenButton.vue';
 import ModalEmpresas from '@/components/ModalEmpresas.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
 import type { Empresa } from '@/interfaces/empresa.interface';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
 const empresas = useEmpresasStore();
+const proveedorSalud = useProveedorSaludStore();
 
 const showModal = ref(false);
 const showDeleteModal = ref(false);
@@ -48,15 +50,21 @@ const deleteEmpresaById = async (id: string) => {
     await empresas.deleteEmpresaById(id);
 
     // Una vez eliminada, volvemos a hacer fetch para actualizar la lista
-    await empresas.fetchEmpresas();
+    await empresas.fetchEmpresas(proveedorSalud.proveedorSalud!._id);
   } catch (error) {
     console.error('Error al eliminar la empresa:', error);
   }
 };
 
-onMounted(() => {
-  empresas.fetchEmpresas();
-});
+watch(
+    () => proveedorSalud.proveedorSalud,
+    (nuevoProveedorSalud) => {
+        if (nuevoProveedorSalud) {
+          empresas.fetchEmpresas(proveedorSalud.proveedorSalud!._id);
+        }
+    },
+    { immediate: true } // Ejecutar inmediatamente al montar el componente
+);
 </script>
 
 <template>
@@ -76,10 +84,18 @@ onMounted(() => {
       <div v-if="empresas.loading">
         <h1 class="text-3xl sm:text-4xl md:text-5xl py-20 text-center font-semibold text-gray-700">Cargando...</h1>
       </div>
-      <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-        <EmpresaItem v-for="empresa in empresas.empresas" :key="empresa._id" :empresa="empresa"
-          @editarEmpresa="openModal" @eliminarEmpresa="toggleDeleteModal" />
+      <div v-else>
+        <!-- Si el array está vacío, mostramos el mensaje -->
+        <div v-if="empresas.empresas.length === 0">
+          <h2 class="text-2xl sm:text-3xl md:text-4xl py-10 text-center font-semibold text-gray-700">Aún no hay empresas registradas</h2>
+        </div>
+        <!-- Si hay empresas, mostramos los items -->
+        <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+          <EmpresaItem v-for="empresa in empresas.empresas" :key="empresa._id" :empresa="empresa"
+            @editarEmpresa="openModal" @eliminarEmpresa="toggleDeleteModal" />
+        </div>
       </div>
     </Transition>
   </div>
 </template>
+

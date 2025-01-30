@@ -17,6 +17,7 @@ interface Empresa {
   updatedBy: string;
   createdAt: string;
   updatedAt: string;
+  idProveedorSalud: string;
 }
 
 export const useEmpresasStore = defineStore("empresas", () => {
@@ -39,17 +40,23 @@ export const useEmpresasStore = defineStore("empresas", () => {
       updatedBy: "",
       createdAt: "",
       updatedAt: "",
+      idProveedorSalud: "",
     };
     currentEmpresaId.value = "";
   }
 
-  async function fetchEmpresas() {
+  async function fetchEmpresas(idProveedorSalud: string) {
     try {
       loading.value = true;
-      const { data } = await EmpresasAPI.getEmpresas();
-      empresas.value = data;
+      const { data } = await EmpresasAPI.getEmpresas(idProveedorSalud);
+      if (data.message) {
+        empresas.value = []; // Si no hay empresas, mantenemos el array vacío
+      } else {
+        empresas.value = data; // Si hay empresas, las asignamos
+      }
     } catch (error) {
       console.log(error);
+      empresas.value = [];
     } finally {
       loading.value = false;
     }
