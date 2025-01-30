@@ -149,7 +149,7 @@ const siONo = ['Si', 'No'];
                                 :value="medicoFirmante.medicoFirmante?.numeroCredencialAdicional" />
                         </div>
 
-                        <FormKit type="file" label="Firma (.png sin fondo)" name="firma" accept=".png, .jpg, .jpeg, .svg"
+                        <FormKit type="file" label="Firma (Asegura que sea .png sin fondo, cuadrada, de al menos 500 x 500px)" name="firma" accept=".png, .jpg, .jpeg, .svg"
                             multiple="false" @change="handleFileChange" />
 
                         <!-- Mostrar la vista previa de la firma -->
