@@ -7,14 +7,34 @@ import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
 import { calcularEdad } from '@/helpers/dates';
 import DocumentosAPI from '@/api/DocumentosAPI';
+import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
 const formData = useFormDataStore();
 const steps = useStepsStore();
+const medicoFirmanteStore = useMedicoFirmanteStore();
+
 
 const examenesVista = ref([]);
 const nearestExamenVista = ref(null);
+
+const user = ref(
+    JSON.parse(localStorage.getItem('user')) || null // Recuperar usuario guardado o establecer null si no existe
+);
+
+onMounted(() => {
+    // Escucha los cambios en el usuario para cargar proveedor de salud
+    watch(
+        () => user.user,
+        (user) => {
+            if (user?._id){
+              medicoFirmanteStore.loadMedicoFirmante(user._id);
+            }
+        },
+        { immediate: true } // Ejecutar inmediatamente si ya hay datos cargados
+    );
+});
 
 onMounted(async () => {
   try {
@@ -119,9 +139,34 @@ const goToStep = (stepNumber) => {
 
     <!-- Certificado -->
      <div class="w-full mb-4">
-        <p class="text-justify">
-            El suscrito Médico Cirujano, con cédula profesional número <strong>1379978</strong>. Especialista en Medicina del trabajo, <strong>Dr. Jesús Manuel Coronel Valenzuela</strong>, legalmente autorizado por la Dirección General de Profesiones para ejercer la Especialidad en Medicina del Trabajo con cédula profesional número <strong>3181172</strong> y Certificado ante el Consejo Mexicano de Medicina del Trabajo con número <strong>891</strong>.
-        </p>
+      <p class="text-justify">
+        {{ medicoFirmanteStore.medicoFirmante.tituloProfesional === 'Dra.' 
+          ? 'La suscrita Médica Cirujano, con cédula profesional número ' 
+          : 'El suscrito Médico Cirujano, con cédula profesional número ' }}
+        <strong>{{ medicoFirmanteStore.medicoFirmante.numeroCedulaProfesional }}</strong>. 
+
+        <template v-if="medicoFirmanteStore.medicoFirmante.especialistaSaludTrabajo === 'Si'">
+          Especialista en Medicina del Trabajo,
+        </template>
+        <template v-else>
+          Con formación en Medicina y dedicado a la práctica en el ámbito de la salud laboral,
+        </template>
+
+        <strong>
+          {{ medicoFirmanteStore.medicoFirmante.tituloProfesional }} {{ medicoFirmanteStore.medicoFirmante.nombre }}
+        </strong><span v-if="medicoFirmanteStore.medicoFirmante.especialistaSaludTrabajo === 'Si'">,</span><span v-else>.</span>
+
+        <template v-if="medicoFirmanteStore.medicoFirmante.especialistaSaludTrabajo === 'Si'">
+          legalmente <span v-if="medicoFirmanteStore.medicoFirmante.tituloProfesional === 'Dr.'">autorizado</span> <span v-else>autorizada</span> por la Dirección General de Profesiones para ejercer la Especialidad en Medicina del Trabajo con cédula profesional número 
+          <strong>{{ medicoFirmanteStore.medicoFirmante.numeroCedulaEspecialista }}</strong>.
+        </template>
+
+        <template v-if="medicoFirmanteStore.medicoFirmante.nombreCredencialAdicional && medicoFirmanteStore.medicoFirmante.numeroCredencialAdicional">
+          {{ medicoFirmanteStore.medicoFirmante.nombreCredencialAdicional }} con número 
+          <strong>{{ medicoFirmanteStore.medicoFirmante.numeroCredencialAdicional }}</strong>
+        </template>
+
+      </p>
      </div>
 
      <div class="w-full mb-4">

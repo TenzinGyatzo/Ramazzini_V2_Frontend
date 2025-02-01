@@ -12,6 +12,8 @@ const firmaArchivo = ref(null);
 // Inicializa los valores del formulario desde el store al montar el componente
 const especialistaSaludTrabajo = ref("No");
 const numeroCedulaEspecialista = ref("");
+const nombreCredencialAdicional = ref("");
+const numeroCredencialAdicional = ref("");
 
 // Observa los cambios en medicoFirmante.medicoFirmante y precarga los valores cuando estén disponibles
 watch(
@@ -59,6 +61,14 @@ const handleSubmit = async (data) => {
     // Si el campo está vacío, que se agregue como cadena vacia
     if (numeroCedulaEspecialista.value === "") {
         formData.append('numeroCedulaEspecialista', "");
+    }
+
+    if (nombreCredencialAdicional.value === "") {
+        formData.append('nombreCredencialAdicional', "");
+    }
+
+    if (numeroCredencialAdicional.value === "") {
+        formData.append('numeroCredencialAdicional', "");
     }
 
     // Agregar solo los campos con valores definidos
@@ -157,12 +167,12 @@ const siONo = ['Si', 'No'];
                                 :validation-messages="{ cedulaEspecialistaValidation: 'El número de cédula de especialidad debe tener entre 7 y 8 dígitos.' }" />
 
                             <FormKit type="text" label="Credencial Adicional" name="nombreCredencialAdicional"
-                                placeholder="Ej. Certificado Consejo Mex. de Med. Trab."
-                                :value="medicoFirmante.medicoFirmante?.nombreCredencialAdicional" />
+                                placeholder="Ej. Certificado ante el Consejo Mexicano de Medicina del Trabajo"
+                                v-model="nombreCredencialAdicional" />
 
                             <FormKit type="text" label="Número de Credencial Adicional" name="numeroCredencialAdicional"
                                 placeholder="Ej. 924"
-                                :value="medicoFirmante.medicoFirmante?.numeroCredencialAdicional" />
+                                v-model="numeroCredencialAdicional" />
                         </div>
 
                         <FormKit type="file" label="Firma (Asegura que sea .png sin fondo, cuadrada, de al menos 500 x 500px)" name="firma" accept=".png, .jpg, .jpeg, .svg"
