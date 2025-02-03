@@ -60,6 +60,8 @@ onMounted(() => {
         <p class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl xl:w-2/3 py-2 text-center text-gray-600">La
           aplicación para la creación y gestión de informes de exámenes médicos laborales.</p>
         <p class="text-gray-600 text-lg my-4">Hola, {{ user.getUsername }}</p>
+        
+        <!-- Sección inicio  -->
         <div class="grid gap-4 mb-5">
           <div class="flex justify-center">
             <a href="/empresas" class="w-full">
@@ -81,32 +83,87 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- Sección de Configuración -->
-        <Transition name="delayed-appear">
-        <div v-if="isVisible" class="xl:absolute top-3 right-3 grid gap-2 bg-gray-100 p-6 xl:p-3 rounded-lg shadow-md">
-          <!-- Encabezado -->
-          <div class="text-center">
-            <p class="text-base sm:text-lg font-medium text-gray-700">Personaliza tus informes</p>
-          </div>
+        <!-- Acciones Usuarios Principales -->
+        <div v-if="user.user?.role === 'Principal'" class="grid grid-cols-2 gap-6">
+          <!-- Sección de creación de usuarios -->
+          <Transition name="delayed-appear">
+          <!-- <div v-if="isVisible" class="xl:absolute top-3 right-3 grid gap-2 bg-gray-100 p-6 xl:p-3 rounded-lg shadow-md"> -->
+          <div v-if="isVisible" class="grid gap-2 bg-gray-100 p-6 rounded-lg shadow-md">
+            <!-- Encabezado -->
+            <div class="text-center">
+              <p class="text-base sm:text-lg font-medium text-gray-700">Gestiona usuarios</p>
+            </div>
 
-          <!-- Botones -->
-          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-2">
-            <a href="/medico-firmante" class="flex justify-center">
-              <button
-                class="w-full text-sm md:text-base bg-cyan-500 hover:bg-cyan-600 text-white uppercase rounded-lg px-6 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
-                MEDICO FIRMANTE
-              </button>
-            </a>
-            <a href="/perfil-proveedor" class="flex justify-center">
-              <button
-                class="w-full text-sm md:text-base bg-orange-500 hover:bg-orange-600 text-white uppercase rounded-lg px-8 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
-                PROVEEDOR
-              </button>
-            </a>
+            <!-- Botones -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <a href="/" class="flex justify-center">
+                <button
+                  class="w-full text-sm md:text-base bg-indigo-500 hover:bg-indigo-600 text-white uppercase rounded-lg px-6 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
+                  AGREGRAR
+                </button>
+              </a>
+              <a href="/" class="flex justify-center">
+                <button
+                  class="w-full text-sm md:text-base bg-red-500 hover:bg-red-600 text-white uppercase rounded-lg px-8 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
+                  ELIMINAR
+                </button>
+              </a>
+            </div>
           </div>
+          </Transition>
+
+          <!-- Sección de Configuración -->
+          <Transition name="delayed-appear">
+          <!-- <div v-if="isVisible" class="xl:absolute top-3 right-3 grid gap-2 bg-gray-100 p-6 xl:p-3 rounded-lg shadow-md"> -->
+          <div v-if="isVisible" class="grid gap-2 bg-gray-100 p-6 rounded-lg shadow-md">
+            <!-- Encabezado -->
+            <div class="text-center">
+              <p class="text-base sm:text-lg font-medium text-gray-700">Personaliza tus informes</p>
+            </div>
+
+            <!-- Botones -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <a href="/medico-firmante" class="flex justify-center">
+                <button
+                  class="w-full text-sm md:text-base bg-cyan-500 hover:bg-cyan-600 text-white uppercase rounded-lg px-6 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
+                  MEDICO FIRMANTE
+                </button>
+              </a>
+              <a href="/perfil-proveedor" class="flex justify-center">
+                <button
+                  class="w-full text-sm md:text-base bg-orange-500 hover:bg-orange-600 text-white uppercase rounded-lg px-8 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
+                  PROVEEDOR
+                </button>
+              </a>
+            </div>
+          </div>
+          </Transition>
         </div>
-        </Transition>
 
+        <!-- Acciones Usuarios Secundarios -->
+        <div v-else class="grid grid-cols-1 gap-6">
+
+          <!-- Sección de Configuración -->
+          <Transition name="delayed-appear">
+          <!-- <div v-if="isVisible" class="xl:absolute top-3 right-3 grid gap-2 bg-gray-100 p-6 xl:p-3 rounded-lg shadow-md"> -->
+          <div v-if="isVisible" class="grid gap-2 bg-gray-100 p-6 rounded-lg shadow-md">
+            <!-- Encabezado -->
+            <div class="text-center">
+              <p class="text-base sm:text-lg font-medium text-gray-700">Personaliza tus informes</p>
+            </div>
+
+            <!-- Botones -->
+            <div class="grid grid-cols-1 gap-2">
+              <a href="/medico-firmante" class="flex justify-center">
+                <button
+                  class="w-full text-sm md:text-base bg-cyan-500 hover:bg-cyan-600 text-white uppercase rounded-lg px-6 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
+                  MEDICO FIRMANTE
+                </button>
+              </a>
+            </div>
+          </div>
+          </Transition>
+        </div>
       </div>
 
       <div v-else class="w-full max-w-screen-2xl">

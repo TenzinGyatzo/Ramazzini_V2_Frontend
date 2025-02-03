@@ -23,22 +23,27 @@ const router = createRouter({
           name: 'confirm-account',
           component: () => import('@/views/auth/ConfirmAccountView.vue')
         },
-/*         {
-          path: '',
-          name: '',
-          component: () => import('@/views/auth/')
+        {
+          path: 'olvide-password',
+          name: 'forgot-password',
+          component: () => import('../views/auth/ForgotPasswordView.vue')
         },
         {
-          path: '',
-          name: '',
-          component: () => import('@/views/auth/')
-        }, */
+          path: 'olvide-password/:token',
+          name: 'new-password',
+          component: () => import('../views/auth/NewPasswordView.vue')
+        },
       ]
     },    
     {
       path: "/login",
       name: "login",
       component: () => import("../views/LoginView.vue"),
+    },
+    {
+      path: "/registrar-usuario-adicional",
+      name: "additional-user",
+      component: () => import("../views/AdditionalUserView.vue"),
     },
     {
       path: "/",

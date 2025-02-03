@@ -99,10 +99,6 @@ const resetTransitionState = () => {
   transitioning.value = false;
 };
 
-const goToLogin = () => {
-  router.push({ name: 'login' });
-};
-
 const perfiles = [
   "Médico único de empresa",
   "Médico independiente que brinda servicios a empresas",
@@ -133,12 +129,13 @@ const perfiles = [
 
     <!-- Botón de redirección al login -->
     <div class="mt-6">
-      <button @click="goToLogin"
+      <button @click="router.push({ name: 'login' })"
         class="bg-emerald-600 text-white py-2 px-6 rounded-lg hover:bg-emerald-700 transition duration-300">
         Ir al inicio de sesión
       </button>
     </div>
   </div>
+
   <div v-else>
     <!-- Indicador de pasos -->
     <div class="flex justify-center items-center gap-3 my-3">
@@ -196,7 +193,7 @@ const perfiles = [
           phoneValidation: 'El número de teléfono debe tener 10 dígitos.'
         }" />
 
-      <FormKit type="password" label="¿Qué contraseña deseas usar?" name="password" placeholder="Contraseña"
+      <FormKit type="password" label="¿Qué contraseña deseas usar?" name="password" placeholder="Contraseña de usuario"
         validation="required|passwordValidation" :validation-messages="{
           required: 'Este campo es obligatorio',
           passwordValidation: 'Mín. 8 dígitos, 1 mayúscula y 1 número.'
@@ -225,7 +222,7 @@ const perfiles = [
         <FormKit type="password" label="¿Qué contraseña deseas usar?" name="password" placeholder="Contraseña"
           v-model="formDataUser.password" />
 
-        <div class="w-full pr-2 mt-4">
+        <div class="w-full mt-6">
           <FormKit type="submit">
             <span class="mr-2">Siguiente</span>
             <i class="fa-solid fa-arrow-right-long"></i>
@@ -251,7 +248,7 @@ const perfiles = [
           :validation-messages="{ required: 'Este campo es obligatorio' }"
           v-model="formDataProveedorSalud.perfilProveedorSalud" />
 
-        <div class="w-full pr-2 mt-4">
+        <div class="w-full mt-6">
           <FormKit type="submit">
             <span class="mr-2">Finalizar</span>
             <i class="fa-solid fa-check"></i>

@@ -20,5 +20,17 @@ export default {
 
   verifyAccount(token) {
     return auth.get(`/users/verify/${token}`);
+  },
+
+  forgotPassword(data) {
+    return auth.post(`/users/forgot-password`, data);
+  },
+
+  verifyToken(token) {
+    return auth.get(`/users/forgot-password/${token}`);
+  },
+
+  updatePassword(token, data) {
+    return auth.post(`/users/forgot-password/${token}`, data);
   }
 };
