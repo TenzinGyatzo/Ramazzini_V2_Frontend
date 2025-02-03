@@ -1,10 +1,8 @@
 <script setup>
-
-    const authRoutes = [
+    /* const authRoutes = [
         { name: 'onboarding', text: 'Crear cuenta' },
         { name: 'login', text: 'Iniciar Sesión' },
-    ]
-
+    ] */
 </script>
 
 <template>

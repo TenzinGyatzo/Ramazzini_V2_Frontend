@@ -23,6 +23,16 @@ const router = createRouter({
           name: 'confirm-account',
           component: () => import('@/views/auth/ConfirmAccountView.vue')
         },
+/*         {
+          path: '',
+          name: '',
+          component: () => import('@/views/auth/')
+        },
+        {
+          path: '',
+          name: '',
+          component: () => import('@/views/auth/')
+        }, */
       ]
     },    
     {

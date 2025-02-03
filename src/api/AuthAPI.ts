@@ -17,4 +17,8 @@ export default {
   registerUser(userData) {
     return auth.post("/users/register", userData);
   },
+
+  verifyAccount(token) {
+    return auth.get(`/users/verify/${token}`);
+  }
 };
