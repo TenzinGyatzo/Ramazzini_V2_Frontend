@@ -28,6 +28,15 @@ const cedulaEspecialistaValidation = ({ value }) => {
   const cedulaNumberRegex = /^[0-9]{7,8}$/;
   return cedulaNumberRegex.test(value.trim());
 };
+const emailValidation = ({ value }) => {
+  const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+  return emailRegex.test(value.trim());
+};
+const passwordValidation = ({ value }) => {
+  const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  return passwordRegex.test(value.trim());
+};
+
 
 const config = {
   config: {
@@ -37,11 +46,11 @@ const config = {
         message: "text-red-700 text-sm mb-3",
         label: "block mt-4 font-medium text-lg text-gray-700",
         input:
-          "w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500",
+         "w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500",
       },
       submit: {
         input:
-          "$reset text-lg bg-emerald-500 hover:bg-emerald-600 rounded-lg text-white font-medium w-full p-3 transition-transform transform hover:scale-105 shadow-md m-0",
+          "$reset text-lg bg-emerald-500 hover:bg-emerald-600 rounded-lg text-white font-normal w-full p-3 transition-transform transform hover:scale-105 shadow-md m-0",
       },
       file: {
         input:
@@ -54,6 +63,8 @@ const config = {
       phoneValidation,
       mailValidation,
       urlValidation,
+      emailValidation,
+      passwordValidation,
       cedulaProfesionalValidation,
       cedulaEspecialistaValidation,
     },

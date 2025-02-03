@@ -12,4 +12,8 @@ export default {
     createProveedor(proveedorData: any) {
         return proveedor.post("crear-proveedor-salud", proveedorData);
     },
+
+    removeProveedorById(proveedorId: string) {
+        return proveedor.delete(`eliminar-proveedor-salud/${proveedorId}`)
+    }
 }

@@ -2,10 +2,29 @@ import { createRouter, createWebHistory } from "vue-router";
 import LayOut from "../views/LayOut.vue";
 import AuthAPI from "@/api/AuthAPI";
 import axios from "axios";
+import { useUserStore } from "@/stores/user";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: "/auth",
+      name: "auth",
+      component: () => import("@/views/auth/AuthView.vue"),
+      meta: { hideSidebar: true },
+      children: [
+        {
+          path: 'onboarding',
+          name: 'onboarding',
+          component: () => import('@/views/auth/OnboardingView.vue')
+        },
+        {
+          path: 'confirmar-cuenta/:token',
+          name: 'confirm-account',
+          component: () => import('@/views/auth/ConfirmAccountView.vue')
+        },
+      ]
+    },    
     {
       path: "/login",
       name: "login",
@@ -64,9 +83,13 @@ const router = createRouter({
 
 // Configuración del guardia global
 router.beforeEach(async (to, from, next) => {
-  const requiresAuth = to.matched.some((url) => url.meta.requiresAuth);
+  // const requiresAuth = to.matched.some((url) => url.meta.requiresAuth);
+  const requiresAuth = to.meta.requiresAuth; // Verifica solo la ruta actual
+  const userStore = useUserStore();
+
   if (requiresAuth) {
     try {
+      await userStore.fetchUser();
       await AuthAPI.auth();
       next();
     } catch (error) {

@@ -1,16 +1,13 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
-import Sidebar from './components/sidebar/Sidebar.vue';
-import { useSidebarStore } from './stores/sidebar';
+import { useRoute } from 'vue-router';
+import MainLayout from './layouts/MainLayout.vue';
+import SimpleLayout from './layouts/SimpleLayout.vue';
 
-const sidebar = useSidebarStore();
+const route = useRoute();
 </script>
 
 <template>
-  <Sidebar />
-  <div :style="{ 'margin-left': sidebar.isSmallScreen ? sidebar.sidebarWidthCollapsed : sidebar.sidebarWidth }">
-    <RouterView />
-  </div>
+  <component :is="route.meta.hideSidebar ? SimpleLayout : MainLayout" />
 </template>
 
 <style>

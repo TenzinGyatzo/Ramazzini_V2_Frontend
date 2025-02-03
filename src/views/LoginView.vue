@@ -5,14 +5,14 @@ import AuthAPI from "@/api/AuthAPI";
 import axios from "axios";
 
 const router = useRouter();
-const username = ref("");
+const email = ref("");
 const password = ref("");
 const errorMessage = ref("");
 const showPassword = ref(false);
 
 const handleLogin = async () => {
   try {
-    const response = await AuthAPI.login(username.value, password.value);
+    const response = await AuthAPI.login(email.value, password.value);
     const token = response.data.token;
     if (response.status === 200 || response.status === 201) {
       // Manejar autenticación y redirección
@@ -25,7 +25,9 @@ const handleLogin = async () => {
       console.log(error.response.data.message);
       if (error.response.data.message === 'El usuario no existe') {
         errorMessage.value = "El usuario no existe";
-      } else if (error.response.data.message === 'Contraseña incorrecta') {
+      } else if (error.response.data.message === 'Tu cuenta no ha sido confirmada aún, revisa tu email') {
+        errorMessage.value = "Tu cuenta no ha sido confirmada aún, revisa tu email"
+      }else if (error.response.data.message === 'Contraseña incorrecta') {
         errorMessage.value = "Contraseña incorrecta";
       } else {
         errorMessage.value = "Credenciales incorrectas";
@@ -47,12 +49,12 @@ const handleLogin = async () => {
     >
       <h1 class="text-2xl font-semibold mb-4 text-gray-800">Iniciar Sesión</h1>
       <div class="mb-4">
-        <label for="username" class="block text-sm lg:text-base font-medium text-gray-700"
-          >Usuario</label
+        <label for="email" class="block text-sm lg:text-base font-medium text-gray-700"
+          >Email</label
         >
         <input
-          v-model="username"
-          id="username"
+          v-model="email"
+          id="email"
           type="text"
           class="w-full mt-1 p-2 border rounded focus:outline-none focus:border-emerald-500"
         />
