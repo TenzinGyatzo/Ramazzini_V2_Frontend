@@ -32,5 +32,9 @@ export default {
 
   updatePassword(token, data) {
     return auth.post(`/users/forgot-password/${token}`, data);
-  }
+  },
+
+  getUsersByProveedorId(idProveedorSalud) {
+    return auth.get(`/users/get-users/${idProveedorSalud}`);
+  },
 };

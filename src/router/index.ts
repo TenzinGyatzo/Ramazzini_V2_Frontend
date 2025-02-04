@@ -41,16 +41,21 @@ const router = createRouter({
       component: () => import("../views/LoginView.vue"),
     },
     {
-      path: "/registrar-usuario-adicional",
-      name: "additional-user",
-      component: () => import("../views/AdditionalUserView.vue"),
-    },
-    {
       path: "/",
       name: "inicio",
       component: LayOut,
       meta: { requiresAuth: true },
       children: [
+        {
+          path: "/registrar-usuario",
+          name: "add-user",
+          component: () => import("../views/AddUserView.vue"),
+        },
+        {
+          path: "/eliminar-usuarios",
+          name: "remove-users",
+          component: () => import("../views/RemoveUsersView.vue"),
+        },
         {
           path: "perfil-proveedor",
           name: "perfil-proveedor",

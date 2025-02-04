@@ -129,7 +129,7 @@ const siONo = ['Si', 'No'];
 <template>
     <Transition appear name="fade-slow">
         <div
-            class="relative bg-white text-gray-900 w-full max-w-5xl p-10 rounded-lg shadow-slate-900 max-h-[82vh] overflow-y-auto mx-auto">
+            class="relative bg-white text-gray-800 w-full max-w-5xl p-10 rounded-lg max-h-[82vh] shadow-lg overflow-y-auto mx-auto">
             <Transition appear name="fade-slow">
                 <div v-if="medicoFirmante.loading">
                     <!-- <h1 class="text-3xl text-center">Cargando medico...</h1> -->

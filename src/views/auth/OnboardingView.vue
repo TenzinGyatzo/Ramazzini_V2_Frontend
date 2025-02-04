@@ -170,44 +170,43 @@ const perfiles = [
       </div>
     </div>
 
-    <!-- validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }" -->
-
     <!-- Formulario Paso 1 -->
-    <!--   <Transition name="fade-slide" mode="out-in">
-    <FormKit v-if="currentStep === 1" type="form" :actions="false"
-      incomplete-message="Por favor, valide que los datos sean correctos*" @submit="handleSubmitStep1">
-      <FormKit type="text" label="¿Cuál es tu nombre?" name="username" placeholder="Ej. Jorge González"
-        validation="required" :validation-messages="{
-          required: 'Este campo es obligatorio'
-        }" />
+    <Transition name="fade-slide" mode="out-in" @after-leave="showStep2 = true">
+      <FormKit v-if="currentStep === 1 && !transitioning" type="form" :actions="false"
+        incomplete-message="Por favor, valide que los datos sean correctos*" @submit="handleSubmitStep1">
+        <FormKit type="text" label="¿Cuál es tu nombre?" name="username" placeholder="Ej. Jorge González"
+          validation="required" :validation-messages="{
+            required: 'Este campo es obligatorio'
+          }" v-model="formDataUser.username" />
 
-      <FormKit type="email" label="¿Qué correo deseas registrar?" name="email" placeholder="usuario@tuempresa.com"
-        validation="required|emailValidation" :validation-messages="{
-          required: 'Este campo es obligatorio',
-          emailValidation: 'Por favor ingresa un correo válido'
-        }" />
+        <FormKit type="email" label="¿Qué correo deseas registrar?" name="email" placeholder="usuario@tuempresa.com"
+          validation="required|emailValidation" :validation-messages="{
+            required: 'Este campo es obligatorio',
+            emailValidation: 'Por favor ingresa un correo válido'
+          }" v-model="formDataUser.email" />
 
-      <FormKit type="text" label="¿Cuál es tu teléfono?" name="phone" placeholder="Teléfono"
-        validation="required|phoneValidation" :validation-messages="{
-          required: 'Este campo es obligatorio',
-          phoneValidation: 'El número de teléfono debe tener 10 dígitos.'
-        }" />
+        <FormKit type="text" label="¿Cuál es tu teléfono?" name="phone" placeholder="Teléfono"
+          validation="required|phoneValidation" :validation-messages="{
+            required: 'Este campo es obligatorio',
+            phoneValidation: 'El número de teléfono debe tener 10 dígitos.'
+          }" v-model="formDataUser.phone" />
 
-      <FormKit type="password" label="¿Qué contraseña deseas usar?" name="password" placeholder="Contraseña de usuario"
-        validation="required|passwordValidation" :validation-messages="{
-          required: 'Este campo es obligatorio',
-          passwordValidation: 'Mín. 8 dígitos, 1 mayúscula y 1 número.'
-        }" />
+        <FormKit type="password" label="¿Qué contraseña deseas usar?" name="password" placeholder="Contraseña de usuario"
+          validation="required|passwordValidation" :validation-messages="{
+            required: 'Este campo es obligatorio',
+            passwordValidation: 'Mín. 8 dígitos, 1 mayúscula y 1 número.'
+          }" v-model="formDataUser.password" />
 
-      <div class="w-full pr-2 mt-4">
-        <FormKit type="submit">
-          <span class="mr-2">Siguiente</span>
-          <i class="fa-solid fa-arrow-right-long"></i>
-        </FormKit>
-      </div>
-    </FormKit>
-  </Transition> -->
-    <Transition name="fade-slide-left" mode="out-in" @after-leave="showStep2 = true">
+        <div class="w-full pr-2 mt-4">
+          <FormKit type="submit">
+            <span class="mr-2">Siguiente</span>
+            <i class="fa-solid fa-arrow-right-long"></i>
+          </FormKit>
+        </div>
+      </FormKit>
+    </Transition>
+
+    <!-- <Transition name="fade-slide-left" mode="out-in" @after-leave="showStep2 = true">
       <FormKit v-if="currentStep === 1 && !transitioning" type="form" :actions="false"
         incomplete-message="Por favor, valide que los datos sean correctos*" @submit="handleSubmitStep1">
         <FormKit type="text" label="¿Cuál es tu nombre?" name="username" placeholder="Ej. Jorge González"
@@ -229,7 +228,7 @@ const perfiles = [
           </FormKit>
         </div>
       </FormKit>
-    </Transition>
+    </Transition> -->
 
     <!-- Formulario Paso 2 -->
     <Transition name="fade-slide-right" mode="out-in" @after-leave="resetTransitionState">

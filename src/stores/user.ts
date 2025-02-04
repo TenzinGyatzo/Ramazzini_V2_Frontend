@@ -66,8 +66,16 @@ export const useUserStore = defineStore("user", () => {
             const resultado = await AuthAPI.registerUser(userData);
             return { success: true, data: resultado }; // Indicador de éxito y datos
         } catch (error) {
-            console.error("Error al registrar el usuario:", error);
             return { success: false, error }; // Indicador de fallo y error
+        }
+    }
+
+    async function fetchUsersByProveedorId(idProveedorSalud: string) {
+        try {
+            const { data } = await AuthAPI.getUsersByProveedorId(idProveedorSalud);
+            return { success: true, data };
+        } catch (error) {
+            return { success: false, error };
         }
     }
     
@@ -76,6 +84,7 @@ export const useUserStore = defineStore("user", () => {
         fetchUser,
         logout,
         registerUser,
+        fetchUsersByProveedorId,
         getUsername,
     };
 });

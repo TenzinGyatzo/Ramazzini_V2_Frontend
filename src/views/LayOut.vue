@@ -96,13 +96,13 @@ onMounted(() => {
 
             <!-- Botones -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <a href="/" class="flex justify-center">
+              <a href="/registrar-usuario" class="flex justify-center">
                 <button
                   class="w-full text-sm md:text-base bg-indigo-500 hover:bg-indigo-600 text-white uppercase rounded-lg px-6 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
                   AGREGRAR
                 </button>
               </a>
-              <a href="/" class="flex justify-center">
+              <a href="/eliminar-usuarios" class="flex justify-center">
                 <button
                   class="w-full text-sm md:text-base bg-red-500 hover:bg-red-600 text-white uppercase rounded-lg px-8 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
                   ELIMINAR
