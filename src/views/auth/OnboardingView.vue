@@ -109,7 +109,7 @@ const perfiles = [
 </script>
 
 <template>
-  <img src="../../../img/logosRamazzini/RamazziniLogo.PNG" alt="Ramazzini Logo"
+  <img src="../../../img/logosRamazzini/RamazziniLogo.png" alt="Ramazzini Logo"
     class="max-w-[250px] max-h-[250px] object-contain p-2 mx-auto">
 
   <div v-if="currentStep === 3" class="flex flex-col items-center justify-center p-6 w-full mx-auto">

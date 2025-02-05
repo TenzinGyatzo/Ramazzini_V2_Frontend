@@ -19,7 +19,7 @@ onMounted(async () => {
 
 <template>
   <div class="grid grid-cols-1 gap-3">
-    <UserItem v-for="usuario in usuarios" :key="usuario.id" :username="usuario.username" :email="usuario.email" :phone="usuario.phone" :role="usuario.role" 
+    <UserItem v-for="usuario in usuarios" :key="usuario.id" :username="usuario.username" :email="usuario.email" :phone="usuario.phone" :role="usuario.role"
     />
   </div>
 </template>
