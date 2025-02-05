@@ -1,11 +1,13 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, inject } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
 import { format } from 'date-fns';
 import { convertirYYYYMMDDaISO } from '@/helpers/dates';
+
+const toast = inject('toast');
 
 const { currentEmpresa } = useEmpresasStore();
 const { currentCentroTrabajo } = useCentrosTrabajoStore();
@@ -74,11 +76,14 @@ const handleSubmit = async (data) => {
     // Llamar a la función en el store
     await documentos.uploadExternalDocument(currentTrabajador._id, formData);
 
+    toast.open({ message: 'Documento subido con éxito' });
+
     emit('updateData');
 
     closeModal();
   } catch (error) {
-    console.error('Error al subir el documento:', error);
+    console.log('Error al subir el documento:', error);
+    toast.open({ message: 'Error al subir el documento, por favor intente nuevamente.', type: 'error' });
   }
 };
 

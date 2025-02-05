@@ -2,13 +2,15 @@
 import CentroTrabajoItem from '@/components/CentroTrabajoItem.vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import GreenButton from '@/components/GreenButton.vue';
 import ModalCentros from '@/components/ModalCentros.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
 import type { Empresa } from '@/interfaces/empresa.interface';
 import type { CentroTrabajo } from '@/interfaces/centro-trabajo.interface';
+
+const toast: any = inject('toast');
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
@@ -52,10 +54,13 @@ const deleteCentroTrabajoById = async (empresaId: string, centroTrabajoId: strin
     // Esperamos a que el centro de trabajo sea eliminado
     await centrosTrabajo.deleteCentroTrabajoById(empresaId, centroTrabajoId);
 
+    toast.open({ message: 'Centro de trabajo eliminado con éxito' });
+
     // Una vez eliminada, volvemos a hacer fetch para actualizar la lista
     await centrosTrabajo.fetchCentrosTrabajo(String(route.params.idEmpresa));
   } catch (error) {
     console.error('Error al eliminar el centro de trabajo', error);
+    toast.open({ message: 'Hubo un error, por favor intente nuevamente.', type: 'error' });
   }
 };
 

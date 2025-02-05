@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, inject } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -13,6 +13,8 @@ import ModalCargaMasiva from '@/components/ModalCargaMasiva.vue';
 import type { Empresa } from '@/interfaces/empresa.interface';
 import type { CentroTrabajo } from '@/interfaces/centro-trabajo.interface';
 import type { Trabajador } from '../interfaces/trabajador.interface';
+
+const toast: any = inject('toast');
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
@@ -59,10 +61,13 @@ const deleteTrabajadorById = async (empresaId: string, centroTrabajoId: string, 
     // Esperamos a que el trabjador sea eliminado
     await trabajadores.deleteTrabajadorById(empresaId, centroTrabajoId, trabajadorId);
 
+    toast.open({ message: 'Trabajador eliminado con éxito' });
+
     // Una vez eliminado, volvemos a hacer fetch para actualizar la lista
     await trabajadores.fetchTrabajadores(empresaId, centroTrabajoId);
   } catch (error) {
-    console.error('Error al eliminar al trabajador', error);
+    console.log('Error al eliminar al trabajador', error);
+    toast.open({ message: 'Hubo un error, por favor intente nuevamente.', type: 'error' });
   }
 };
 

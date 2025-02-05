@@ -1,7 +1,9 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, inject } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
+
+const toast = inject('toast');
 
 const empresas = useEmpresasStore();
 const proveedorSaludStore = useProveedorSaludStore();
@@ -71,14 +73,16 @@ const handleSubmit = async (data) => {
   try {
     if (empresas.currentEmpresa?._id) {
       await empresas.updateEmpresaById(empresas.currentEmpresa._id, formData);
+      toast.open({ message: 'Empresa actualizada con éxito' });	
     } else {
       await empresas.createEmpresa(formData);
+      toast.open({ message: 'Empresa creada exitosamente' });	
     }
     emit('closeModal');
     empresas.fetchEmpresas(proveedorSaludStore.proveedorSalud._id);
   } catch (error) {
-    console.error('Error al crear o actualizar la empresa:', error);
-    alert('Hubo un error al crear o actualizar la empresa, por favor intente nuevamente.');
+    console.log('Error al crear o actualizar la empresa:', error);
+    toast.open({ message: 'Hubo un error, por favor intente nuevamente.', type: 'error' });
   }
 };
 

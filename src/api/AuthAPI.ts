@@ -37,4 +37,8 @@ export default {
   getUsersByProveedorId(idProveedorSalud) {
     return auth.get(`/users/get-users/${idProveedorSalud}`);
   },
+
+  removeUserByEmail(email) {
+    return auth.delete(`/users/delete-user/${email}`);
+  },
 };

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
@@ -14,6 +14,8 @@ import ModalEliminar from '@/components/ModalEliminar.vue';
 import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
 import SlidingButtonPanel from '@/components/SlidingButtonPanel.vue';
 import { calcularEdad } from '@/helpers/dates';
+
+const toast: any = inject('toast');
 
 const route = useRoute();
 const router = useRouter();
@@ -69,10 +71,13 @@ const handleDeleteDocument = async () => {
       selectedDocumentId.value
     );
 
-    toggleDeleteModal(); // Cierra el modal
-    await documentos.fetchAllDocuments(trabajadores.currentTrabajadorId!); // Actualiza la lista
+  toast.open({ message: "Documento eliminado exitosamente." });
+
+  toggleDeleteModal(); // Cierra el modal
+  await documentos.fetchAllDocuments(trabajadores.currentTrabajadorId!); // Actualiza la lista
   } catch (error) {
-    console.error("Error al eliminar el documento:", error);
+    console.log("Error al eliminar el documento:", error);
+    toast.open({ message: "Error al eliminar, por favor intente nuevamente.", type: "error" });
   }
 };
 

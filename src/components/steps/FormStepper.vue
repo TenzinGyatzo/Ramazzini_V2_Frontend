@@ -1,6 +1,6 @@
 <script>
 import axios from 'axios';
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, inject } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -117,6 +117,8 @@ export default {
     const stepsStore = useStepsStore();
     const router = useRouter();
     const route = useRoute();
+
+    const toast = inject('toast');
 
     // Establece los pasos al montar el componente
     onMounted(() => {
@@ -351,6 +353,7 @@ export default {
             datosLimpios._id,
             datosLimpios
           );
+          toast.open({ message: 'Documento actualizado exitosamente.' });
         } else {
 
           // Crear un nuevo documento
@@ -359,6 +362,7 @@ export default {
             trabajadores.currentTrabajadorId,
             datosLimpios
           );
+          toast.open({ message: 'Documento creado exitosamente.' });
         }
 
         if (!response || !response.data || !response.data._id) {
@@ -375,6 +379,7 @@ export default {
 
       } catch (error) {
         console.error('Error en el proceso de creación o generación del informe:', error);
+        toast.open({ message: 'Hubo un error, por favor intente nuevamente.', type: 'error' });
         if (error.response) {
           console.error('Detalles del error (respuesta del backend):', error.response.data);
         }

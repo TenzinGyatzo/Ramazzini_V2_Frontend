@@ -1,6 +1,9 @@
 <script setup>
+import { inject } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
+
+const toast = inject('toast');
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
@@ -33,15 +36,17 @@ const handleSubmit = async (data) => {
     if (centrosTrabajo.currentCentroTrabajo?._id) {
       // Actualizar centro de trabajo
       await centrosTrabajo.updateCentroTrabajoById(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajo._id, centroTrabajoData);
+      toast.open({ message: 'Centro de trabajo actualizado con éxito' });
     } else {
       // Crear nuevo centro de trabajo
       await centrosTrabajo.createCentroTrabajo(empresas.currentEmpresaId, centroTrabajoData);
+      toast.open({ message: 'Centro de trabajo creado con éxito' });
     }
     emit('closeModal');
     centrosTrabajo.fetchCentrosTrabajo(empresas.currentEmpresaId);
   } catch (error) {
     console.error('Error al crear o actualizar el centro:', error);
-    alert('Hubo un error al crear o actualizar el centro, por favor intente nuevamente.');
+    toast.open({ message: 'Hubo un error, por favor intente nuevamente.', type: 'error' });
   }
 };
 

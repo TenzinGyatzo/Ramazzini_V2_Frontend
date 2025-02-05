@@ -1,7 +1,10 @@
 <script setup>
+import { inject } from 'vue';	
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+
+const toast = inject('toast');
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
@@ -21,9 +24,11 @@ const handleSubmit = async (data) => {
   try {
     await trabajadores.importTrabajadores(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId, formData);
     emit('closeModal');
+    toast.open({ message: 'Trabajadores importados con éxito' });	
     trabajadores.fetchTrabajadores(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId);
   } catch (error) {
-    console.error('Error en la petición:', error.response?.data || error.message);
+    console.log('Error en la petición:', error.response?.data || error.message);
+    toast.open({ message: 'Hubo un error, por favor intente nuevamente.', type: 'error' });
   }
 };
 

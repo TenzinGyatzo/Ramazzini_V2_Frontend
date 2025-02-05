@@ -1,8 +1,11 @@
 <script setup>
+import { inject } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { convertirFechaISOaYYYYMMDD } from '@/helpers/dates';
+
+const toast = inject('toast');
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
@@ -41,15 +44,17 @@ const handleSubmit = async (data) => {
     if (trabajadores.currentTrabajador?._id) {
       // Actualizar Trabajador
       await trabajadores.updateTrabajador(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId, trabajadores.currentTrabajador._id, trabajadorData);
+      toast.open({ message: 'Trabajador actualizado con éxito' });
     } else {
       // Registrar Trabajador
       await trabajadores.createTrabajador(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId, trabajadorData);
+      toast.open({ message: 'Trabajador creado con éxito' });
     }
     emit('closeModal');
     trabajadores.fetchTrabajadores(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId);
   } catch (error) {
-    console.error('Error al crear o actualizar al trabajador:', error);
-    alert('Hubo un error al crear o actualizar al trabajador, por favor intente nuevamente.');
+    console.log('Error al crear o actualizar al trabajador:', error);
+    toast.open({ message: 'Hubo un error, por favor intente nuevamente.', type: 'error' });
   }
 };
 

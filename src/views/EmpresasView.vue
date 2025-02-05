@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, inject } from 'vue';
 import EmpresaItem from '@/components/EmpresaItem.vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import GreenButton from '@/components/GreenButton.vue';
@@ -7,6 +7,8 @@ import ModalEmpresas from '@/components/ModalEmpresas.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
 import type { Empresa } from '@/interfaces/empresa.interface';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
+
+const toast: any = inject('toast');
 
 const empresas = useEmpresasStore();
 const proveedorSalud = useProveedorSaludStore();
@@ -49,10 +51,13 @@ const deleteEmpresaById = async (id: string) => {
     // Esperamos a que la empresa sea eliminada
     await empresas.deleteEmpresaById(id);
 
+    toast.open({ message: 'Empresa eliminada con éxito' });
+
     // Una vez eliminada, volvemos a hacer fetch para actualizar la lista
     await empresas.fetchEmpresas(proveedorSalud.proveedorSalud!._id);
   } catch (error) {
-    console.error('Error al eliminar la empresa:', error);
+    console.log('Error al eliminar la empresa:', error);
+    toast.open({ message: 'Error al eliminar la empresa, por favor intente nuevamente.', type: 'error' });
   }
 };
 
