@@ -4,6 +4,8 @@ import { useFormDataStore } from '@/stores/formDataStore';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
 
+const mensajeCopiado = ref(false);
+
 const trabajadores = useTrabajadoresStore();
 const { formDataAptitud } = useFormDataStore();
 const documentos = useDocumentosStore();
@@ -48,7 +50,11 @@ const hideTooltip = () => {
 // Función para copiar el texto al portapapeles
 const copiarTexto = (texto) => {
     navigator.clipboard.writeText(texto).then(() => {
-        // alert('Texto copiado al portapapeles');
+        // Mostrar mensaje temporal de "Copiado"
+        mensajeCopiado.value = true;
+        setTimeout(() => {
+          mensajeCopiado.value = false;
+        }, 2000); // Mensaje se oculta después de 2 segundos
     }).catch((err) => {
         console.error('Error al copiar el texto: ', err);
     });
@@ -76,7 +82,10 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
         </div>
 
         <div v-if="trabajadores.currentTrabajador.sexo === 'Femenino'" class="mb-4">
-            <p class="font-medium mb-1 text-gray-800 leading-5">Guías para concluir: </p>
+            <div class="flex justify-between">
+                <p class="font-medium mb-1 text-gray-800 leading-5">Guías para concluir: </p>
+                <span v-if="mensajeCopiado" class="ml-2 text-emerald-600 text-sm">¡Copiado!</span>
+            </div>
             <!-- Apta Sin Restricciones -->
             <div class="space-y-2">
                 <!-- Botón principal -->
@@ -96,9 +105,6 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
                         @click="toggle('clinicamenteAptaSinRestricciones')">
                         Clínicamente Apta
-                        <i class="fa-regular fa-circle-question" tabindex="0"
-                            @mouseover="showTooltip('Se refiere a la evaluación basada únicamente en los síntomas, signos y la historia clínica del paciente.')"
-                            @mouseleave="hideTooltip"></i>
                     </button>
                     <div v-if="isOpen('clinicamenteAptaSinRestricciones')"
                         class="p-4 border-l-4 border-green-500 bg-gray-100">
@@ -145,9 +151,6 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('medicamenteAptaSinRestricciones')">
                         Médicamente Apta
-                        <i class="fa-regular fa-circle-question" tabindex="0"
-                            @mouseover="showTooltip('Se refiere a la evaluación del estado de salud teniendo en cuenta aspectos médicos más amplios...')"
-                            @mouseleave="hideTooltip"></i>
                     </button>
                     <div v-if="isOpen('medicamenteAptaSinRestricciones')"
                         class="p-4 border-l-4 border-blue-500 bg-gray-100">
@@ -204,9 +207,6 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('clinicamenteAptoConPrecaucion')">
                         Clínicamente apta
-                        <i class="fa-regular fa-circle-question" tabindex="0"
-                            @mouseover="showTooltip('Se refiere a la evaluación basada únicamente en los síntomas, signos y la historia clínica del paciente.')"
-                            @mouseleave="hideTooltip"></i>
                     </button>
                     <div v-if="isOpen('clinicamenteAptoConPrecaucion')"
                         class="p-4 border-l-4 border-yellow-500 bg-gray-100">
@@ -307,9 +307,6 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('medicamenteAptoConPrecaucion')">
                         Médicamente apta
-                        <i class="fa-regular fa-circle-question" tabindex="0"
-                            @mouseover="showTooltip('Se refiere a la evaluación del estado de salud teniendo en cuenta aspectos médicos más amplios, como resultados de pruebas de laboratorio, estudios de imagenología y otros análisis médicos.')"
-                            @mouseleave="hideTooltip"></i>
                     </button>
                     <div v-if="isOpen('medicamenteAptoConPrecaucion')"
                         class="p-4 border-l-4 border-blue-500 bg-gray-100">
@@ -425,9 +422,6 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('clinicamenteAptoConPrecaucion')">
                         Clínicamente apta
-                        <i class="fa-regular fa-circle-question" tabindex="0"
-                            @mouseover="showTooltip('Se refiere a la evaluación basada únicamente en los síntomas, signos y la historia clínica del paciente.')"
-                            @mouseleave="hideTooltip"></i>
                     </button>
                     <div v-if="isOpen('clinicamenteAptoConPrecaucion')"
                         class="p-4 border-l-4 border-orange-500 bg-gray-100">
@@ -543,9 +537,6 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                         class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
                         @click="toggle('medicamenteAptoConPrecaucion')">
                         Clínicamente apta
-                        <i class="fa-regular fa-circle-question" tabindex="0"
-                            @mouseover="showTooltip('Se refiere a la evaluación basada únicamente en los síntomas, signos y la historia clínica del paciente.')"
-                            @mouseleave="hideTooltip"></i>
                     </button>
                     <div v-if="isOpen('medicamenteAptoConPrecaucion')"
                         class="p-4 border-l-4 border-orange-500 bg-gray-100">
@@ -768,7 +759,10 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
         </div>
 
         <div v-else class="mb-4">
-            <p class="font-medium mb-1 text-gray-800 leading-5">Guías para concluir: </p>
+            <div class="flex justify-between">
+                <p class="font-medium mb-1 text-gray-800 leading-5">Guías para concluir: </p>
+                <span v-if="mensajeCopiado" class="ml-2 text-emerald-600 text-sm">¡Copiado!</span>
+            </div>
             <!-- Apto Sin Restricciones -->
             <div class="space-y-2">
                 <!-- Botón principal -->
