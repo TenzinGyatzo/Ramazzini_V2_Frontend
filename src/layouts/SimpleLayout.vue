@@ -23,12 +23,12 @@ const contents = [
     text: 'Transforma tus evaluaciones médicas con formularios inteligentes que se adaptan a tus necesidades, guiándote paso a paso y procesando información en tiempo real para garantizar precisión y eficiencia en cada registro.',
   },
   {
-    image: '../../../img/assets/doctora.svg',
+    image: '../../../img/assets/organizacion.svg',
     title: 'Encuentra todo cuando lo necesites',
     text: 'Simplifica la administración de documentos con un sistema diseñado para mantener todo en orden. Organiza y estructura los expedientes médicos por empresa, centro de trabajo, trabajador y año, todo en un solo lugar.',
   },
   {
-    image: '../../../img/assets/doctora.svg',
+    image: '../../../img/assets/informes.svg',
     title: 'Crea informes médicos en segundos',
     text: 'Genera informes en PDF personalizables con datos médicos precisos y tu información profesional. Combina, edita y previsualiza documentos con facilidad, todo al instante.',
   },
@@ -71,7 +71,7 @@ const contents = [
   background-image: linear-gradient(120deg, #059669 40%, #6EE7B7 110%);
 } */
 .static-background {
-  background-image: linear-gradient(120deg, #059669 40%, #6EE7B7 110%);
+  background-image: linear-gradient(120deg, #059669 40%, #6EE7B7 140%);
   background-attachment: fixed;
   background-position: center;
 }
