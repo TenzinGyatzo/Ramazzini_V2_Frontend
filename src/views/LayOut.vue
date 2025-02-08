@@ -132,7 +132,7 @@ onMounted(() => {
               <a href="/perfil-proveedor" class="flex justify-center">
                 <button
                   class="w-full text-sm md:text-base bg-orange-500 hover:bg-orange-600 text-white uppercase rounded-lg px-8 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
-                  PROVEEDOR
+                  MI NEGOCIO
                 </button>
               </a>
             </div>

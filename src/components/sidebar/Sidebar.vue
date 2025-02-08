@@ -88,8 +88,8 @@ const documentTypeLabels = {
       <SidebarLink v-if="route.path !== '/' && route.path !== '/login' && route.path !== '/perfil-proveedor' && route.path !== '/medico-firmante' && route.path !== '/registrar-usuario' && route.path !== '/eliminar-usuarios'" 
         to="/empresas" icon="fas fa-industry" :class="{ 'fade-in': isMounted }"
         @click.stop>
-        <p>Empresas</p>
-        <p class="text-sm">Ver todas las empresas</p>
+        <p>Clientes</p>
+        <p class="text-sm">Ver todos los clientes</p>
       </SidebarLink>
     </Transition>
 

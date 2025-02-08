@@ -83,7 +83,7 @@ watch(
   </Transition>
   <div class="p-5 grid gap-5">
     <div class="flex flex-col items-center">
-      <GreenButton text="Nueva Empresa +" @click="openModal(null)" />
+      <GreenButton text="Nuevo Cliente +" @click="openModal(null)" />
     </div>
     <Transition appear mode="out-in" name="slide-up">
       <div v-if="empresas.loading">
@@ -92,7 +92,7 @@ watch(
       <div v-else>
         <!-- Si el array está vacío, mostramos el mensaje -->
         <div v-if="empresas.empresas.length === 0">
-          <h2 class="text-2xl sm:text-3xl md:text-4xl py-10 text-center font-semibold text-gray-700">Aún no hay empresas registradas</h2>
+          <h2 class="text-2xl sm:text-3xl md:text-4xl py-10 text-center font-semibold text-gray-700">Aún no hay empresas de clientes registradas</h2>
         </div>
         <!-- Si hay empresas, mostramos los items -->
         <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
