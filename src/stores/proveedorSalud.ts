@@ -2,6 +2,11 @@ import { ref } from "vue";
 import { defineStore } from "pinia";
 import ProveedorSaludAPI from "@/api/ProveedorSaludAPI";
 
+interface AddOn {
+    tipo: string; // 'usuario_adicional', 'empresas_extra', u otros
+    cantidad: number;
+}
+
 interface ProveedorSalud {
     _id: string;
     nombreComercial: string;
@@ -19,6 +24,15 @@ interface ProveedorSalud {
     telefono: string;
     correoElectronico: string;
     sitioWeb: string;
+    referenciaPlan: string;
+    maxUsuariosPermitidos: number;
+    maxEmpresasPermitidas: number;
+    estadoSuscripcion: string;
+    fechaInicioTrial: Date;
+    periodoDePruebaFinalizado: boolean;
+    addOns: AddOn[];
+    mercadoPagoSubscriptionId: string;
+    payerEmail: string;
 }
 
 // Define el store
@@ -81,12 +95,26 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         }
     }
 
+    async function verificarPeriodoDePrueba (idProveedorSalud: string) {
+        try {
+            console.log("Store");
+            loading.value = true;
+            const resultado = await ProveedorSaludAPI.verificarPeriodoDePrueba(idProveedorSalud)
+            return resultado.data
+        } catch (error) {
+            console.error("Error al verificar el periodo de prueba")
+        } finally {
+            loading.value = false;
+        }
+    }
+
     return {
         proveedorSalud,
         loading,
         loadProveedorSalud,
         createProveedor,
         updateProveedorById,
-        removeProveedorById
+        removeProveedorById,
+        verificarPeriodoDePrueba
     };
 });

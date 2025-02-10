@@ -14,7 +14,7 @@ const route = useRoute();
 
 const isVisible = ref(false);
 
-onMounted(() => {
+onMounted( () => {
     // Escucha los cambios en el usuario para cargar proveedor de salud
     watch(
         () => user.user,
@@ -33,6 +33,7 @@ onMounted(() => {
         isVisible.value = true;
     }, 500);
 });
+
 </script>
 
 

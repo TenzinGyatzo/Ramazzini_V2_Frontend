@@ -15,5 +15,10 @@ export default {
 
     removeProveedorById(proveedorId: string) {
         return proveedor.delete(`eliminar-proveedor-salud/${proveedorId}`)
+    },
+
+    verificarPeriodoDePrueba(proveedorId: string) {
+        console.log("API");
+        return proveedor.get(`verificar-periodo-prueba/${proveedorId}`);
     }
 }

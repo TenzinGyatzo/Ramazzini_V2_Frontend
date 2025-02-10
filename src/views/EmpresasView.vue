@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, inject } from 'vue';
+import { onUnmounted, ref, watch, inject } from 'vue';
 import EmpresaItem from '@/components/EmpresaItem.vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import GreenButton from '@/components/GreenButton.vue';
@@ -70,6 +70,12 @@ watch(
     },
     { immediate: true } // Ejecutar inmediatamente al montar el componente
 );
+
+onUnmounted(() => {
+  if (proveedorSalud.proveedorSalud) {
+    proveedorSalud.verificarPeriodoDePrueba(proveedorSalud.proveedorSalud!._id);  
+  }
+});
 </script>
 
 <template>

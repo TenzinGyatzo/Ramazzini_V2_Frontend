@@ -79,6 +79,7 @@ const handleSubmitStep2 = async (data) => {
     await proveedorSaludStore.updateProveedorById(idProveedorSalud, {
       mercadoPagoSubscriptionId: subscriptionId,
       payerEmail: formDataUser.value.email,
+      fechaInicioTrial: new Date(),
     });
 
     // 4. Crear usuario
