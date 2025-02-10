@@ -81,7 +81,8 @@ export const useCentrosTrabajoStore = defineStore("centros-trabajo", () => {
       loading.value = true;
       await CentrosTrabajoAPI.createCentroTrabajo(empresaId, centroTrabajo);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      throw error;
     } finally {
       loading.value = false;
     }
@@ -100,7 +101,8 @@ export const useCentrosTrabajoStore = defineStore("centros-trabajo", () => {
         centroTrabajo
       );
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      throw error;
     } finally {
       loading.value = false;
     }
@@ -117,7 +119,8 @@ export const useCentrosTrabajoStore = defineStore("centros-trabajo", () => {
         centroTrabajoId
       );
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      throw error;
     } finally {
       loading.value = false;
     }

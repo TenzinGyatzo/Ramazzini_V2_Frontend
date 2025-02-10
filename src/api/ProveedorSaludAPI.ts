@@ -6,7 +6,7 @@ export default {
     },
 
     updateProveedorById(proveedorId: string, proveedorData: any) {
-        return proveedor.patch(`actualizar-proveedor-salud/${proveedorId}`, proveedorData);
+        return proveedor.post(`actualizar-proveedor-salud/${proveedorId}`, proveedorData);
     },
 
     createProveedor(proveedorData: any) {

@@ -14,6 +14,7 @@ import ModalEliminar from '@/components/ModalEliminar.vue';
 import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
 import SlidingButtonPanel from '@/components/SlidingButtonPanel.vue';
 import { calcularEdad } from '@/helpers/dates';
+import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
 
 const toast: any = inject('toast');
 
@@ -27,6 +28,7 @@ const formData = useFormDataStore();
 
 const showDocumentoExternoModal = ref(false);
 const showDocumentoExternoUpdateModal = ref(false);
+const showSubscriptionModal = ref(false);
 const showDeleteModal = ref(false); // Controla la visibilidad del modal
 const selectedDocumentId = ref<string | null>(null); // ID del documento seleccionado
 const selectedDocumentName = ref<string>(''); // Valor inicial como cadena vacía
@@ -34,10 +36,18 @@ const selectedDocumentType = ref<string | null>(null); // Tipo del documento sel
 const selectedRoutes = ref<string[]>([]);
 
 const toggleDocumentoExternoModal = () => {
+  if (proveedorSalud.value.periodoDePruebaFinalizado) {
+    showSubscriptionModal.value = true;
+    return;
+  }
   showDocumentoExternoModal.value = !showDocumentoExternoModal.value;
 };
 
 const toggleDocumentoExternoUpdateModal = () => {
+  if (proveedorSalud.value.periodoDePruebaFinalizado) {
+    showSubscriptionModal.value = true;
+    return;
+  }
   showDocumentoExternoUpdateModal.value = !showDocumentoExternoUpdateModal.value;
 };
 
@@ -116,7 +126,16 @@ watch(
   }
 );
 
+const proveedorSalud = ref(
+    JSON.parse(localStorage.getItem('proveedorSalud') || 'null') // Recuperar usuario guardado o establecer null si no existe
+);
+
 const navigateTo = (routeName, params) => {
+  if(proveedorSalud.value.periodoDePruebaFinalizado) {
+    showSubscriptionModal.value = true;
+    return;
+  }
+
   router.push({ name: routeName, params });
   documentos.setCurrentTypeOfDocument(params.tipoDocumento);
   documentos.currentDocument = null;
@@ -135,12 +154,16 @@ const toggleRouteSelection = (route: string, isSelected: boolean) => {
 </script>
 
 <template>
+  <Transition appear name="fade">
+    <ModalSuscripcion v-if="showSubscriptionModal" 
+      @closeModal="showSubscriptionModal = false"/>
+  </Transition>
    <div class="relative flex justify-center md:justify-start">
     <Transition appear name="slide-down">
       <SlidingButtonPanel v-if="selectedRoutes.length >= 1" 
         :selectedRoutes="selectedRoutes"/>
     </Transition>
-  </div>
+   </div>
   <Transition appear name="fade">
     <ModalCargaDocumentoExterno v-if="showDocumentoExternoModal"
       @closeDocumentoExternoModal="toggleDocumentoExternoModal" @updateData="fetchData" />

@@ -3,6 +3,7 @@ import { ref, reactive, inject } from "vue";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
 import { useUserStore } from "@/stores/user";
 import { useRouter } from "vue-router";
+import { usePagosStore } from "@/stores/pagosStore";
 
 const toast = inject("toast");
 
@@ -25,6 +26,7 @@ const formDataProveedorSalud = reactive({
 const proveedorSaludStore = useProveedorSaludStore();
 const userStore = useUserStore();
 const router = useRouter();
+const pagosStore = usePagosStore();
 
 const handleSubmitStep1 = async (data) => {
   formDataUser.value = data; // Guardar datos del usuario temporalmente
@@ -38,23 +40,54 @@ const handleSubmitStep2 = async (data) => {
 
   try {
     // 1. Crear Proveedor Salud y obtener idProveedorSalud
-    const { data: proveedorSalud } = await proveedorSaludStore.createProveedor(
+    const respuesta = await proveedorSaludStore.createProveedor(
       formDataProveedorSalud.value
     );
+    const proveedorSalud = respuesta.data;
     idProveedorSalud = proveedorSalud._id;
 
     if (!idProveedorSalud) {
-      throw new Error("No se pudo obtener el ID del proveedor de salud.");
+      throw respuesta.error; // Lanzar el error para manejarlo en el catch
     }
 
-    // 2. Agregar idProveedorSalud a los datos del usuario
+    // 2. Crear suscripcion inicial en MercadoPago sin método de pago
+    const subscriptionPayload = {
+      reason: "Ramazzini: Plan Individual",
+      external_reference: "INDIVIDUAL",
+      auto_recurring: {
+        frequency: 1,
+        frequency_type: "months",
+        transaction_amount: 399,
+        currency_id: "MXN",
+        start_date: new Date().toISOString(),
+      },
+      payer_id: formDataUser.value.email, // Email como identificador inicial
+      payer_email: formDataUser.value.email,
+      back_url: "https://tuweb.com/suscripcion-exitosa",
+      status: "pending",
+    };
+
+    const response = await pagosStore.createSubscription(subscriptionPayload);
+    console.log("Suscription Response:", response);
+    const subscriptionId = response.subscription_id;
+
+    if (!subscriptionId) {
+      throw response.error; // Lanzar el error para manejarlo en el catch
+    }
+
+    // 3. Actualizar el proveedor de salud con la información de la suscripción
+    await proveedorSaludStore.updateProveedorById(idProveedorSalud, {
+      mercadoPagoSubscriptionId: subscriptionId,
+      payerEmail: formDataUser.value.email,
+    });
+
+    // 4. Crear usuario
     const userPayload = {
       ...formDataUser.value,
       role: "Principal",
       idProveedorSalud,
     };
 
-    // 3. Crear el usuario con la referencia al proveedor de salud
     const resultado = await userStore.registerUser(userPayload);
 
     // Verificar si el registro fue exitoso
@@ -70,7 +103,7 @@ const handleSubmitStep2 = async (data) => {
 
     currentStep.value = 3;
   } catch (error) {
-    // console.error('Error al registrar:', error);
+    console.error('Error al registrar:', error);
     // Mostrar mensaje de error en el toast
     toast.open({
       type: "error",
@@ -82,7 +115,7 @@ const handleSubmitStep2 = async (data) => {
     if (idProveedorSalud) {
       try {
         await proveedorSaludStore.removeProveedorById(idProveedorSalud);
-        // console.log("Proveedor de salud eliminado debido a un error en el registro del usuario.");
+        console.log("Proveedor de salud eliminado debido a error en el registro del usuario o de la suscripcion");
       } catch (deleteError) {
         console.error("Error al eliminar el proveedor de salud:", deleteError);
       }

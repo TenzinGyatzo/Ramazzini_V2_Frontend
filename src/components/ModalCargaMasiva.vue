@@ -1,5 +1,5 @@
 <script setup>
-import { inject } from 'vue';	
+import { ref, inject } from 'vue';	
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -9,10 +9,18 @@ const toast = inject('toast');
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
-const emit = defineEmits(['closeModal']);
+const emit = defineEmits(['closeModal', 'openSubscriptionModal']);
+
+const proveedorSalud = ref(
+    JSON.parse(localStorage.getItem('proveedorSalud')) || null // Recuperar usuario guardado o establecer null si no existe
+);
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
+  if (proveedorSalud.value.periodoDePruebaFinalizado) {
+    emit('openSubscriptionModal');
+    return;
+  }
   const fileInput = data.file[0].file;
 
   const formData = new FormData();

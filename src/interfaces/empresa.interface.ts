@@ -10,7 +10,6 @@ export interface Empresa {
   RFC: string;
   giroDeEmpresa?: string;
   logotipoEmpresa?: Logotipo;
-  baseOperaciones: "Pruebas" | "Los Mochis" | string; // Los valores posibles
   createdBy: string;
   updatedBy: string;
   createdAt: Date | string;

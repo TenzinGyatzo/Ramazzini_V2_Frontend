@@ -55,7 +55,6 @@ const handleSubmit = async (data) => {
   formData.append('razonSocial', data.razonSocial);
   formData.append('RFC', data.RFC);
   formData.append('giroDeEmpresa', data.giroDeEmpresa);
-  formData.append('baseOperaciones', 'Los Mochis'); // TODO: Ajustar valor "Pruevas" o "Los Mochis" según el usuario
   formData.append('createdBy', '6650f38308ac3beedf5ac41b'); // TODO: Obtener el ID del usuario actual
   formData.append('updatedBy', '6650f38308ac3beedf5ac41b'); // TODO: Obtener el ID del usuario actual
   formData.append('idProveedorSalud', proveedorSaludStore.proveedorSalud._id);

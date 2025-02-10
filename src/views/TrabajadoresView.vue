@@ -13,6 +13,7 @@ import ModalCargaMasiva from '@/components/ModalCargaMasiva.vue';
 import type { Empresa } from '@/interfaces/empresa.interface';
 import type { CentroTrabajo } from '@/interfaces/centro-trabajo.interface';
 import type { Trabajador } from '../interfaces/trabajador.interface';
+import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
 
 const toast: any = inject('toast');
 
@@ -25,6 +26,7 @@ const router = useRouter();
 const showModal = ref(false);
 const showDeleteModal = ref(false);
 const showImportModal = ref(false);
+const showSubscriptionModal = ref(false);
 const selectedTrabajadorId = ref<string | null>(null);
 const selectedTrabajadorNombre = ref<string | null>(null);
 
@@ -102,7 +104,12 @@ const exportTrabajadores = async () => {
 
 <template>
   <Transition appear name="fade">
-    <ModalTrabajadores v-if="showModal" @closeModal="closeModal" />
+    <ModalTrabajadores v-if="showModal" @closeModal="closeModal" @openSubscriptionModal="showSubscriptionModal = true" />
+  </Transition>
+
+  <Transition appear name="fade">
+    <ModalSuscripcion v-if="showSubscriptionModal" 
+      @closeModal="showSubscriptionModal = false"/>
   </Transition>
 
   <Transition appear name="fade">
@@ -112,7 +119,7 @@ const exportTrabajadores = async () => {
   </Transition>
 
   <Transition appear name="fade">
-    <ModalCargaMasiva v-if="showImportModal" @closeModal="toggleImportModal" />
+    <ModalCargaMasiva v-if="showImportModal" @openSubscriptionModal="showSubscriptionModal = true" @closeModal="toggleImportModal" />
   </Transition>
 
   <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-8">

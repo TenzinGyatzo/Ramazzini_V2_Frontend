@@ -58,7 +58,8 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
       );
       trabajadores.value = data;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      throw error;
     } finally {
       loading.value = false;
     }
@@ -100,7 +101,8 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
         trabajadorData
       );
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      throw error;
     } finally {
       loading.value = false;
     }
@@ -121,7 +123,8 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
         trabajadorData
       );
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      throw error;
     } finally {
       loading.value = false;
     }
@@ -141,7 +144,8 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
       );
       return response;
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      throw error;
     } finally {
       loading.value = false;
     }
@@ -160,7 +164,8 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
         trabajadorId
       );
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      throw error;
     } finally {
       loading.value = false;
     }
@@ -188,6 +193,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error al exportar los trabajadores", error);
+      throw error;
     }
   }
 

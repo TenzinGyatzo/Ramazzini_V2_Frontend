@@ -8,7 +8,6 @@ interface Empresa {
   razonSocial: string;
   RFC: string;
   giroDeEmpresa: string;
-  baseOperaciones: string;
   logotipoEmpresa?: {
     data: string;
     contentType: string;
@@ -34,7 +33,6 @@ export const useEmpresasStore = defineStore("empresas", () => {
       razonSocial: "",
       RFC: "",
       giroDeEmpresa: "",
-      baseOperaciones: "",
       logotipoEmpresa: { data: "", contentType: "" },
       createdBy: "",
       updatedBy: "",
@@ -80,7 +78,8 @@ export const useEmpresasStore = defineStore("empresas", () => {
       loading.value = true;
       await EmpresasAPI.createEmpresa(empresa);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      throw error;
     } finally {
       loading.value = false;
     }
@@ -91,7 +90,8 @@ export const useEmpresasStore = defineStore("empresas", () => {
       loading.value = true;
       await EmpresasAPI.updateEmpresaById(id, empresa);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      throw error;
     } finally {
       loading.value = false;
     }
@@ -102,7 +102,8 @@ export const useEmpresasStore = defineStore("empresas", () => {
       loading.value = true;
       await EmpresasAPI.deleteEmpresaById(id);
     } catch (error) {
-      console.log(error);
+      // console.log(error);
+      throw error;
     } finally {
       loading.value = false;
     }

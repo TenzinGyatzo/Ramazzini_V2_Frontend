@@ -1,5 +1,5 @@
 <script setup>
-import { inject } from 'vue';
+import { ref, inject } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -10,7 +10,12 @@ const toast = inject('toast');
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
-const emit = defineEmits(['closeModal']);
+
+const proveedorSalud = ref(
+    JSON.parse(localStorage.getItem('proveedorSalud')) || null // Recuperar usuario guardado o establecer null si no existe
+);
+
+const emit = defineEmits(['closeModal', 'openSubscriptionModal']);
 
 const nivelesEscolaridad = [
   "Primaria", "Secundaria", "Preparatoria",
@@ -25,6 +30,11 @@ const estadosCiviles = [
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
+  if (proveedorSalud.value.periodoDePruebaFinalizado) {
+    emit('openSubscriptionModal');
+    return;
+  }
+
   const trabajadorData = {
     nombre: data.nombre,
     fechaNacimiento: data.fechaNacimiento,

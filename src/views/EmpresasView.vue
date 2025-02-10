@@ -74,7 +74,7 @@ watch(
 
 <template>
   <Transition appear name="fade">
-    <ModalEmpresas v-if="showModal" @closeModal="closeModal" />
+    <ModalEmpresas v-if="showModal" @closeModal="closeModal"/>
   </Transition>
   <Transition appear name="fade">
     <ModalEliminar v-if="showDeleteModal && selectedEmpresaId && selectedEmpresaNombre" :idRegistro="selectedEmpresaId"
