@@ -96,6 +96,11 @@ const router = createRouter({
           name: "documento",
           component: () => import("../views/InformeView.vue"),
         },
+        {
+          path: "/subscription",
+          name: "suscripcion",
+          component: () => import("../views/SubscriptionView.vue"),
+        }
       ],
     },
   ],
