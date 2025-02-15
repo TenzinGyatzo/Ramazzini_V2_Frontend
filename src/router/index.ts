@@ -97,8 +97,8 @@ const router = createRouter({
           component: () => import("../views/InformeView.vue"),
         },
         {
-          path: "/subscription",
-          name: "suscripcion",
+          path: "/suscripcion",
+          name: "subscription",
           component: () => import("../views/SubscriptionView.vue"),
         }
       ],

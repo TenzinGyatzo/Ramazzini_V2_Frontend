@@ -1,4 +1,7 @@
 <script setup>
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
 const emit = defineEmits(['closeModal']);
 
 const closeModal = () => {
@@ -47,9 +50,12 @@ const closeModal = () => {
 
         <!-- Botón de suscripción con mejoras visuales -->
         <div class="flex justify-center mt-6">
-          <button class="w-full sm:w-3/4 py-3 px-6 text-2xl font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-transform duration-300">
+            <button 
+            @click="router.push({ name: 'subscription' })" 
+            class="w-full sm:w-3/4 py-3 px-6 text-2xl font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg shadow-md hover:shadow-lg hover:scale-105 transition-transform duration-300"
+            >
             Suscríbete ahora
-          </button>
+            </button>
         </div>
 
         <!-- Mensaje de tranquilidad -->
