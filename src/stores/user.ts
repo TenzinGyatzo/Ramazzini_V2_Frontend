@@ -37,7 +37,7 @@ export const useUserStore = defineStore("user", () => {
         try {
             const { data } = await AuthAPI.auth();
             user.value = data;
-            console.log('Usuario cargado:', user.value);
+            // console.log('Usuario cargado:', user.value);
             localStorage.setItem('user', JSON.stringify(user.value));
         } catch (error) {
             console.error("Error al cargar el usuario:", error);

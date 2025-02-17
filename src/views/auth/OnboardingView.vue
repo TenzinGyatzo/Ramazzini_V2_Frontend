@@ -20,6 +20,16 @@ const formDataProveedorSalud = reactive({
   nombre: "",
   RFC: "",
   perfilProveedorSalud: "",
+  referenciaPlan: "BÁSICO",
+  estado: "pending",
+  maxUsuariosPermitidos: 1,
+  maxEmpresasPermitidas: 10,
+  estadoSuscripcion: "pending",
+  fechaInicioTrial: new Date(),
+  periodoDePruebaFinalizado: false,
+  addOns: [],
+  mercadoPagoSubscriptionId: "",
+  payerEmail: "",
 });
 
 // Acceso a los stores
@@ -51,9 +61,9 @@ const handleSubmitStep2 = async (data) => {
     }
 
     // 2. Crear suscripcion inicial en MercadoPago sin método de pago
-    const subscriptionPayload = {
-      reason: "Ramazzini: Plan Individual",
-      external_reference: "INDIVIDUAL",
+    /* const subscriptionPayload = {
+      reason: "Ramazzini: Plan Básico",
+      external_reference: "BÁSICO",
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
@@ -63,24 +73,24 @@ const handleSubmitStep2 = async (data) => {
       },
       payer_id: formDataUser.value.email, // Email como identificador inicial
       payer_email: formDataUser.value.email,
-      back_url: "https://tuweb.com/suscripcion-exitosa",
+      back_url: `${import.meta.env.VITE_API_URL}/suscripcion-exitosa`,
       status: "pending",
-    };
+    }; */
 
-    const response = await pagosStore.createSubscription(subscriptionPayload);
+/*     const response = await pagosStore.createSubscription(subscriptionPayload);
     console.log("Suscription Response:", response);
-    const subscriptionId = response.subscription_id;
+    const subscriptionId = response.subscription_id; */
 
-    if (!subscriptionId) {
+    /* if (!subscriptionId) {
       throw response.error; // Lanzar el error para manejarlo en el catch
-    }
+    } */
 
     // 3. Actualizar el proveedor de salud con la información de la suscripción
-    await proveedorSaludStore.updateProveedorById(idProveedorSalud, {
+    /* await proveedorSaludStore.updateProveedorById(idProveedorSalud, {
       mercadoPagoSubscriptionId: subscriptionId,
       payerEmail: formDataUser.value.email,
       fechaInicioTrial: new Date(),
-    });
+    }); */
 
     // 4. Crear usuario
     const userPayload = {

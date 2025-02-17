@@ -100,6 +100,11 @@ const router = createRouter({
           path: "/suscripcion",
           name: "subscription",
           component: () => import("../views/SubscriptionView.vue"),
+        },
+        {
+          path: "/suscripcion-exitosa",
+          name: "subscription-success",
+          component: () => import('@/views/auth/SubscriptionSuccess.vue'),
         }
       ],
     },

@@ -30,11 +30,11 @@ export const useMedicoFirmanteStore = defineStore("medicoFirmante", () => {
 
     async function loadMedicoFirmanteById(idMedicoFirmante: string) {
         try {
-            console.log("Medico Firmante", idMedicoFirmante);
+            // console.log("Medico Firmante", idMedicoFirmante);
             loading.value = true;
             const { data } = await MedicoFirmanteAPI.getMedicoFirmanteById(idMedicoFirmante);
             medicoFirmante.value = data;
-            console.log("Medico Firmante", medicoFirmante.value);
+            // console.log("Medico Firmante", medicoFirmante.value);
         } catch (error) {
             console.error("Error al cargar médico firmante:", error);
         } finally {
@@ -48,7 +48,7 @@ export const useMedicoFirmanteStore = defineStore("medicoFirmante", () => {
     
             const { data } = await MedicoFirmanteAPI.getMedicoFirmanteByUserId(idUser);
             medicoFirmante.value = data;
-            console.log("Médico Firmante:", medicoFirmante.value);
+            // console.log("Médico Firmante:", medicoFirmante.value);
         } catch (error) {
         // Verificar si el error es de tipo AxiosError
             if (axios.isAxiosError(error)) {
@@ -74,7 +74,7 @@ export const useMedicoFirmanteStore = defineStore("medicoFirmante", () => {
             loading.value = true;
             const { data } = await MedicoFirmanteAPI.createMedicoFirmante(medicoFirmanteData);
             medicoFirmante.value = data;
-            console.log("Medico Firmante", medicoFirmante.value);
+            // console.log("Medico Firmante", medicoFirmante.value);
             return data;
         } catch (error) {
             console.error("Error al cargar médico firmante:", error);
@@ -88,7 +88,7 @@ export const useMedicoFirmanteStore = defineStore("medicoFirmante", () => {
             loading.value = true;
             const { data } = await MedicoFirmanteAPI.updateMedicoFirmanteById(idMedicoFirmante, medicoFirmanteData);
             medicoFirmante.value = data;
-            console.log("Medico Firmante", medicoFirmante.value);
+            // console.log("Medico Firmante", medicoFirmante.value);
             return data;
         } catch (error) {
             console.error("Error al cargar médico firmante:", error);

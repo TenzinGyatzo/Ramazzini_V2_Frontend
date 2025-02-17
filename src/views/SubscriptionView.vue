@@ -1,5 +1,21 @@
 <script setup>
 import { ref, computed } from "vue";
+import { usePagosStore } from "@/stores/pagosStore";
+import { useProveedorSaludStore } from "@/stores/proveedorSalud";
+
+const pagosStore = usePagosStore();
+const proveedorSaludStore = useProveedorSaludStore();
+
+const user = ref(
+    JSON.parse(localStorage.getItem('user') || 'null') // Recuperar usuario guardado o establecer null si no existe
+);
+
+const proveedorSalud = ref(
+    JSON.parse(localStorage.getItem('proveedorSalud') || 'null') // Recuperar usuario guardado o establecer null si no existe
+);
+
+console.log('proveedorSalud', proveedorSalud.value);
+console.log('user', user.value);
 
 const formatCurrency = (amount) => {
   return amount.toLocaleString("en-US");
@@ -37,6 +53,80 @@ const validateLimits = () => {
   const currentPlan = selectedPlan.value;
   if (extraUsers.value > currentPlan.maxUsers) extraUsers.value = currentPlan.maxUsers;
   if (extraCompanies.value > currentPlan.maxCompanies) extraCompanies.value = currentPlan.maxCompanies;
+};
+
+const requestSubscription = async () => { // Actualizar suscripcion y proveedorSalud
+  if (!selectedPlan.value) return;
+
+  let reason;
+  let external_reference;
+  
+  if (selectedPlan.value.name === "Básico") {
+    reason = "Ramazzini: Plan Básico";
+    external_reference = "BÁSICO";
+  } else if (selectedPlan.value.name === "Profesional") {
+    reason = "Ramazzini: Plan Profesional";
+    external_reference = "PROFESIONAL";
+  } else if (selectedPlan.value.name === "Empresarial") {
+    reason = "Ramazzini: Plan Empresarial";
+    external_reference = "EMPRESARIAL";
+  }
+
+  const subscriptionData = {
+    reason: reason,
+    external_reference: user.value.email,
+    auto_recurring: {
+      frequency: 1,
+      frequency_type: "months",
+      transaction_amount: totalPrice.value,
+      currency_id: "MXN",
+    },
+    payer_id: user.value.email,
+    payer_email: user.value.email,
+    //back_url: `${import.meta.env.VITE_API_URL}/suscripcion-exitosa`,
+    back_url: `https://ramazzini.app/suscripcion-exitosa`,
+  };
+  console.log('subscriptionData', subscriptionData);
+
+  try {
+    const response = await pagosStore.createSubscription(subscriptionData);
+    console.log('Suscripcion creada:', response);
+    
+    const proveedorSaludData = {
+      referenciaPlan: external_reference,
+      maxUsuariosPermitidos: selectedPlan.value.users + extraUsers.value,
+      maxEmpresasPermitidas: selectedPlan.value.companies + extraCompanies.value,
+      fechaInicioTrial: proveedorSalud.value.fechaInicioTrial,
+      periodoDePruebaFinalizado: true,
+      addOns: [
+        {
+          tipo: 'usuario_adicional',
+          cantidad: extraUsers.value
+        },
+        {
+          tipo: 'empresas_extra',
+          cantidad: extraCompanies.value
+        }
+      ],
+      mercadoPagoSubscriptionId: response._id,
+      payerEmail: user.value.email,
+    };
+    // console.log('proveedorSaludData', proveedorSaludData);
+
+    await proveedorSaludStore.updateProveedorById(proveedorSalud.value._id, proveedorSaludData);
+    
+    // Redirect to payment URL
+    if (response.init_point) {
+      window.location.href = response.init_point;
+    }
+
+    // Open payment URL in a new window/tab
+    // if (response.init_point) {
+    //   window.open(response.init_point, '_blank');
+    // }
+  } catch (error) {
+    console.error('Error updating subscription:', error);
+  }
 };
 </script>
 

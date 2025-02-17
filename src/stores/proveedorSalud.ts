@@ -45,7 +45,7 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
             loading.value = true;
             const { data } = await ProveedorSaludAPI.getProveedorById(idProveedorSalud);
             proveedorSalud.value = data;
-            console.log("Proveedor Salud", proveedorSalud.value);
+            // console.log("Proveedor Salud", proveedorSalud.value);
             localStorage.setItem('proveedorSalud', JSON.stringify(proveedorSalud.value));
         } catch (error) {
             console.error("Error al cargar proveedor de salud:", error);
@@ -74,7 +74,7 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
             loading.value = true;
             const { data } = await ProveedorSaludAPI.updateProveedorById(idProveedorSalud, proveedorSaludData);
             proveedorSalud.value = data;
-            console.log("Proveedor Salud", proveedorSalud.value);
+            // console.log("Proveedor Salud", proveedorSalud.value);
             return data;
         } catch (error) {
             console.error("Error al cargar proveedor de salud:", error);
@@ -97,7 +97,7 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
 
     async function verificarPeriodoDePrueba (idProveedorSalud: string) {
         try {
-            console.log("Store");
+            // console.log("Store");
             loading.value = true;
             const resultado = await ProveedorSaludAPI.verificarPeriodoDePrueba(idProveedorSalud)
             return resultado.data
