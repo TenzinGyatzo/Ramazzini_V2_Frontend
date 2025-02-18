@@ -30,9 +30,13 @@ const estadosCiviles = [
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
-  if (proveedorSalud.value.periodoDePruebaFinalizado) {
-    emit('openSubscriptionModal');
-    return;
+  // Verificar si el usuario tiene una suscripción activa 
+  if (proveedorSalud.value.estadoSuscripcion !== 'authorized') {
+    // Verificar si el periodo de prueba ha finalizado
+    if (proveedorSalud.value.periodoDePruebaFinalizado) {
+      emit('openSubscriptionModal');
+      return;
+    }    
   }
 
   const trabajadorData = {
