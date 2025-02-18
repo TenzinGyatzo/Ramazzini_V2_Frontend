@@ -17,6 +17,8 @@ const proveedorSalud = ref(
 console.log('proveedorSalud', proveedorSalud.value);
 console.log('user', user.value);
 
+const loading = ref(false);
+
 const formatCurrency = (amount) => {
   return amount.toLocaleString("en-US");
 };
@@ -57,9 +59,9 @@ const validateLimits = () => {
 
 const requestSubscription = async () => { // Actualizar suscripcion y proveedorSalud
   if (!selectedPlan.value) return;
+  loading.value = true;
 
   let reason;
-  let external_reference;
   
   if (selectedPlan.value.name === "Básico") {
     reason = "Ramazzini: Plan Básico";
@@ -83,7 +85,7 @@ const requestSubscription = async () => { // Actualizar suscripcion y proveedorS
     //back_url: `${import.meta.env.VITE_API_URL}/suscripcion-exitosa`,
     back_url: `https://ramazzini.app/suscripcion-exitosa`,
   };
-  console.log('subscriptionData', subscriptionData);
+  // console.log('subscriptionData', subscriptionData);
 
   try {
     const response = await pagosStore.createSubscription(subscriptionData);
@@ -91,7 +93,7 @@ const requestSubscription = async () => { // Actualizar suscripcion y proveedorS
         
     const proveedorSaludData = {
       fechaInicioTrial: proveedorSalud.value.fechaInicioTrial,
-      periodoDePruebaFinalizado: true,
+      periodoDePruebaFinalizado: proveedorSalud.value.periodoDePruebaFinalizado,
       maxUsuariosPermitidos: selectedPlan.value.users + extraUsers.value,
       maxEmpresasPermitidas: selectedPlan.value.companies + extraCompanies.value,
       addOns: [
@@ -120,6 +122,8 @@ const requestSubscription = async () => { // Actualizar suscripcion y proveedorS
     // }
   } catch (error) {
     console.error('Error updating subscription:', error);
+  } finally {
+    loading.value = false;
   }
 };
 </script>
@@ -171,7 +175,12 @@ const requestSubscription = async () => { // Actualizar suscripcion y proveedorS
           <p class="text-xl font-semibold mt-4 text-sky-600">Total: ${{ formatCurrency(totalPrice) }}/mes</p>
           <p v-if="suggestion" class="text-yellow-600 mt-2">{{ suggestion }}</p>
         </div>
-        <button @click="requestSubscription" :disabled="!selectedPlan" class="bg-gradient-to-r from-sky-500 to-sky-700 text-white px-6 py-2 rounded-lg disabled:opacity-50 hover:scale-105 transition-all duration-300 ease-in-out">Solicitar Suscripción</button>
+        <button 
+          @click="requestSubscription" 
+          :disabled="!selectedPlan || loading" 
+          class="bg-gradient-to-r from-sky-500 to-sky-700 text-white px-6 py-2 rounded-lg disabled:opacity-50 hover:scale-105 transition-all duration-300 ease-in-out">
+          {{ loading ? 'Procesando...' : 'Solicitar Suscripción' }}
+        </button>
       </div>
     </div>
   </div>

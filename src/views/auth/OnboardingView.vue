@@ -3,7 +3,6 @@ import { ref, reactive, inject } from "vue";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
 import { useUserStore } from "@/stores/user";
 import { useRouter } from "vue-router";
-import { usePagosStore } from "@/stores/pagosStore";
 
 const toast = inject("toast");
 
@@ -36,7 +35,6 @@ const formDataProveedorSalud = reactive({
 const proveedorSaludStore = useProveedorSaludStore();
 const userStore = useUserStore();
 const router = useRouter();
-const pagosStore = usePagosStore();
 
 const handleSubmitStep1 = async (data) => {
   formDataUser.value = data; // Guardar datos del usuario temporalmente
