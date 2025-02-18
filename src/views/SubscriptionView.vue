@@ -63,13 +63,10 @@ const requestSubscription = async () => { // Actualizar suscripcion y proveedorS
   
   if (selectedPlan.value.name === "Básico") {
     reason = "Ramazzini: Plan Básico";
-    external_reference = "BÁSICO";
   } else if (selectedPlan.value.name === "Profesional") {
     reason = "Ramazzini: Plan Profesional";
-    external_reference = "PROFESIONAL";
   } else if (selectedPlan.value.name === "Empresarial") {
     reason = "Ramazzini: Plan Empresarial";
-    external_reference = "EMPRESARIAL";
   }
 
   const subscriptionData = {
@@ -91,13 +88,12 @@ const requestSubscription = async () => { // Actualizar suscripcion y proveedorS
   try {
     const response = await pagosStore.createSubscription(subscriptionData);
     console.log('Suscripcion creada:', response);
-    
+        
     const proveedorSaludData = {
-      referenciaPlan: external_reference,
-      maxUsuariosPermitidos: selectedPlan.value.users + extraUsers.value,
-      maxEmpresasPermitidas: selectedPlan.value.companies + extraCompanies.value,
       fechaInicioTrial: proveedorSalud.value.fechaInicioTrial,
       periodoDePruebaFinalizado: true,
+      maxUsuariosPermitidos: selectedPlan.value.users + extraUsers.value,
+      maxEmpresasPermitidas: selectedPlan.value.companies + extraCompanies.value,
       addOns: [
         {
           tipo: 'usuario_adicional',
@@ -108,12 +104,10 @@ const requestSubscription = async () => { // Actualizar suscripcion y proveedorS
           cantidad: extraCompanies.value
         }
       ],
-      mercadoPagoSubscriptionId: response._id,
-      payerEmail: user.value.email,
     };
     // console.log('proveedorSaludData', proveedorSaludData);
 
-    await proveedorSaludStore.updateProveedorById(proveedorSalud.value._id, proveedorSaludData);
+    await proveedorSaludStore.updateProveedorById(proveedorSalud.value._id, proveedorSaludData); 
     
     // Redirect to payment URL
     if (response.init_point) {
