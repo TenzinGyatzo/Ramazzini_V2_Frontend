@@ -15,12 +15,28 @@ const proveedorSalud = ref(
     JSON.parse(localStorage.getItem('proveedorSalud')) || null // Recuperar usuario guardado o establecer null si no existe
 );
 
+const periodoDePruebaFinalizado = proveedorSalud.value?.periodoDePruebaFinalizado;
+const estadoSuscripcion = proveedorSalud.value?.estadoSuscripcion;
+const finDeSuscripcion = proveedorSalud.value?.finDeSuscripcion ? new Date(proveedorSalud.value.finDeSuscripcion) : null;
+
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
-  if (proveedorSalud.value.periodoDePruebaFinalizado) {
-    emit('openSubscriptionModal');
-    return;
+  if (!proveedorSalud.value) return;
+
+  if (periodoDePruebaFinalizado) {
+    // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
+    if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
+      emit('openSubscriptionModal');
+      return;
+    }
+
+    // Bloquear solo si canceló la suscripción y la fecha de fin de suscripción ya pasó
+    if (estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date() > finDeSuscripcion) {
+      emit('openSubscriptionModal');
+      return;
+    }
   }
+  
   const fileInput = data.file[0].file;
 
   const formData = new FormData();
@@ -86,7 +102,7 @@ const closeModal = () => {
           <a href="/template/Plantilla para Importar Trabajadores.xlsx"
             download="Plantilla para Importar Trabajadores.xlsx">
             <button
-              class="text-xl mt-2 w-full rounded-lg bg-white font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-800 hover:bg-gray-800 hover:text-white p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg flex-1">
+              class="text-lg mt-2 w-full rounded-lg bg-white font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-800 hover:bg-gray-800 hover:text-white p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg flex-1">
               Descargar Plantilla
             </button>
           </a>

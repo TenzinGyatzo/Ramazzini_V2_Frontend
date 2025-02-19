@@ -18,7 +18,6 @@ export default {
     },
 
     verificarPeriodoDePrueba(proveedorId: string) {
-        console.log("API");
         return proveedor.get(`verificar-periodo-prueba/${proveedorId}`);
     }
 }

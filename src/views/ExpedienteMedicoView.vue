@@ -35,11 +35,32 @@ const selectedDocumentName = ref<string>(''); // Valor inicial como cadena vací
 const selectedDocumentType = ref<string | null>(null); // Tipo del documento seleccionado
 const selectedRoutes = ref<string[]>([]);
 
+const proveedorSalud = ref(
+    JSON.parse(localStorage.getItem('proveedorSalud') || 'null') // Recuperar usuario guardado o establecer null si no existe
+);
+const periodoDePruebaFinalizado = proveedorSalud.value?.periodoDePruebaFinalizado;
+const estadoSuscripcion = proveedorSalud.value?.estadoSuscripcion;
+const finDeSuscripcion = proveedorSalud.value?.finDeSuscripcion ? new Date(proveedorSalud.value.finDeSuscripcion) : null;
+
+
 const toggleDocumentoExternoModal = () => {
-  if (proveedorSalud.value.periodoDePruebaFinalizado) {
-    showSubscriptionModal.value = true;
-    return;
+  if (!proveedorSalud.value) return;
+
+  if (periodoDePruebaFinalizado) {
+    // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
+    if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
+      showSubscriptionModal.value = true;
+      return;
+    }
+
+    // Bloquear solo si canceló la suscripción y la fecha de fin de suscripción ya pasó
+    if (estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date() > finDeSuscripcion) {
+      showSubscriptionModal.value = true;
+      return;
+    }
   }
+
+  // Si la suscripción aún está activa, permitir la carga de documentos
   showDocumentoExternoModal.value = !showDocumentoExternoModal.value;
 };
 
@@ -126,16 +147,24 @@ watch(
   }
 );
 
-const proveedorSalud = ref(
-    JSON.parse(localStorage.getItem('proveedorSalud') || 'null') // Recuperar usuario guardado o establecer null si no existe
-);
-
 const navigateTo = (routeName, params) => {
-  if(proveedorSalud.value.periodoDePruebaFinalizado) {
-    showSubscriptionModal.value = true;
-    return;
+  if (!proveedorSalud.value) return;
+
+  if (periodoDePruebaFinalizado) {
+    // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
+    if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
+      showSubscriptionModal.value = true;
+      return;
+    }
+
+    // Bloquear solo si canceló la suscripción y la fecha de fin de suscripción ya pasó
+    if (estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date() > finDeSuscripcion) {
+      showSubscriptionModal.value = true;
+      return;
+    }
   }
 
+  // Si la suscripción aún está activa, permitir la navegación
   router.push({ name: routeName, params });
   documentos.setCurrentTypeOfDocument(params.tipoDocumento);
   documentos.currentDocument = null;

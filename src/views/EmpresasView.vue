@@ -5,18 +5,22 @@ import { useEmpresasStore } from '@/stores/empresas';
 import GreenButton from '@/components/GreenButton.vue';
 import ModalEmpresas from '@/components/ModalEmpresas.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
+import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
 import type { Empresa } from '@/interfaces/empresa.interface';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
+import { useRouter } from 'vue-router';
 
 const toast: any = inject('toast');
 
 const empresas = useEmpresasStore();
 const proveedorSalud = useProveedorSaludStore();
+const router = useRouter();
 
 const showModal = ref(false);
 const showDeleteModal = ref(false);
 const selectedEmpresaId = ref<string | null>(null);
 const selectedEmpresaNombre = ref<string | null>(null);
+const showSubscriptionModal = ref(false);
 
 const openModal = async (empresa: Empresa | null = null) => {
   showModal.value = false;  // Cerramos el modal antes de cargar
@@ -76,12 +80,41 @@ onUnmounted(() => {
     proveedorSalud.verificarPeriodoDePrueba(proveedorSalud.proveedorSalud!._id);  
   }
 });
+
+const proveedor = ref(
+    JSON.parse(localStorage.getItem('proveedorSalud') || 'null') // Recuperar usuario guardado o establecer null si no existe
+);
+
+const periodoDePruebaFinalizado = proveedor.value?.periodoDePruebaFinalizado; // true or false
+const estadoSuscripcion = proveedor.value?.estadoSuscripcion; // authorized, inactive, cancelled
+const finDeSuscripcion = proveedor.value?.finDeSuscripcion
+  ? new Date(proveedor.value.finDeSuscripcion)
+  : null;
+
+if (periodoDePruebaFinalizado && estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date(finDeSuscripcion) > new Date()) {
+  toast.open({
+    message: `Aún tienes acceso hasta el ${finDeSuscripcion.toLocaleDateString()}.`,
+    type: 'success',
+    onClick: () => router.push({ name: 'subscription' }),
+  });
+  toast.open({
+    message: `Haz clic aquí para renovar tu suscripción.`,
+    type: 'info',
+    onClick: () => router.push({ name: 'subscription' }),
+  });
+}
 </script>
 
 <template>
   <Transition appear name="fade">
-    <ModalEmpresas v-if="showModal" @closeModal="closeModal"/>
+    <ModalEmpresas v-if="showModal" @closeModal="closeModal" @openSubscriptionModal="showSubscriptionModal = true"/>
   </Transition>
+
+  <Transition appear name="fade">
+    <ModalSuscripcion v-if="showSubscriptionModal" 
+      @closeModal="showSubscriptionModal = false"/>
+  </Transition>
+
   <Transition appear name="fade">
     <ModalEliminar v-if="showDeleteModal && selectedEmpresaId && selectedEmpresaNombre" :idRegistro="selectedEmpresaId"
       :identificacion="selectedEmpresaNombre" tipoRegistro="Empresa" @closeModal="toggleDeleteModal"

@@ -1,16 +1,32 @@
 <script setup>
-import { ref, reactive, inject } from "vue";
+import { ref, reactive, inject, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
+import ModalSuscripcion from "@/components/suscripciones/ModalSuscripcion.vue";
 
 const router = useRouter();
 const userStore = useUserStore();
 const toast = inject("toast");
 const registroExitoso = ref(false);
+const showSubscriptionModal = ref(false);
 
 const user = ref(
   JSON.parse(localStorage.getItem("user")) || null // Recuperar usuario guardado o establecer null si no existe
 );
+
+const proveedorSalud = ref(
+    JSON.parse(localStorage.getItem('proveedorSalud')) || null // Recuperar usuario guardado o establecer null si no existe
+);
+
+const maxUsuariosPermitidos = proveedorSalud.value?.maxUsuariosPermitidos;
+let usuariosCreados = 0;
+
+onMounted(async () => {
+  const resultado = await userStore.fetchUsersByProveedorId(
+    user.value.idProveedorSalud
+  );
+  usuariosCreados = resultado.data.length;
+});
 
 const formDataUser = reactive({
   username: "",
@@ -22,6 +38,12 @@ const formDataUser = reactive({
 });
 
 const handleSubmit = async () => {
+
+  if (usuariosCreados >= maxUsuariosPermitidos) {
+    showSubscriptionModal.value = true;
+    return;
+  }
+
   try {
     const resultado = await userStore.registerUser(formDataUser);
 
@@ -53,6 +75,11 @@ const volver = () => {
 </script>
 
 <template>
+  <Transition appear name="fade">
+    <ModalSuscripcion v-if="showSubscriptionModal" 
+      @closeModal="showSubscriptionModal = false"/>
+  </Transition>
+
   <!-- Formulario Paso 1 -->
   <div
     v-if="registroExitoso == false"

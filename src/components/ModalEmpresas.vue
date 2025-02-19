@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, inject } from 'vue';
+import { ref, watch, inject, onMounted } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
@@ -7,7 +7,7 @@ const toast = inject('toast');
 
 const empresas = useEmpresasStore();
 const proveedorSaludStore = useProveedorSaludStore();
-const emit = defineEmits(['closeModal']);
+const emit = defineEmits(['closeModal', 'openSubscriptionModal']);
 
 // Propiedades reactivas para el logotipo
 const logotipoPreview = ref(null);  // Para la vista previa de la imagen
@@ -46,8 +46,28 @@ const handleFileChange = (event) => {
   }
 };
 
+const proveedorSalud = ref(
+    JSON.parse(localStorage.getItem('proveedorSalud')) || null // Recuperar usuario guardado o establecer null si no existe
+);
+
+const proveedorSaludId = proveedorSalud.value?._id;
+const maxEmpresasPermitidas = proveedorSalud.value?.maxEmpresasPermitidas;
+let empresasCreadas = 0;
+
+onMounted(async () => {
+  await empresas.fetchEmpresas(proveedorSaludId);
+  empresasCreadas = empresas.empresas.length;
+});
+
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
+
+  // Validar si se ha alcanzado el límite de empresas
+  if (empresasCreadas >= maxEmpresasPermitidas) {
+    emit('openSubscriptionModal');
+    return;
+  }
+
   const formData = new FormData();
 
   // Añadir los datos del formulario al FormData 

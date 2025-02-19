@@ -15,6 +15,10 @@ const proveedorSalud = ref(
     JSON.parse(localStorage.getItem('proveedorSalud')) || null // Recuperar usuario guardado o establecer null si no existe
 );
 
+const periodoDePruebaFinalizado = proveedorSalud.value?.periodoDePruebaFinalizado;
+const estadoSuscripcion = proveedorSalud.value?.estadoSuscripcion;
+const finDeSuscripcion = proveedorSalud.value?.finDeSuscripcion ? new Date(proveedorSalud.value.finDeSuscripcion) : null;
+
 const emit = defineEmits(['closeModal', 'openSubscriptionModal']);
 
 const nivelesEscolaridad = [
@@ -30,13 +34,20 @@ const estadosCiviles = [
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
-  // Verificar si el usuario tiene una suscripción activa 
-  if (proveedorSalud.value.estadoSuscripcion !== 'authorized') {
-    // Verificar si el periodo de prueba ha finalizado
-    if (proveedorSalud.value.periodoDePruebaFinalizado) {
+  if (!proveedorSalud.value) return;
+
+  if (periodoDePruebaFinalizado) {
+    // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
+    if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
       emit('openSubscriptionModal');
       return;
-    }    
+    }
+
+    // Bloquear solo si canceló la suscripción y la fecha de fin de suscripción ya pasó
+    if (estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date() > finDeSuscripcion) {
+      emit('openSubscriptionModal');
+      return;
+    }
   }
 
   const trabajadorData = {

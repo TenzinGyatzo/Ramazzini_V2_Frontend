@@ -9,6 +9,7 @@ const steps = useStepsStore();
 const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
 };
+
 </script>
 
 <template>
