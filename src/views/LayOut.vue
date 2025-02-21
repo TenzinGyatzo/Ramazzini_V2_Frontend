@@ -85,7 +85,7 @@ onMounted( () => {
         </div>
 
         <!-- Acciones Usuarios Principales -->
-        <div v-if="user.user?.role === 'Principal'" class="grid grid-cols-2 gap-6">
+        <div v-if="user.user?.role === 'Principal'" class="grid grid-cols-3 gap-6">
           <!-- Sección de creación de usuarios -->
           <Transition name="delayed-appear">
           <!-- <div v-if="isVisible" class="xl:absolute top-3 right-3 grid gap-2 bg-gray-100 p-6 xl:p-3 rounded-lg shadow-md"> -->
@@ -134,6 +134,27 @@ onMounted( () => {
                 <button
                   class="w-full text-sm md:text-base bg-orange-500 hover:bg-orange-600 text-white uppercase rounded-lg px-8 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
                   MI NEGOCIO
+                </button>
+              </a>
+            </div>
+          </div>
+          </Transition>
+
+          <!-- Sección de Suscripción -->
+          <Transition name="delayed-appear">
+          <!-- <div v-if="isVisible" class="xl:absolute top-3 right-3 grid gap-2 bg-gray-100 p-6 xl:p-3 rounded-lg shadow-md"> -->
+          <div v-if="isVisible" class="grid gap-2 bg-gray-100 p-6 rounded-lg shadow-md">
+            <!-- Encabezado -->
+            <div class="text-center">
+              <p class="text-base sm:text-lg font-medium text-gray-700">Gestiona tu suscripción</p>
+            </div>
+
+            <!-- Botones -->
+            <div class="grid grid-cols-1 gap-2">
+              <a href="/suscripcion-activa" class="flex justify-center">
+                <button
+                  class="w-full text-sm md:text-base bg-purple-500 hover:bg-purple-600 text-white uppercase rounded-lg px-6 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg">
+                  SUSCRIPCIÓN
                 </button>
               </a>
             </div>

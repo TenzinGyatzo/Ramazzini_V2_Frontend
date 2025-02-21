@@ -5,8 +5,12 @@ export default {
         return pagos.post(`crear-suscripcion/`, subscrtiptionData);
     },
 
-    getSubscription(subscriptionId: string) {
-        return pagos.get(`obtener-suscripcion/${subscriptionId}`);
+    getSubscriptionFromAPI(subscriptionId: string) {
+        return pagos.get(`obtener-suscripcion-api/${subscriptionId}`);
+    },
+
+    getSubscriptionFromDB(subscriptionId: string) {
+        return pagos.get(`obtener-suscripcion-db/${subscriptionId}`);
     },
 
     deleteSubscription(subscriptionId: string) {

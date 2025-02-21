@@ -102,6 +102,11 @@ const router = createRouter({
           component: () => import("../views/SubscriptionView.vue"),
         },
         {
+          path: "/suscripcion-activa",
+          name: "suscripcion-activa",
+          component: () => import("../views/SuscripcionActivaView.vue"),
+        },
+        {
           path: "/suscripcion-exitosa",
           name: "subscription-success",
           component: () => import('@/views/auth/SubscriptionSuccess.vue'),

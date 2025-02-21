@@ -246,8 +246,8 @@ const companyDifference = computed(() => (selectedPlan.value.companies + extraCo
             <div 
               class="h-3 rounded-full"
               :class="{
-                'bg-sky-500': usuariosCreados <= (selectedPlan?.users + extraUsers),
-                'bg-red-500': usuariosCreados > (selectedPlan?.users + extraUsers)
+                'bg-gradient-to-r from-cyan-500 to-cyan-400': usuariosCreados <= (selectedPlan?.users + extraUsers),
+                'bg-gradient-to-r from-red-500 to-red-400': usuariosCreados > (selectedPlan?.users + extraUsers)
               }"
               :style="{ width: `${Math.min((usuariosCreados / (selectedPlan?.users + extraUsers)) * 100, 100)}%` }"
             ></div>
@@ -264,8 +264,8 @@ const companyDifference = computed(() => (selectedPlan.value.companies + extraCo
             <div 
               class="h-3 rounded-full"
               :class="{
-                'bg-sky-500': empresasCreadas <= (selectedPlan?.companies + extraCompanies),
-                'bg-red-500': empresasCreadas > (selectedPlan?.companies + extraCompanies)
+                'bg-gradient-to-r from-cyan-500 to-cyan-400': empresasCreadas <= (selectedPlan?.companies + extraCompanies),
+                'bg-gradient-to-r from-red-500 to-red-400': empresasCreadas > (selectedPlan?.companies + extraCompanies)
               }"
               :style="{ width: `${Math.min((empresasCreadas / (selectedPlan?.companies + extraCompanies)) * 100, 100)}%` }"
             ></div>

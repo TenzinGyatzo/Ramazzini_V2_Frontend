@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
@@ -21,79 +21,73 @@ const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 
-onMounted(async () => {
-  const empresaId = String(route.params.idEmpresa);
-  const centroTrabajoId = String(route.params.idCentroTrabajo);
-  const trabajadorId = String(route.params.idTrabajador);
+const empresaId = ref('');
+const centroTrabajoId = ref('');
+const trabajadorId = ref('');
+const documentoId = ref('');
+const tipoDocumento = ref('');
 
-  // Setear los ID actuales en el store
-  empresas.currentEmpresaId = empresaId;
-  empresas.fetchEmpresaById(empresaId);
-  centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;
-  centrosTrabajo.fetchCentroTrabajoById(empresaId, centroTrabajoId);
-  trabajadores.currentTrabajadorId = trabajadorId;
-  trabajadores.fetchTrabajadorById(empresaId, centroTrabajoId, trabajadorId);
+onMounted(() => {
+  empresaId.value = String(route.params.idEmpresa);
+  centroTrabajoId.value = String(route.params.idCentroTrabajo);
+  trabajadorId.value = String(route.params.idTrabajador);
+  documentoId.value = route.params.idDocumento;
+  tipoDocumento.value = route.params.tipoDocumento;
+
+  // Establecer los IDs en los stores
+  empresas.currentEmpresaId = empresaId.value;
+  centrosTrabajo.currentCentroTrabajoId = centroTrabajoId.value;
+  trabajadores.currentTrabajadorId = trabajadorId.value;
+
+  // Llamar las funciones de carga (sin await)
+  empresas.fetchEmpresaById(empresaId.value);
+  centrosTrabajo.fetchCentroTrabajoById(empresaId.value, centroTrabajoId.value);
+  trabajadores.fetchTrabajadorById(empresaId.value, centroTrabajoId.value, trabajadorId.value);
+
   formData.resetFormData();
 
-  const documentoId = route.params.idDocumento;
-  const tipoDocumento = route.params.tipoDocumento;
-
-  if (documentoId && tipoDocumento) {
-    try {
-      await documentos.fetchDocumentById(tipoDocumento, trabajadores.currentTrabajadorId, documentoId);
-
-      const documento = documentos.currentDocument;
-
-      if (documento) {
-        // Carga los datos en el formDataStore
-        formData.setFormDataFromDocument(documento, tipoDocumento);
-
-      } else {
-        console.error('No se encontraron datos para el documento especificado.');
-      }
-    } catch (error) {
-      console.error('Error al cargar los datos del documento:', error);
-    }
-    // console.log('Editando');
-  } else {
-    // console.log('Creando');
-    formData.resetFormData(); // Limpia los datos si no hay información para cargar
+  // Cargar documento si existe
+  if (documentoId.value && tipoDocumento.value) {
+    documentos.fetchDocumentById(tipoDocumento.value, trabajadores.currentTrabajadorId, documentoId.value)
+      .then(() => {
+        if (documentos.currentDocument) {
+          formData.setFormDataFromDocument(documentos.currentDocument, tipoDocumento.value);
+        } else {
+          console.error('No se encontraron datos para el documento especificado.');
+        }
+      })
+      .catch(error => console.error('Error al cargar los datos del documento:', error));
   }
+});
 
-  const empresa = empresas.currentEmpresa.nombreComercial;
-  const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
-  const trabajador = trabajadores.currentTrabajador.nombre;
+// Verificar cuando los datos se hayan cargado completamente
+watchEffect(() => {
+  const empresa = empresas.currentEmpresa?.nombreComercial;
+  const centroTrabajo = centrosTrabajo.currentCentroTrabajo?.nombreCentro;
+  const trabajador = trabajadores.currentTrabajador?.nombre;
 
-  if (tipoDocumento === 'antidoping') {
-    formData.formDataAntidoping.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataAntidoping.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataAntidoping.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-  } else if (tipoDocumento === 'aptitud') {
-    formData.formDataAptitud.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataAptitud.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataAptitud.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-  } else if (tipoDocumento === 'certificado') {
-    formData.formDataCertificado.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataCertificado.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataCertificado.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-  } else if (tipoDocumento === 'documento Externo') {
-    formData.formDataDocumentoExterno.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataDocumentoExterno.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataDocumentoExterno.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-  } else if (tipoDocumento === 'examenVista') {
-    formData.formDataExamenVista.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataExamenVista.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataExamenVista.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-  } else if (tipoDocumento === 'exploracionFisica') {
-    formData.formDataExploracionFisica.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataExploracionFisica.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataExploracionFisica.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-  } else if (tipoDocumento === 'historiaClinica') {
-    formData.formDataHistoriaClinica.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataHistoriaClinica.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-    formData.formDataHistoriaClinica.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
-  } else {
-    console.error(`Tipo de documento no reconocido: ${tipoDocumento}`);
+  if (empresa && centroTrabajo && trabajador && tipoDocumento.value) {
+    const rutaBase = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
+
+    const documentoMap = {
+      antidoping: formData.formDataAntidoping,
+      aptitud: formData.formDataAptitud,
+      certificado: formData.formDataCertificado,
+      'documento Externo': formData.formDataDocumentoExterno,
+      examenVista: formData.formDataExamenVista,
+      exploracionFisica: formData.formDataExploracionFisica,
+      historiaClinica: formData.formDataHistoriaClinica
+    };
+
+    const documentoForm = documentoMap[tipoDocumento.value];
+
+    if (documentoForm) {
+      documentoForm.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
+      documentoForm.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
+      documentoForm.rutaPDF = rutaBase;
+    } else {
+      console.error(`Tipo de documento no reconocido: ${tipoDocumento.value}`);
+    }
   }
 });
 
