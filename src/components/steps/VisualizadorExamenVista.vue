@@ -222,6 +222,20 @@ console.log('Datos del store en VisualizadorExamenVista:', formData.formDataExam
       </table>
     </div>
   </div>
+  <div class="w-full flex justify-end gap-4 mt-4">
+    <a 
+      href="/img/assets/Carta-Jaeger.pdf" 
+      download 
+      class="px-4 py-2 bg-sky-500 text-white rounded-lg shadow hover:bg-sky-600 transition">
+      📄 Carta Jaeger PDF
+    </a>
+    <a 
+      href="/img/assets/Test-Ishihara.pdf" 
+      download 
+      class="px-4 py-2 bg-rose-500 text-white rounded-lg shadow hover:bg-rose-600 transition">
+      📄 Test de Ishihara PDF
+    </a>
+  </div>
 </template>
 
 <style scoped>

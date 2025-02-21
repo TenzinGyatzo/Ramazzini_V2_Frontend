@@ -102,7 +102,6 @@ const requestSubscription = async () => {
   loading.value = true;
 
   let reason;
-  
   if (selectedPlan.value.name === "Básico") {
     reason = "Ramazzini: Plan Básico";
   } else if (selectedPlan.value.name === "Profesional") {
@@ -128,26 +127,19 @@ const requestSubscription = async () => {
   try {
     const response = await pagosStore.createSubscription(subscriptionData);
     console.log('Suscripción creada:', response);
-        
+
+    // Solo guarda la suscripción en proveedorSalud sin actualizar los límites maxUsuariosPermitidos y maxEmpresasPermitidos aún
     const proveedorSaludData = {
       fechaInicioTrial: proveedorSalud.value.fechaInicioTrial,
       periodoDePruebaFinalizado: proveedorSalud.value.periodoDePruebaFinalizado,
-      maxUsuariosPermitidos: selectedPlan.value.users + extraUsers.value,
-      maxEmpresasPermitidas: selectedPlan.value.companies + extraCompanies.value,
       addOns: [
-        {
-          tipo: 'usuario_adicional',
-          cantidad: extraUsers.value
-        },
-        {
-          tipo: 'empresas_extra',
-          cantidad: extraCompanies.value
-        }
+        { tipo: 'usuario_adicional', cantidad: extraUsers.value },
+        { tipo: 'empresas_extra', cantidad: extraCompanies.value }
       ],
     };
 
     await proveedorSaludStore.updateProveedorById(proveedorSalud.value._id, proveedorSaludData); 
-    
+
     // Redirigir al usuario a la URL de pago
     if (response.init_point) {
       window.location.href = response.init_point;
@@ -162,6 +154,7 @@ const requestSubscription = async () => {
   }
 };
 
+
 // Cálculo de diferencias entre la suscripción actual y la nueva
 const priceDifference = computed(() => totalPrice.value - (suscripcionActual.value.auto_recurring?.transaction_amount || 0));
 const userDifference = computed(() => (selectedPlan.value.users + extraUsers.value) - proveedorSalud.value.maxUsuariosPermitidos);
@@ -170,11 +163,11 @@ const companyDifference = computed(() => (selectedPlan.value.companies + extraCo
 </script>
 
 <template>
-  <div class="max-w-6xl mx-auto p-6 space-y-8 bg-gray-100 min-h-screen">
-    <h1 class="text-gray-800 text-4xl mb-8">Suscripciones</h1>
+  <div class="max-w-6xl mx-auto p-6 space-y-6 bg-gray-100 min-h-screen">
+    <h1 class="text-gray-800 text-3xl md:text-4xl mb-4">Suscripciones</h1>
 
     <!-- Lista de Planes -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
       <div 
         v-for="plan in plans" 
         :key="plan.id" 
@@ -210,30 +203,30 @@ const companyDifference = computed(() => (selectedPlan.value.companies + extraCo
           </thead>
           <tbody>
             <tr class="border-t">
-              <td class="p-2">Precio Mensual</td>
-              <td class="p-2 text-center">${{ formatCurrency(suscripcionActual?.auto_recurring?.transaction_amount || 0) }}</td>
-              <td class="p-2 text-center">${{ formatCurrency(totalPrice) }}</td>
-              <td class="p-2 text-center">
+              <td class="text-sm md:text-base p-2">Precio Mensual</td>
+              <td class="text-sm md:text-base p-2 text-center">${{ formatCurrency(suscripcionActual?.auto_recurring?.transaction_amount || 0) }}</td>
+              <td class="text-sm md:text-base p-2 text-center">${{ formatCurrency(totalPrice) }}</td>
+              <td class="text-sm md:text-base p-2 text-center">
                 <span :class="priceDifference >= 0 ? 'text-green-600' : 'text-red-600'">
                   {{ priceDifference >= 0 ? '+' : '-' }}${{ formatCurrency(Math.abs(priceDifference)) }}
                 </span>
               </td>
             </tr>
             <tr class="border-t">
-              <td class="p-2">Usuarios</td>
-              <td class="p-2 text-center">{{ proveedorSalud?.maxUsuariosPermitidos }}</td>
-              <td class="p-2 text-center">{{ selectedPlan?.users + extraUsers }}</td>
-              <td class="p-2 text-center">
+              <td class="text-sm md:text-base p-2">Usuarios</td>
+              <td class="text-sm md:text-base p-2 text-center">{{ proveedorSalud?.maxUsuariosPermitidos }}</td>
+              <td class="text-sm md:text-base p-2 text-center">{{ selectedPlan?.users + extraUsers }}</td>
+              <td class="text-sm md:text-base p-2 text-center">
                 <span :class="userDifference >= 0 ? 'text-green-600' : 'text-red-600'">
                   {{ userDifference >= 0 ? '+' : '-' }}{{ Math.abs(userDifference) }}
                 </span>
               </td>
             </tr>
             <tr class="border-t">
-              <td class="p-2">Empresas</td>
-              <td class="p-2 text-center">{{ proveedorSalud?.maxEmpresasPermitidas }}</td>
-              <td class="p-2 text-center">{{ selectedPlan?.companies + extraCompanies }}</td>
-              <td class="p-2 text-center">
+              <td class="text-sm md:text-base p-2">Empresas</td>
+              <td class="text-sm md:text-base p-2 text-center">{{ proveedorSalud?.maxEmpresasPermitidas }}</td>
+              <td class="text-sm md:text-base p-2 text-center">{{ selectedPlan?.companies + extraCompanies }}</td>
+              <td class="text-sm md:text-base p-2 text-center">
                 <span :class="companyDifference >= 0 ? 'text-green-600' : 'text-red-600'">
                   {{ companyDifference >= 0 ? '+' : '-' }}{{ Math.abs(companyDifference) }}
                 </span>
@@ -290,7 +283,7 @@ const companyDifference = computed(() => (selectedPlan.value.companies + extraCo
         <h2 class="text-2xl font-semibold mb-4 text-gray-700">Adicionales</h2>
         <div class="flex flex-col gap-6 text-base">
           <div>
-            <label class="block mb-2 text-gray-600">Usuarios ($120 por usuario extra)</label>
+            <label class="text-sm md:text-base block mb-2 text-gray-600">Usuarios ($120 por usuario extra)</label>
             <div class="flex items-center gap-2">
               <button @click="extraUsers > 0 ? extraUsers-- : null" class="w-8 h-8 bg-gray-200 hover:bg-gray-300 flex items-center justify-center rounded transition-all duration-200">-</button>
               <input type="number" v-model="extraUsers" @input="validateLimits" min="0" class="border rounded p-2 w-20 text-center focus:ring-2 focus:ring-sky-500">
@@ -298,7 +291,7 @@ const companyDifference = computed(() => (selectedPlan.value.companies + extraCo
             </div>
           </div>
           <div>
-            <label class="block mb-2 text-gray-600">Empresas ($120 por cada 5 empresas extra)</label>
+            <label class="text-sm md:text-base block mb-2 text-gray-600">Empresas ($120 por cada 5 empresas extra)</label>
             <div class="flex items-center gap-2">
               <button @click="extraCompanies > 0 ? (extraCompanies -= 5) : null" class="w-8 h-8 bg-gray-200 hover:bg-gray-300 flex items-center justify-center rounded transition-all duration-200">-</button>
               <input type="number" v-model="extraCompanies" @input="validateLimits" min="0" step="5" class="border rounded p-2 w-20 text-center focus:ring-2 focus:ring-sky-500">
