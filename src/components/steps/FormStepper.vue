@@ -313,7 +313,7 @@ export default {
     const user = ref(
         JSON.parse(localStorage.getItem('user')) || null // Recuperar usuario guardado o establecer null si no existe
     );
-    console.log('Usuario:', user.value);
+    // console.log('Usuario:', user.value);
 
     const handleSubmit = async () => {
       let datosLimpios;
@@ -421,15 +421,23 @@ export default {
 
     <!-- Navegación entre pasos -->
     <div v-if="stepsStore.currentStep <= stepsStore.steps.length && stepsStore.steps.length > 0"
-      class="flex justify-between mt-6">
-      <button :class="{ invisible: stepsStore.currentStep === 1 }" @click="stepsStore.previousStep"
-        class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-gray-500 hover:bg-gray-600 transition-all duration-300">
-        &lt; Anterior
-      </button>
+      class="flex flex-col mt-6">
+      <div class="flex justify-between">
+        <button :class="{ invisible: stepsStore.currentStep === 1 }" @click="stepsStore.previousStep"
+          class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-gray-500 hover:bg-gray-600 transition-all duration-300">
+          &lt; Anterior
+        </button>
+  
+        <button :class="{ invisible: stepsStore.currentStep > stepsStore.steps.length }" @click="stepsStore.nextStep"
+          class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-all duration-300">
+          Siguiente &gt;
+        </button>
+      </div>
 
-      <button :class="{ invisible: stepsStore.currentStep > stepsStore.steps.length }" @click="stepsStore.nextStep"
-        class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-all duration-300">
-        Siguiente &gt;
+      <button @click="handleSubmit"
+        class="text-xs md:text-sm mt-6 text-gray-500"
+      >
+        Guardar cambios
       </button>
     </div>
 

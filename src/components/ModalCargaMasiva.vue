@@ -44,7 +44,7 @@ const handleSubmit = async (data) => {
   formData.append('idCentroTrabajo', centrosTrabajo.currentCentroTrabajoId);
   formData.append('createdBy', '6650f38308ac3beedf5ac41b'); // TODO: Obtener el ID del usuario actual
   formData.append('updatedBy', '6650f38308ac3beedf5ac41b'); // TODO: Obtener el ID del usuario actual
-
+  
   try {
     await trabajadores.importTrabajadores(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId, formData);
     emit('closeModal');
@@ -52,7 +52,8 @@ const handleSubmit = async (data) => {
     trabajadores.fetchTrabajadores(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId);
   } catch (error) {
     console.log('Error en la petición:', error.response?.data || error.message);
-    toast.open({ message: 'Hubo un error, por favor intente nuevamente.', type: 'error' });
+    const errorMessage = error.response?.data?.message || 'Hubo un error, por favor utilice la plantilla.';
+    toast.open({ message: errorMessage, type: 'error' });
   }
 };
 

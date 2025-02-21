@@ -368,7 +368,7 @@ const antidopingResumen = computed(() => {
               {{ formData.formDataAptitud.aptitudPuesto === 'No Apto' ? 'XX' : '' }}
             </td>
             <td class="text-sm sm:text-base text-left px-2 py-0 border border-gray-300">
-              No apto. No está permitido el deseméño del puesto al que aspira.
+              No apto. No está permitido el desempeño del puesto al que aspira.
             </td>
           </tr>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer">

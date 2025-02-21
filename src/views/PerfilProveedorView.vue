@@ -36,25 +36,20 @@ const handleSubmit = async (data) => {
     }
   });
 
-  /* formData.append('nombre', data.nombre);
-    formData.append('RFC', data.RFC);
-    formData.append('perfilProveedorSalud', data.perfilProveedorSalud);
-    formData.append('estado', data.estado);
-    formData.append('municipio', data.municipio);
-    formData.append('codigoPostal', data.codigoPostal);
-    formData.append('direccion', data.direccion);
-    formData.append('telefono', data.telefono);
-    formData.append('correoElectronico', data.correoElectronico);
-    formData.append('sitioWeb', data.sitioWeb); */
-
-  if (logotipoArchivo.value) {
+  // Asegurar que solo se agrega un archivo válido
+  if (logotipoArchivo.value instanceof File) {
     formData.append("logotipoEmpresa", logotipoArchivo.value);
   }
 
+  // 🚀 Eliminar logotipoEmpresa si sigue en FormData como un string vacío
+  if (formData.get("logotipoEmpresa") === "") {
+    formData.delete("logotipoEmpresa");
+  }
+
   // Depuramos el contenido de FormData
-  // for (let [key, value] of formData.entries()) {
-  //     console.log(`${key}:`, value);
-  // }
+  for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+  }
 
   try {
     let response;

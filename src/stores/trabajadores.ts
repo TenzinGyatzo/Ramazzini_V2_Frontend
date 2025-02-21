@@ -131,25 +131,33 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
   }
 
   async function importTrabajadores(
-    empresaId: string,
-    centroTrabajoId: string,
-    formData: FormData
+      empresaId: string,
+      centroTrabajoId: string,
+      formData: FormData
   ) {
-    try {
-      loading.value = true;
-      const response = await TrabajadoresAPI.importTrabajadores(
-        empresaId,
-        centroTrabajoId,
-        formData
-      );
-      return response;
-    } catch (error) {
-      // console.log(error);
-      throw error;
-    } finally {
-      loading.value = false;
-    }
+      try {
+          loading.value = true;
+          const response = await TrabajadoresAPI.importTrabajadores(
+              empresaId,
+              centroTrabajoId,
+              formData
+          );
+          return response;
+        } catch (error: unknown) {
+          if (error instanceof Error) {
+              console.error('Error en importTrabajadores:', error.message);
+          } else if (typeof error === 'object' && error !== null && 'response' in error) {
+              const axiosError = error as { response?: { data?: any } };
+              console.error('Error en importTrabajadores:', axiosError.response?.data || 'Error desconocido');
+          } else {
+              console.error('Error inesperado:', error);
+          }
+          throw error;
+      } finally {
+          loading.value = false;
+      }
   }
+
 
   async function deleteTrabajadorById(
     empresaId: string,

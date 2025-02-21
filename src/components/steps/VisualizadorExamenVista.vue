@@ -14,7 +14,7 @@ const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
 };
 
-console.log('Datos del store en VisualizadorExamenVista:', formData.formDataExamenVista);
+// console.log('Datos del store en VisualizadorExamenVista:', formData.formDataExamenVista);
 
 </script>
 
