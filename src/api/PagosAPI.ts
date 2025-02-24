@@ -5,6 +5,10 @@ export default {
         return pagos.post(`crear-suscripcion/`, subscrtiptionData);
     },
 
+    updateSubscription(subscriptionId: string, subscriptionData: any) {
+        return pagos.put(`actualizar-suscripcion/${subscriptionId}`, subscriptionData);
+    },
+
     getSubscriptionFromAPI(subscriptionId: string) {
         return pagos.get(`obtener-suscripcion-api/${subscriptionId}`);
     },

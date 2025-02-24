@@ -3,12 +3,16 @@ import { ref, onMounted, computed } from 'vue';
 import { usePagosStore } from '@/stores/pagosStore';
 import { useUserStore } from '@/stores/user';
 import { useEmpresasStore } from '@/stores/empresas';
-import { format } from 'date-fns';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
+import { useRouter } from 'vue-router';
+import { format, differenceInDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const pagosStore = usePagosStore();
 const userStore = useUserStore();
 const empresasStore = useEmpresasStore();
+const proveedorSaludStore = useProveedorSaludStore();
+const router = useRouter();
 
 const suscripcionActual = ref(null);
 const usuariosCreados = ref(0);
@@ -23,8 +27,8 @@ const fetchData = async () => {
   if (proveedorSalud.value?.suscripcionActiva) {
     try {
         // Obtener suscripción
-        // const response = await pagosStore.getSubscriptionFromAPI(proveedorSalud.value.suscripcionActiva);
-        const response = await pagosStore.getSubscriptionFromDB(proveedorSalud.value.suscripcionActiva);
+        const response = await pagosStore.getSubscriptionFromAPI(proveedorSalud.value.suscripcionActiva);
+        // const response = await pagosStore.getSubscriptionFromDB(proveedorSalud.value.suscripcionActiva);
       if (response) {
         suscripcionActual.value = response;
         // console.log('Detalles de la suscripción:', suscripcionActual.value);
@@ -45,7 +49,14 @@ const fetchData = async () => {
 
 };
 
-onMounted(fetchData);
+onMounted(async () => {
+  // Recargar los datos del proveedor desde el backend
+  const proveedorActualizado = await proveedorSaludStore.getProveedorById(proveedorSalud.value._id);
+  proveedorSalud.value = proveedorActualizado;
+
+  // Luego, cargar el resto de los datos
+  await fetchData();
+});
 
 const formatDate = (dateString) => {
   return dateString ? format(new Date(dateString), "dd 'de' MMMM 'de' yyyy", { locale: es }) : 'No disponible';
@@ -73,29 +84,48 @@ const periodoGratuito = computed(() => {
   if (proveedorSalud.value?.periodoDePruebaFinalizado) {
     return 'Finalizado';
   } else if (proveedorSalud.value?.fechaInicioTrial) {
-    return `Hasta el ${formatDate(proveedorSalud.value.fechaInicioTrial)}`;
+    const fechaFinTrial = parseISO(proveedorSalud.value.fechaInicioTrial); // Convierte la fecha a un objeto Date
+    const hoy = new Date(); // Fecha actual
+    const diasRestantes = differenceInDays(fechaFinTrial, hoy); // Calcula la diferencia en días
+
+    if (diasRestantes > 0) {
+      return `Hasta el ${formatDate(proveedorSalud.value.fechaInicioTrial)} (${diasRestantes} días restantes)`;
+    } else {
+      return 'Finalizado';
+    }
   }
   return 'No disponible';
 });
 
+// Sin mostrar días restantes
+/* const periodoGratuito = computed(() => {
+  if (proveedorSalud.value?.periodoDePruebaFinalizado) {
+    return 'Finalizado';
+  } else if (proveedorSalud.value?.fechaInicioTrial) {
+    return `Hasta el ${formatDate(proveedorSalud.value.fechaInicioTrial)}`;
+  }
+  return 'No disponible';
+}); */
+
+
 // Computed para calcular el uso de usuarios y empresas
 const porcentajeUsuarios = computed(() => {
-  return Math.min((usuariosCreados.value / (proveedorSalud.value.maxUsuariosPermitidos || 1)) * 100, 100);
+  return Math.min((usuariosCreados.value / (proveedorSalud.value.maxUsuariosPermitidos || 1)) * 100, 100).toFixed(0);
 });
 
 const porcentajeEmpresas = computed(() => {
-  return Math.min((empresasCreadas.value / (proveedorSalud.value.maxEmpresasPermitidas || 1)) * 100, 100);
+  return Math.min((empresasCreadas.value / (proveedorSalud.value.maxEmpresasPermitidas || 1)) * 100, 100).toFixed(0);
 });
 </script>
 
 <template>
     <div class="max-w-4xl mx-auto p-6 space-y-6 min-h-screen">
-      <h2 class="text-gray-800 text-3xl md:text-4xl mb-4">Detalles de tu Suscripción</h2>
+      <h2 class="text-gray-800 text-3xl md:text-4xl mb-4 font-semibold">Detalles de Mi Suscripción</h2>
   
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Sección de Suscripción -->
         <div class="bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
-          <h3 class="text-2xl font-semibold text-gray-700 mb-4">{{ suscripcionActual?.reason || 'Sin plan' }}</h3>
+          <h3 class="text-2xl font-semibold text-gray-800 mb-4">{{ suscripcionActual?.reason || 'Sin plan activo' }}</h3>
           <p v-if="totalUsuariosAdicionales || totalEmpresasAdicionales" class="text-gray-600">
             <strong>➕ Adicionales: </strong> 
             <span v-if="totalUsuariosAdicionales">
@@ -106,47 +136,67 @@ const porcentajeEmpresas = computed(() => {
                 {{ totalEmpresasAdicionales }} Empresas
             </span>
           </p>
-          <p v-else class="text-gray-600"><strong>➕ Adicionales:</strong> Ninguno</p>
+          <p v-else class="text-gray-600"><strong>➕ Adicionales:</strong> Sin adicionales contratados</p>
           <!-- <p class="text-gray-600"><strong>📅 Inicio de suscripción:</strong> {{ suscripcionActual ? formatDate(suscripcionActual.date_created) : 'No disponible' }}</p> -->
-          <p class="text-gray-600"><strong>💰 Pago mensual:</strong> {{ suscripcionActual?.auto_recurring?.transaction_amount ? `$${formatCurrency(suscripcionActual.auto_recurring.transaction_amount)} MXN` : 'No disponible' }}</p>
-          <p class="text-gray-600"><strong>📅 Próximo cobro:</strong> {{ suscripcionActual ? formatDate(suscripcionActual.next_payment_date) : 'No disponible' }}</p>
+          <p class="text-gray-600"><strong>💰 Pago mensual:</strong> {{ suscripcionActual?.auto_recurring?.transaction_amount ? `$${formatCurrency(suscripcionActual.auto_recurring.transaction_amount)} MXN` : 'Sin plan activo' }}</p>
+          <p class="text-gray-600"><strong>📅 Próximo cobro:</strong> {{ suscripcionActual?.next_payment_date ? formatDate(suscripcionActual.next_payment_date) : 'Sin plan activo' }}</p>
           <p class="text-gray-600"><strong>📍 Estado: </strong>
             <span :class="{
-              'text-green-600 bg-green-100 px-1 py-0 rounded-full': suscripcionActual?.status === 'authorized', 
-              'text-red-600 bg-red-100 px-1 py-0 rounded-full': suscripcionActual?.status && suscripcionActual.status !== 'authorized',
-              'text-gray-600 bg-gray-200 px-1 py-0 rounded-full': !suscripcionActual
+              'text-green-600 bg-green-100 px-2 py-1 rounded-full': suscripcionActual?.status === 'authorized', 
+              'text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full': suscripcionActual?.status === 'pending',
+              'text-red-600 bg-red-100 px-2 py-1 rounded-full': suscripcionActual?.status && suscripcionActual.status !== 'authorized',
+              'text-gray-600 bg-gray-200 px-2 py-1 rounded-full': !suscripcionActual
             }">
               {{ suscripcionActual?.status || 'Sin suscripción actual' }}
             </span>
           </p>
+          <button 
+            @click="router.push('/suscripcion')"
+            class="mt-2 w-full bg-gradient-to-r from-sky-600 to-sky-500 text-white px-4 py-2 rounded-lg hover:scale-105 transition-all duration-300 ease-in-out active:scale-95">
+            {{ suscripcionActual ? 'Mejorar mi Plan ✨' : 'Comenzar con un Plan 🚀' }}
+          </button>
         </div>
   
         <!-- Sección de Uso -->
         <div class="bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
-          <h3 class="text-2xl font-semibold text-gray-700 mb-4">Uso Actual</h3>
+          <h3 class="text-2xl font-semibold text-gray-800 mb-4">Uso de Recursos</h3>
           
           <!-- Uso de Usuarios -->
           <div>
-            <p class="text-gray-600"><strong>👥 Usuarios creados:</strong> {{ usuariosCreados }} / {{ proveedorSalud.maxUsuariosPermitidos }}</p>
-            <div class="w-full bg-gray-200 rounded-full h-3 mt-2">
-              <div :style="{ width: porcentajeUsuarios + '%' }" class="h-3 rounded-full bg-gradient-to-r from-cyan-500 to-cyan-400 transition-all duration-500"></div>
+            <p class="text-gray-600"><strong>👥 Usuarios registrados:</strong> {{ usuariosCreados }} de {{ proveedorSalud.maxUsuariosPermitidos }}</p>
+            <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
+              <div :style="{ width: porcentajeUsuarios + '%' }" class="h-4 rounded-full absolute top-0 left-0 bg-gradient-to-r from-cyan-500 to-cyan-400 transition-all duration-500"></div>
+                <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs font-semibold" :class="porcentajeUsuarios <= 55 ? 'text-gray-600' : 'text-white'">
+                {{ porcentajeUsuarios }}%
+                </span>
             </div>
-            <p v-if="usuariosCreados >= proveedorSalud.maxUsuariosPermitidos" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de usuarios.</p>
+            <p v-if="porcentajeUsuarios >= 80 && porcentajeUsuarios < 100" class="text-yellow-600 text-sm mt-2">
+              ⚠️ Estás cerca del límite de usuarios. Considera actualizar tu plan.
+            </p>
+            <p v-if="usuariosCreados >= proveedorSalud.maxUsuariosPermitidos" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de usuarios.
+              <a @click="router.push('/suscripcion')" class="text-sky-600 underline cursor-pointer">Mejora tu plan</a>.
+            </p>
           </div>
   
           <!-- Uso de Empresas -->
           <div class="mt-4">
-            <p class="text-gray-600"><strong>🏢 Empresas creadas:</strong> {{ empresasCreadas }} / {{ proveedorSalud.maxEmpresasPermitidas }}</p>
-            <div class="w-full bg-gray-200 rounded-full h-3 mt-2">
-              <div :style="{ width: porcentajeEmpresas + '%' }" class="h-3 rounded-full bg-gradient-to-r from-cyan-500 to-cyan-400 transition-all duration-500"></div>
+            <p class="text-gray-600"><strong>🏢 Empresas registradas:</strong> {{ empresasCreadas }} de {{ proveedorSalud.maxEmpresasPermitidas }}</p>
+            <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
+              <div :style="{ width: porcentajeEmpresas + '%' }" class="h-4 rounded-full absolute top-0 left-0 bg-gradient-to-r from-cyan-500 to-cyan-400 transition-all duration-500"></div>
+                <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs font-semibold" :class="porcentajeEmpresas <= 55 ? 'text-gray-600' : 'text-white'">
+                {{ porcentajeEmpresas }}%
+                </span>
             </div>
-            <p v-if="empresasCreadas >= proveedorSalud.maxEmpresasPermitidas" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de empresas.</p>
+            <p v-if="porcentajeEmpresas >= 80 && porcentajeEmpresas < 100" class="text-yellow-600 text-sm mt-2">⚠️ Estás cerca del límite de empresas. Considera actualizar tu plan.</p>
+            <p v-if="empresasCreadas >= proveedorSalud.maxEmpresasPermitidas" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de empresas.
+              <a @click="router.push('/suscripcion')" class="text-sky-600 underline cursor-pointer">Mejora tu plan</a>.
+            </p>
           </div>
         </div>
       </div>
       <!-- Información de Cuenta -->
       <div class="bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
-        <h3 class="text-2xl font-semibold text-gray-700 mb-4">Información de tu Cuenta</h3>
+        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Mi Cuenta</h3>
         <p class="text-gray-600"><strong>👤 Nombre:</strong> {{ proveedorSalud.nombre || 'No disponible' }}</p>
         <p class="text-gray-600"><strong>🆔 RFC:</strong> {{ proveedorSalud.RFC || 'No disponible' }}</p>
         <p class="text-gray-600"><strong>📧 Correo:</strong> {{ proveedorSalud.correoElectronico || 'No disponible' }}</p>
@@ -156,7 +206,7 @@ const porcentajeEmpresas = computed(() => {
       </div>
   
     </div>
-  </template>
+</template>
 
 <style scoped>
 .bg-gray-100 {

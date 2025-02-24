@@ -89,10 +89,18 @@ const handleLogin = async () => {
       <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
     </form> 
 
-    <button @click="router.push({ name: 'forgot-password' })"
-        class="mt-4 font-light text-sky-500 hover:underline text-sm">
-        Olvidé mi contraseña
-    </button>
+    <div class="grid grid-cols-2 gap-6">
+      <button @click="router.push({ name: 'onboarding' })"
+          class="mt-4 font-light text-sky-500 hover:underline text-sm">
+          Crear una cuenta
+      </button>
+  
+      <button @click="router.push({ name: 'forgot-password' })"
+          class="mt-4 font-light text-sky-500 hover:underline text-sm">
+          Olvidé mi contraseña
+      </button>
+    </div>
+
 
   </div>
 

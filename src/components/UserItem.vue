@@ -32,10 +32,10 @@ defineEmits(['eliminarUsuario']);
         class="w-full sm:w-2/3 lg:w-1/2 xl:w-full p-6 max-w-6xl mx-auto bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col md:flex-row justify-between items-start md:items-center">
         <!-- Información del usuario -->
         <div class="w-full grid grid-cols-1 xl:grid-cols-4 gap-3 xl:gap-8">
-            <div class="font-semibold text-gray-600"><span class="font-light">Nombre:</span><br> {{ username }}</div>
-            <div class="font-semibold text-gray-600"><span class="font-light">Correo:</span><br> {{ email }}</div>
-            <div class="font-semibold text-gray-600"><span class="font-light">Teléfono:</span><br> {{ phone }}</div>
-            <div class="font-semibold text-gray-600"><span class="font-light">Usuario:</span><br> {{ role }}</div>
+            <div class="font-semibold text-gray-600 break-words"><span class="font-light">Nombre:</span><br> <span class="break-all">{{ username }}</span></div>
+            <div class="font-semibold text-gray-600 break-words"><span class="font-light">Correo:</span><br> <span class="break-all">{{ email }}</span></div>
+            <div class="font-semibold text-gray-600 break-words"><span class="font-light">Teléfono:</span><br> <span class="break-all">{{ phone }}</span></div>
+            <div class="font-semibold text-gray-600 break-words"><span class="font-light">Usuario:</span><br> <span class="break-all">{{ role }}</span></div>
         </div>
 
         <!-- Botón de eliminar -->

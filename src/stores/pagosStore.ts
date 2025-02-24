@@ -12,6 +12,15 @@ export const usePagosStore = defineStore("pagos", () => {
         }
     }
 
+    async function updateSubscription(subscriptionId, subscriptionData) {
+        try {
+            const { data } = await PagosAPI.updateSubscription(subscriptionId, subscriptionData);
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async function getSubscriptionFromAPI(subscriptionId) {
         try {
             const { data } = await PagosAPI.getSubscriptionFromAPI(subscriptionId);
@@ -42,6 +51,7 @@ export const usePagosStore = defineStore("pagos", () => {
 
     return {
         createSubscription,
+        updateSubscription,
         getSubscriptionFromAPI,
         getSubscriptionFromDB,
         deleteSubscription

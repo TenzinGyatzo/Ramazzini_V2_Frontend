@@ -45,8 +45,21 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
             loading.value = true;
             const { data } = await ProveedorSaludAPI.getProveedorById(idProveedorSalud);
             proveedorSalud.value = data;
-            // console.log("Proveedor Salud", proveedorSalud.value);
+            // console.log("Proveedor Salud desde Store", proveedorSalud.value);
             localStorage.setItem('proveedorSalud', JSON.stringify(proveedorSalud.value));
+        } catch (error) {
+            console.error("Error al cargar proveedor de salud:", error);
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function getProveedorById(idProveedorSalud: string) {
+        try {
+            loading.value = true;
+            const { data } = await ProveedorSaludAPI.getProveedorById(idProveedorSalud);
+            proveedorSalud.value = data;
+            return data;
         } catch (error) {
             console.error("Error al cargar proveedor de salud:", error);
         } finally {
@@ -112,6 +125,7 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         proveedorSalud,
         loading,
         loadProveedorSalud,
+        getProveedorById,
         createProveedor,
         updateProveedorById,
         removeProveedorById,
