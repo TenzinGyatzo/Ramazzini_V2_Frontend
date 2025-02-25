@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useUserStore } from "@/stores/user";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
 import { useMedicoFirmanteStore } from "@/stores/medicoFirmante";
@@ -16,6 +16,14 @@ const router = useRouter();
 
 const isVisible = ref(false);
 const isMenuOpen = ref(false);
+const menuRef = ref<HTMLElement | null>(null); // Referencia para el menú desplegable
+
+// Función para cerrar el menú si se hace clic fuera
+const handleClickOutside = (event: MouseEvent) => {
+  if (menuRef.value && !menuRef.value.contains(event.target as Node)) {
+    isMenuOpen.value = false;
+  }
+};
 
 onMounted( () => {
     // Escucha los cambios en el usuario para cargar proveedor de salud
@@ -35,20 +43,32 @@ onMounted( () => {
     setTimeout(() => {
         isVisible.value = true;
     }, 500);
+
+    // Agregar detector de eventos de clic en el documento
+    document.addEventListener("click", handleClickOutside);
+});
+
+onUnmounted(() => {
+  // Eliminar detector de eventos de clic al desmontar el componente
+  document.removeEventListener("click", handleClickOutside);
 });
 
 const toggleMenu = () => {
+  event?.stopPropagation();
     isMenuOpen.value = !isMenuOpen.value;
 };
 </script>
 
 <template>
   <main class="flex flex-col items-center p-4 md:p-10 md:w-full overflow-x-auto">
-    <div v-if="empresas.currentEmpresa?.logotipoEmpresa?.data"
-      class="fixed top-0 right-0 h-16 w-16 md:h-32 md:w-32 rounded z-0 flex items-center justify-center overflow-hidden">
+    <!-- Logo de la empresa -->
+    <div v-if="empresas.currentEmpresa?.logotipoEmpresa?.data && route.path !== '/'"
+      class="fixed top-4 right-4 h-16 w-16 md:h-32 md:w-32 rounded z-0 flex items-center justify-center overflow-hidden">
       <img :src="'/uploads/logos/' + empresas.currentEmpresa?.logotipoEmpresa?.data"
         :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial" class="max-h-full max-w-full object-contain p-2">
     </div>
+
+    <!-- Transición para el logo de Ramazzini -->
     <Transition appear mode="out-in" name="slide-up">
       <div v-if="route.path === '/'" class="w-1/2 sm:w-1/3 md:1/3 lg:w-1/4 xl:w-1/5 2xl:w-1/6 mt-14 cursor-pointer" @click="router.push({ name: 'inicio' })">
         <img src="/img/logosRamazzini/RamazziniBrand.png" alt="Ramazzini-Logo" class="w-full" />
@@ -58,16 +78,18 @@ const toggleMenu = () => {
       </div>
     </Transition>
 
+    <!-- Contenido principal -->
     <Transition appear mode="out-in" name="slide-up">
       <div v-if="route.path === '/' || route.path === '/login'" class="flex flex-col items-center">
-        <h1
-          class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl py-5 text-center  text-slate-700 font-medium">
-          Ramazzini</h1>
-        <p class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl xl:w-2/3 py-2 text-center text-gray-600">La
-          aplicación para la creación y gestión de informes de exámenes médicos laborales.</p>
+        <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl py-5 text-center text-slate-700 font-medium">
+          Ramazzini
+        </h1>
+        <p class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl xl:w-2/3 py-2 text-center text-gray-600">
+          La aplicación para la creación y gestión de informes de exámenes médicos laborales.
+        </p>
         <p class="text-gray-600 text-lg my-4">Hola, {{ user.getUsername }}</p>
         
-        <!-- Sección inicio  -->
+        <!-- Botones de acción -->
         <div class="grid gap-4 mb-5">
           <div class="flex justify-center">
             <button
@@ -81,7 +103,7 @@ const toggleMenu = () => {
             <a href="/login">
               <Transition name="button-transition">
                 <button
-                  class=" text-sm sm:text-base md:text-lg border-2 border-gray-300 hover:bg-red-600 text-gray-800 uppercase rounded-lg px-4 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200"
+                  class="text-sm sm:text-base md:text-lg border-2 border-gray-300 hover:bg-red-600 text-gray-800 uppercase rounded-lg px-4 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200"
                   @click="user.logout">
                   CERRAR SESIÓN
                 </button>
@@ -89,69 +111,69 @@ const toggleMenu = () => {
             </a>
           </div>
         </div>
-
-        <div class="relative">
-          <!-- Botón del engrane -->
-          <Transition name="delayed-appear">
-            <button 
-              v-if="isVisible"
-              @click="toggleMenu"
-              class="fixed top-4 right-4 p-3 bg-white rounded-full hover:bg-gray-50 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl border border-gray-200 z-50 transform hover:scale-110">
-              <svg 
-                class="w-6 h-6 text-gray-700 transition-transform duration-300 ease-in-out"
-                :class="{ 'rotate-90': isMenuOpen }"
-                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-          </Transition>
-          <!-- Menú desplegable -->
-          <Transition name="fade">
-            <div 
-              v-if="isMenuOpen"
-              class="fixed top-16 right-4 bg-white rounded-lg shadow-lg p-4 w-64 z-40">
-              <div class="space-y-2">
-                <!-- Configuración -->
-                <div>
-                  <p class="text-sm font-medium text-gray-700 mb-2">Configuración</p>
-                  <a v-if="user.user?.role === 'Principal'" href="/perfil-proveedor" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out">
-                    Mi Negocio
-                  </a>
-                  <a href="/medico-firmante" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out">
-                    Médico Firmante
-                  </a>
-                </div>
-
-                <!-- Gestión de Usuarios -->
-                <div v-if="user.user?.role === 'Principal'">
-                  <p class="text-sm font-medium text-gray-700 mb-2">Gestión de Usuarios</p>
-                  <a href="/registrar-usuario" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out">
-                    Agregar Usuario
-                  </a>
-                  <a href="/eliminar-usuarios" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out">
-                    Eliminar Usuarios
-                  </a>
-                </div>
-
-                <!-- Suscripción -->
-                <div v-if="user.user?.role === 'Principal'">
-                  <p class="text-sm font-medium text-gray-700 mb-2">Suscripción</p>
-                  <a href="/suscripcion-activa" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out">
-                    Mi Suscripción
-                  </a>
-                  <a href="/suscripcion" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out">
-                    Ver Planes
-                  </a>
-                </div>
-              </div>
-            </div>
-          </Transition>
-        </div>
       </div>
 
       <div v-else class="w-full max-w-screen-2xl">
         <RouterView />
+      </div>
+    </Transition>
+
+    <!-- Botón del engrane (fuera de la transición principal) -->
+    <Transition name="delayed-appear">
+      <button 
+        v-if="isVisible && route.path === '/'"
+        @click="toggleMenu"
+        class="fixed top-4 right-4 p-3 bg-white rounded-full hover:bg-gray-50 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl border border-gray-200 z-50 transform hover:scale-110">
+        <svg 
+          class="w-6 h-6 text-gray-700 transition-transform duration-300 ease-in-out"
+          :class="{ 'rotate-90': isMenuOpen }"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </button>
+    </Transition>
+
+    <!-- Menú desplegable (también fuera de la transición principal) -->
+    <Transition name="fade">
+      <div 
+        v-if="isMenuOpen && route.path === '/'"
+        ref="menuRef"
+        class="fixed top-16 right-4 bg-white rounded-lg shadow-lg p-4 w-64 z-40">
+        <div class="space-y-2">
+          <!-- Configuración -->
+          <div>
+            <p class="text-sm font-medium text-gray-700 mb-2">Configuración</p>
+            <a v-if="user.user?.role === 'Principal'" @click="router.push({ name: 'perfil-proveedor' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
+              Mi Negocio 
+            </a>
+            <a href="/medico-firmante" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out">
+              Médico Firmante
+            </a>
+          </div>
+
+          <!-- Gestión de Usuarios -->
+          <div v-if="user.user?.role === 'Principal'">
+            <p class="text-sm font-medium text-gray-700 mb-2">Gestión de Usuarios</p>
+            <a href="/registrar-usuario" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out">
+              Agregar Usuario
+            </a>
+            <a href="/eliminar-usuarios" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out">
+              Eliminar Usuarios
+            </a>
+          </div>
+
+          <!-- Suscripción -->
+          <div v-if="user.user?.role === 'Principal'">
+            <p class="text-sm font-medium text-gray-700 mb-2">Suscripción</p>
+            <a href="/suscripcion-activa" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out">
+              Mi Suscripción
+            </a>
+            <a href="/suscripcion" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out">
+              Ver Planes
+            </a>
+          </div>
+        </div>
       </div>
     </Transition>
   </main>
@@ -188,11 +210,11 @@ const toggleMenu = () => {
 
 /* Transición delayed-appear mejorada */
 .delayed-appear-enter-active {
-  transition: opacity 0.5s ease 0.5s; /* Retardo de 0.5s */
+  transition: opacity 0.5s ease 0.5s; 
 }
 
 .delayed-appear-leave-active {
-  transition: opacity 0.3s ease; /* Sin retardo al salir */
+  transition: opacity 0.3s ease;
 }
 
 .delayed-appear-enter-from,
