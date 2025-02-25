@@ -57,16 +57,18 @@ const deleteUsuarioByEmail = async (email) => {
       @confirmDelete="deleteUsuarioByEmail"
     />
   </Transition>
-  <div class="grid grid-cols-1 gap-3">
-    <UserItem
-      v-for="usuario in usuarios"
-      :key="usuario._id"
-      :id="usuario._id"
-      :username="usuario.username"
-      :email="usuario.email"
-      :phone="usuario.phone"
-      :role="usuario.role"
-      @eliminarUsuario="toggleDeleteModal"
-    />
-  </div>
+  <Transition appear mode="out-in" name="slide-up">
+    <div class="grid grid-cols-1 gap-3">
+      <UserItem
+        v-for="usuario in usuarios"
+        :key="usuario._id"
+        :id="usuario._id"
+        :username="usuario.username"
+        :email="usuario.email"
+        :phone="usuario.phone"
+        :role="usuario.role"
+        @eliminarUsuario="toggleDeleteModal"
+      />
+    </div>
+  </Transition>
 </template>

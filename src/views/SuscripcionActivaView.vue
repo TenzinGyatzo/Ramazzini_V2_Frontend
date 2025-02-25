@@ -119,6 +119,7 @@ const porcentajeEmpresas = computed(() => {
 </script>
 
 <template>
+  <Transition appear mode="out-in" name="slide-up">
     <div class="max-w-4xl mx-auto p-6 space-y-6 min-h-screen">
       <h2 class="text-gray-800 text-3xl md:text-4xl mb-4 font-semibold">Detalles de Mi Suscripción</h2>
   
@@ -204,8 +205,8 @@ const porcentajeEmpresas = computed(() => {
         <p class="text-gray-600"><strong>🏢 Empresas:</strong> {{ `${proveedorSalud.maxEmpresasPermitidas} disponibles` || 'No disponible' }}</p>
         <p class="text-gray-600"><strong>⏳ Periodo Gratuito:</strong> {{ periodoGratuito }}</p>
       </div>
-  
     </div>
+  </Transition>
 </template>
 
 <style scoped>

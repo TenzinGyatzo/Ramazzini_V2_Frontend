@@ -57,15 +57,27 @@ const toggleMenu = () => {
   event?.stopPropagation();
     isMenuOpen.value = !isMenuOpen.value;
 };
+
+// Cerrar menu cuando se cambia de ruta
+watch(
+  () => route.path,
+  (newPath, oldPath) => {
+    if (oldPath === "/" && newPath !== "/") {
+      isMenuOpen.value = false;
+    }
+  }
+);
+
 </script>
 
 <template>
   <main class="flex flex-col items-center p-4 md:p-10 md:w-full overflow-x-auto">
     <!-- Logo de la empresa -->
-    <div v-if="empresas.currentEmpresa?.logotipoEmpresa?.data && route.path !== '/'"
+    <div v-if="empresas.currentEmpresa?.logotipoEmpresa?.data && 
+      ['empresas', 'centros-trabajo', 'trabajadores', 'expediente-medico', 'crear-documento'].includes(route.name as string)"
       class="fixed top-4 right-4 h-16 w-16 md:h-32 md:w-32 rounded z-0 flex items-center justify-center overflow-hidden">
       <img :src="'/uploads/logos/' + empresas.currentEmpresa?.logotipoEmpresa?.data"
-        :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial" class="max-h-full max-w-full object-contain p-2">
+      :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial" class="max-h-full max-w-full object-contain p-2">
     </div>
 
     <!-- Transición para el logo de Ramazzini -->
@@ -95,7 +107,7 @@ const toggleMenu = () => {
             <button
               @click="router.push({ name: 'empresas' })"
               class="w-full text-xl sm:text-2xl md:text-3xl bg-emerald-600 hover:bg-emerald-700 text-white uppercase rounded-lg px-28 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200">
-              COMENZAR
+              VER MIS CLIENTES
             </button>
           </div>
 
@@ -121,7 +133,7 @@ const toggleMenu = () => {
     <!-- Botón del engrane (fuera de la transición principal) -->
     <Transition name="delayed-appear">
       <button 
-        v-if="isVisible && route.path === '/'"
+        v-if="isVisible && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success'].includes(route.name as string)"
         @click="toggleMenu"
         class="fixed top-4 right-4 p-3 bg-white rounded-full hover:bg-gray-50 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl border border-gray-200 z-50 transform hover:scale-110">
         <svg 
@@ -137,7 +149,7 @@ const toggleMenu = () => {
     <!-- Menú desplegable (también fuera de la transición principal) -->
     <Transition name="fade">
       <div 
-        v-if="isMenuOpen && route.path === '/'"
+        v-if="isMenuOpen && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success'].includes(route.name as string)"
         ref="menuRef"
         class="fixed top-16 right-4 bg-white rounded-lg shadow-lg p-4 w-64 z-40">
         <div class="space-y-2">
@@ -147,7 +159,7 @@ const toggleMenu = () => {
             <a v-if="user.user?.role === 'Principal'" @click="router.push({ name: 'perfil-proveedor' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
               Mi Negocio 
             </a>
-            <a href="/medico-firmante" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out">
+            <a @click="router.push({ name: 'medico-firmante' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out cursor-pointer">
               Médico Firmante
             </a>
           </div>
@@ -155,10 +167,10 @@ const toggleMenu = () => {
           <!-- Gestión de Usuarios -->
           <div v-if="user.user?.role === 'Principal'">
             <p class="text-sm font-medium text-gray-700 mb-2">Gestión de Usuarios</p>
-            <a href="/registrar-usuario" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out">
+            <a @click="router.push({ name: 'add-user' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
               Agregar Usuario
             </a>
-            <a href="/eliminar-usuarios" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out">
+            <a @click="router.push({ name: 'remove-users' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out cursor-pointer">
               Eliminar Usuarios
             </a>
           </div>
@@ -166,10 +178,10 @@ const toggleMenu = () => {
           <!-- Suscripción -->
           <div v-if="user.user?.role === 'Principal'">
             <p class="text-sm font-medium text-gray-700 mb-2">Suscripción</p>
-            <a href="/suscripcion-activa" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out">
+            <a @click="router.push({ name: 'suscripcion-activa' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
               Mi Suscripción
             </a>
-            <a href="/suscripcion" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out">
+            <a @click="router.push({ name: 'subscription' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out cursor-pointer">
               Ver Planes
             </a>
           </div>

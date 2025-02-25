@@ -234,6 +234,7 @@ const porcentajeEmpresas = computed(() => {
 </script>
 
 <template>
+  <Transition appear mode="out-in" name="slide-up">
   <div class="max-w-6xl mx-auto p-6 space-y-6 bg-gray-100 min-h-screen">
     <div class="flex justify-between items-center">
       <h1 class="text-gray-800 text-3xl md:text-4xl font-semibold">Elige tu Plan</h1>
@@ -440,6 +441,7 @@ const porcentajeEmpresas = computed(() => {
       </div>
     </div>
   </div>
+  </Transition>
 </template>
 
 

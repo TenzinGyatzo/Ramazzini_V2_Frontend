@@ -78,20 +78,22 @@ onMounted(() => {
   <Transition appear name="fade">
     <ModalCentros v-if="showModal" @closeModal="closeModal" />
   </Transition>
+
   <Transition appear name="fade">
     <ModalEliminar v-if="showDeleteModal && selectedCentroTrabajoId && selectedCentroTrabajoNombre"
       :idRegistro="selectedCentroTrabajoId" :identificacion="selectedCentroTrabajoNombre"
       tipoRegistro="Centro de Trabajo" @closeModal="toggleDeleteModal" @confirmDelete="deleteCentroTrabajoById" />
   </Transition>
+
   <div class="w-full p-5 space-y-5">
     <div class="flex flex-col items-center">
       <GreenButton text="Nuevo Centro +" @click="openModal(null)" />
     </div>
     <Transition appear mode="out-in" name="slide-up">
-      <div v-if="centrosTrabajo.loading">
+<!--  <div v-if="centrosTrabajo.loading">
         <h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1>
-      </div>
-      <div v-else>
+      </div> -->
+      <div>
         <CentroTrabajoItem v-if="empresas.currentEmpresa && centrosTrabajo.centrosTrabajo.length > 0"
           v-for="centro in centrosTrabajo.centrosTrabajo" :key="centro._id" :centro="centro"
           :empresa="empresas.currentEmpresa" class="mb-5" @editarCentro="openModal"

@@ -55,7 +55,7 @@ const maxEmpresasPermitidas = proveedorSalud.value?.maxEmpresasPermitidas;
 let empresasCreadas = 0;
 
 onMounted(async () => {
-  await empresas.fetchEmpresas(proveedorSaludId);
+  // await empresas.fetchEmpresas(proveedorSaludId);
   empresasCreadas = empresas.empresas.length;
 });
 

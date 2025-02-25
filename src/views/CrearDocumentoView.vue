@@ -98,64 +98,76 @@ onUnmounted(() => {
 
 <template>
 
-  <div v-if="documentos.currentTypeOfDocument === 'antidoping'"
-    class="max-w-3xl mx-auto flex flex-wrap lg:flex-nowrap gap-3 md:gap-6 justify-center">
-    <div class="w-full lg:w-1/2">
-      <FormStepper />
+  <Transition appear mode="out-in" name="slide-up">
+    <div v-if="documentos.currentTypeOfDocument === 'antidoping'"
+      class="max-w-3xl mx-auto flex flex-wrap lg:flex-nowrap gap-3 md:gap-6 justify-center">
+      <div class="w-full lg:w-1/2">
+        <FormStepper />
+      </div>
+      <div class="w-full lg:w-1/2">
+        <VisualizadorAntidoping />
+      </div>
     </div>
-    <div class="w-full lg:w-1/2">
-      <VisualizadorAntidoping />
-    </div>
-  </div>
+  </Transition>
 
-  <div v-if="documentos.currentTypeOfDocument === 'aptitud'"
-    class=" flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
-    <div class="w-full xl:w-1/4">
-      <FormStepper />
+  <Transition appear mode="out-in" name="slide-up">
+    <div v-if="documentos.currentTypeOfDocument === 'aptitud'"
+      class=" flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+      <div class="w-full xl:w-1/4">
+        <FormStepper />
+      </div>
+      <div class="w-full xl:w-3/4">
+        <VisualizadorAptitud />
+      </div>
     </div>
-    <div class="w-full xl:w-3/4">
-      <VisualizadorAptitud />
-    </div>
-  </div>
+  </Transition>
 
-  <div v-if="documentos.currentTypeOfDocument === 'certificado'"
-    class="max-w-6xl mx-auto flex flex-wrap lg:flex-nowrap gap-3 md:gap-6 justify-center">
-    <div class="w-full xl:w-1/3">
-      <FormStepper />
+  <Transition appear mode="out-in" name="slide-up">
+    <div v-if="documentos.currentTypeOfDocument === 'certificado'"
+      class="max-w-6xl mx-auto flex flex-wrap lg:flex-nowrap gap-3 md:gap-6 justify-center">
+      <div class="w-full xl:w-1/3">
+        <FormStepper />
+      </div>
+      <div class="w-full xl:w-2/3">
+        <VisualizadorCertificado />
+      </div>
     </div>
-    <div class="w-full xl:w-2/3">
-      <VisualizadorCertificado />
-    </div>
-  </div>
+  </Transition>
 
-  <div v-if="documentos.currentTypeOfDocument === 'exploracionFisica'"
-    class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
-    <div class="w-full xl:w-1/4">
-      <FormStepper />
+  <Transition appear mode="out-in" name="slide-up">  
+    <div v-if="documentos.currentTypeOfDocument === 'exploracionFisica'"
+      class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+      <div class="w-full xl:w-1/4">
+        <FormStepper />
+      </div>
+      <div class="w-full xl:w-3/4">
+        <VisualizadorExploracionFisica />
+      </div>
     </div>
-    <div class="w-full xl:w-3/4">
-      <VisualizadorExploracionFisica />
-    </div>
-  </div>
+  </Transition>
 
-  <div v-if="documentos.currentTypeOfDocument === 'examenVista'"
-    class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
-    <div class="w-full xl:w-1/4">
-      <FormStepper />
+  <Transition appear mode="out-in" name="slide-up">  
+    <div v-if="documentos.currentTypeOfDocument === 'examenVista'"
+      class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+      <div class="w-full xl:w-1/4">
+        <FormStepper />
+      </div>
+      <div class="w-full xl:w-3/4">
+        <VisualizadorExamenVista />
+      </div>
     </div>
-    <div class="w-full xl:w-3/4">
-      <VisualizadorExamenVista />
-    </div>
-  </div>
+  </Transition>
 
-  <div v-if="documentos.currentTypeOfDocument === 'historiaClinica'"
-    class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
-    <div class="w-full xl:w-1/4">
-      <FormStepper />
+  <Transition appear mode="out-in" name="slide-up">
+    <div v-if="documentos.currentTypeOfDocument === 'historiaClinica'"
+      class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+      <div class="w-full xl:w-1/4">
+        <FormStepper />
+      </div>
+      <div class="w-full xl:w-3/4">
+        <VisualizadorHistoriaClinica />
+      </div>
     </div>
-    <div class="w-full xl:w-3/4">
-      <VisualizadorHistoriaClinica />
-    </div>
-  </div>
+  </Transition>
 
 </template>

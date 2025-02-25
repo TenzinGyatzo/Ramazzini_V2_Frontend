@@ -127,7 +127,8 @@ const siONo = ['Si', 'No'];
 </script>
 
 <template>
-    <Transition appear name="fade-slow">
+    <!-- <Transition appear name="fade-slow"> -->
+    <Transition appear mode="out-in" name="slide-up">
         <div
             class="relative bg-white text-gray-800 w-full max-w-5xl p-10 rounded-lg max-h-[82vh] shadow-lg overflow-y-auto mx-auto">
             <Transition appear name="fade-slow">

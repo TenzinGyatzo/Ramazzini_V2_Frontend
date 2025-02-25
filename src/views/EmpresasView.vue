@@ -120,15 +120,16 @@ if (periodoDePruebaFinalizado && estadoSuscripcion === 'cancelled' && finDeSuscr
       :identificacion="selectedEmpresaNombre" tipoRegistro="Empresa" @closeModal="toggleDeleteModal"
       @confirmDelete="deleteEmpresaById" />
   </Transition>
+
   <div class="p-5 grid gap-5">
     <div class="flex flex-col items-center">
       <GreenButton text="Nuevo Cliente +" @click="openModal(null)" />
     </div>
     <Transition appear mode="out-in" name="slide-up">
-      <div v-if="empresas.loading">
+<!-- <div v-if="empresas.loading">
         <h1 class="text-3xl sm:text-4xl md:text-5xl py-20 text-center font-semibold text-gray-700">Cargando...</h1>
-      </div>
-      <div v-else>
+      </div> -->
+      <div>
         <!-- Si el array está vacío, mostramos el mensaje -->
         <div v-if="empresas.empresas.length === 0">
           <h2 class="text-2xl sm:text-3xl md:text-4xl py-10 text-center font-semibold text-gray-700">Aún no hay empresas de clientes registradas</h2>
