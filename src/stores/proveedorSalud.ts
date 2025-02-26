@@ -72,8 +72,8 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
             loading.value = true;
             const { data } = await ProveedorSaludAPI.createProveedor(proveedorSaludData);
             proveedorSalud.value = data;
-            return data
             // console.log("Proveedor Salud", proveedorSalud.value);
+            return data
         } catch (error) {
             console.error("Error al cargar proveedor de salud:", error);
             throw error;
