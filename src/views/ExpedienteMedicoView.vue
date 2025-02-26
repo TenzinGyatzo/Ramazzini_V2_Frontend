@@ -15,6 +15,7 @@ import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
 import SlidingButtonPanel from '@/components/SlidingButtonPanel.vue';
 import { calcularEdad } from '@/helpers/dates';
 import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
 const toast: any = inject('toast');
 
@@ -25,6 +26,7 @@ const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 const formData = useFormDataStore();
+const proveedorSaludStore = useProveedorSaludStore();
 
 const showDocumentoExternoModal = ref(false);
 const showDocumentoExternoUpdateModal = ref(false);
@@ -35,16 +37,12 @@ const selectedDocumentName = ref<string>(''); // Valor inicial como cadena vací
 const selectedDocumentType = ref<string | null>(null); // Tipo del documento seleccionado
 const selectedRoutes = ref<string[]>([]);
 
-const proveedorSalud = ref(
-    JSON.parse(localStorage.getItem('proveedorSalud') || 'null') // Recuperar usuario guardado o establecer null si no existe
-);
-const periodoDePruebaFinalizado = proveedorSalud.value?.periodoDePruebaFinalizado;
-const estadoSuscripcion = proveedorSalud.value?.estadoSuscripcion;
-const finDeSuscripcion = proveedorSalud.value?.finDeSuscripcion ? new Date(proveedorSalud.value.finDeSuscripcion) : null;
-
+const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado;
+const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
+const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
 
 const toggleDocumentoExternoModal = () => {
-  if (!proveedorSalud.value) return;
+  if (! proveedorSaludStore.proveedorSalud) return;
 
   if (periodoDePruebaFinalizado) {
     // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
@@ -65,7 +63,9 @@ const toggleDocumentoExternoModal = () => {
 };
 
 const toggleDocumentoExternoUpdateModal = () => {
-  if (proveedorSalud.value.periodoDePruebaFinalizado) {
+  if (! proveedorSaludStore.proveedorSalud) return;
+
+  if (proveedorSaludStore.proveedorSalud.periodoDePruebaFinalizado) {
     showSubscriptionModal.value = true;
     return;
   }
@@ -148,7 +148,7 @@ watch(
 );
 
 const navigateTo = (routeName, params) => {
-  if (!proveedorSalud.value) return;
+  if (!proveedorSaludStore.proveedorSalud) return;
 
   if (periodoDePruebaFinalizado) {
     // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)

@@ -53,7 +53,7 @@ const modalContent = computed(() => {
   if (vistaActual.value === 'add-user' && usuariosCreados.value >= maxUsuariosPermitidos) {
     return {
       title: 'Has alcanzado el límite de usuarios',
-      message: `Tu plan actual permite hasta ${maxUsuariosPermitidos} usuarios.`,
+      message: `Tu plan actual permite hasta ${maxUsuariosPermitidos} ${maxUsuariosPermitidos === 1 ? 'usuario' : 'usuarios'}.`,
       price: 'Actualiza tu plan para añadir más usuarios y seguir creciendo.',
       benefits: [
         'Aumenta el número de usuarios permitidos',
@@ -75,38 +75,6 @@ const modalContent = computed(() => {
         'Amplía tu capacidad para gestionar más empresas',
         'Administra múltiples organizaciones desde una sola plataforma',
         'Potencia el crecimiento de tu negocio sin restricciones'
-      ],
-      buttonText: 'Actualizar plan',
-      action: () => router.push({ name: 'subscription' }),
-      show: true
-    };
-  }
-
-  if (vistaActual.value === 'add-user' && usuariosCreados.value >= maxUsuariosPermitidos) {
-    return {
-      title: 'Has alcanzado el límite de usuarios',
-      message: `Tu plan actual permite hasta ${maxUsuariosPermitidos} usuarios.`,
-      price: 'Actualiza tu plan para añadir más usuarios y seguir creciendo.',
-      benefits: [
-        'Aumenta el número de usuarios permitidos',
-        'Mantén a todo tu equipo conectado',
-        'Escala tu organización sin limitaciones'
-      ],
-      buttonText: 'Actualizar plan',
-      action: () => router.push({ name: 'subscription' }),
-      show: true
-    };
-  }
-  
-  if (usuariosCreados.value >= maxUsuariosPermitidos) {
-    return {
-      title: 'Has alcanzado el límite de usuarios',
-      message: `Tu plan actual permite hasta ${maxUsuariosPermitidos} usuarios.`,
-      price: 'Actualiza tu plan para añadir más usuarios y seguir creciendo.',
-      benefits: [
-        'Aumenta el número de usuarios permitidos',
-        'Mantén a todo tu equipo conectado',
-        'Escala tu organización sin limitaciones'
       ],
       buttonText: 'Actualizar plan',
       action: () => router.push({ name: 'subscription' }),

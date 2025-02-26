@@ -75,14 +75,14 @@ watch(
     { immediate: true } // Ejecutar inmediatamente al montar el componente
 );
 
-onUnmounted(() => {
+onUnmounted( async () => {
   if (proveedorSalud.proveedorSalud) {
-    proveedorSalud.verificarPeriodoDePrueba(proveedorSalud.proveedorSalud!._id);      
+    await proveedorSalud.verificarPeriodoDePrueba(proveedorSalud.proveedorSalud!._id);    
+    await proveedorSalud.loadProveedorSalud(proveedorSalud.proveedorSalud!._id);
     if(proveedorSalud.proveedorSalud.estadoSuscripcion === 'cancelled') {
-      proveedorSalud.verificarFinSuscripcion(proveedorSalud.proveedorSalud!._id);  
+      await proveedorSalud.verificarFinSuscripcion(proveedorSalud.proveedorSalud!._id);  
     }
   }
-
 });
 
 const proveedor = ref(

@@ -1,14 +1,6 @@
 <script setup lang="ts">
 const emit = defineEmits(['closeModal', 'confirmCancellation']);
 
-// Definimos las propiedades genéricas
-const props = defineProps({
-  idSuscripcion: {
-    type: String,
-    required: true,
-  }
-});
-
 const handleCancellation = () => {
 
   emit('confirmCancellation');

@@ -21,6 +21,7 @@ const suscripcionActual = ref(null);
 const usuariosCreados = ref(0);
 const empresasCreadas = ref(0);
 const showCancelModal = ref(false);
+const isCancelling = ref(false); // Estado para manejar la carga
 
 const proveedorSalud = ref(
   JSON.parse(localStorage.getItem('proveedorSalud') || 'null') || {}
@@ -92,12 +93,16 @@ const periodoGratuito = computed(() => {
   if (proveedorSalud.value?.periodoDePruebaFinalizado) {
     return 'Finalizado';
   } else if (proveedorSalud.value?.fechaInicioTrial) {
-    const fechaFinTrial = parseISO(proveedorSalud.value.fechaInicioTrial); // Convierte la fecha a un objeto Date
-    const hoy = new Date(); // Fecha actual
-    const diasRestantes = differenceInDays(fechaFinTrial, hoy); // Calcula la diferencia en días
+    const fechaInicioTrial = parseISO(proveedorSalud.value.fechaInicioTrial);
+    const fechaFinTrial = new Date(fechaInicioTrial);
+    fechaFinTrial.setDate(fechaFinTrial.getDate() + 15); // 15 días de trial
+    fechaFinTrial.setHours(23, 59, 59); // Asegura que el día final termine a las 23:59:59
+
+    const hoy = new Date();
+    const diasRestantes = differenceInDays(fechaFinTrial, hoy);
 
     if (diasRestantes > 0) {
-      return `Hasta el ${formatDate(proveedorSalud.value.fechaInicioTrial)} (${diasRestantes} días restantes)`;
+      return `Hasta el ${formatDate(fechaFinTrial)} (${diasRestantes} días restantes)`; // Suma 1 día
     } else {
       return 'Finalizado';
     }
@@ -110,7 +115,7 @@ const periodoGratuito = computed(() => {
   if (proveedorSalud.value?.periodoDePruebaFinalizado) {
     return 'Finalizado';
   } else if (proveedorSalud.value?.fechaInicioTrial) {
-    return `Hasta el ${formatDate(proveedorSalud.value.fechaInicioTrial)}`;
+    return `Hasta el ${formatDate(proveedorSalud.value.fechaInicioTrial)}`; // Falta sumar los 15 días
   }
   return 'No disponible';
 }); */
@@ -136,6 +141,7 @@ const porcentajeEmpresas = computed(() => {
 });
 
 const cancelSubscription = async () => {
+  isCancelling.value = true; // Activar el estado de carga
   try {
     await pagosStore.cancelSubscription(suscripcionActual.value.id);
 
@@ -150,7 +156,9 @@ const cancelSubscription = async () => {
     // proveedorSalud.value.addOns = [];
 
     // Limpiar suscripción actual
-    // suscripcionActual.value = null;
+    suscripcionActual.value = {
+      status: 'cancelled'
+    };
 
     // Mostrar notificación
     toast.open({
@@ -160,6 +168,8 @@ const cancelSubscription = async () => {
     });
   } catch (error) {
     console.error('Error canceling subscription:', error);
+  } finally {
+    isCancelling.value = false; 
   }
 };
 
@@ -206,15 +216,20 @@ const suscripcionCanceladaYActiva = computed(() => {
           <p v-else class="text-gray-600"><strong>➕ Adicionales:</strong> Sin adicionales contratados</p>
           <!-- <p class="text-gray-600"><strong>📅 Inicio de suscripción:</strong> {{ suscripcionActual ? formatDate(suscripcionActual.date_created) : 'No disponible' }}</p> -->
           <p class="text-gray-600"><strong>💰 Pago mensual:</strong> {{ suscripcionActual?.auto_recurring?.transaction_amount ? `$${formatCurrency(suscripcionActual.auto_recurring.transaction_amount)} MXN` : 'Sin plan activo' }}</p>
-          <p class="text-gray-600"><strong>📅 Próximo cobro:</strong> {{ suscripcionActual?.next_payment_date ? formatDate(suscripcionActual.next_payment_date) : 'Sin plan activo' }}</p>
+            <p class="text-gray-600"><strong>📅 Próximo cobro:</strong> 
+            {{ suscripcionActual?.status === 'cancelled' ? 
+               'No se realizarán más cobros' : 
+               (suscripcionActual?.next_payment_date ? formatDate(suscripcionActual.next_payment_date) : 'Sin plan activo') 
+            }}
+            </p>
           <p class="text-gray-600"><strong>📍 Estado: </strong>
             <span :class="{
-              'text-green-600 bg-green-100 px-2 py-1 rounded-full': suscripcionActual?.status === 'authorized', 
-              'text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full': suscripcionActual?.status === 'pending',
-              'text-red-600 bg-red-100 px-2 py-1 rounded-full': suscripcionActual?.status && suscripcionActual.status !== 'authorized',
-              'text-gray-600 bg-gray-200 px-2 py-1 rounded-full': !suscripcionActual
+              'text-green-600 bg-green-100 px-2 py-0.5 rounded-full': proveedorSalud.estadoSuscripcion === 'authorized', 
+              'text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded-full': proveedorSalud.estadoSuscripcion === 'pending',
+              'text-red-600 bg-red-100 px-2 py-0.5 rounded-full': proveedorSalud.estadoSuscripcion === 'cancelled',
+              'text-gray-600 bg-gray-200 px-2 py-0.5 rounded-full': !proveedorSalud.estadoSuscripcion
             }">
-              {{ suscripcionActual?.status || 'Sin suscripción actual' }}
+              {{ proveedorSalud.estadoSuscripcion || 'Sin suscripción actual' }}
             </span>
           </p>
           <button 
@@ -286,9 +301,17 @@ const suscripcionCanceladaYActiva = computed(() => {
       </div>
 
       <button 
+        v-if="suscripcionActual && suscripcionActual.status === 'authorized'"
         @click="toggleCancelModal"
-        class="mt-2 ml-auto block bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg transition-all duration-300 ease-in-out active:scale-95">
-        Cancelar Suscripción
+        :disabled="isCancelling"
+        class="mt-2 ml-auto block text-white px-4 py-2 rounded-lg transition-all duration-300 ease-in-out"
+        :class="[
+          isCancelling ? 
+          'bg-red-400 cursor-not-allowed' : 
+          'bg-red-600 hover:bg-red-500 active:scale-95'
+        ]"
+      >
+        {{ isCancelling ? 'Procesando...' : 'Cancelar Suscripción' }}
       </button>
     </div>
   </Transition>

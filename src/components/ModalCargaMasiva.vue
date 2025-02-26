@@ -3,25 +3,23 @@ import { ref, inject } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
 const toast = inject('toast');
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
+const proveedorSaludStore = useProveedorSaludStore();
 const emit = defineEmits(['closeModal', 'openSubscriptionModal']);
 
-const proveedorSalud = ref(
-    JSON.parse(localStorage.getItem('proveedorSalud')) || null // Recuperar usuario guardado o establecer null si no existe
-);
-
-const periodoDePruebaFinalizado = proveedorSalud.value?.periodoDePruebaFinalizado;
-const estadoSuscripcion = proveedorSalud.value?.estadoSuscripcion;
-const finDeSuscripcion = proveedorSalud.value?.finDeSuscripcion ? new Date(proveedorSalud.value.finDeSuscripcion) : null;
+const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado;
+const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
+const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
-  if (!proveedorSalud.value) return;
+  if (!proveedorSaludStore.proveedorSalud) return;
 
   if (periodoDePruebaFinalizado) {
     // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)

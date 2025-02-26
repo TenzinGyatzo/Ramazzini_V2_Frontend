@@ -33,6 +33,7 @@ interface ProveedorSalud {
     addOns: AddOn[];
     mercadoPagoSubscriptionId: string;
     payerEmail: string;
+    finDeSuscripcion: Date;
 }
 
 // Define el store
