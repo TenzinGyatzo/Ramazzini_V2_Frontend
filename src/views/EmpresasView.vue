@@ -77,8 +77,12 @@ watch(
 
 onUnmounted(() => {
   if (proveedorSalud.proveedorSalud) {
-    proveedorSalud.verificarPeriodoDePrueba(proveedorSalud.proveedorSalud!._id);  
+    proveedorSalud.verificarPeriodoDePrueba(proveedorSalud.proveedorSalud!._id);      
+    if(proveedorSalud.proveedorSalud.estadoSuscripcion === 'cancelled') {
+      proveedorSalud.verificarFinSuscripcion(proveedorSalud.proveedorSalud!._id);  
+    }
   }
+
 });
 
 const proveedor = ref(

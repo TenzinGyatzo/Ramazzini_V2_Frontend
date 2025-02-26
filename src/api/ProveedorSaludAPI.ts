@@ -19,5 +19,9 @@ export default {
 
     verificarPeriodoDePrueba(proveedorId: string) {
         return proveedor.get(`verificar-periodo-prueba/${proveedorId}`);
+    },
+
+    verificarFinSuscripcion(proveedorId: string) {
+        return proveedor.get(`verificar-fin-suscripcion/${proveedorId}`);
     }
 }

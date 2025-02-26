@@ -143,12 +143,14 @@ const cancelSubscription = async () => {
     proveedorSalud.value.estadoSuscripcion = 'cancelled';
     proveedorSalud.value.finDeSuscripcion = suscripcionActual.value.next_payment_date;
     proveedorSalud.value.suscripcionActiva = ''; // Vaciar suscripción activa
-    proveedorSalud.value.maxUsuariosPermitidos = 1;
-    proveedorSalud.value.maxEmpresasPermitidas = 0;
-    proveedorSalud.value.addOns = [];
+    
+    // Estos 3 se reestableceranm auntomaticamente en el onUnmounted de empresasView cuando finalice el ciclo ya pagado
+    // proveedorSalud.value.maxUsuariosPermitidos = 1;
+    // proveedorSalud.value.maxEmpresasPermitidas = 0;
+    // proveedorSalud.value.addOns = [];
 
     // Limpiar suscripción actual
-    suscripcionActual.value = null;
+    // suscripcionActual.value = null;
 
     // Mostrar notificación
     toast.open({
@@ -160,6 +162,16 @@ const cancelSubscription = async () => {
     console.error('Error canceling subscription:', error);
   }
 };
+
+const suscripcionCanceladaYActiva = computed(() => {
+  if (proveedorSalud.value?.estadoSuscripcion === 'cancelled' && proveedorSalud.value?.finDeSuscripcion) {
+    const fechaFinSuscripcion = parseISO(proveedorSalud.value.finDeSuscripcion);
+    const hoy = new Date();
+    return differenceInDays(fechaFinSuscripcion, hoy) >= 0; // Si la fecha de fin es en el futuro
+  }
+  return false;
+});
+
 </script>
 
 <template>
@@ -175,6 +187,12 @@ const cancelSubscription = async () => {
         <!-- Sección de Suscripción -->
         <div class="bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
           <h3 class="text-2xl font-semibold text-gray-800 mb-4">{{ suscripcionActual?.reason || 'Sin plan activo' }}</h3>
+          <!-- Mensaje de suscripción cancelada pero activa -->
+          <div v-if="suscripcionCanceladaYActiva" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded">
+            <p class="text-sm">
+              Has cancelado tu suscripción, pero tendrás acceso a los beneficios hasta el <strong>{{ formatDate(proveedorSalud.finDeSuscripcion) }}</strong>.
+            </p>
+          </div>
           <p v-if="totalUsuariosAdicionales || totalEmpresasAdicionales" class="text-gray-600">
             <strong>➕ Adicionales: </strong> 
             <span v-if="totalUsuariosAdicionales">

@@ -121,6 +121,19 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         }
     }
 
+    async function verificarFinSuscripcion (idProveedorSalud: string) {
+        try {
+            // console.log("Store");
+            loading.value = true;
+            const resultado = await ProveedorSaludAPI.verificarFinSuscripcion(idProveedorSalud)
+            return resultado.data
+        } catch (error) {
+            console.error("Error al verificar el fin de la suscripción")
+        } finally {
+            loading.value = false;
+        }
+    }
+
     return {
         proveedorSalud,
         loading,
@@ -129,6 +142,7 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         createProveedor,
         updateProveedorById,
         removeProveedorById,
-        verificarPeriodoDePrueba
+        verificarPeriodoDePrueba,
+        verificarFinSuscripcion
     };
 });
