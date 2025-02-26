@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, inject } from 'vue';
 import { usePagosStore } from '@/stores/pagosStore';
 import { useUserStore } from '@/stores/user';
 import { useEmpresasStore } from '@/stores/empresas';
@@ -7,6 +7,7 @@ import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useRouter } from 'vue-router';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import ModalCancelarSuscripcion from '@/components/suscripciones/ModalCancelarSuscripcion.vue';
 
 const pagosStore = usePagosStore();
 const userStore = useUserStore();
@@ -14,9 +15,12 @@ const empresasStore = useEmpresasStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const router = useRouter();
 
+const toast = inject('toast');
+
 const suscripcionActual = ref(null);
 const usuariosCreados = ref(0);
 const empresasCreadas = ref(0);
+const showCancelModal = ref(false);
 
 const proveedorSalud = ref(
   JSON.parse(localStorage.getItem('proveedorSalud') || 'null') || {}
@@ -57,6 +61,10 @@ onMounted(async () => {
   // Luego, cargar el resto de los datos
   await fetchData();
 });
+
+const toggleCancelModal = () => {
+  showCancelModal.value = !showCancelModal.value;
+};
 
 const formatDate = (dateString) => {
   return dateString ? format(new Date(dateString), "dd 'de' MMMM 'de' yyyy", { locale: es }) : 'No disponible';
@@ -109,16 +117,56 @@ const periodoGratuito = computed(() => {
 
 
 // Computed para calcular el uso de usuarios y empresas
+const calcularPorcentaje = (valorActual, valorTotal) => {
+  if (!valorTotal && valorActual > 0) {
+    return 100; // Si no hay límite pero hay empresas creadas, mostrar 100%
+  }
+  if (!valorTotal || !valorActual) {
+    return 0; // Si no hay empresas creadas o no hay límite, mostrar 0%
+  }
+  return Math.min((valorActual / valorTotal) * 100, 100).toFixed(0);
+};
+
 const porcentajeUsuarios = computed(() => {
-  return Math.min((usuariosCreados.value / (proveedorSalud.value.maxUsuariosPermitidos || 1)) * 100, 100).toFixed(0);
+  return calcularPorcentaje(usuariosCreados.value, proveedorSalud.value.maxUsuariosPermitidos);
 });
 
 const porcentajeEmpresas = computed(() => {
-  return Math.min((empresasCreadas.value / (proveedorSalud.value.maxEmpresasPermitidas || 1)) * 100, 100).toFixed(0);
+  return calcularPorcentaje(empresasCreadas.value, proveedorSalud.value.maxEmpresasPermitidas);
 });
+
+const cancelSubscription = async () => {
+  try {
+    await pagosStore.cancelSubscription(suscripcionActual.value.id);
+
+    // Actualizar proveedorSalud localmente
+    proveedorSalud.value.estadoSuscripcion = 'cancelled';
+    proveedorSalud.value.finDeSuscripcion = suscripcionActual.value.next_payment_date;
+    proveedorSalud.value.suscripcionActiva = ''; // Vaciar suscripción activa
+    proveedorSalud.value.maxUsuariosPermitidos = 1;
+    proveedorSalud.value.maxEmpresasPermitidas = 0;
+    proveedorSalud.value.addOns = [];
+
+    // Limpiar suscripción actual
+    suscripcionActual.value = null;
+
+    // Mostrar notificación
+    toast.open({
+      type: 'success',
+      message: 'Tu suscripción ha sido cancelada exitosamente',
+      position: 'bottom',
+    });
+  } catch (error) {
+    console.error('Error canceling subscription:', error);
+  }
+};
 </script>
 
 <template>
+  <Transition appear name="fade">
+    <ModalCancelarSuscripcion v-if="showCancelModal" @closeModal="toggleCancelModal" @confirmCancellation="cancelSubscription" />
+  </Transition>
+
   <Transition appear mode="out-in" name="slide-up">
     <div class="max-w-4xl mx-auto p-6 space-y-6 min-h-screen">
       <h2 class="text-gray-800 text-3xl md:text-4xl mb-4 font-semibold">Detalles de Mi Suscripción</h2>
@@ -166,7 +214,14 @@ const porcentajeEmpresas = computed(() => {
           <div>
             <p class="text-gray-600"><strong>👥 Usuarios registrados:</strong> {{ usuariosCreados }} de {{ proveedorSalud.maxUsuariosPermitidos }}</p>
             <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
-              <div :style="{ width: porcentajeUsuarios + '%' }" class="h-4 rounded-full absolute top-0 left-0 bg-gradient-to-r from-cyan-500 to-cyan-400 transition-all duration-500"></div>
+              <div 
+                :style="{ width: porcentajeUsuarios + '%' }" 
+                class="h-4 rounded-full absolute top-0 left-0 transition-all duration-500" 
+                :class="{
+                  'bg-gradient-to-r from-cyan-500 to-cyan-400': usuariosCreados < proveedorSalud.maxUsuariosPermitidos,
+                  'bg-gradient-to-r from-red-500 to-red-400': usuariosCreados >= proveedorSalud.maxUsuariosPermitidos
+                }">
+              </div>
                 <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs font-semibold" :class="porcentajeUsuarios <= 55 ? 'text-gray-600' : 'text-white'">
                 {{ porcentajeUsuarios }}%
                 </span>
@@ -183,7 +238,13 @@ const porcentajeEmpresas = computed(() => {
           <div class="mt-4">
             <p class="text-gray-600"><strong>🏢 Empresas registradas:</strong> {{ empresasCreadas }} de {{ proveedorSalud.maxEmpresasPermitidas }}</p>
             <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
-              <div :style="{ width: porcentajeEmpresas + '%' }" class="h-4 rounded-full absolute top-0 left-0 bg-gradient-to-r from-cyan-500 to-cyan-400 transition-all duration-500"></div>
+              <div 
+                :style="{ width: porcentajeEmpresas + '%' }" 
+                class="h-4 rounded-full absolute top-0 left-0 transition-all duration-500"
+                :class="{
+                  'bg-gradient-to-r from-cyan-500 to-cyan-400': empresasCreadas < proveedorSalud.maxEmpresasPermitidas,
+                  'bg-gradient-to-r from-red-500 to-red-400': empresasCreadas >= proveedorSalud.maxEmpresasPermitidas
+                }"></div>
                 <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs font-semibold" :class="porcentajeEmpresas <= 55 ? 'text-gray-600' : 'text-white'">
                 {{ porcentajeEmpresas }}%
                 </span>
@@ -205,6 +266,12 @@ const porcentajeEmpresas = computed(() => {
         <p class="text-gray-600"><strong>🏢 Empresas:</strong> {{ `${proveedorSalud.maxEmpresasPermitidas} disponibles` || 'No disponible' }}</p>
         <p class="text-gray-600"><strong>⏳ Periodo Gratuito:</strong> {{ periodoGratuito }}</p>
       </div>
+
+      <button 
+        @click="toggleCancelModal"
+        class="mt-2 ml-auto block bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg transition-all duration-300 ease-in-out active:scale-95">
+        Cancelar Suscripción
+      </button>
     </div>
   </Transition>
 </template>

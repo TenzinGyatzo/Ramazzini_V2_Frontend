@@ -17,7 +17,7 @@ export default {
         return pagos.get(`obtener-suscripcion-db/${subscriptionId}`);
     },
 
-    deleteSubscription(subscriptionId: string) {
-        return pagos.delete(`eliminar-suscripcion/${subscriptionId}`);
+    cancelSubscription(subscriptionId: string) {
+        return pagos.put(`cancelar-suscripcion/${subscriptionId}`);
     }
 };
