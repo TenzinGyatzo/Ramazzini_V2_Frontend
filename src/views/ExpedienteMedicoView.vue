@@ -42,7 +42,7 @@ const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
 const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
 
 const toggleDocumentoExternoModal = () => {
-  if (! proveedorSaludStore.proveedorSalud) return;
+  if (!proveedorSaludStore.proveedorSalud) return;
 
   if (periodoDePruebaFinalizado) {
     // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
@@ -65,10 +65,20 @@ const toggleDocumentoExternoModal = () => {
 const toggleDocumentoExternoUpdateModal = () => {
   if (! proveedorSaludStore.proveedorSalud) return;
 
-  if (proveedorSaludStore.proveedorSalud.periodoDePruebaFinalizado) {
-    showSubscriptionModal.value = true;
-    return;
+  if (periodoDePruebaFinalizado) {
+    // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
+    if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
+      showSubscriptionModal.value = true;
+      return;
+    }
+
+    // Bloquear solo si canceló la suscripción y la fecha de fin de suscripción ya pasó
+    if (estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date() > finDeSuscripcion) {
+      showSubscriptionModal.value = true;
+      return;
+    }
   }
+
   showDocumentoExternoUpdateModal.value = !showDocumentoExternoUpdateModal.value;
 };
 
@@ -271,7 +281,11 @@ const toggleRouteSelection = (route: string, isSelected: boolean) => {
           class="grid grid-cols-1 gap-6">
           <GrupoDocumentos v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
             :key="year" :documents="documentos.documentsByYear[year]" :year="year"
-            @eliminarDocumento="toggleDeleteModal" @abrirModalUpdate="toggleDocumentoExternoUpdateModal"
+            @eliminarDocumento="toggleDeleteModal" @abrirModalUpdate="toggleDocumentoExternoUpdateModal" 
+            @openSubscriptionModal="() => {
+                console.log('Evento openSubscriptionModal recibido en ExpedienteMedicoView.vue');
+                showSubscriptionModal = true;
+            }"
             :toggleRouteSelection="toggleRouteSelection" :selectedRoutes="selectedRoutes"/>
         </div>
         <h1 v-else

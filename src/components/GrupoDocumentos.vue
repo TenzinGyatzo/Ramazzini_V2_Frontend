@@ -27,7 +27,7 @@ const props = defineProps({
     },
 });
 
-defineEmits(['abrirModalUpdate', 'eliminarDocumento']);
+const emit = defineEmits(['abrirModalUpdate', 'eliminarDocumento', 'openSubscriptionModal']);
 
 // Watch para desmarcar "Seleccionar Todos" si se deselecciona un item
 watch(() => props.selectedRoutes, (newSelectedRoutes) => {
@@ -264,7 +264,12 @@ const toggleSelectAll = () => {
                         return props.selectedRoutes.includes(ruta);
                     })()"
                     @eliminarDocumento="$emit('eliminarDocumento', documentoExterno._id, convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento), 'documentoExterno')"
-                    @abrirModalUpdate="$emit('abrirModalUpdate')" />
+                    @abrirModalUpdate="$emit('abrirModalUpdate')" 
+                    @openSubscriptionModal="() => {
+                        console.log('Propagando openSubscriptionModal desde GrupoDocumentos.vue');
+                        $emit('openSubscriptionModal');
+                    }"
+                />
             </div>
         </div>
     </div>

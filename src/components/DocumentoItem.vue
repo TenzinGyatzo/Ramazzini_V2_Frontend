@@ -8,6 +8,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento } from '@/helpers/rutas.ts';
 
 const router = useRouter();
@@ -15,8 +16,33 @@ const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
+const proveedorSaludStore = useProveedorSaludStore();
+
+const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado;
+const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
+const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
+
+const emit = defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate', 'openSubscriptionModal']);
 
 const editarDocumento = (documentoId, documentoTipo) => {
+    if (!proveedorSaludStore.proveedorSalud) return;
+
+    if (periodoDePruebaFinalizado) {
+        // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
+        if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
+            console.log("Emitting openSubscriptionModal desde DocumentoItem.vue (suscripción inactiva).");
+            emit('openSubscriptionModal');
+            return;
+        }
+
+        // Bloquear solo si canceló la suscripción y la fecha de fin de suscripción ya pasó
+        if (estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date() > finDeSuscripcion) {
+            console.log("Emitting openSubscriptionModal desde DocumentoItem.vue (suscripción cancelada y fecha finalizada).");
+            emit('openSubscriptionModal');
+            return;
+        }
+    }
+
     router.push({
         name: 'crear-documento',
         params: {
@@ -282,8 +308,6 @@ const props = defineProps({
     exploracionFisica: [Object, String],
     historiaClinica: [Object, String],
 });
-
-defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate']);
 
 ////////////////////////////////////////////
 // Estado para la anchura de la ventana
