@@ -30,14 +30,12 @@ const editarDocumento = (documentoId, documentoTipo) => {
     if (periodoDePruebaFinalizado) {
         // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
         if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
-            console.log("Emitting openSubscriptionModal desde DocumentoItem.vue (suscripción inactiva).");
             emit('openSubscriptionModal');
             return;
         }
 
         // Bloquear solo si canceló la suscripción y la fecha de fin de suscripción ya pasó
         if (estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date() > finDeSuscripcion) {
-            console.log("Emitting openSubscriptionModal desde DocumentoItem.vue (suscripción cancelada y fecha finalizada).");
             emit('openSubscriptionModal');
             return;
         }
@@ -604,8 +602,8 @@ const initialScale = computed(() => {
 
             <button v-if="documentoTipo === 'documentoExterno'" type="button"
                 class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5"
-                @click="() => {
-                    documentos.fetchDocumentById(documentoTipo, trabajadores.currentTrabajador._id, documentoExterno._id);
+                @click="async () => {
+                    await documentos.fetchDocumentById(documentoTipo, trabajadores.currentTrabajador._id, documentoExterno._id);
                     $emit('abrirModalUpdate');
                 }">
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>

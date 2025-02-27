@@ -36,23 +36,39 @@ const selectedDocumentId = ref<string | null>(null); // ID del documento selecci
 const selectedDocumentName = ref<string>(''); // Valor inicial como cadena vacía
 const selectedDocumentType = ref<string | null>(null); // Tipo del documento seleccionado
 const selectedRoutes = ref<string[]>([]);
+const periodoDePruebaFinalizado = ref<boolean | null>(null);
+const estadoSuscripcion = ref<string | null>(null);
+const finDeSuscripcion = ref<Date | null>(null);
 
-const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado;
-const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
-const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
+const user = ref( JSON.parse(localStorage.getItem('user') || '{}') || null );
+
+onMounted(async () => {
+  const idProveedorSalud = user.value?.idProveedorSalud;
+  if (idProveedorSalud) {
+    await proveedorSaludStore.loadProveedorSalud(idProveedorSalud);
+
+    // Actualiza los valores después de cargar los datos
+    periodoDePruebaFinalizado.value = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado ?? null;
+    estadoSuscripcion.value = proveedorSaludStore.proveedorSalud?.estadoSuscripcion ?? null;
+    finDeSuscripcion.value = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
+
+  } else {
+    console.error("No se encontró idProveedorSalud en el usuario.");
+  }
+});
 
 const toggleDocumentoExternoModal = () => {
   if (!proveedorSaludStore.proveedorSalud) return;
 
-  if (periodoDePruebaFinalizado) {
+  if (periodoDePruebaFinalizado.value) {
     // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
-    if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
+    if (!estadoSuscripcion.value || estadoSuscripcion.value === 'inactive') {
       showSubscriptionModal.value = true;
       return;
     }
 
     // Bloquear solo si canceló la suscripción y la fecha de fin de suscripción ya pasó
-    if (estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date() > finDeSuscripcion) {
+    if (estadoSuscripcion.value === 'cancelled' && finDeSuscripcion.value && new Date() > finDeSuscripcion.value) {
       showSubscriptionModal.value = true;
       return;
     }
@@ -67,13 +83,13 @@ const toggleDocumentoExternoUpdateModal = () => {
 
   if (periodoDePruebaFinalizado) {
     // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
-    if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
+    if (!estadoSuscripcion.value || estadoSuscripcion.value === 'inactive') {
       showSubscriptionModal.value = true;
       return;
     }
 
     // Bloquear solo si canceló la suscripción y la fecha de fin de suscripción ya pasó
-    if (estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date() > finDeSuscripcion) {
+    if (estadoSuscripcion.value === 'cancelled' && finDeSuscripcion.value && new Date() > finDeSuscripcion.value) {
       showSubscriptionModal.value = true;
       return;
     }
@@ -162,13 +178,13 @@ const navigateTo = (routeName, params) => {
 
   if (periodoDePruebaFinalizado) {
     // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
-    if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
+    if (!estadoSuscripcion.value || estadoSuscripcion.value === 'inactive') {
       showSubscriptionModal.value = true;
       return;
     }
 
     // Bloquear solo si canceló la suscripción y la fecha de fin de suscripción ya pasó
-    if (estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date() > finDeSuscripcion) {
+    if (estadoSuscripcion.value === 'cancelled' && finDeSuscripcion.value && new Date() > finDeSuscripcion.value) {
       showSubscriptionModal.value = true;
       return;
     }
@@ -282,10 +298,7 @@ const toggleRouteSelection = (route: string, isSelected: boolean) => {
           <GrupoDocumentos v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
             :key="year" :documents="documentos.documentsByYear[year]" :year="year"
             @eliminarDocumento="toggleDeleteModal" @abrirModalUpdate="toggleDocumentoExternoUpdateModal" 
-            @openSubscriptionModal="() => {
-                console.log('Evento openSubscriptionModal recibido en ExpedienteMedicoView.vue');
-                showSubscriptionModal = true;
-            }"
+            @openSubscriptionModal="showSubscriptionModal = true"
             :toggleRouteSelection="toggleRouteSelection" :selectedRoutes="selectedRoutes"/>
         </div>
         <h1 v-else

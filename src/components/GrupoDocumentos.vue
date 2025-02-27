@@ -149,7 +149,9 @@ const toggleSelectAll = () => {
                         const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
                         return props.selectedRoutes.includes(ruta);
                     })()"
-                    @eliminarDocumento="$emit('eliminarDocumento', aptitud._id, convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto), 'aptitud')" />
+                    @eliminarDocumento="$emit('eliminarDocumento', aptitud._id, convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto), 'aptitud')" 
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
+                />
             </div>
         </div>
 
@@ -168,7 +170,9 @@ const toggleSelectAll = () => {
                         const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
                         return props.selectedRoutes.includes(ruta);
                     })()"
-                    @eliminarDocumento="$emit('eliminarDocumento', historiaClinica._id, convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica), 'historiaClinica')" />
+                    @eliminarDocumento="$emit('eliminarDocumento', historiaClinica._id, convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica), 'historiaClinica')" 
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
+                />
             </div>
         </div>
 
@@ -187,7 +191,9 @@ const toggleSelectAll = () => {
                         const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
                         return props.selectedRoutes.includes(ruta);
                     })()"
-                    @eliminarDocumento="$emit('eliminarDocumento', exploracionFisica._id, convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica), 'exploracionFisica')" />
+                    @eliminarDocumento="$emit('eliminarDocumento', exploracionFisica._id, convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica), 'exploracionFisica')" 
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
+                />
             </div>
         </div>
 
@@ -206,7 +212,9 @@ const toggleSelectAll = () => {
                         const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
                         return props.selectedRoutes.includes(ruta);
                     })()"
-                    @eliminarDocumento="$emit('eliminarDocumento', examenVista._id, convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista), 'examenVista')" />
+                    @eliminarDocumento="$emit('eliminarDocumento', examenVista._id, convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista), 'examenVista')" 
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
+                />
             </div>
         </div>
 
@@ -225,7 +233,9 @@ const toggleSelectAll = () => {
                         const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
                         return props.selectedRoutes.includes(ruta);
                     })()"
-                    @eliminarDocumento="$emit('eliminarDocumento', antidoping._id, convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping), 'antidoping')" />
+                    @eliminarDocumento="$emit('eliminarDocumento', antidoping._id, convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping), 'antidoping')" 
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
+                />
             </div>
         </div>
 
@@ -244,7 +254,9 @@ const toggleSelectAll = () => {
                         const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
                         return props.selectedRoutes.includes(ruta);
                     })()"
-                    @eliminarDocumento="$emit('eliminarDocumento', certificado._id, convertirFechaISOaDDMMYYYY(certificado.fechaCertificado), 'certificado')" />
+                    @eliminarDocumento="$emit('eliminarDocumento', certificado._id, convertirFechaISOaDDMMYYYY(certificado.fechaCertificado), 'certificado')" 
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
+                />
             </div>
         </div>
 
@@ -265,10 +277,7 @@ const toggleSelectAll = () => {
                     })()"
                     @eliminarDocumento="$emit('eliminarDocumento', documentoExterno._id, convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento), 'documentoExterno')"
                     @abrirModalUpdate="$emit('abrirModalUpdate')" 
-                    @openSubscriptionModal="() => {
-                        console.log('Propagando openSubscriptionModal desde GrupoDocumentos.vue');
-                        $emit('openSubscriptionModal');
-                    }"
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
                 />
             </div>
         </div>

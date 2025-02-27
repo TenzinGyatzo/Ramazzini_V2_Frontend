@@ -32,15 +32,12 @@ export const useDocumentosStore = defineStore("documentos", () => {
 
   async function fetchDocumentById(documentType: string, trabajadorId: string, documentId: string) {
     try {
-      loading.value = true;
       currentDocument.value = null;
 
       const response = await DocumentosAPI.getDocumentById(documentType, trabajadorId, documentId);
       currentDocument.value = response.data;
     } catch (error) {
       console.error(`Error al obtener el documento ${documentId} de tipo ${documentType}:`, error);
-    } finally {
-      loading.value = false;
     }
   }
 
