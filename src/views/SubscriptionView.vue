@@ -128,7 +128,7 @@ const createSubscriptionData = (reason, amount) => ({
   },
   payer_id: user.value.email,
   payer_email: user.value.email,
-  back_url: `https://ramazzini.app/suscripcion-exitosa`,
+  back_url: `https://ramazzini.app/suscripcion-activa`,
 });
 
 const getProveedorSaludData = () => ({
@@ -261,7 +261,7 @@ const porcentajeEmpresas = computed(() => {
         @click="selectedPlan = plan; extraUsers = 0; extraCompanies = 0"
       >
         <h2 class="text-2xl font-semibold mb-4 text-gray-700">{{ plan.name }}</h2>
-        <p class="text-3xl mb-4 font-light text-sky-600">${{ formatCurrency(plan.price) }}/mes + IVA</p>
+        <p class="text-3xl mb-4 font-light text-sky-600">${{ formatCurrency(plan.price) }}/mes</p>
         <ul class="text-gray-600 divide-y divide-gray-200 text-base">
           <li class="py-1">{{ plan.users }} usuarios</li>
           <li class="py-1">{{ plan.companies }} empresas</li>

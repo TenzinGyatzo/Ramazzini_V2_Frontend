@@ -58,7 +58,7 @@ const deleteUsuarioByEmail = async (email) => {
     />
   </Transition>
   <Transition appear mode="out-in" name="slide-up">
-    <div class="grid grid-cols-1 gap-3">
+    <div class="grid grid-cols-1 gap-3 mt-2">
       <UserItem
         v-for="usuario in usuarios"
         :key="usuario._id"

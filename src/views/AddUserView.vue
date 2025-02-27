@@ -85,7 +85,7 @@ const volver = () => {
   <Transition appear mode="out-in" name="slide-up">
     <div
       v-if="registroExitoso == false"
-      class="relative bg-white text-gray-800 w-full max-w-lg p-10 rounded-lg max-h-[82vh] shadow-lg overflow-y-auto mx-auto"
+      class="relative bg-white text-gray-800 w-full max-w-lg p-10 mt-2 rounded-lg max-h-[82vh] shadow-lg overflow-y-auto mx-auto"
     >
       <h1 class="text-3xl text-gray-800">Agregar usuario adicional</h1>
       <hr class="mt-2 mb-3" />
