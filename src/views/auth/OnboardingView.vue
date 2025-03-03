@@ -124,7 +124,7 @@ const perfiles = [
 
 <template>
   <img
-    src="../../../img/logosRamazzini/RamazziniLogo.png"
+    src="/img/logosRamazzini/RamazziniLogo.png"
     alt="Ramazzini Logo"
     class="max-w-[250px] max-h-[250px] object-contain p-2 mx-auto"
   />
