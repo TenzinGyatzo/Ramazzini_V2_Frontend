@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject } from "vue";
+import { ref, inject, computed } from "vue";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
 import { useRouter } from "vue-router";
 
@@ -127,6 +127,12 @@ const estadosDeMexico = [
   "Yucatán",
   "Zacatecas",
 ];
+
+const baseURL = import.meta.env.VITE_API_URL;
+
+const logoSrc = computed(() => {
+  return `${baseURL}/assets/providers-logos/${proveedorSalud.proveedorSalud.logotipoEmpresa?.data}?t=${Date.now()}`;
+});
 </script>
 
 <template>
@@ -206,12 +212,11 @@ const estadosDeMexico = [
                 <p class="font-medium text-lg text-gray-700">
                   Logotipo actual:
                 </p>
-                <img :src="'http://localhost:3000/assets/providers-logos/' +
-                  proveedorSalud.proveedorSalud.logotipoEmpresa?.data +
-                  '?t=' +
-                  Date.now()
-                  " :alt="'Logo de ' + proveedorSalud.proveedorSalud.nombreComercial
-                    " class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />
+                <img
+                  :src="logoSrc"
+                  :alt="'Logo de ' + proveedorSalud.proveedorSalud.nombreComercial"
+                  class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"
+                />
               </div>
 
               <Transition appear name="fade-slow">
