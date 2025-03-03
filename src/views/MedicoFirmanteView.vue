@@ -126,7 +126,7 @@ const volver = () => {
 const titulos = ['Dr.', 'Dra.'];
 const siONo = ['Si', 'No'];
 
-const baseURL = import.meta.env.VITE_API_URL;
+const baseURL = import.meta.env.VITE_API_URL || 'https://ramazzini.app';
 
 const firmaSrc = computed(() => {
   return `${baseURL}/assets/signatories/${medicoFirmante.medicoFirmante.firma?.data}?t=${Date.now()}`;

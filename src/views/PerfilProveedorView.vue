@@ -128,11 +128,13 @@ const estadosDeMexico = [
   "Zacatecas",
 ];
 
-const baseURL = import.meta.env.VITE_API_URL;
+const baseURL = import.meta.env.VITE_API_URL || 'https://ramazzini.app';
+console.log('baseURL:', baseURL);
 
 const logoSrc = computed(() => {
   return `${baseURL}/assets/providers-logos/${proveedorSalud.proveedorSalud.logotipoEmpresa?.data}?t=${Date.now()}`;
 });
+console.log('logoSrc:', logoSrc.value);
 </script>
 
 <template>
@@ -214,7 +216,7 @@ const logoSrc = computed(() => {
                 </p>
                 <img
                   :src="logoSrc"
-                  :alt="'Logo de ' + proveedorSalud.proveedorSalud.nombreComercial"
+                  :alt="'Logo de ' + proveedorSalud.proveedorSalud.nombre"
                   class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"
                 />
               </div>
