@@ -50,8 +50,8 @@ const config = {
       },
       submit: {
         input:
-          "$reset text-lg bg-emerald-500 hover:bg-emerald-600 rounded-lg text-white font-normal w-full p-3 transition-transform transform hover:scale-105 shadow-md m-0",
-      },
+          "$reset text-lg bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg text-white font-normal w-full p-3 transition-transform transform hover:scale-105 disabled:hover:scale-100 shadow-md m-0",
+      },      
       file: {
         input:
           "block w-full p-3 border-2 border-dashed hover:border-emerald-500 rounded-lg cursor-pointer text-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 file:cursor-pointer file:bg-emerald-500 file:text-white file:font-normal file:py-2 file:px-4 file:rounded-full file:border-none hover:file:bg-emerald-600 transition-colors duration-200 ease-in-out",

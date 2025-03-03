@@ -176,7 +176,7 @@ watch(
 const navigateTo = (routeName, params) => {
   if (!proveedorSaludStore.proveedorSalud) return;
 
-  if (periodoDePruebaFinalizado) {
+  if (periodoDePruebaFinalizado.value) {
     // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
     if (!estadoSuscripcion.value || estadoSuscripcion.value === 'inactive') {
       showSubscriptionModal.value = true;

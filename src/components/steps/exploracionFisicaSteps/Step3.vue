@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
@@ -167,6 +167,48 @@ function setCategoriaSaturacionOxigeno() {
   categoriaSaturacionOxigeno.value = categoria;
   formDataExploracionFisica.categoriaSaturacionOxigeno = categoria;
 }
+
+// Computed para mostrar mensajes de error
+const mensajeErrorTensionSistolica = computed(() => {
+  return tensionArterialSistolica.value < 60 
+    ? 'Debe ser mínimo 60' 
+    : tensionArterialSistolica.value > 200 
+      ? 'Debe ser máximo 200' 
+      : '';
+});
+
+const mensajeErrorTensionDiastolica = computed(() => {
+  return tensionArterialDiastolica.value < 40 
+    ? 'Debe ser mínimo 40' 
+    : tensionArterialDiastolica.value > 150 
+      ? 'Debe ser máximo 150' 
+      : '';
+});
+
+const mensajeErrorFrecuenciaCardiaca = computed(() => {
+  return frecuenciaCardiaca.value < 40 
+    ? 'Debe ser mínimo 40' 
+    : frecuenciaCardiaca.value > 150 
+      ? 'Debe ser máximo 150' 
+      : '';
+});
+
+const mensajeErrorFrecuenciaRespiratoria = computed(() => {
+  return frecuenciaRespiratoria.value < 12 
+    ? 'Debe ser mínimo 12' 
+    : frecuenciaRespiratoria.value > 45 
+      ? 'Debe ser máximo 45' 
+      : '';
+});
+
+const mensajeErrorSaturacionOxigeno = computed(() => {
+  return saturacionOxigeno.value < 80 
+    ? 'Debe ser mínimo 80' 
+    : saturacionOxigeno.value > 100 
+      ? 'Debe ser máximo 100' 
+      : '';
+});
+
 </script>
 
 <template>
@@ -181,12 +223,18 @@ function setCategoriaSaturacionOxigeno() {
         <input type="number"
           class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
           v-model="tensionArterialSistolica" min="60" max="200">
+        <p v-if="mensajeErrorTensionSistolica" class="text-red-500 text-sm mt-1">
+        {{ mensajeErrorTensionSistolica }}
+        </p>
       </div>
       <div>
         <label for="tensionArterialDiastolica">Diastólica (mmHg)</label>
         <input type="number"
           class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
           v-model="tensionArterialDiastolica" min="40" max="150" />
+        <p v-if="mensajeErrorTensionDiastolica" class="text-red-500 text-sm mt-1">
+          {{ mensajeErrorTensionDiastolica }}
+        </p>
       </div>
     </div>
     <input type="text"
@@ -199,6 +247,9 @@ function setCategoriaSaturacionOxigeno() {
         <input type="number"
           class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
           v-model="frecuenciaCardiaca" min="40" max="150" />
+        <p v-if="mensajeErrorFrecuenciaCardiaca" class="text-red-500 text-sm mt-1">
+          {{ mensajeErrorFrecuenciaCardiaca }}
+        </p>
       </div>
       <div>
         <input type="text"
@@ -213,6 +264,9 @@ function setCategoriaSaturacionOxigeno() {
         <input type="number"
           class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
           v-model="frecuenciaRespiratoria" min="12" max="45" />
+        <p v-if="mensajeErrorFrecuenciaRespiratoria" class="text-red-500 text-sm mt-1">
+          {{ mensajeErrorFrecuenciaRespiratoria }}
+        </p>
       </div>
       <div>
         <input type="text"
@@ -227,6 +281,9 @@ function setCategoriaSaturacionOxigeno() {
         <input type="number"
           class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
           v-model="saturacionOxigeno" min="80" max="100" />
+        <p v-if="mensajeErrorSaturacionOxigeno" class="text-red-500 text-sm mt-1">
+          {{ mensajeErrorSaturacionOxigeno }}
+        </p>
       </div>
       <div>
         <input type="text"

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
@@ -105,6 +105,30 @@ function setCategoriaCircunferenciaCintura() {
   categoriaCircunferenciaCintura.value = categoria;
   formDataExploracionFisica.categoriaCircunferenciaCintura = categoria;
 }
+
+const mensajeErrorPeso = computed(() => {
+  return peso.value < 45 
+    ? 'Debe ser mínimo 45' 
+    : peso.value > 200 
+      ? 'Debe ser máximo 200' 
+      : '';
+});
+
+const mensajeErrorAltura = computed(() => {
+  return altura.value < 1.40 
+    ? 'Debe ser mínimo 1.40 m' 
+    : altura.value > 2.20 
+      ? 'Debe ser máximo 2.20 m' 
+      : '';
+});
+
+const mensajeErrorCircunferenciaCintura = computed(() => {
+  return circunferenciaCintura.value < 50 
+    ? 'Debe ser mínimo 50 cm' 
+    : circunferenciaCintura.value > 160 
+      ? 'Debe ser máximo 160 cm' 
+      : '';
+});
 </script>
 
 <template>
@@ -118,12 +142,14 @@ function setCategoriaCircunferenciaCintura() {
         <input type="number"
           class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
           v-model="peso" min="45" max="200" step="0.1">
+        <p v-if="mensajeErrorPeso" class="text-red-500 text-sm mt-1">{{ mensajeErrorPeso }}</p>
       </div>
       <div>
         <label for="altura">Altura (m)</label>
         <input type="number"
           class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
           v-model="altura" step="0.01" min="1.40" max="2.20" />
+        <p v-if="mensajeErrorAltura" class="text-red-500 text-sm mt-1">{{ mensajeErrorAltura }}</p>
       </div>
     </div>
 
@@ -147,6 +173,7 @@ function setCategoriaCircunferenciaCintura() {
         <input type="number"
           class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
           v-model="circunferenciaCintura" min="50"/>
+        <p v-if="mensajeErrorCircunferenciaCintura" class="text-red-500 text-sm mt-1">{{ mensajeErrorCircunferenciaCintura }}</p>
       </div>
       <div>
         <input type="text"

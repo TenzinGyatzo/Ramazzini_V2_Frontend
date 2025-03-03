@@ -29,6 +29,9 @@ const formDataProveedorSalud = reactive({
   addOns: [],
   mercadoPagoSubscriptionId: "",
   payerEmail: "",
+  termsAccepted: false,
+  acceptedAt: new Date().toISOString(),
+  termsVersion: "1.0",
 });
 
 // Acceso a los stores
@@ -328,9 +331,39 @@ const perfiles = [
           :validation-messages="{ required: 'Este campo es obligatorio' }"
           v-model="formDataProveedorSalud.perfilProveedorSalud"
         />
+        
+        <FormKit
+          type="hidden"
+          name="termsAccepted"
+          v-model="formDataProveedorSalud.termsAccepted"
+          validation="required"
+          :validation-messages="{
+            required: 'Debes aceptar los términos y condiciones'
+          }"
+        />
 
-        <div class="w-full mt-6">
-          <FormKit type="submit">
+        <FormKit type="hidden" name="acceptedAt" v-model="formDataProveedorSalud.acceptedAt" />
+        <FormKit type="hidden" name="termsVersion" v-model="formDataProveedorSalud.termsVersion" />
+
+        <div class="flex items-center justify-center gap-4 mt-4">
+          <span class="text-sm" :class="formDataProveedorSalud.termsAccepted ? 'text-emerald-600' : 'text-gray-500'">
+            He leído y acepto los <a href="https://get.ramazzini.app/terminos-y-condiciones" target="_blank" class="text-sm text-blue-500 hover:underline">Términos y Condiciones</a>
+          </span>
+
+          <button 
+            type="button"
+            @click="formDataProveedorSalud.termsAccepted = !formDataProveedorSalud.termsAccepted" 
+            :class="formDataProveedorSalud.termsAccepted ? 'bg-emerald-500' : 'bg-gray-300'"
+            class="relative w-12 h-6 rounded-full transition-colors">
+            <span 
+              class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform"
+              :class="formDataProveedorSalud.termsAccepted ? 'translate-x-6' : ''">
+            </span>
+          </button>
+        </div>
+
+        <div class="w-full mt-3">
+          <FormKit type="submit" :disabled="!formDataProveedorSalud.termsAccepted">
             <span class="mr-2">Finalizar</span>
             <i class="fa-solid fa-check"></i>
           </FormKit>

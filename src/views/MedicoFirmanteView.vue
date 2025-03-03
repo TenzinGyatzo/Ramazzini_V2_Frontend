@@ -22,6 +22,8 @@ watch(
         if (nuevoMedicoFirmante) {
             especialistaSaludTrabajo.value = nuevoMedicoFirmante.especialistaSaludTrabajo || "No";
             numeroCedulaEspecialista.value = nuevoMedicoFirmante.numeroCedulaEspecialista || "";
+            nombreCredencialAdicional.value = nuevoMedicoFirmante.nombreCredencialAdicional || "";
+            numeroCredencialAdicional.value = nuevoMedicoFirmante.numeroCredencialAdicional || "";
         }
     },
     { immediate: true } // Ejecutar inmediatamente al montar el componente
@@ -85,9 +87,9 @@ const handleSubmit = async (data) => {
     }
 
     // Depuramos el contenido de FormData
-    for (let [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-    }
+    // for (let [key, value] of formData.entries()) {
+    //     console.log(`${key}:`, value);
+    // }
 
     try {
         let response;
