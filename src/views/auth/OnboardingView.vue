@@ -347,7 +347,7 @@ const perfiles = [
 
         <div class="flex items-center justify-center gap-4 mt-4">
           <span class="text-sm" :class="formDataProveedorSalud.termsAccepted ? 'text-emerald-600' : 'text-gray-500'">
-            He leído y acepto los <a href="https://get.ramazzini.app/terminos-y-condiciones" target="_blank" class="text-sm text-blue-500 hover:underline">Términos y Condiciones</a>
+            He leído y acepto los <a href="https://get.ramazzini.app/terminos-y-condiciones.html" target="_blank" class="text-sm text-blue-500 hover:underline">Términos y Condiciones</a>
           </span>
 
           <button 
