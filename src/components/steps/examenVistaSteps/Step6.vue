@@ -63,16 +63,16 @@ function interpretarIshihara() {
       <div>
         <label for="porcentajeIshihara">Porcentaje (%)</label>
             <input type="number"
-              class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-              v-model="porcentajeIshihara" readonly />
+              class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
+              v-model="porcentajeIshihara" readonly title="Calculado a partir del número de placas correctas"/>
 
       </div>
 
       <div>
         <label for="interpretacionIshihara">Interpretación</label>
         <input type="text"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="interpretacionIshihara" readonly>
+          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
+          v-model="interpretacionIshihara" readonly title="Determinado automáticamente en función al porcentaje de placas correctas"/>
       </div>
     </div>
   </div>

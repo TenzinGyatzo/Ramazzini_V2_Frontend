@@ -39,14 +39,6 @@ const isOpen = (section) => {
     return !!openSections.value[section];
 };
 
-const showTooltip = (content) => {
-    console.log(content); // Puedes usar una librería como Tippy.js aquí
-};
-
-const hideTooltip = () => {
-    console.log("Tooltip cerrado");
-};
-
 // Función para copiar el texto al portapapeles
 const copiarTexto = (texto) => {
     navigator.clipboard.writeText(texto).then(() => {

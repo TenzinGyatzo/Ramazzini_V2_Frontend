@@ -464,6 +464,7 @@ const goToStep = (stepNumber) => {
     </div>
 
   </div>
+
 </template>
 
 <style scoped>

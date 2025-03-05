@@ -3,6 +3,8 @@ import { ref, watch, onMounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
 
+const mensajeCopiado = ref(false);
+
 const { formDataAptitud } = useFormDataStore();
 const documentos = useDocumentosStore();
 
@@ -30,18 +32,14 @@ const isOpen = (section) => {
     return !!openSections.value[section];
 };
 
-const showTooltip = (content) => {
-    console.log(content); // Puedes usar una librería como Tippy.js aquí
-};
-
-const hideTooltip = () => {
-    console.log("Tooltip cerrado");
-};
-
 // Función para copiar el texto al portapapeles
 const copiarTexto = (texto) => {
     navigator.clipboard.writeText(texto).then(() => {
-        // alert('Texto copiado al portapapeles');
+        // Mostrar mensaje temporal de "Copiado"
+        mensajeCopiado.value = true;
+        setTimeout(() => {
+          mensajeCopiado.value = false;
+        }, 2000); // Mensaje se oculta después de 2 segundos
     }).catch((err) => {
         console.error('Error al copiar el texto: ', err);
     });
@@ -112,9 +110,9 @@ const copiarTexto = (texto) => {
             </ul>
 
             <p class="font-medium mb-1 text-gray-800 leading-5 mt-4">2. Separar cada recomendacion con punto y seguido.</p>
-
+            
             <!-- Ejemplos -->
-            <p class="font-medium mb-1 text-gray-800 leading-5 mt-4">3. Ejemplos de recomendaciones comúnes:</p>
+            <p class="font-medium mb-1 text-gray-800 leading-5 mt-4">3. Ejemplos de recomendaciones:<span v-if="mensajeCopiado" class="font-medium mb-1 leading-5 ml-2 text-emerald-600 text-sm">¡Copiado!</span></p>
             <div class="space-y-2">
                 <!-- Botón principal -->
                 <button

@@ -157,13 +157,13 @@ const mensajeErrorCircunferenciaCintura = computed(() => {
     <div class="flex gap-4 mb-4">
       <div>
         <input type="number"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="indiceMasaCorporal" readonly />
+          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
+          v-model="indiceMasaCorporal" readonly title="El IMC se calcula automáticamente en función al peso y altura" />
       </div>
       <div>
         <input type="text"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="categoriaIMC" readonly />
+          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
+          v-model="categoriaIMC" readonly title="La categoría se determina automáticamente según su IMC"/>
       </div>
     </div>
 
@@ -177,8 +177,8 @@ const mensajeErrorCircunferenciaCintura = computed(() => {
       </div>
       <div>
         <input type="text"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="categoriaCircunferenciaCintura" readonly />
+          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
+          v-model="categoriaCircunferenciaCintura" readonly title="Clasificación automática según el sexo y la circunferencia de cintura ingresada" />
       </div>
     </div>
   </div>

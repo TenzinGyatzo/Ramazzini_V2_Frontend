@@ -23,11 +23,13 @@ const handleLogin = async () => {
     // Verificar que error es un objeto con la propiedad `response`
     if (axios.isAxiosError(error) && error.response) {
       console.log(error.response.data.message);
-      if (error.response.data.message === 'El usuario no existe') {
+      if (error.response.data.message === 'El email ingresado no es válido') {
+        errorMessage.value = "El email ingresado no es válido";
+      } else if(error.response.data.message === 'El usuario no existe') {
         errorMessage.value = "El usuario no existe";
       } else if (error.response.data.message === 'Tu cuenta no ha sido confirmada aún, revisa tu email') {
         errorMessage.value = "Tu cuenta no ha sido confirmada aún, revisa tu email"
-      }else if (error.response.data.message === 'Contraseña incorrecta') {
+      } else if (error.response.data.message === 'Contraseña incorrecta') {
         errorMessage.value = "Contraseña incorrecta";
       } else {
         errorMessage.value = "Credenciales incorrectas";

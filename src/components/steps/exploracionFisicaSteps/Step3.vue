@@ -238,8 +238,8 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
       </div>
     </div>
     <input type="text"
-      class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 mb-4"
-      v-model="categoriaTensionArterial" readonly />
+      class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 mb-4 bg-gray-100 cursor-default"
+      v-model="categoriaTensionArterial" readonly title="Se determina automáticamente según los valores de presión arterial" />
 
     <label for="frecuenciaCardiaca">Frecuencia Cardiáca (lpm)</label>
     <div class="flex gap-4 mb-4">
@@ -253,8 +253,8 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
       </div>
       <div>
         <input type="text"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="categoriaFrecuenciaCardiaca" readonly />
+          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
+          v-model="categoriaFrecuenciaCardiaca" readonly title="Se determina automáticamente según la frecuencia cardiaca ingresada" />
       </div>
     </div>
 
@@ -270,8 +270,8 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
       </div>
       <div>
         <input type="text"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="categoriaFrecuenciaRespiratoria" readonly />
+          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
+          v-model="categoriaFrecuenciaRespiratoria" readonly title="Se determina automáticamente según la frecunecia respiratoria ingresada" />
       </div>
     </div>
 
@@ -287,8 +287,8 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
       </div>
       <div>
         <input type="text"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="categoriaSaturacionOxigeno" readonly />
+          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
+          v-model="categoriaSaturacionOxigeno" readonly title="Se determina automáticamente según la saturación de oxígeno ingresada" />
       </div>
     </div>
 

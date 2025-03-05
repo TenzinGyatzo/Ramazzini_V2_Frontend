@@ -269,6 +269,8 @@ export default {
         return; // Salir si un campo de texto está enfocado
       }
 
+      // ¿Cambiar Enter y Backspace por ArrowRight y ArrowLeft?
+
       // Manejar Enter y Backspace
       if (event.key === 'Enter') {
         event.preventDefault(); // Prevenir comportamiento por defecto de Enter

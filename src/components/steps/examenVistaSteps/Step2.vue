@@ -90,8 +90,8 @@ function requiereLentes() {
     <div class="flex space-x-4 mt-1 mb-4">
       <div class="flex flex-col space-y-1">
         <input type="number"
-          class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          value="20" step="10" min="10" max="200" readonly />
+          class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
+          value="20" step="10" min="10" max="200" readonly title="Medida base de agudeza visual. No editable." />
       </div>
       <p class="text-3xl">/</p>
       <div class="flex flex-col space-y-1">
@@ -105,8 +105,8 @@ function requiereLentes() {
     <div class="flex space-x-4 mt-1 mb-4">
       <div class="flex flex-col space-y-1">
         <input type="number"
-          class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          value="20" step="10" min="10" max="200" readonly />
+          class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
+          value="20" step="10" min="10" max="200" readonly title="Medida base de agudeza visual. No editable." />
       </div>
       <p class="text-3xl">/</p>
       <div class="flex flex-col space-y-1">
@@ -119,9 +119,10 @@ function requiereLentes() {
     <label for="">Interpretación</label>
     <input 
       type="text"
-      class="w-full p-3 mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+      class="w-full p-3 mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
       v-model="sinCorreccionLejanaInterpretacion"
       readonly
+      title="Se determina automáticamente en función a la agudeza visual."
     >
   </div>
 </template>
