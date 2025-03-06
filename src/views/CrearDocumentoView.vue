@@ -223,7 +223,7 @@ const marcarSinHallazgos = () => {
             type="button"
             @click="() => { goToStep(8); }"
             class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
-            <span>Sin evaluaciones adicionales</span>
+            <span>No más evaluaciones adicionales</span>
           </button>
         </div>
       </div>

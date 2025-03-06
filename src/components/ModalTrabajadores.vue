@@ -136,7 +136,7 @@ const closeModal = () => {
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                 :value="trabajadores.currentTrabajador?.puesto || ''" />
               <FormKit type="date" label="Fecha de Ingreso*" name="fechaIngreso" validation="required"
-                :validation-messages="{ required: 'Este campo es obligatorio' }"
+                :validation-messages="{ required: 'Este campo es obligatorio' }" title="Fecha de ingreso a la empresa"
                 :value="convertirFechaISOaYYYYMMDD(trabajadores.currentTrabajador?.fechaIngreso) || ''" />
               <FormKit type="text" label="Teléfono" name="telefono" placeholder="10 dígitos"
                 validation="optional|length:10" :validation-messages="{ length: 'El teléfono debe tener 10 dígitos' }"

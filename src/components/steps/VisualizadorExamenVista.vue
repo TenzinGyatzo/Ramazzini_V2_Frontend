@@ -33,7 +33,7 @@ const goToStep = (stepNumber) => {
 
       <!-- Fecha -->
       <div class="w-full md:w-[calc(25%-0.5rem)] flex flex-wrap gap-2 justify-end text-sm sm:text-base cursor-pointer"
-        @click="goToStep(1)">
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }"  @click="goToStep(1)">
         <p class="w-full md:w-auto">Fecha: <span class="font-semibold">{{
           formatDateDDMMYYYY(formData.formDataExamenVista.fechaExamenVista) }}</span></p>
       </div>
@@ -102,7 +102,8 @@ const goToStep = (stepNumber) => {
           </tr>
         </thead>
         <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }">
             <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">LEJANA</td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ formData.formDataExamenVista.ojoIzquierdoLejanaSinCorreccion ?
@@ -116,7 +117,8 @@ const goToStep = (stepNumber) => {
               {{ formData.formDataExamenVista.sinCorreccionLejanaInterpretacion }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(3)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(3)"
+          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 3 }">
             <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">CERCANA</td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ formData.formDataExamenVista.ojoIzquierdoCercanaSinCorreccion ?
@@ -136,11 +138,13 @@ const goToStep = (stepNumber) => {
 
     <!-- Requiere Lentes -->
     <div class="w-full flex flex-wrap gap-0 md:gap-8 justify-start xl:justify-evenly text-sm sm:text-base">
-      <p class="w-full md:w-auto cursor-pointer" @click="goToStep(2)">
+      <p class="w-full md:w-auto cursor-pointer" @click="goToStep(2)"
+        :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }">
         Requiere Lentes para Uso General: (
         <span class="font-semibold">{{ formData.formDataExamenVista.requiereLentesUsoGeneral }}</span> )
       </p>
-      <p class="w-full md:w-auto cursor-pointer" @click="goToStep(3)">
+      <p class="w-full md:w-auto cursor-pointer" @click="goToStep(3)"
+        :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 3 }">
         Requiere Lentes para Lectura: (
         <span class="font-semibold">{{ formData.formDataExamenVista.requiereLentesParaLectura }}</span> )
       </p>
@@ -159,7 +163,8 @@ const goToStep = (stepNumber) => {
           </tr>
         </thead>
         <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(4)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(4)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 4 }">
             <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">LEJANA</td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ formData.formDataExamenVista.ojoIzquierdoLejanaConCorreccion ?
@@ -174,7 +179,8 @@ const goToStep = (stepNumber) => {
                 formData.formDataExamenVista.conCorreccionLejanaInterpretacion : 'NA' }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(5)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(5)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 5 }">
             <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">CERCANA</td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ formData.formDataExamenVista.ojoIzquierdoCercanaConCorreccion ?
@@ -205,7 +211,8 @@ const goToStep = (stepNumber) => {
           </tr>
         </thead>
         <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(6)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(6)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }">
             <td class="w-1/3 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">
               {{ formData.formDataExamenVista.placasCorrectas ?
                 formData.formDataExamenVista.placasCorrectas + ' de 14': '&nbsp;' }}

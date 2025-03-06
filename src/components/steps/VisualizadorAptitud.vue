@@ -157,6 +157,7 @@ const antidopingResumen = computed(() => {
 
       <!-- Fecha -->
       <div class="w-full md:w-[calc(25%-0.5rem)] flex flex-wrap gap-2 justify-end text-sm sm:text-base cursor-pointer"
+        :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }"
         @click="goToStep(1)">
         <p class="w-full md:w-auto">Fecha: <span class="font-semibold">{{
            formatDateDDMMYYYY(formData.formDataAptitud.fechaAptitudPuesto) }}</span></p>
@@ -245,7 +246,7 @@ const antidopingResumen = computed(() => {
     <div class="w-full">
       <h2 class="mb-1 text-left">La evaluación médica para la aptitud ante el puesto está basada
         en la siguiente información:</h2>
-      <table class="table-auto w-full border-collapse border border-gray-200">
+      <table class="table-auto w-full border-collapse border border-gray-200" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }">
         <thead>
           <tr class="bg-gray-200">
             <th class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">INFORMACIÓN Y ESTUDIOS
@@ -294,42 +295,55 @@ const antidopingResumen = computed(() => {
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestAntidoping ?
               antidopingResumen : '-' }}</td>
           </tr>
-          <tr v-if="formData.formDataAptitud.evaluacionAdicional1" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
+          <tr v-if="formData.formDataAptitud.evaluacionAdicional1" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">{{ formData.formDataAptitud.evaluacionAdicional1.toUpperCase() }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ formatDateDDMMYYYY(formData.formDataAptitud.fechaEvaluacionAdicional1) }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ formData.formDataAptitud.resultadosEvaluacionAdicional1 }}</td>
           </tr>
-          <tr v-if="formData.formDataAptitud.evaluacionAdicional2" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(3)">
+          <tr v-else :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }"></tr>
+          <tr v-if="formData.formDataAptitud.evaluacionAdicional2" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(3)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 3 }">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">{{ formData.formDataAptitud.evaluacionAdicional2.toUpperCase() }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ formatDateDDMMYYYY(formData.formDataAptitud.fechaEvaluacionAdicional2) }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ formData.formDataAptitud.resultadosEvaluacionAdicional2 }}</td>
           </tr>
-          <tr v-if="formData.formDataAptitud.evaluacionAdicional3" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(4)">
+          <tr v-else :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 3 }"></tr>
+          <tr v-if="formData.formDataAptitud.evaluacionAdicional3" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(4)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 4 }">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">{{ formData.formDataAptitud.evaluacionAdicional3.toUpperCase() }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ formatDateDDMMYYYY(formData.formDataAptitud.fechaEvaluacionAdicional3) }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ formData.formDataAptitud.resultadosEvaluacionAdicional3 }}</td>
           </tr>
-          <tr v-if="formData.formDataAptitud.evaluacionAdicional4" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(5)">
+          <tr v-else :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 4 }"></tr>
+          <tr v-if="formData.formDataAptitud.evaluacionAdicional4" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(5)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 5 }">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">{{ formData.formDataAptitud.evaluacionAdicional4.toUpperCase() }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ formatDateDDMMYYYY(formData.formDataAptitud.fechaEvaluacionAdicional4) }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ formData.formDataAptitud.resultadosEvaluacionAdicional4 }}</td>
           </tr>
-          <tr v-if="formData.formDataAptitud.evaluacionAdicional5" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(6)">
+          <tr v-else :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 5 }"></tr>
+          <tr v-if="formData.formDataAptitud.evaluacionAdicional5" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(6)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">{{ formData.formDataAptitud.evaluacionAdicional5.toUpperCase() }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ formatDateDDMMYYYY(formData.formDataAptitud.fechaEvaluacionAdicional5) }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ formData.formDataAptitud.resultadosEvaluacionAdicional5 }}</td>
           </tr>
-          <tr v-if="formData.formDataAptitud.evaluacionAdicional6" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(7)">
+          <tr v-else :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }"></tr>
+          <tr v-if="formData.formDataAptitud.evaluacionAdicional6" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(7)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 7 }">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">{{ formData.formDataAptitud.evaluacionAdicional6.toUpperCase() }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ formatDateDDMMYYYY(formData.formDataAptitud.fechaEvaluacionAdicional6) }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ formData.formDataAptitud.resultadosEvaluacionAdicional6 }}</td>
           </tr>
+          <tr v-else :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 7 }"></tr>
         </tbody>
       </table>
     </div>
 
     <!-- Aptitud al Puesto -->
-    <div class="w-full cursor-pointer" @click="goToStep(8)">
+    <div class="w-full cursor-pointer" @click="goToStep(8)" 
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 8 }">
       <table class="table-auto w-full border-collapse border border-gray-200 ">
         <thead>
           <tr class="bg-gray-200">
@@ -394,7 +408,8 @@ const antidopingResumen = computed(() => {
           </tr>
         </thead>
         <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 3.9rem;" @click='goToStep(9)'>
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 3.9rem;" @click='goToStep(9)'
+          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 9 }">
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               Alteraciones a la salud
             </td>
@@ -402,7 +417,8 @@ const antidopingResumen = computed(() => {
               {{ formData.formDataAptitud.alteracionesSalud }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 3.9rem;" @click='goToStep(10)'>
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 3.9rem;" @click='goToStep(10)'
+          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 10 }">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               Resultados
             </td>
@@ -410,7 +426,8 @@ const antidopingResumen = computed(() => {
               {{ formData.formDataAptitud.resultados }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 3.9rem;" @click='goToStep(11)'>
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 3.9rem;" @click='goToStep(11)'
+          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 11 }">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               Medidas Preventivas Específicas
             </td>
