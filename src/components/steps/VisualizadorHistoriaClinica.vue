@@ -77,6 +77,7 @@ const antecedentesLaborales = ref([
       <!-- Fecha y Motivo del Examen -->
       <div
         class="w-full md:w-[calc(60%-1rem)] flex flex-wrap gap-2 justify-start md:justify-end text-sm sm:text-base cursor-pointer"
+        :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }"
         @click="goToStep(1)">
         <p class="flex-1 md:flex-none">Ingreso ( {{ formData.formDataHistoriaClinica.motivoExamen === 'Ingreso' ? 'X' :
           '&nbsp;' }} )</p>
@@ -181,7 +182,10 @@ const antecedentesLaborales = ref([
         </thead>
         <tbody>
           <tr v-for="(item, index) in antecedentesHeredoFamiliares" :key="index"
-            :class="index % 2 === 0 ? 'bg-gray-50 cursor-pointer' : 'bg-white cursor-pointer'"
+            :class="[
+              index % 2 === 0 ? 'bg-gray-50 cursor-pointer' : 'bg-white cursor-pointer',
+              steps.currentStep === item.step ? 'outline outline-2 outline-yellow-500 rounded-md' : ''
+            ]"
             @click="goToStep(item.step)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">{{ item.name }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
@@ -212,7 +216,10 @@ const antecedentesLaborales = ref([
         </thead>
         <tbody>
           <tr v-for="(item, index) in antecedentesPersonalesPatologicos" :key="index"
-            :class="index % 2 === 0 ? 'bg-gray-50 cursor-pointer' : 'bg-white cursor-pointer'"
+            :class="[
+              index % 2 === 0 ? 'bg-gray-50 cursor-pointer' : 'bg-white cursor-pointer',
+              steps.currentStep === item.step ? 'outline outline-2 outline-yellow-500 rounded-md' : ''
+            ]"
             @click="goToStep(item.step)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">{{ item.name }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
@@ -243,7 +250,10 @@ const antecedentesLaborales = ref([
         </thead>
         <tbody>
           <tr v-for="(item, index) in antecedentesPersonalesNoPatologicos" :key="index"
-            :class="index % 2 === 0 ? 'bg-gray-50 cursor-pointer' : 'bg-white cursor-pointer'"
+            :class="[
+              index % 2 === 0 ? 'bg-gray-50 cursor-pointer' : 'bg-white cursor-pointer',
+              steps.currentStep === item.step ? 'outline outline-2 outline-yellow-500 rounded-md' : ''
+            ]"
             @click="goToStep(item.step)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">{{ item.name }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
@@ -274,7 +284,10 @@ const antecedentesLaborales = ref([
         </thead>
         <tbody>
           <tr v-for="(item, index) in antecedentesPersonalesNoPatologicosParte2" :key="index"
-            :class="index % 2 === 0 ? 'bg-gray-50 cursor-pointer' : 'bg-white cursor-pointer'"
+            :class="[
+              index % 2 === 0 ? 'bg-gray-50 cursor-pointer' : 'bg-white cursor-pointer',
+              steps.currentStep === item.step ? 'outline outline-2 outline-yellow-500 rounded-md' : ''
+            ]"
             @click="goToStep(item.step)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">{{ item.name }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
@@ -296,7 +309,7 @@ const antecedentesLaborales = ref([
       <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Gineco Obstétricos</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(28)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 28 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(28)">
             <td class="w-1/2 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               MENARCA
             </td>
@@ -304,7 +317,7 @@ const antecedentesLaborales = ref([
               {{ formData.formDataHistoriaClinica.menarca }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(29)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 29 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(29)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               DURACIÓN PROMEDIO
             </td>
@@ -312,7 +325,7 @@ const antecedentesLaborales = ref([
               {{ formData.formDataHistoriaClinica.duracionPromedio }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(30)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 30 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(30)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               FRECUENCIA
             </td>
@@ -320,7 +333,7 @@ const antecedentesLaborales = ref([
               {{ formData.formDataHistoriaClinica.frecuencia }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(31)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 31 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(31)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               GESTAS
             </td>
@@ -328,7 +341,7 @@ const antecedentesLaborales = ref([
               {{ formData.formDataHistoriaClinica.gestas }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(32)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 32 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(32)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               PARTOS
             </td>
@@ -336,7 +349,7 @@ const antecedentesLaborales = ref([
               {{ formData.formDataHistoriaClinica.partos }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(33)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 33 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(33)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               CESÁREAS
             </td>
@@ -344,7 +357,7 @@ const antecedentesLaborales = ref([
               {{ formData.formDataHistoriaClinica.cesareas }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(34)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 34 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(34)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ABORTOS
             </td>
@@ -361,7 +374,7 @@ const antecedentesLaborales = ref([
       <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Gineco Obstétricos</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(35)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 35 }" @click="goToStep(35)">
             <td class="w-1/2 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               FECHA ULTIMA REGLA
             </td>
@@ -369,7 +382,7 @@ const antecedentesLaborales = ref([
               {{ formData.formDataHistoriaClinica.fechaUltimaRegla }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(36)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 36 }" @click="goToStep(36)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               CANTIDAD DE SANGRE
             </td>
@@ -377,7 +390,7 @@ const antecedentesLaborales = ref([
               {{ formData.formDataHistoriaClinica.cantidadDeSangre }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(37)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 37 }" @click="goToStep(37)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               DOLOR MENSTRUAL
             </td>
@@ -385,7 +398,7 @@ const antecedentesLaborales = ref([
               {{ formData.formDataHistoriaClinica.dolorMenstrual }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(38)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 38 }" @click="goToStep(38)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               EMBARAZO ACTUAL
             </td>
@@ -393,7 +406,7 @@ const antecedentesLaborales = ref([
               {{ formData.formDataHistoriaClinica.embarazoActual }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(39)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 39 }" @click="goToStep(39)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               PLANIFICACIÓN FAMILIAR
             </td>
@@ -401,7 +414,7 @@ const antecedentesLaborales = ref([
               {{ formData.formDataHistoriaClinica.planificacionFamiliar }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(40)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 40 }" @click="goToStep(40)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               VIDA SEXUAL ACTIVA
             </td>
@@ -409,7 +422,7 @@ const antecedentesLaborales = ref([
               {{ formData.formDataHistoriaClinica.vidaSexualActiva }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(41)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 41 }" @click="goToStep(41)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ÚLTIMO PAPANICOLAOU
             </td>
@@ -436,7 +449,12 @@ const antecedentesLaborales = ref([
         </thead>
         <tbody>
           <tr v-for="(item, index) in antecedentesLaborales" :key="index"
-            :class="index % 2 === 0 ? 'bg-gray-50 cursor-pointer' : 'bg-white cursor-pointer'"
+            :class="[
+              index % 2 === 0 ? 'bg-gray-50 cursor-pointer' : 'bg-white cursor-pointer',
+              trabajadores.currentTrabajador.sexo === 'Masculino' ? 
+          (steps.currentStep + 14 === item.step ? 'outline outline-2 outline-yellow-500 rounded-md' : '') :
+          (steps.currentStep === item.step ? 'outline outline-2 outline-yellow-500 rounded-md' : '')
+            ]"
             @click="goToStep(item.step)">
             <td class="w-1/10 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium text-center">{{ item.number }}</td>
             <td class="w-1/5 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
@@ -457,48 +475,48 @@ const antecedentesLaborales = ref([
     </div>
 
     <!-- Antecedentes de Accidentes de Trabajo -->
-    <div class="w-full md:w-[calc(50%-0.5rem)]">
+    <div class="w-full md:w-[calc(50%-0.5rem)]" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-sm': (trabajadores.currentTrabajador.sexo === 'Masculino' ? (steps.currentStep + 14 === 45) : (steps.currentStep === 45)) }">
       <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Laborales</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
-        <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(45)">
-            <td class="w-1/2 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              ACCIDENTES DE TRABAJO
-            </td>
-            <td class="w-1/2 text-xs sm:text-sm px-2 py-0 border border-gray-300">
-              {{ formData.formDataHistoriaClinica.accidenteLaboral }}
-            </td>
-          </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(45)">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              DESCRIPCIÓN ACCIDENTE
-            </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
-              {{ formData.formDataHistoriaClinica.accidenteLaboralEspecificar }}
-            </td>
-          </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(45)">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              DESCRIPCIÓN DEL DAÑO
-            </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
-              {{ formData.formDataHistoriaClinica.descripcionDelDano }}
-            </td>
-          </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(45)">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              SECUELAS
-            </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
-              {{ formData.formDataHistoriaClinica.secuelas }}
-            </td>
-          </tr>
-        </tbody>
+      <tbody>
+        <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(45)">
+        <td class="w-1/2 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+          ACCIDENTES DE TRABAJO
+        </td>
+        <td class="w-1/2 text-xs sm:text-sm px-2 py-0 border border-gray-300">
+          {{ formData.formDataHistoriaClinica.accidenteLaboral }}
+        </td>
+        </tr>
+        <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(45)">
+        <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+          DESCRIPCIÓN ACCIDENTE
+        </td>
+        <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
+          {{ formData.formDataHistoriaClinica.accidenteLaboralEspecificar }}
+        </td>
+        </tr>
+        <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(45)">
+        <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+          DESCRIPCIÓN DEL DAÑO
+        </td>
+        <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
+          {{ formData.formDataHistoriaClinica.descripcionDelDano }}
+        </td>
+        </tr>
+        <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(45)">
+        <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+          SECUELAS
+        </td>
+        <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
+          {{ formData.formDataHistoriaClinica.secuelas }}
+        </td>
+        </tr>
+      </tbody>
       </table>
     </div>
 
     <!-- Resumen de Historia Clínica -->
-    <div class="w-full md:w-[calc(50%-0.5rem)]">
+    <div class="w-full md:w-[calc(50%-0.5rem)]" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-sm': (trabajadores.currentTrabajador.sexo === 'Masculino' ? (steps.currentStep + 14 === 46) : (steps.currentStep === 46)) }">
       <h2 class="text-lg font-semibold mb-1 text-center">Resumen de Historia Clínica</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <tbody>

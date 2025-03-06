@@ -301,7 +301,7 @@ const marcarSinHallazgos = () => {
           <button 
             type="button"
             @click="() => { heredoFamiliaresNegados(); goToStep(12); }"
-            class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
+            class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
             <span>Heredofamiliares Negados</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -310,7 +310,7 @@ const marcarSinHallazgos = () => {
           <button 
             type="button"
             @click="() => { personalesPatologicosNegados(); goToStep(22); }"
-            class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
+            class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
             <span>Patológicos Negados</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -319,7 +319,7 @@ const marcarSinHallazgos = () => {
           <button 
             type="button"
             @click="() => { personalesNoPatologicosNegados(); goToStep(28); }"
-            class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
+            class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-indigo-400 to-indigo-500 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
             <span>No Patológicos Negados</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
