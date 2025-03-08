@@ -1,28 +1,13 @@
 <script setup>
-import { ref, inject } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
-import { convertirFechaISOaYYYYMMDD, formatDateYYYYMMDD } from '@/helpers/dates';
-import { useProveedorSaludStore } from '@/stores/proveedorSalud';
-import VueDatePicker from '@vuepic/vue-datepicker';
-import '@vuepic/vue-datepicker/dist/main.css'
-
-const toast = inject('toast');
+import { convertirFechaISOaYYYYMMDD } from '@/helpers/dates';
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
-const proveedorSaludStore = useProveedorSaludStore();
-
-const fechaNacimiento = ref(trabajadores.currentTrabajador?.fechaNacimiento ? new Date(trabajadores.currentTrabajador.fechaNacimiento) : null);
-const fechaIngreso = ref(trabajadores.currentTrabajador?.fechaIngreso ? new Date(trabajadores.currentTrabajador.fechaIngreso) : null);
-
-const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado;
-const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
-const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
-
-const emit = defineEmits(['closeModal', 'openSubscriptionModal']);
+const emit = defineEmits(['closeModal']);
 
 const nivelesEscolaridad = [
   "Primaria", "Secundaria", "Preparatoria",
@@ -37,29 +22,7 @@ const estadosCiviles = [
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
-  if (!proveedorSaludStore.proveedorSalud) return;
-
-  if (periodoDePruebaFinalizado) {
-    // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
-    if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
-      emit('openSubscriptionModal');
-      return;
-    }
-
-    // Bloquear solo si canceló la suscripción y la fecha de fin de suscripción ya pasó
-    if (estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date() > finDeSuscripcion) {
-      emit('openSubscriptionModal');
-      return;
-    }
-  }
-
   const trabajadorData = {
-    ...data,
-    fechaNacimiento: fechaNacimiento.value ? formatDateYYYYMMDD(fechaNacimiento.value) : null,
-    fechaIngreso: fechaIngreso.value ? formatDateYYYYMMDD(fechaIngreso.value) : null
-  };
-
-  /* const trabajadorData = {
     nombre: data.nombre,
     fechaNacimiento: data.fechaNacimiento,
     sexo: data.sexo,
@@ -72,23 +35,21 @@ const handleSubmit = async (data) => {
     idCentroTrabajo: data.idCentroTrabajo,
     createdBy: data.createdBy, // TODO: Obtener el ID del usuario actual
     updatedBy: data.updatedBy // TODO: Obtener el ID del usuario actual
-  }; */
+  };
 
   try {
     if (trabajadores.currentTrabajador?._id) {
       // Actualizar Trabajador
       await trabajadores.updateTrabajador(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId, trabajadores.currentTrabajador._id, trabajadorData);
-      toast.open({ message: 'Trabajador actualizado con éxito' });
     } else {
       // Registrar Trabajador
       await trabajadores.createTrabajador(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId, trabajadorData);
-      toast.open({ message: 'Trabajador creado con éxito' });
     }
     emit('closeModal');
     trabajadores.fetchTrabajadores(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId);
   } catch (error) {
-    console.log('Error al crear o actualizar al trabajador:', error);
-    toast.open({ message: 'Hubo un error, por favor intente nuevamente.', type: 'error' });
+    console.error('Error al crear o actualizar al trabajador:', error);
+    alert('Hubo un error al crear o actualizar al trabajador, por favor intente nuevamente.');
   }
 };
 
@@ -132,13 +93,9 @@ const closeModal = () => {
                   :value="trabajadores.currentTrabajador?.nombre || ''" />
               </div>
 
-              <div>
-                <label class="block mt-4 font-medium text-lg text-gray-700">Fecha de Nacimiento*</label>
-                <VueDatePicker v-model="fechaNacimiento" locale="es" cancelText="Cancelar" selectText="Seleccionar" format="dd/MM/yyyy" required text-input :enable-time-picker="false" :teleport="true" placeholder="Selecciona Fecha" class="w-full p-1.5 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 mt-1"/>
-              </div>
-              <!-- <FormKit type="date" label="Fecha de Nacimiento*" name="fechaNacimiento" validation="required"
+              <FormKit type="date" label="Fecha de Nacimiento*" name="fechaNacimiento" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
-                :value="convertirFechaISOaYYYYMMDD(trabajadores.currentTrabajador?.fechaNacimiento) || ''" /> -->
+                :value="convertirFechaISOaYYYYMMDD(trabajadores.currentTrabajador?.fechaNacimiento) || ''" />
               <FormKit type="select" label="Sexo*" name="sexo" placeholder="Seleccione un sexo"
                 :options="['Masculino', 'Femenino']" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
@@ -150,13 +107,9 @@ const closeModal = () => {
               <FormKit type="text" label="Puesto*" name="puesto" placeholder="Puesto Laboral" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                 :value="trabajadores.currentTrabajador?.puesto || ''" />
-              <div>
-                <label class="block mt-4 font-medium text-lg text-gray-700">Fecha de Ingreso*</label>
-                <VueDatePicker v-model="fechaIngreso" locale="es" cancelText="Cancelar" selectText="Seleccionar" format="dd/MM/yyyy" required text-input :enable-time-picker="false" :teleport="true" placeholder="Selecciona Fecha" class="w-full p-1.5 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 mt-1"/>
-              </div>
-              <!-- <FormKit type="date" label="Fecha de Ingreso*" name="fechaIngreso" validation="required"
-                :validation-messages="{ required: 'Este campo es obligatorio' }" title="Fecha de ingreso a la empresa"
-                :value="convertirFechaISOaYYYYMMDD(trabajadores.currentTrabajador?.fechaIngreso) || ''" /> -->
+              <FormKit type="date" label="Fecha de Ingreso*" name="fechaIngreso" validation="required"
+                :validation-messages="{ required: 'Este campo es obligatorio' }"
+                :value="convertirFechaISOaYYYYMMDD(trabajadores.currentTrabajador?.fechaIngreso) || ''" />
               <FormKit type="text" label="Teléfono" name="telefono" placeholder="10 dígitos"
                 validation="optional|length:10" :validation-messages="{ length: 'El teléfono debe tener 10 dígitos' }"
                 :value="trabajadores.currentTrabajador?.telefono || ''" />
@@ -208,15 +161,5 @@ const closeModal = () => {
 
 .fade-slow-leave-active {
   transition-delay: 250ms;
-}
-
-.dp__theme_light {
-    --dp-background-color: #fff;
-    --dp-text-color: #212121;
-    --dp-hover-color: #f3f3f3;
-    --dp-hover-text-color: #212121;
-    --dp-hover-icon-color: #959595;
-    --dp-primary-color: #1976d2;
-    --dp-primary-disabled-color: #6bacea;
 }
 </style>
