@@ -355,45 +355,69 @@ const antidopingResumen = computed(() => {
         <tbody>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer">
             <td class="text-sm sm:text-base text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataAptitud.aptitudPuesto === 'Apto Sin Restricciones' ? 'XX' : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' }}
+              {{ formData.formDataAptitud.aptitudPuesto === 'Apto Sin Restricciones' ? '' : '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' }}
+              <div v-if="formData.formDataAptitud.aptitudPuesto === 'Apto Sin Restricciones'" 
+                class="ml-2 w-3 h-3 rounded-full bg-green-500">
+              </div>
             </td>
-            <td class="text-sm sm:text-base text-left px-2 py-0 border border-gray-300">
+            <td class="text-sm sm:text-base text-left px-2 py-0 border border-gray-300"
+              :class="{'text-green-600 font-medium': formData.formDataAptitud.aptitudPuesto === 'Apto Sin Restricciones'}">
               Apto sin restricciones. No tiene impedimentos para el puesto al que aspira o desempeña.
             </td>
           </tr>
+
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer">
             <td class="text-sm sm:text-base text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataAptitud.aptitudPuesto === 'Apto Con Precaución' ? 'XX' : '' }}
+              {{ formData.formDataAptitud.aptitudPuesto === 'Apto Con Precaución' ? '' : '' }}
+              <div v-if="formData.formDataAptitud.aptitudPuesto === 'Apto Con Precaución'" 
+                class="ml-2 w-3 h-3 rounded-full bg-amber-500">
+              </div>
             </td>
-            <td class="text-sm sm:text-base text-left px-2 py-0 border border-gray-300">
+            <td class="text-sm sm:text-base text-left px-2 py-0 border border-gray-300"
+              :class="{'text-amber-600 font-medium': formData.formDataAptitud.aptitudPuesto === 'Apto Con Precaución'}">
               Apto con precaución. Requiere vigilancia médica más frecuente.
             </td>
           </tr>
+
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer">
             <td class="text-sm sm:text-base text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataAptitud.aptitudPuesto === 'Apto Con Restricciones' ? 'XX' : '' }}
+              {{ formData.formDataAptitud.aptitudPuesto === 'Apto Con Restricciones' ? '' : '' }}
+              <div v-if="formData.formDataAptitud.aptitudPuesto === 'Apto Con Restricciones'" 
+                class="ml-2 w-3 h-3 rounded-full bg-orange-500">
+              </div>
             </td>
-            <td class="text-sm sm:text-base text-left px-2 py-0 border border-gray-300">
+            <td class="text-sm sm:text-base text-left px-2 py-0 border border-gray-300"
+              :class="{'text-orange-600 font-medium': formData.formDataAptitud.aptitudPuesto === 'Apto Con Restricciones'}">
               Apto con restricciones. Requiere adaptaciones razonables para asegurar la seguridad y salud.
             </td>
           </tr>
+
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer">
             <td class="text-sm sm:text-base text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataAptitud.aptitudPuesto === 'No Apto' ? 'XX' : '' }}
+              {{ formData.formDataAptitud.aptitudPuesto === 'No Apto' ? '' : '' }}
+              <div v-if="formData.formDataAptitud.aptitudPuesto === 'No Apto'" 
+                class="ml-2 w-3 h-3 rounded-full bg-red-500">
+              </div>
             </td>
-            <td class="text-sm sm:text-base text-left px-2 py-0 border border-gray-300">
+            <td class="text-sm sm:text-base text-left px-2 py-0 border border-gray-300"
+              :class="{'text-red-600 font-medium': formData.formDataAptitud.aptitudPuesto === 'No Apto'}">
               No apto. No está permitido el desempeño del puesto al que aspira.
             </td>
           </tr>
+
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer">
             <td class="text-sm sm:text-base text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataAptitud.aptitudPuesto === 'Evaluación No Completada' ? 'XX' : '' }}
+              {{ formData.formDataAptitud.aptitudPuesto === 'Evaluación No Completada' ? '' : '' }}
+              <div v-if="formData.formDataAptitud.aptitudPuesto === 'Evaluación No Completada'" 
+                class="ml-2 w-3 h-3 rounded-full bg-gray-700">
+              </div>
             </td>
             <td class="text-sm sm:text-base text-left px-2 py-0 border border-gray-300">
               Evaluación no completada. Para concluir, requiere evaluaciones adicionales o tratamiento médico.
             </td>
           </tr>
         </tbody>
+
       </table>
     </div>
 
