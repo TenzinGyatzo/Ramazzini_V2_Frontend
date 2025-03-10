@@ -29,9 +29,9 @@ const router = useRouter();
 
 // Planes disponibles
 const plans = [
-  { id: 1, name: "Básico", price: 399, users: 1, companies: 10, workers: 200, maxUsers: 4, maxCompanies: 40, maxWorkers: 300, nextPlanPrice: 1749 },
-  { id: 2, name: "Profesional", price: 1749, users: 5, companies: 50, workers: 500, maxUsers: 10, maxCompanies: 100, maxWorkers: 700, nextPlanPrice: 4499 },
-  { id: 3, name: "Empresarial", price: 4499, users: 15, companies: 150, workers: 1200, maxUsers: 9999, maxCompanies: 9999, maxWorkers: 9999 },
+  { id: 1, name: "Básico", price: 399, users: 1, companies: 10, workers: 100, maxUsers: 4, maxCompanies: 40, maxWorkers: 400, nextPlanPrice: 1749 },
+  { id: 2, name: "Profesional", price: 1749, users: 5, companies: 50, workers: 500, maxUsers: 10, maxCompanies: 100, maxWorkers: 1000, nextPlanPrice: 4499 },
+  { id: 3, name: "Empresarial", price: 4499, users: 15, companies: 150, workers: 1500, maxUsers: 9999, maxCompanies: 9999, maxWorkers: 9999 },
 ];
 
 // Variables de selección de plan y add-ons
