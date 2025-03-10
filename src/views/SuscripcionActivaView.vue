@@ -20,6 +20,8 @@ const toast = inject('toast');
 const suscripcionActual = ref(null);
 const usuariosCreados = ref(0);
 const empresasCreadas = ref(0);
+const empresaConMasTrabajadores = ref('');
+const trabajadoresCreados = ref(0);
 const showCancelModal = ref(false);
 const isCancelling = ref(false); // Estado para manejar la carga
 
@@ -52,6 +54,14 @@ const fetchData = async () => {
   await empresasStore.fetchEmpresas(proveedorSalud.value._id);
   empresasCreadas.value = empresasStore.empresas.length;
 
+  // Obtener empresa con mayor número de trabajadores registrados
+  const top3Empresas = await proveedorSaludStore.getTopEmpresasByWorkers();
+  if (top3Empresas?.length > 0) {
+    empresaConMasTrabajadores.value = top3Empresas[0].nombreComercial;
+    trabajadoresCreados.value = top3Empresas[0].totalTrabajadores;
+  } else {
+    console.log("No se encontraron empresas con trabajadores registrados.");
+  }
 };
 
 onMounted(async () => {
@@ -85,6 +95,12 @@ const totalUsuariosAdicionales = computed(() => {
 const totalEmpresasAdicionales = computed(() => {
   return proveedorSalud.value?.addOns?.reduce((total, addon) => {
     return addon.tipo === 'empresas_extra' ? total + addon.cantidad : total;
+  }, 0) || 0;
+});
+
+const totalTrabajadoresAdicionales = computed(() => {
+  return proveedorSalud.value?.addOns?.reduce((total, addon) => {
+    return addon.tipo === 'trabajadores_extra' ? total + addon.cantidad : total;
   }, 0) || 0;
 });
 
@@ -138,6 +154,10 @@ const porcentajeUsuarios = computed(() => {
 
 const porcentajeEmpresas = computed(() => {
   return calcularPorcentaje(empresasCreadas.value, proveedorSalud.value.maxEmpresasPermitidas);
+});
+
+const porcentajeTrabajadores = computed(() => {
+  return calcularPorcentaje(trabajadoresCreados.value, proveedorSalud.value.maxTrabajadoresPermitidos);
 });
 
 const cancelSubscription = async () => {
@@ -195,7 +215,7 @@ const suscripcionCanceladaYActiva = computed(() => {
   
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Sección de Suscripción -->
-        <div class="bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
+        <div class="bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out space-y-4">
           <h3 class="text-2xl font-semibold text-gray-800 mb-4">{{ suscripcionActual?.reason || 'Sin plan activo' }}</h3>
           <!-- Mensaje de suscripción cancelada pero activa -->
           <div v-if="suscripcionCanceladaYActiva" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded">
@@ -203,16 +223,17 @@ const suscripcionCanceladaYActiva = computed(() => {
               Has cancelado tu suscripción, pero tendrás acceso a los beneficios hasta el <strong>{{ formatDate(proveedorSalud.finDeSuscripcion) }}</strong>.
             </p>
           </div>
-          <p v-if="totalUsuariosAdicionales || totalEmpresasAdicionales" class="text-gray-600">
+          <p v-if="totalUsuariosAdicionales || totalEmpresasAdicionales || totalTrabajadoresAdicionales" class="text-gray-600">
             <strong>➕ Adicionales: </strong> 
-            <span v-if="totalUsuariosAdicionales">
-                {{ totalUsuariosAdicionales }} {{ totalUsuariosAdicionales === 1 ? 'Usuario' : 'Usuarios' }}
-            </span>
-            <span v-if="totalUsuariosAdicionales && totalEmpresasAdicionales"> · </span>
-            <span v-if="totalEmpresasAdicionales">
-                {{ totalEmpresasAdicionales }} Empresas
+            <span>
+              {{ totalUsuariosAdicionales ? `${totalUsuariosAdicionales} ${totalUsuariosAdicionales === 1 ? 'Usuario' : 'Usuarios'}` : '' }}
+              {{ totalUsuariosAdicionales && (totalEmpresasAdicionales || totalTrabajadoresAdicionales) ? ' · ' : '' }}
+              {{ totalEmpresasAdicionales ? `${totalEmpresasAdicionales} ${totalEmpresasAdicionales === 1 ? 'Empresa' : 'Empresas'}` : '' }}
+              {{ totalEmpresasAdicionales && totalTrabajadoresAdicionales ? ' · ' : '' }}
+              {{ totalTrabajadoresAdicionales ? `${totalTrabajadoresAdicionales} ${totalTrabajadoresAdicionales === 1 ? 'Trabajador' : 'Trabajadores'}` : '' }}
             </span>
           </p>
+
           <p v-else class="text-gray-600"><strong>➕ Adicionales:</strong> Sin adicionales contratados</p>
           <!-- <p class="text-gray-600"><strong>📅 Inicio de suscripción:</strong> {{ suscripcionActual ? formatDate(suscripcionActual.date_created) : 'No disponible' }}</p> -->
           <p class="text-gray-600"><strong>💰 Pago mensual:</strong> {{ suscripcionActual?.auto_recurring?.transaction_amount ? `$${formatCurrency(suscripcionActual.auto_recurring.transaction_amount)} MXN` : 'Sin plan activo' }}</p>
@@ -245,7 +266,7 @@ const suscripcionCanceladaYActiva = computed(() => {
           
           <!-- Uso de Usuarios -->
           <div>
-            <p class="text-gray-600"><strong>👥 Usuarios registrados:</strong> {{ usuariosCreados }} de {{ proveedorSalud.maxUsuariosPermitidos }}</p>
+            <p class="text-gray-600"><strong>👥 Usuarios registrados:</strong> {{ usuariosCreados }} de {{ proveedorSalud.maxUsuariosPermitidos }} permitidos</p>
             <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
               <div 
                 :style="{ width: porcentajeUsuarios + '%' }" 
@@ -269,7 +290,7 @@ const suscripcionCanceladaYActiva = computed(() => {
   
           <!-- Uso de Empresas -->
           <div class="mt-4">
-            <p class="text-gray-600"><strong>🏢 Empresas registradas:</strong> {{ empresasCreadas }} de {{ proveedorSalud.maxEmpresasPermitidas }}</p>
+            <p class="text-gray-600"><strong>🏢 Empresas registradas:</strong> {{ empresasCreadas }} de {{ proveedorSalud.maxEmpresasPermitidas }} permitidas</p>
             <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
               <div 
                 :style="{ width: porcentajeEmpresas + '%' }" 
@@ -287,6 +308,27 @@ const suscripcionCanceladaYActiva = computed(() => {
               <a @click="router.push('/suscripcion')" class="text-sky-600 underline cursor-pointer">Mejora tu plan</a>.
             </p>
           </div>
+
+          <!-- Uso de Trabajadores -->
+          <div class="mt-4">
+            <p class="text-gray-600"><strong>🏭 Empresa con más trabajadores:</strong> <br> {{ empresaConMasTrabajadores }} → {{ trabajadoresCreados }} de <strong>{{ proveedorSalud.maxTrabajadoresPermitidos }}</strong> permitidos</p>
+            <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
+              <div 
+                :style="{ width: porcentajeTrabajadores + '%' }" 
+                class="h-4 rounded-full absolute top-0 left-0 transition-all duration-500"
+                :class="{
+                  'bg-gradient-to-r from-cyan-500 to-cyan-400': trabajadoresCreados < proveedorSalud.maxTrabajadoresPermitidos,
+                  'bg-gradient-to-r from-red-500 to-red-400': trabajadoresCreados >= proveedorSalud.maxTrabajadoresPermitidos
+                }"></div>
+                <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs font-semibold" :class="porcentajeTrabajadores <= 55 ? 'text-gray-600' : 'text-white'">
+                {{ porcentajeTrabajadores }}%
+                </span>
+            </div>
+            <p v-if="porcentajeTrabajadores >= 80 && porcentajeTrabajadores < 100" class="text-yellow-600 text-sm mt-2">⚠️ Estás cerca del límite de empresas. Considera actualizar tu plan.</p>
+            <p v-if="trabajadoresCreados >= proveedorSalud.maxTrabajadoresPermitidos" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de trabajadores.
+              <a @click="router.push('/suscripcion')" class="text-sky-600 underline cursor-pointer">Mejora tu plan</a>.
+            </p>
+          </div>
         </div>
       </div>
       <!-- Información de Cuenta -->
@@ -297,6 +339,7 @@ const suscripcionCanceladaYActiva = computed(() => {
         <p class="text-gray-600"><strong>📧 Correo:</strong> {{ proveedorSalud.correoElectronico || 'No disponible' }}</p>
         <p class="text-gray-600"><strong>👥 Usuarios:</strong> {{ `${proveedorSalud.maxUsuariosPermitidos} disponibles` || 'No disponible' }}</p>
         <p class="text-gray-600"><strong>🏢 Empresas:</strong> {{ `${proveedorSalud.maxEmpresasPermitidas} disponibles` || 'No disponible' }}</p>
+        <p class="text-gray-600"><strong>🏭 Trabajadores por Empresa:</strong> {{ `${proveedorSalud.maxTrabajadoresPermitidos} disponibles` || 'No disponible' }}</p>
         <p class="text-gray-600"><strong>⏳ Periodo Gratuito:</strong> {{ periodoGratuito }}</p>
       </div>
 

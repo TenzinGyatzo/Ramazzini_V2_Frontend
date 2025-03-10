@@ -135,6 +135,19 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         }
     }
 
+    async function getTopEmpresasByWorkers() {
+        try {
+          loading.value = true;
+          const { data } = await ProveedorSaludAPI.getTopEmpresasByWorkers(proveedorSalud.value?._id || '');
+          return (data || []).sort((a, b) => b.totalTrabajadores - a.totalTrabajadores);
+        } catch (error) {
+          console.log(error);
+          return [];
+        } finally {
+          loading.value = false;
+        }
+      }  
+
     return {
         proveedorSalud,
         loading,
@@ -144,6 +157,7 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         updateProveedorById,
         removeProveedorById,
         verificarPeriodoDePrueba,
-        verificarFinSuscripcion
+        verificarFinSuscripcion,
+        getTopEmpresasByWorkers
     };
 });

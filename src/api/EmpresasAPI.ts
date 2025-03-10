@@ -28,4 +28,5 @@ export default {
   deleteEmpresaById(empresaId: string) {
     return api.delete(`/eliminar-empresa/${empresaId}`);
   },
+
 };

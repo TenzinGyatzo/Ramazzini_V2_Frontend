@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import EmpresasAPI from "../api/EmpresasAPI";
+import proveedor from "@/lib/axiosProveedor";
 
 interface Empresa {
   _id: string;

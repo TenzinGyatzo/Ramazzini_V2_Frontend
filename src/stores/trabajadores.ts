@@ -57,6 +57,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
         centroTrabajoId
       );
       trabajadores.value = data;
+      return data;
     } catch (error) {
       // console.log(error);
       throw error;

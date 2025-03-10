@@ -1,13 +1,33 @@
 <script setup>
+import { onMounted } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { convertirFechaISOaYYYYMMDD } from '@/helpers/dates';
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
-const emit = defineEmits(['closeModal']);
+const proveedorSaludStore = useProveedorSaludStore();
+const emit = defineEmits(['closeModal', 'openSubscriptionModal'])
+
+const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado;
+const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
+const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
+const maxTrabajadoresPermitidos = proveedorSaludStore.proveedorSalud?.maxTrabajadoresPermitidos;
+let empresaConMasTrabajadores = ""; // Nombre de la empresa con más trabajadores
+let trabajadoresCreados = 0;
+
+onMounted(async () => {
+  const top3Empresas = await proveedorSaludStore.getTopEmpresasByWorkers();
+  if (top3Empresas?.length > 0) {
+    empresaConMasTrabajadores = top3Empresas[0].nombreComercial;
+    trabajadoresCreados = top3Empresas[0].totalTrabajadores;
+  } else {
+    console.log("No se encontraron empresas con trabajadores registrados.");
+  }
+});
 
 const nivelesEscolaridad = [
   "Primaria", "Secundaria", "Preparatoria",
@@ -22,6 +42,27 @@ const estadosCiviles = [
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
+  if (!proveedorSaludStore.proveedorSalud) return;
+
+  if (periodoDePruebaFinalizado) {
+    // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
+    if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
+      emit('openSubscriptionModal');
+      return;
+    }
+
+    // Bloquear solo si canceló la suscripción y la fecha de fin de suscripción ya pasó
+    if (estadoSuscripcion === 'cancelled' && finDeSuscripcion && new Date() > finDeSuscripcion) {
+      emit('openSubscriptionModal');
+      return;
+    }
+  }
+
+  if(trabajadoresCreados >= maxTrabajadoresPermitidos) {
+    emit('openSubscriptionModal');
+    return;
+  }
+
   const trabajadorData = {
     nombre: data.nombre,
     fechaNacimiento: data.fechaNacimiento,

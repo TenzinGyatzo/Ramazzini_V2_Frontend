@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject } from 'vue';	
+import { ref, inject, onMounted } from 'vue';	
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -16,6 +16,19 @@ const emit = defineEmits(['closeModal', 'openSubscriptionModal']);
 const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado;
 const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
 const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
+const maxTrabajadoresPermitidos = proveedorSaludStore.proveedorSalud?.maxTrabajadoresPermitidos;
+let empresaConMasTrabajadores = ""; // Nombre de la empresa con más trabajadores
+let trabajadoresCreados = 0;
+
+onMounted(async () => {
+  const top3Empresas = await proveedorSaludStore.getTopEmpresasByWorkers();
+  if (top3Empresas?.length > 0) {
+    empresaConMasTrabajadores = top3Empresas[0].nombreComercial;
+    trabajadoresCreados = top3Empresas[0].totalTrabajadores;
+  } else {
+    console.log("No se encontraron empresas con trabajadores registrados.");
+  }
+});
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
@@ -33,6 +46,11 @@ const handleSubmit = async (data) => {
       emit('openSubscriptionModal');
       return;
     }
+  }
+
+  if(trabajadoresCreados >= maxTrabajadoresPermitidos) {
+    emit('openSubscriptionModal');
+    return;
   }
   
   const fileInput = data.file[0].file;

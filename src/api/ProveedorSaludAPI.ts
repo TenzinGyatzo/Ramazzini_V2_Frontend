@@ -23,5 +23,9 @@ export default {
 
     verificarFinSuscripcion(proveedorId: string) {
         return proveedor.get(`verificar-fin-suscripcion/${proveedorId}`);
-    }
+    },
+
+    getTopEmpresasByWorkers(proveedorId: string) {
+    return proveedor.get(`/top-empresas-por-trabajadores/${proveedorId}`);
+    },
 }

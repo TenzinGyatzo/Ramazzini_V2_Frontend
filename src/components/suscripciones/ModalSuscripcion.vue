@@ -3,9 +3,11 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '@/stores/user';
 import { useEmpresasStore } from '@/stores/empresas';	
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
 const userStore = useUserStore();
 const empresas = useEmpresasStore();
+const proveedorSaludStore = useProveedorSaludStore();
 const router = useRouter();
 const route = useRoute();
 
@@ -21,6 +23,8 @@ const user = ref(
 
 const usuariosCreados = ref(0);
 const empresasCreadas = ref(0);
+const empresaConMasTrabajadores = ref(""); // Nombre de la empresa con más trabajadores
+const trabajadoresCreados = ref(0);
 const vistaActual = ref(route.name);
   
 onMounted(async () => {
@@ -33,8 +37,16 @@ onMounted(async () => {
   // Determinar cuántas empresas ha creado el proveedor de salud
   await empresas.fetchEmpresas(user.value.idProveedorSalud);
   empresasCreadas.value = empresas.empresas.length;
-});
 
+  // Determinar cuál es la empresa con más trabajadores
+  const top3Empresas = await proveedorSaludStore.getTopEmpresasByWorkers();
+  if (top3Empresas?.length > 0) {
+    empresaConMasTrabajadores.value = top3Empresas[0].nombreComercial; // El primero del array es el que tiene más trabajadores
+    trabajadoresCreados.value = top3Empresas[0].totalTrabajadores; // El primero del array es el que tiene más trabajadores
+  } else {
+    console.log("No se encontraron empresas con trabajadores registrados.");
+  }
+});
 
 const proveedorSalud = ref(
   JSON.parse(localStorage.getItem('proveedorSalud') || 'null') // Recuperar usuario guardado o establecer null si no existe
@@ -42,6 +54,7 @@ const proveedorSalud = ref(
 
 const maxUsuariosPermitidos = proveedorSalud.value?.maxUsuariosPermitidos;
 const maxEmpresasPermitidas = proveedorSalud.value?.maxEmpresasPermitidas;
+const maxTrabajadoresPermitidos = proveedorSalud.value?.maxTrabajadoresPermitidos;
 const periodoDePruebaFinalizado = proveedorSalud.value?.periodoDePruebaFinalizado; // true or false
 const estadoSuscripcion = proveedorSalud.value?.estadoSuscripcion; // authorized, inactive, cancelled
 const finDeSuscripcion = proveedorSalud.value?.finDeSuscripcion
@@ -82,6 +95,7 @@ const modalContent = computed(() => {
     };
   }
 
+  
   if (periodoDePruebaFinalizado && !estadoSuscripcion) {
     return {
       title: 'Tu prueba gratuita ha finalizado',
@@ -96,17 +110,17 @@ const modalContent = computed(() => {
       action: () => router.push({ name: 'subscription' }),
     };
   }
-
+  
   if (periodoDePruebaFinalizado && estadoSuscripcion === 'cancelled' && (!finDeSuscripcion || new Date(finDeSuscripcion) <= new Date())) {
     return {
       title: 'Tu suscripción ha finalizado',
       message: `Tu acceso expiró el ${finDeSuscripcion ? finDeSuscripcion.toLocaleDateString() : 'anteriormente'}.`,
-      price: 'Sigue aprovechando todas las herramientas que ofrecemos por solo $399/mes.',
+      price: 'Reactiva tu acceso y vuelve a disfrutar de todas nuestras herramientas. Tenemos planes que se adaptan a tus necesidades.',
       buttonText: 'Suscríbete ahora',
       action: () => router.push({ name: 'subscription' }),
     };
   }
-
+  
   if (periodoDePruebaFinalizado && estadoSuscripcion === 'inactive') {
     return {
       title: 'Tu pago no fue procesado',
@@ -114,6 +128,22 @@ const modalContent = computed(() => {
       price: 'Actualiza tu método de pago para seguir usando todas nuestras herramientas sin interrupciones.',
       buttonText: 'Actualizar pago',
       action: () => router.push({ name: 'subscription' }),
+    };
+  }
+  
+  if (vistaActual.value === 'trabajadores' && trabajadoresCreados.value >= maxTrabajadoresPermitidos) {
+    return {
+      title: 'Has alcanzado el límite de trabajadores en esta empresa',
+      message: `Tu plan actual permite hasta ${maxTrabajadoresPermitidos} trabajadores por empresa.`,
+      price: 'Actualiza tu plan para extender este límite y seguir creciendo.',
+      benefits: [
+        'Gestiona más trabajadores por empresa',
+        'Mejora el seguimiento de salud ocupacional',
+        'Obtén reportes más completos del personal'
+      ],
+      buttonText: 'Actualizar plan',
+      action: () => router.push({ name: 'subscription' }),
+      show: true
     };
   }
 
