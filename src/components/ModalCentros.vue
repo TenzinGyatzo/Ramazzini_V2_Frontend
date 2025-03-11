@@ -87,22 +87,18 @@ const closeModal = () => {
               placeholder="Nombre del centro de trabajo o proyecto" validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio' }"
               :value="centrosTrabajo.currentCentroTrabajo?.nombreCentro || ''" />
-            <FormKit type="text" label="Dirección*" name="direccionCentro" placeholder="Calle, número y colonia"
-              validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
+            <FormKit type="text" label="Dirección" name="direccionCentro" placeholder="Calle, número y colonia"
               :value="centrosTrabajo.currentCentroTrabajo?.direccionCentro || ''" />
-            <FormKit type="text" label="Código Postal*" name="codigoPostal" placeholder="5 dígitos"
-            validation="required|postalCodeValidation" :validation-messages="{
-                  required: 'Este campo es obligatorio',
+            <FormKit type="text" label="Código Postal" name="codigoPostal" placeholder="5 dígitos"
+            validation="postalCodeValidation" :validation-messages="{
                   postalCodeValidation: 'El código postal debe tener 5 dígitos.',
                 }"
               :value="centrosTrabajo.currentCentroTrabajo?.codigoPostal || ''" />
-            <FormKit type="select" label="Estado*" name="estado" placeholder="Seleccione un estado"
-              :options="estadosDeMexico" validation="required"
-              :validation-messages="{ required: 'Este campo es obligatorio' }"
+            <FormKit type="select" label="Estado" name="estado" placeholder="Seleccione un estado"
+              :options="estadosDeMexico" 
               :value="centrosTrabajo.currentCentroTrabajo?.estado || ''" />
 
-            <FormKit type="text" label="Municipio*" name="municipio" placeholder="Ej. Ahome" validation="required"
-              :validation-messages="{ required: 'Este campo es obligatorio' }"
+            <FormKit type="text" label="Municipio" name="municipio" placeholder="Ej. Ahome"
               :value="centrosTrabajo.currentCentroTrabajo?.municipio || ''" />
 
             <FormKit type="hidden" name="idEmpresa" :value="empresas.currentEmpresaId" />

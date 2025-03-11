@@ -62,12 +62,6 @@ onMounted(async () => {
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
 
-  // Validar si se ha alcanzado el límite de empresas
-  if (empresasCreadas >= maxEmpresasPermitidas) {
-    emit('openSubscriptionModal');
-    return;
-  }
-
   const formData = new FormData();
 
   // Añadir los datos del formulario al FormData 
@@ -143,21 +137,17 @@ const closeModal = () => {
               placeholder="Nombre comercial de la empresa" validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio' }"
               :value="empresas.currentEmpresa?.nombreComercial || ''" />
-            <FormKit type="text" label="Razón Social*" name="razonSocial" placeholder="Razón social de la empresa"
-              validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
+            <FormKit type="text" label="Razón Social" name="razonSocial" placeholder="Razón social de la empresa"
               :value="empresas.currentEmpresa?.razonSocial || ''" />
-            <FormKit type="text" label="RFC*" name="RFC" placeholder="RFC" validation="required|rfcValidation" :validation-messages="{
-                  required: 'Este campo es obligatorio',
+            <FormKit type="text" label="RFC" name="RFC" placeholder="RFC" validation="rfcValidation" :validation-messages="{
                   rfcValidation: 'El RFC ingresado no es válido.',
                 }" :value="empresas.currentEmpresa?.RFC || ''" />
-            <FormKit type="text" label="Giro de la empresa*" name="giroDeEmpresa" placeholder="Giro de la Empresa"
-              validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
+            <FormKit type="text" label="Giro de la empresa" name="giroDeEmpresa" placeholder="Giro de la Empresa"
               :value="empresas.currentEmpresa?.giroDeEmpresa || ''" />
 
             <!-- Input del archivo con v-model y evento change -->
-            <FormKit type="file" label="Logotipo*" name="logotipoEmpresa" accept=".png, .jpg, .jpeg, .svg"
-              multiple="false" :validation="!empresas.currentEmpresa?._id ? 'required' : ''"
-              :validation-messages="{ required: 'Este campo es obligatorio' }" @change="handleFileChange" />
+            <FormKit type="file" label="Logotipo" name="logotipoEmpresa" accept=".png, .jpg, .jpeg, .svg"
+              multiple="false" @change="handleFileChange" />
 
             <!-- Mostrar la vista previa del logotipo -->
             <div class="flex flex-row justify-center items-center gap-4">

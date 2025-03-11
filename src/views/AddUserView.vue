@@ -38,11 +38,6 @@ const formDataUser = reactive({
 });
 
 const handleSubmit = async () => {
-  if (usuariosCreados >= maxUsuariosPermitidos) {
-    showSubscriptionModal.value = true;
-    return;
-  }
-
   try {
     const resultado = await userStore.registerUser(formDataUser);
 

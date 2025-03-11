@@ -23,6 +23,10 @@ const user = ref(
     JSON.parse(localStorage.getItem('user')) || null // Recuperar usuario guardado o establecer null si no existe
 );
 
+const proveedorSalud = ref (
+    JSON.parse(localStorage.getItem('proveedorSalud')) || null
+);
+
 onMounted(() => {
     // Escucha los cambios en el usuario para cargar proveedor de salud
     watch(
@@ -188,7 +192,7 @@ const goToStep = (stepNumber) => {
      
      <div class="w-full mb-4">
         <p class="text-justify">
-            Expido el presente certificado médico a petición <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'del' : 'de la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> para los usos legales a que haya lugar, en la ciudad de Los Mochis, Sinaloa, en la fecha mencionada al inicio de este certificado.
+            Expido el presente certificado médico a petición <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'del' : 'de la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> para los usos legales a que haya lugar, en el municipio de {{ proveedorSalud.municipio }}, {{ proveedorSalud.estado }}, en la fecha mencionada al inicio de este certificado.
         </p>
      </div>
 

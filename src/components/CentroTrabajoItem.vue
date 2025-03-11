@@ -20,6 +20,16 @@ defineEmits<{
     (event: 'editarCentro', empresa: Empresa, centro: CentroTrabajo): void;
     (event: 'eliminarCentro', id: string, nombreCentro: string): void;
 }>();
+
+// Método para formatear la dirección
+const formatDireccion = (centro: CentroTrabajo) => {
+    const parts = [];
+    if (centro.direccionCentro) parts.push(centro.direccionCentro);
+    if (centro.codigoPostal) parts.push(centro.codigoPostal);
+    if (centro.municipio) parts.push(centro.municipio);
+    if (centro.estado) parts.push(centro.estado);
+    return parts.join(', ');
+};
 </script>
 
 <template>
@@ -29,8 +39,13 @@ defineEmits<{
                 class="border-shadow w-full col-span-1 2xl:col-span-9 text-left rounded-lg p-5 2xl:p-7 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 shadow-md hover:shadow-xl bg-gray-50 hover:bg-gray-100"
                 @click="router.push({ name: 'trabajadores', params: { idEmpresa: empresa._id, idCentroTrabajo: centro._id } })">
                 <p class="text-3xl font-bold leading-7 mb-2">{{ centro.nombreCentro }}</p>
-                <p class="text-base font-light leading-5">
-                    {{ centro.direccionCentro }}, {{ centro.codigoPostal }}, {{ centro.municipio }}, {{ centro.estado }}
+                <!-- Verificar si hay datos en la dirección -->
+                <p v-if="formatDireccion(centro)" class="text-base font-light leading-5">
+                    {{ formatDireccion(centro) }}
+                </p>
+                <!-- Mostrar placeholder si no hay datos -->
+                <p v-else class="text-base font-light leading-5 italic text-gray-400">
+                    Dirección no registrada
                 </p>
             </button>
             <div

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, inject } from 'vue';
+import { ref, onMounted, watch, inject, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
@@ -25,6 +25,7 @@ const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
+console.log("documentos", documentos.documentsByYear);
 const formData = useFormDataStore();
 const proveedorSaludStore = useProveedorSaludStore();
 
@@ -53,7 +54,6 @@ onMounted(async () => {
     estadoSuscripcion.value = proveedorSaludStore.proveedorSalud?.estadoSuscripcion ?? null;
     finDeSuscripcion.value = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
     historiasDelMes.value = await proveedorSaludStore.getHistoriasClinicasDelMes();
-    console.log("historiasDelMes.value", historiasDelMes.value);
   } else {
     console.error("No se encontró idProveedorSalud en el usuario.");
   }
@@ -176,6 +176,15 @@ watch(
   }
 );
 
+// Cuando se hace reload en la página, se pierde valor de documentsByYear y este computed regresa false
+/* const existeHistoriaClinica = computed(() => {
+  return Object.values(documentos.documentsByYear || {}).some(yearData => 
+    'historiasClinicas' in yearData && yearData.historiasClinicas.length > 0
+  );
+});
+
+console.log("existeHistoriaClinica", existeHistoriaClinica.value); */
+
 const navigateTo = (routeName, params) => {
   if (!proveedorSaludStore.proveedorSalud) return;
 
@@ -199,11 +208,11 @@ const navigateTo = (routeName, params) => {
     return;
   }
 
-  // Bloquear navegación a aptitud si no hay historia clínica creada previamente
-  if (routeName === 'crear-documento' && params.tipoDocumento === 'aptitud' && !documentos.documentsByYear?.historiaClinica) {
-    toast.open({ message: "Debes crear una Historia Clínica antes de registrar una Aptitud al Puesto.", type: "info" });
-    return;
-  }
+  // Bloquear navegación a aptitud si no hay historia clínica creada previamente // Problemas con existeHistoriaClinica revisar el computed
+  // if (routeName === 'crear-documento' && params.tipoDocumento === 'aptitud' && !existeHistoriaClinica.value) {
+  //   toast.open({ message: "Debes crear una Historia Clínica antes de registrar una Aptitud al Puesto.", type: "info" });
+  //   return;
+  // }
 
   // Si la suscripción aún está activa, permitir la navegación
   router.push({ name: routeName, params });
