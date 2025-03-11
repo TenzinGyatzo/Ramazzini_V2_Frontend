@@ -25,8 +25,7 @@ interface ProveedorSalud {
     correoElectronico: string;
     sitioWeb: string;
     referenciaPlan: string;
-    maxUsuariosPermitidos: number;
-    maxEmpresasPermitidas: number;
+    maxHistoriasPermitidasAlMes: number;
     estadoSuscripcion: string;
     fechaInicioTrial: Date;
     periodoDePruebaFinalizado: boolean;
@@ -148,6 +147,19 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         }
       }  
 
+    async function getHistoriasClinicasDelMes() {
+        try {
+            loading.value = true;
+            const { data } = await ProveedorSaludAPI.getHistoriasClinicasDelMes(proveedorSalud.value?._id || '');
+            return data;
+        } catch (error) {
+            console.log(error);
+            return [];
+        } finally {
+            loading.value = false;
+        }
+    }
+
     return {
         proveedorSalud,
         loading,
@@ -158,6 +170,7 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         removeProveedorById,
         verificarPeriodoDePrueba,
         verificarFinSuscripcion,
-        getTopEmpresasByWorkers
+        getTopEmpresasByWorkers,
+        getHistoriasClinicasDelMes
     };
 });

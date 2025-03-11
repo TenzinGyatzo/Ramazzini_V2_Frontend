@@ -41,7 +41,6 @@ export const useCentrosTrabajoStore = defineStore("centros-trabajo", () => {
   }
 
   async function fetchCentrosTrabajo(empresaId: string) {
-    console.log("fetchCentrosTrabajo");
     try {
       loading.value = true;
       const { data } = await CentrosTrabajoAPI.getCentrosTrabajo(empresaId);

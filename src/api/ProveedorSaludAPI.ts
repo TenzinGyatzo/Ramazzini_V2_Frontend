@@ -28,4 +28,8 @@ export default {
     getTopEmpresasByWorkers(proveedorId: string) {
     return proveedor.get(`/top-empresas-por-trabajadores/${proveedorId}`);
     },
+
+    getHistoriasClinicasDelMes(proveedorId: string) {
+        return proveedor.get(`/historias-clinicas-del-mes/${proveedorId}`);
+    }
 }

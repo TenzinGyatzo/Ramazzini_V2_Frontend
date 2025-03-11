@@ -6,22 +6,21 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useRouter } from 'vue-router';
 import { format, differenceInDays, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, hi } from 'date-fns/locale';
 import ModalCancelarSuscripcion from '@/components/suscripciones/ModalCancelarSuscripcion.vue';
 
 const pagosStore = usePagosStore();
-const userStore = useUserStore();
-const empresasStore = useEmpresasStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const router = useRouter();
 
 const toast = inject('toast');
 
 const suscripcionActual = ref(null);
-const usuariosCreados = ref(0);
-const empresasCreadas = ref(0);
-const empresaConMasTrabajadores = ref('');
-const trabajadoresCreados = ref(0);
+const historiasDelMes = ref(0);
+// const usuariosCreados = ref(0);
+// const empresasCreadas = ref(0);
+// const empresaConMasTrabajadores = ref('');
+// const trabajadoresCreados = ref(0);
 const showCancelModal = ref(false);
 const isCancelling = ref(false); // Estado para manejar la carga
 
@@ -46,22 +45,26 @@ const fetchData = async () => {
     }
   }
 
-  // Obtener usuarios creados
-  const resultadoUsuarios = await userStore.fetchUsersByProveedorId(proveedorSalud.value._id);
-  usuariosCreados.value = resultadoUsuarios.data.length;
+  // Obtener historias clínicas del mes
+    historiasDelMes.value = await proveedorSaludStore.getHistoriasClinicasDelMes();
+  
+  // // Obtener usuarios creados
+  // const resultadoUsuarios = await userStore.fetchUsersByProveedorId(proveedorSalud.value._id);
+  // usuariosCreados.value = resultadoUsuarios.data.length;
    
-  // Obtener empresas creadas
-  await empresasStore.fetchEmpresas(proveedorSalud.value._id);
-  empresasCreadas.value = empresasStore.empresas.length;
+  // // Obtener empresas creadas
+  // await empresasStore.fetchEmpresas(proveedorSalud.value._id);
+  // empresasCreadas.value = empresasStore.empresas.length;
 
   // Obtener empresa con mayor número de trabajadores registrados
-  const top3Empresas = await proveedorSaludStore.getTopEmpresasByWorkers();
-  if (top3Empresas?.length > 0) {
-    empresaConMasTrabajadores.value = top3Empresas[0].nombreComercial;
-    trabajadoresCreados.value = top3Empresas[0].totalTrabajadores;
-  } else {
-    console.log("No se encontraron empresas con trabajadores registrados.");
-  }
+  // const top3Empresas = await proveedorSaludStore.getTopEmpresasByWorkers();
+  // if (top3Empresas?.length > 0) {
+  //   empresaConMasTrabajadores.value = top3Empresas[0].nombreComercial;
+  //   trabajadoresCreados.value = top3Empresas[0].totalTrabajadores;
+  // } else {
+  //   console.log("No se encontraron empresas con trabajadores registrados.");
+  // }
+
 };
 
 onMounted(async () => {
@@ -86,21 +89,27 @@ const formatCurrency = (amount) => {
 };
 
 // Computed para obtener los add-ons
-const totalUsuariosAdicionales = computed(() => {
-  return proveedorSalud.value?.addOns?.reduce((total, addon) => {
-    return addon.tipo === 'usuario_adicional' ? total + addon.cantidad : total;
-  }, 0) || 0;
-});
+// const totalUsuariosAdicionales = computed(() => {
+//   return proveedorSalud.value?.addOns?.reduce((total, addon) => {
+//     return addon.tipo === 'usuario_adicional' ? total + addon.cantidad : total;
+//   }, 0) || 0;
+// });
 
-const totalEmpresasAdicionales = computed(() => {
-  return proveedorSalud.value?.addOns?.reduce((total, addon) => {
-    return addon.tipo === 'empresas_extra' ? total + addon.cantidad : total;
-  }, 0) || 0;
-});
+// const totalEmpresasAdicionales = computed(() => {
+//   return proveedorSalud.value?.addOns?.reduce((total, addon) => {
+//     return addon.tipo === 'empresas_extra' ? total + addon.cantidad : total;
+//   }, 0) || 0;
+// });
 
-const totalTrabajadoresAdicionales = computed(() => {
+// const totalTrabajadoresAdicionales = computed(() => {
+//   return proveedorSalud.value?.addOns?.reduce((total, addon) => {
+//     return addon.tipo === 'trabajadores_extra' ? total + addon.cantidad : total;
+//   }, 0) || 0;
+// });
+
+const totalHistoriasAdicionales = computed(() => {
   return proveedorSalud.value?.addOns?.reduce((total, addon) => {
-    return addon.tipo === 'trabajadores_extra' ? total + addon.cantidad : total;
+    return addon.tipo === 'historias_extra' ? total + addon.cantidad : total;
   }, 0) || 0;
 });
 
@@ -148,17 +157,21 @@ const calcularPorcentaje = (valorActual, valorTotal) => {
   return Math.min((valorActual / valorTotal) * 100, 100).toFixed(0);
 };
 
-const porcentajeUsuarios = computed(() => {
-  return calcularPorcentaje(usuariosCreados.value, proveedorSalud.value.maxUsuariosPermitidos);
+const porcentajeHistorias = computed(() => {
+  return calcularPorcentaje(historiasDelMes.value, proveedorSalud.value.maxHistoriasPermitidasAlMes);
 });
 
-const porcentajeEmpresas = computed(() => {
-  return calcularPorcentaje(empresasCreadas.value, proveedorSalud.value.maxEmpresasPermitidas);
-});
+// const porcentajeUsuarios = computed(() => {
+//   return calcularPorcentaje(usuariosCreados.value, proveedorSalud.value.maxUsuariosPermitidos);
+// });
 
-const porcentajeTrabajadores = computed(() => {
-  return calcularPorcentaje(trabajadoresCreados.value, proveedorSalud.value.maxTrabajadoresPermitidos);
-});
+// const porcentajeEmpresas = computed(() => {
+//   return calcularPorcentaje(empresasCreadas.value, proveedorSalud.value.maxEmpresasPermitidas);
+// });
+
+// const porcentajeTrabajadores = computed(() => {
+//   return calcularPorcentaje(trabajadoresCreados.value, proveedorSalud.value.maxTrabajadoresPermitidos);
+// });
 
 const cancelSubscription = async () => {
   isCancelling.value = true; // Activar el estado de carga
@@ -202,6 +215,11 @@ const suscripcionCanceladaYActiva = computed(() => {
   return false;
 });
 
+const mesActual = computed(() => {
+  const mes = format(new Date(), 'MMMM', { locale: es });
+  return mes.charAt(0).toUpperCase() + mes.slice(1);
+});
+
 </script>
 
 <template>
@@ -223,14 +241,10 @@ const suscripcionCanceladaYActiva = computed(() => {
               Has cancelado tu suscripción, pero tendrás acceso a los beneficios hasta el <strong>{{ formatDate(proveedorSalud.finDeSuscripcion) }}</strong>.
             </p>
           </div>
-          <p v-if="totalUsuariosAdicionales || totalEmpresasAdicionales || totalTrabajadoresAdicionales" class="text-gray-600">
+          <p v-if="totalHistoriasAdicionales" class="text-gray-600">
             <strong>➕ Adicionales: </strong> 
             <span>
-              {{ totalUsuariosAdicionales ? `${totalUsuariosAdicionales} ${totalUsuariosAdicionales === 1 ? 'Usuario' : 'Usuarios'}` : '' }}
-              {{ totalUsuariosAdicionales && (totalEmpresasAdicionales || totalTrabajadoresAdicionales) ? ' · ' : '' }}
-              {{ totalEmpresasAdicionales ? `${totalEmpresasAdicionales} ${totalEmpresasAdicionales === 1 ? 'Empresa' : 'Empresas'}` : '' }}
-              {{ totalEmpresasAdicionales && totalTrabajadoresAdicionales ? ' · ' : '' }}
-              {{ totalTrabajadoresAdicionales ? `${totalTrabajadoresAdicionales} ${totalTrabajadoresAdicionales === 1 ? 'Trabajador' : 'Trabajadores'}` : '' }}
+              {{ totalHistoriasAdicionales ? `${totalHistoriasAdicionales} ${totalHistoriasAdicionales === 1 ? 'Historia' : 'Historias'}` : '' }} al mes
             </span>
           </p>
 
@@ -264,8 +278,32 @@ const suscripcionCanceladaYActiva = computed(() => {
         <div class="bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
           <h3 class="text-2xl font-semibold text-gray-800 mb-4">Uso de Recursos</h3>
           
-          <!-- Uso de Usuarios -->
+          <!-- Uso de Historias Clínicas -->
           <div>
+            <p class="text-gray-600"><strong>👥 Historias Clínicas creadas en {{ mesActual }}:</strong> <br> {{ historiasDelMes }} de {{ proveedorSalud.maxHistoriasPermitidasAlMes }} permitidas</p>
+            <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
+              <div 
+                :style="{ width: porcentajeHistorias + '%' }" 
+                class="h-4 rounded-full absolute top-0 left-0 transition-all duration-500" 
+                :class="{
+                  'bg-gradient-to-r from-cyan-500 to-cyan-400': historiasDelMes < proveedorSalud.maxHistoriasPermitidasAlMes,
+                  'bg-gradient-to-r from-red-500 to-red-400': historiasDelMes >= proveedorSalud.maxHistoriasPermitidasAlMes
+                }">
+              </div>
+                <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs font-semibold" :class="porcentajeHistorias <= 55 ? 'text-gray-600' : 'text-white'">
+                {{ porcentajeHistorias }}%
+                </span>
+            </div>
+            <p v-if="porcentajeHistorias >= 80 && porcentajeHistorias < 100" class="text-yellow-600 text-sm mt-2">
+              ⚠️ Estás cerca del límite de historias clínicas. Considera actualizar tu plan.
+            </p>
+            <p v-if="historiasDelMes >= proveedorSalud.maxHistoriasPermitidasAlMes" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de historias clínicas.
+              <a @click="router.push('/suscripcion')" class="text-sky-600 underline cursor-pointer">Mejora tu plan</a>.
+            </p>
+          </div>
+
+          <!-- Uso de Usuarios -->
+          <!-- <div>
             <p class="text-gray-600"><strong>👥 Usuarios registrados:</strong> {{ usuariosCreados }} de {{ proveedorSalud.maxUsuariosPermitidos }} permitidos</p>
             <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
               <div 
@@ -286,10 +324,10 @@ const suscripcionCanceladaYActiva = computed(() => {
             <p v-if="usuariosCreados >= proveedorSalud.maxUsuariosPermitidos" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de usuarios.
               <a @click="router.push('/suscripcion')" class="text-sky-600 underline cursor-pointer">Mejora tu plan</a>.
             </p>
-          </div>
+          </div> -->
   
           <!-- Uso de Empresas -->
-          <div class="mt-4">
+          <!-- <div class="mt-4">
             <p class="text-gray-600"><strong>🏢 Empresas registradas:</strong> {{ empresasCreadas }} de {{ proveedorSalud.maxEmpresasPermitidas }} permitidas</p>
             <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
               <div 
@@ -307,10 +345,10 @@ const suscripcionCanceladaYActiva = computed(() => {
             <p v-if="empresasCreadas >= proveedorSalud.maxEmpresasPermitidas" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de empresas.
               <a @click="router.push('/suscripcion')" class="text-sky-600 underline cursor-pointer">Mejora tu plan</a>.
             </p>
-          </div>
+          </div> -->
 
           <!-- Uso de Trabajadores -->
-          <div class="mt-4">
+          <!-- <div class="mt-4">
             <p class="text-gray-600"><strong>🏭 Empresa con más trabajadores:</strong> <br> {{ empresaConMasTrabajadores }} → {{ trabajadoresCreados }} de <strong>{{ proveedorSalud.maxTrabajadoresPermitidos }}</strong> permitidos</p>
             <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
               <div 
@@ -328,7 +366,7 @@ const suscripcionCanceladaYActiva = computed(() => {
             <p v-if="trabajadoresCreados >= proveedorSalud.maxTrabajadoresPermitidos" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de trabajadores.
               <a @click="router.push('/suscripcion')" class="text-sky-600 underline cursor-pointer">Mejora tu plan</a>.
             </p>
-          </div>
+          </div> -->
         </div>
       </div>
       <!-- Información de Cuenta -->
@@ -337,9 +375,10 @@ const suscripcionCanceladaYActiva = computed(() => {
         <p class="text-gray-600"><strong>👤 Nombre:</strong> {{ proveedorSalud.nombre || 'No disponible' }}</p>
         <p class="text-gray-600"><strong>🆔 RFC:</strong> {{ proveedorSalud.RFC || 'No disponible' }}</p>
         <p class="text-gray-600"><strong>📧 Correo:</strong> {{ proveedorSalud.correoElectronico || 'No disponible' }}</p>
-        <p class="text-gray-600"><strong>👥 Usuarios:</strong> {{ `${proveedorSalud.maxUsuariosPermitidos} disponibles` || 'No disponible' }}</p>
+        <p class="text-gray-600"><strong>👥 Historias Clínicas {{ mesActual }}:</strong> {{ `${proveedorSalud.maxHistoriasPermitidasAlMes - historiasDelMes} disponibles` || 'No disponible' }}</p>
+        <!-- <p class="text-gray-600"><strong>👥 Usuarios:</strong> {{ `${proveedorSalud.maxUsuariosPermitidos} disponibles` || 'No disponible' }}</p>
         <p class="text-gray-600"><strong>🏢 Empresas:</strong> {{ `${proveedorSalud.maxEmpresasPermitidas} disponibles` || 'No disponible' }}</p>
-        <p class="text-gray-600"><strong>🏭 Trabajadores por Empresa:</strong> {{ `${proveedorSalud.maxTrabajadoresPermitidos} disponibles` || 'No disponible' }}</p>
+        <p class="text-gray-600"><strong>🏭 Trabajadores por Empresa:</strong> {{ `${proveedorSalud.maxTrabajadoresPermitidos} disponibles` || 'No disponible' }}</p> -->
         <p class="text-gray-600"><strong>⏳ Periodo Gratuito:</strong> {{ periodoGratuito }}</p>
       </div>
 

@@ -2,10 +2,8 @@
 import { ref, computed, onMounted, inject } from "vue";
 import { usePagosStore } from "@/stores/pagosStore";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
-import { useUserStore } from "@/stores/user";
-import { useEmpresasStore } from "@/stores/empresas";
-import { useCentrosTrabajoStore } from "@/stores/centrosTrabajo";
-import { useTrabajadoresStore } from "@/stores/trabajadores";
+// import { useUserStore } from "@/stores/user";
+// import { useEmpresasStore } from "@/stores/empresas";
 import { useRouter } from "vue-router";
 
 const toast = inject('toast');
@@ -13,8 +11,8 @@ const toast = inject('toast');
 // Stores
 const pagosStore = usePagosStore();
 const proveedorSaludStore = useProveedorSaludStore();
-const userStore = useUserStore();
-const empresasStore = useEmpresasStore();
+// const userStore = useUserStore();
+// const empresasStore = useEmpresasStore();
 
 // Variables de estado
 const user = ref(
@@ -29,51 +27,66 @@ const router = useRouter();
 
 // Planes disponibles
 const plans = [
-  { id: 1, name: "Básico", price: 399, users: 1, companies: 10, workers: 100, maxUsers: 4, maxCompanies: 40, maxWorkers: 400, nextPlanPrice: 1749 },
-  { id: 2, name: "Profesional", price: 1749, users: 5, companies: 50, workers: 500, maxUsers: 10, maxCompanies: 100, maxWorkers: 1000, nextPlanPrice: 4499 },
-  { id: 3, name: "Empresarial", price: 4499, users: 15, companies: 150, workers: 1500, maxUsers: 9999, maxCompanies: 9999, maxWorkers: 9999 },
+  { id: 1, name: "Básico", price: 599, histories: 50, maxHistories: 225, nextPlanPrice: 1999 },
+  { id: 2, name: "Profesional", price: 1999, histories: 300, maxHistories: 275, nextPlanPrice: 3899 },
+  { id: 3, name: "Empresarial", price: 3899, histories: 600, maxHistories: 5000 },
 ];
+// const plans = [
+//   { id: 1, name: "Básico", price: 399, users: 1, companies: 10, workers: 100, maxUsers: 4, maxCompanies: 40, maxWorkers: 400, nextPlanPrice: 1749 },
+//   { id: 2, name: "Profesional", price: 1749, users: 5, companies: 50, workers: 500, maxUsers: 10, maxCompanies: 100, maxWorkers: 1000, nextPlanPrice: 4499 },
+//   { id: 3, name: "Empresarial", price: 4499, users: 15, companies: 150, workers: 1500, maxUsers: 9999, maxCompanies: 9999, maxWorkers: 9999 },
+// ];
 
 // Variables de selección de plan y add-ons
 const selectedPlan = ref(plans[0]);
-const extraUsers = ref(0);
-const extraCompanies = ref(0);
-const extraWorkers = ref(0);
+const extraHistories = ref(0);
+// const extraUsers = ref(0);
+// const extraCompanies = ref(0);
+// const extraWorkers = ref(0);
 
 // Setear extraUsers, extraCompanies y extraWorkers si existen en proveedorSalud
 onMounted(() => {
   if (proveedorSalud.value.addOns) {
-    const extraUsersAddon = proveedorSalud.value.addOns.find((addon) => addon.tipo === 'usuario_adicional');
-    const extraCompaniesAddon = proveedorSalud.value.addOns.find((addon) => addon.tipo === 'empresas_extra');
-    const extraWorkersAddon = proveedorSalud.value.addOns.find((addon) => addon.tipo === 'trabajadores_extra');
-    extraUsers.value = extraUsersAddon?.cantidad || 0;
-    extraCompanies.value = extraCompaniesAddon?.cantidad || 0;
-    extraWorkers.value = extraWorkersAddon?.cantidad || 0;
+    const extraHistoriesAddon = proveedorSalud.value.addOns.find((addon) => addon.tipo === 'historias_extra');
+    // const extraUsersAddon = proveedorSalud.value.addOns.find((addon) => addon.tipo === 'usuario_adicional');
+    // const extraCompaniesAddon = proveedorSalud.value.addOns.find((addon) => addon.tipo === 'empresas_extra');
+    // const extraWorkersAddon = proveedorSalud.value.addOns.find((addon) => addon.tipo === 'trabajadores_extra');
+    extraHistories.value = extraHistoriesAddon?.cantidad || 0;
+    // extraUsers.value = extraUsersAddon?.cantidad || 0;
+    // extraCompanies.value = extraCompaniesAddon?.cantidad || 0;
+    // extraWorkers.value = extraWorkersAddon?.cantidad || 0;
   }
 });
 
-// Obtener usuariosCreados y empresasCreadas
-const usuariosCreados = ref(0);
-const empresasCreadas = ref(0);
-const empresaConMasTrabajadores = ref(""); // Nombre de la empresa con más trabajadores
-const trabajadoresCreados = ref(0); // De la empresa con más trabajadores
-
+// Obtener historiasDelMes
+const historiasDelMes = ref(0);
+// const usuariosCreados = ref(0);
+// const empresasCreadas = ref(0);
+// const empresaConMasTrabajadores = ref(""); // Nombre de la empresa con más trabajadores
+// const trabajadoresCreados = ref(0); // De la empresa con más trabajadores
 
 onMounted(async () => {
-  // Cantidad de usuarios
-  const resultado = await userStore.fetchUsersByProveedorId(user.value.idProveedorSalud);
-  usuariosCreados.value = resultado.data.length;
-  // Cantidad de empresas
-  await empresasStore.fetchEmpresas(proveedorSalud.value._id);
-  empresasCreadas.value = empresasStore.empresas.length;
-  // Top 3 empresas con más trabajadores
-  const top3Empresas = await proveedorSaludStore.getTopEmpresasByWorkers();
-  if (top3Empresas?.length > 0) {
-    empresaConMasTrabajadores.value = top3Empresas[0].nombreComercial;
-    trabajadoresCreados.value = top3Empresas[0].totalTrabajadores;
-  } else {
-    console.log("No se encontraron empresas con trabajadores registrados.");
-  }
+  // Recargar los datos del proveedor desde el backend
+  const proveedorActualizado = await proveedorSaludStore.getProveedorById(proveedorSalud.value._id);
+  proveedorSalud.value = proveedorActualizado;
+
+  // Obtener historias clínicas del mes
+  historiasDelMes.value = await proveedorSaludStore.getHistoriasClinicasDelMes();
+
+  // // Cantidad de usuarios
+  // const resultado = await userStore.fetchUsersByProveedorId(user.value.idProveedorSalud);
+  // usuariosCreados.value = resultado.data.length;
+  // // Cantidad de empresas
+  // await empresasStore.fetchEmpresas(proveedorSalud.value._id);
+  // empresasCreadas.value = empresasStore.empresas.length;
+  // // Top 3 empresas con más trabajadores
+  // const top3Empresas = await proveedorSaludStore.getTopEmpresasByWorkers();
+  // if (top3Empresas?.length > 0) {
+  //   empresaConMasTrabajadores.value = top3Empresas[0].nombreComercial;
+  //   trabajadoresCreados.value = top3Empresas[0].totalTrabajadores;
+  // } else {
+  //   console.log("No se encontraron empresas con trabajadores registrados.");
+  // }
 });
 
 
@@ -102,11 +115,16 @@ const formatCurrency = (amount) => {
 // Cálculo del precio total incluyendo add-ons
 const totalPrice = computed(() => {
   if (!selectedPlan.value) return 0;
-  const extraUsersCost = extraUsers.value * 120;
-  const extraCompaniesCost = extraCompanies.value * 24;
-  const extraWorkersCost = extraWorkers.value * 2.4;
-  return selectedPlan.value.price + extraUsersCost + extraCompaniesCost + extraWorkersCost;
+  const extraHistoriesCost = extraHistories.value * 7;
+  return selectedPlan.value.price + extraHistoriesCost;
 });
+// const totalPrice = computed(() => {
+//   if (!selectedPlan.value) return 0;
+//   const extraUsersCost = extraUsers.value * 120;
+//   const extraCompaniesCost = extraCompanies.value * 24;
+//   const extraWorkersCost = extraWorkers.value * 2.4;
+//   return selectedPlan.value.price + extraUsersCost + extraCompaniesCost + extraWorkersCost;
+// });
 
 // Sugerencia de upgrade si el costo total supera el siguiente plan
 const suggestion = computed(() => {
@@ -114,7 +132,7 @@ const suggestion = computed(() => {
   const currentPlan = selectedPlan.value;
   const nextPlan = plans.find((plan) => plan.price > currentPlan.price);
   if (nextPlan && totalPrice.value >= nextPlan.price) {
-    return `Por la cantidad de usuarios y empresas seleccionados, el plan ${nextPlan.name} ofrece un mejor precio. Considera actualizar.`;
+    return `Por la cantidad de historias clínicas mensuales seleccionadas, el plan ${nextPlan.name} ofrece un mejor precio. Considera actualizar.`;
   }
   return "";
 });
@@ -123,9 +141,10 @@ const suggestion = computed(() => {
 const validateLimits = () => {
   if (!selectedPlan.value) return;
   const currentPlan = selectedPlan.value;
-  if (extraUsers.value > currentPlan.maxUsers) extraUsers.value = currentPlan.maxUsers;
-  if (extraCompanies.value > currentPlan.maxCompanies) extraCompanies.value = currentPlan.maxCompanies;
-  if (extraWorkers.value > currentPlan.maxWorkers) extraWorkers.value = currentPlan.maxWorkers;
+  if (extraHistories.value > currentPlan.maxHistories) extraHistories.value = currentPlan.maxHistories;
+  // if (extraUsers.value > currentPlan.maxUsers) extraUsers.value = currentPlan.maxUsers;
+  // if (extraCompanies.value > currentPlan.maxCompanies) extraCompanies.value = currentPlan.maxCompanies;
+  // if (extraWorkers.value > currentPlan.maxWorkers) extraWorkers.value = currentPlan.maxWorkers;
 };
 
 // Constants
@@ -154,9 +173,10 @@ const createSubscriptionData = (reason, amount) => ({
 
 const getProveedorSaludData = () => ({
   addOns: [
-    { tipo: 'usuario_adicional', cantidad: extraUsers.value },
-    { tipo: 'empresas_extra', cantidad: extraCompanies.value },
-    { tipo: 'trabajadores_extra', cantidad: extraWorkers.value }
+    { tipo: 'historias_extra', cantidad: extraHistories.value },
+    // { tipo: 'usuario_adicional', cantidad: extraUsers.value },
+    // { tipo: 'empresas_extra', cantidad: extraCompanies.value },
+    // { tipo: 'trabajadores_extra', cantidad: extraWorkers.value }
   ],
 });
 
@@ -214,9 +234,10 @@ const updateSubscription = async () => {
     await proveedorSaludStore.loadProveedorSalud(proveedorSalud.value._id);
 
     // Actualiza manualmente los campos en el frontend
-    proveedorSalud.value.maxUsuariosPermitidos = selectedPlan.value.users + extraUsers.value;
-    proveedorSalud.value.maxEmpresasPermitidas = selectedPlan.value.companies + extraCompanies.value;
-    proveedorSalud.value.maxTrabajadoresPermitidos = selectedPlan.value.workers + extraWorkers.value;
+    proveedorSalud.value.maxHistoriasPermitidasAlMes = selectedPlan.value.histories + extraHistories.value;
+    // proveedorSalud.value.maxUsuariosPermitidos = selectedPlan.value.users + extraUsers.value;
+    // proveedorSalud.value.maxEmpresasPermitidas = selectedPlan.value.companies + extraCompanies.value;
+    // proveedorSalud.value.maxTrabajadoresPermitidos = selectedPlan.value.workers + extraWorkers.value;
 
     toast.open({
       message: 'Suscripción actualizada exitosamente.',
@@ -236,9 +257,10 @@ const requestSubscription = () =>
 
 // Cálculo de diferencias entre la suscripción actual y la nueva
 const priceDifference = computed(() => totalPrice.value - (suscripcionActual.value.auto_recurring?.transaction_amount || 0));
-const userDifference = computed(() => (selectedPlan.value.users + extraUsers.value) - proveedorSalud.value.maxUsuariosPermitidos);
-const companyDifference = computed(() => (selectedPlan.value.companies + extraCompanies.value) - proveedorSalud.value.maxEmpresasPermitidas);
-const workerDifference = computed(() => (selectedPlan.value.workers + extraWorkers.value) - proveedorSalud.value.maxTrabajadoresPermitidos);
+const historiasDifference = computed(() => (selectedPlan.value.histories + extraHistories.value) - proveedorSalud.value.maxHistoriasPermitidasAlMes);
+// const userDifference = computed(() => (selectedPlan.value.users + extraUsers.value) - proveedorSalud.value.maxUsuariosPermitidos);
+// const companyDifference = computed(() => (selectedPlan.value.companies + extraCompanies.value) - proveedorSalud.value.maxEmpresasPermitidas);
+// const workerDifference = computed(() => (selectedPlan.value.workers + extraWorkers.value) - proveedorSalud.value.maxTrabajadoresPermitidos);
 
 const calcularPorcentaje = (valorActual, valorTotal) => {
   if (!valorTotal || !valorActual) {
@@ -247,17 +269,21 @@ const calcularPorcentaje = (valorActual, valorTotal) => {
   return Math.min((valorActual / valorTotal) * 100, 100).toFixed(0);
 };
 
-const porcentajeUsuarios = computed(() => {
-  return calcularPorcentaje(usuariosCreados.value, selectedPlan.value?.users + extraUsers.value);
+const porcentajeHistorias = computed(() => {
+  return calcularPorcentaje(historiasDelMes.value, selectedPlan.value?.histories + extraHistories.value);
 });
 
-const porcentajeEmpresas = computed(() => {
-  return calcularPorcentaje(empresasCreadas.value, selectedPlan.value?.companies + extraCompanies.value);
-});
+// const porcentajeUsuarios = computed(() => {
+//   return calcularPorcentaje(usuariosCreados.value, selectedPlan.value?.users + extraUsers.value);
+// });
 
-const porcentajeTrabajadores = computed(() => {
-  return calcularPorcentaje(trabajadoresCreados.value, selectedPlan.value?.workers + extraWorkers.value);
-});
+// const porcentajeEmpresas = computed(() => {
+//   return calcularPorcentaje(empresasCreadas.value, selectedPlan.value?.companies + extraCompanies.value);
+// });
+
+// const porcentajeTrabajadores = computed(() => {
+//   return calcularPorcentaje(trabajadoresCreados.value, selectedPlan.value?.workers + extraWorkers.value);
+// });
 
 </script>
 
@@ -286,13 +312,14 @@ const porcentajeTrabajadores = computed(() => {
           'border-sky-500 bg-sky-50': selectedPlan?.id === plan.id,
           'border-green-500 bg-green-50': suscripcionActual?.reason?.includes(plan.name)
         }"
-        @click="selectedPlan = plan; extraUsers = 0; extraCompanies = 0; extraWorkers = 0">
+        @click="selectedPlan = plan; extraHistories = 0;">
         <h2 class="text-2xl font-semibold mb-4 text-gray-700">{{ plan.name }}</h2>
         <p class="text-3xl mb-4 font-light text-sky-600">${{ formatCurrency(plan.price) }}/mes</p>
         <ul class="text-gray-600 divide-y divide-gray-200 text-base">
-          <li class="py-1">{{ plan.users }} usuarios</li>
+          <li class="py-1">{{ plan.histories }} Historias Clínicas</li>
+          <!-- <li class="py-1">{{ plan.users }} usuarios</li>
           <li class="py-1">{{ plan.companies }} empresas</li>
-          <li class="py-1">{{ plan.workers }} trabajadores x empresa</li>
+          <li class="py-1">{{ plan.workers }} trabajadores x empresa</li> -->
         </ul>
         <p v-if="suscripcionActual?.reason?.includes(plan.name)" class="text-green-600 font-medium mt-2">✓ Plan actual</p>
       </div>
@@ -331,6 +358,16 @@ const porcentajeTrabajadores = computed(() => {
               </td>
             </tr>
             <tr class="border-t">
+              <td class="text-sm md:text-base p-2">Historias Clínicas</td>
+              <td class="text-sm md:text-base p-2 text-center">{{ proveedorSalud?.maxHistoriasPermitidasAlMes }}</td>
+              <td class="text-sm md:text-base p-2 text-center">{{ selectedPlan?.histories + extraHistories }}</td>
+              <td class="text-sm md:text-base p-2 text-center">
+                <span :class="historiasDifference >= 0 ? 'text-green-600' : 'text-red-600'">
+                  {{ historiasDifference >= 0 ? '↑' : '↓' }} {{ Math.abs(historiasDifference) }}
+                </span>
+              </td>
+            </tr>
+            <!-- <tr class="border-t">
               <td class="text-sm md:text-base p-2">Usuarios</td>
               <td class="text-sm md:text-base p-2 text-center">{{ proveedorSalud?.maxUsuariosPermitidos }}</td>
               <td class="text-sm md:text-base p-2 text-center">{{ selectedPlan?.users + extraUsers }}</td>
@@ -359,7 +396,7 @@ const porcentajeTrabajadores = computed(() => {
                   {{ workerDifference >= 0 ? '↑' : '↓' }} {{ Math.abs(workerDifference) }}
                 </span>
               </td>
-            </tr>
+            </tr> -->
           </tbody>
         </table>
       </div>
@@ -367,8 +404,35 @@ const porcentajeTrabajadores = computed(() => {
       <div class="bg-white p-6 rounded-xl shadow-md">
         <h2 class="text-2xl font-semibold mb-4 text-gray-700">Uso de Recursos</h2>
 
-        <!-- Uso de Usuarios -->
+        <!-- Uso de Historias Clínicas -->
         <div>
+          <p class="text-gray-700 mb-2">
+            <strong>Historias clínicas registradas:</strong> {{ historiasDelMes }} 
+            <span class="text-gray-600">(límite: <strong>{{ selectedPlan?.histories + extraHistories }}</strong>)</span>
+          </p>
+          <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
+            <div 
+              class="h-4 rounded-full absolute top-0 left-0 transition-all duration-500" 
+              :class="{
+                'bg-gradient-to-r from-cyan-500 to-cyan-400': historiasDelMes <= (selectedPlan?.histories + extraHistories),
+                'bg-gradient-to-r from-red-500 to-red-400': historiasDelMes > (selectedPlan?.histories + extraHistories)
+              }"
+              :style="{ width: `${porcentajeHistorias}%` }"
+            ></div>
+            <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs font-semibold" :class="porcentajeHistorias <= 55 ? 'text-gray-600' : 'text-white'">
+              {{ porcentajeHistorias }}%
+            </span>
+          </div>
+          <p v-if="porcentajeHistorias >= 80 && porcentajeHistorias < 100" class="text-yellow-600 text-sm mt-2">
+            ⚠️ Estás cerca del límite de historias clínicas. Considera actualizar tu plan.
+          </p>
+          <p v-if="historiasDelMes > (selectedPlan?.histories + extraHistories)" class="text-red-600 text-sm mt-2">
+            ⚠️ Excede el límite de historias clínicas permitidas en este plan.
+          </p>
+        </div>
+
+        <!-- Uso de Usuarios -->
+        <!-- <div>
           <p class="text-gray-700 mb-2">
             <strong>Usuarios registrados:</strong> {{ usuariosCreados }} 
             <span class="text-gray-600">(límite: <strong>{{ selectedPlan?.users + extraUsers }}</strong>)</span>
@@ -392,10 +456,10 @@ const porcentajeTrabajadores = computed(() => {
           <p v-if="usuariosCreados > (selectedPlan?.users + extraUsers)" class="text-red-600 text-sm mt-2">
             ⚠️ Excede el límite de usuarios permitidos en este plan.
           </p>
-        </div>
+        </div> -->
 
         <!-- Uso de Empresas -->
-        <div class="mt-4">
+        <!-- <div class="mt-4">
           <p class="text-gray-700 mb-2">
             <strong>Empresas registradas:</strong> {{ empresasCreadas }} 
             <span class="text-gray-600">(límite: <strong>{{ selectedPlan?.companies + extraCompanies }}</strong>)</span>
@@ -417,10 +481,10 @@ const porcentajeTrabajadores = computed(() => {
           <p v-if="empresasCreadas > (selectedPlan?.companies + extraCompanies)" class="text-red-600 text-sm mt-2">
             ⚠️ Excede el límite de empresas permitidas en este plan.
           </p>
-        </div>
+        </div> -->
 
         <!-- Uso de Trabajadores -->
-        <div class="mt-4">
+        <!-- <div class="mt-4">
           <p class="text-gray-700 mb-2">
             <strong>Empresa con más trabajadores:</strong> {{ empresaConMasTrabajadores }} →
             <strong>{{ trabajadoresCreados }}</strong> 
@@ -443,7 +507,7 @@ const porcentajeTrabajadores = computed(() => {
           <p v-if="trabajadoresCreados > (selectedPlan?.workers + extraWorkers)" class="text-red-600 text-sm mt-2">
             ⚠️ Excede el límite de trabajadores permitidos en este plan.
           </p>
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -453,6 +517,22 @@ const porcentajeTrabajadores = computed(() => {
         <h2 class="text-2xl font-semibold mb-4 text-gray-700">Extras para tu Plan</h2>
         <div class="flex flex-col gap-6 text-base">
           <div>
+            <label class="text-sm md:text-base block mb-2 text-gray-600">Aumenta tus recursos ($175 por cada 25 historias clínicas)</label>
+            <div class="flex items-center gap-2">
+              <button @click="extraHistories > 0 ? extraHistories -= 25 : null" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 flex items-center justify-center rounded transition-all duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                </svg>
+              </button>
+              <input type="number" v-model="extraHistories" @input="validateLimits" min="0" class="border rounded p-2 w-24 text-center focus:ring-2 focus:ring-sky-500">
+              <button @click="extraHistories < selectedPlan?.maxHistories ? extraHistories += 25 : null" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 flex items-center justify-center rounded transition-all duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <!-- <div>
             <label class="text-sm md:text-base block mb-2 text-gray-600">Agregar más usuarios ($120 por usuario)</label>
             <div class="flex items-center gap-2">
               <button @click="extraUsers > 0 ? extraUsers-- : null" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 flex items-center justify-center rounded transition-all duration-200">
@@ -467,8 +547,8 @@ const porcentajeTrabajadores = computed(() => {
                 </svg>
               </button>
             </div>
-          </div>
-          <div>
+          </div> -->
+          <!-- <div>
             <label class="text-sm md:text-base block mb-2 text-gray-600">Agregar más empresas ($120 por cada 5 empresas)</label>
             <div class="flex items-center gap-2">
               <button @click="extraCompanies > 0 ? extraCompanies -= 5 : null" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 flex items-center justify-center rounded transition-all duration-200">
@@ -483,8 +563,8 @@ const porcentajeTrabajadores = computed(() => {
                 </svg>
                 </button>
             </div>
-          </div>
-          <div>
+          </div> -->
+          <!-- <div>
             <label class="text-sm md:text-base block mb-2 text-gray-600">Aumentar el límite de trabajadores por empresa (+50 por $120)</label>
             <div class="flex items-center gap-2">
               <button @click="extraWorkers > 0 ? extraWorkers -= 50 : null" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 flex items-center justify-center rounded transition-all duration-200">
@@ -499,7 +579,7 @@ const porcentajeTrabajadores = computed(() => {
                 </svg>
                 </button>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
 
@@ -513,7 +593,10 @@ const porcentajeTrabajadores = computed(() => {
             </svg>
             Plan elegido: <span class="font-semibold">{{ selectedPlan.name }}</span>
           </p>
-          <p>Usuarios permitidos: <span class="font-semibold">{{ selectedPlan.users + extraUsers }}</span> 
+          <p>Límite de Historias Clínicas al mes: <span class="font-semibold">{{ selectedPlan.histories + extraHistories }}</span> 
+            <span class="text-gray-500"> (Base: {{ selectedPlan.histories }} + Extras: {{ extraHistories }})</span>
+          </p>
+          <!-- <p>Usuarios permitidos: <span class="font-semibold">{{ selectedPlan.users + extraUsers }}</span> 
             <span class="text-gray-500"> (Base: {{ selectedPlan.users }} + Extras: {{ extraUsers }})</span>
           </p>
           <p>Empresas permitidas: <span class="font-semibold">{{ selectedPlan.companies + extraCompanies }}</span> 
@@ -521,7 +604,7 @@ const porcentajeTrabajadores = computed(() => {
           </p>
           <p>Límite de trabajadores por empresa: <span class="font-semibold">{{ selectedPlan.workers + extraWorkers }}</span> 
             <span class="text-gray-500"> (Base: {{ selectedPlan.workers }} + Extras: {{ extraWorkers }})</span>
-          </p>
+          </p> -->
           <p class="text-xl font-semibold mt-4 text-sky-600">Total mensual: ${{ formatCurrency(totalPrice) }}</p>
           <p v-if="suggestion" class="text-yellow-600 mt-2">{{ suggestion }}</p>
         </div>

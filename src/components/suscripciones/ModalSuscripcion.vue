@@ -1,12 +1,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useUserStore } from '@/stores/user';
-import { useEmpresasStore } from '@/stores/empresas';	
+// import { useUserStore } from '@/stores/user';
+// import { useEmpresasStore } from '@/stores/empresas';	
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
-const userStore = useUserStore();
-const empresas = useEmpresasStore();
+// const userStore = useUserStore();
+// const empresas = useEmpresasStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const router = useRouter();
 const route = useRoute();
@@ -21,40 +21,26 @@ const user = ref(
   JSON.parse(localStorage.getItem('user')) || null // Recuperar usuario guardado o establecer null si no existe
 );
 
-const usuariosCreados = ref(0);
-const empresasCreadas = ref(0);
-const empresaConMasTrabajadores = ref(""); // Nombre de la empresa con más trabajadores
-const trabajadoresCreados = ref(0);
+// const usuariosCreados = ref(0);
+// const empresasCreadas = ref(0);
+// const empresaConMasTrabajadores = ref(""); // Nombre de la empresa con más trabajadores
+// const trabajadoresCreados = ref(0);
+const historiasDelMes = ref(0);
 const vistaActual = ref(route.name);
   
 onMounted(async () => {
-  // Determinar cuántos usuarios ha creado el proveedor de salud
-  const resultado = await userStore.fetchUsersByProveedorId(
-    user.value.idProveedorSalud
-  );
-  usuariosCreados.value = resultado.data.length;
-
-  // Determinar cuántas empresas ha creado el proveedor de salud
-  await empresas.fetchEmpresas(user.value.idProveedorSalud);
-  empresasCreadas.value = empresas.empresas.length;
-
-  // Determinar cuál es la empresa con más trabajadores
-  const top3Empresas = await proveedorSaludStore.getTopEmpresasByWorkers();
-  if (top3Empresas?.length > 0) {
-    empresaConMasTrabajadores.value = top3Empresas[0].nombreComercial; // El primero del array es el que tiene más trabajadores
-    trabajadoresCreados.value = top3Empresas[0].totalTrabajadores; // El primero del array es el que tiene más trabajadores
-  } else {
-    console.log("No se encontraron empresas con trabajadores registrados.");
-  }
+  // Obtener historias clínicas del mes
+    historiasDelMes.value = await proveedorSaludStore.getHistoriasClinicasDelMes();
 });
 
 const proveedorSalud = ref(
   JSON.parse(localStorage.getItem('proveedorSalud') || 'null') // Recuperar usuario guardado o establecer null si no existe
 );
 
-const maxUsuariosPermitidos = proveedorSalud.value?.maxUsuariosPermitidos;
-const maxEmpresasPermitidas = proveedorSalud.value?.maxEmpresasPermitidas;
-const maxTrabajadoresPermitidos = proveedorSalud.value?.maxTrabajadoresPermitidos;
+// const maxUsuariosPermitidos = proveedorSalud.value?.maxUsuariosPermitidos;
+// const maxEmpresasPermitidas = proveedorSalud.value?.maxEmpresasPermitidas;
+// const maxTrabajadoresPermitidos = proveedorSalud.value?.maxTrabajadoresPermitidos;
+const maxHistoriasPermitidasAlMes = proveedorSalud.value?.maxHistoriasPermitidasAlMes;
 const periodoDePruebaFinalizado = proveedorSalud.value?.periodoDePruebaFinalizado; // true or false
 const estadoSuscripcion = proveedorSalud.value?.estadoSuscripcion; // authorized, inactive, cancelled
 const finDeSuscripcion = proveedorSalud.value?.finDeSuscripcion
@@ -63,38 +49,37 @@ const finDeSuscripcion = proveedorSalud.value?.finDeSuscripcion
 
 const modalContent = computed(() => {
   
-  if (vistaActual.value === 'add-user' && usuariosCreados.value >= maxUsuariosPermitidos) {
-    return {
-      title: 'Has alcanzado el límite de usuarios',
-      message: `Tu plan actual permite hasta ${maxUsuariosPermitidos} ${maxUsuariosPermitidos === 1 ? 'usuario' : 'usuarios'}.`,
-      price: 'Actualiza tu plan para añadir más usuarios y seguir creciendo.',
-      benefits: [
-        'Aumenta el número de usuarios permitidos',
-        'Mantén a todo tu equipo conectado',
-        'Escala tu organización sin limitaciones'
-      ],
-      buttonText: 'Actualizar plan',
-      action: () => router.push({ name: 'subscription' }),
-      show: true
-    };
-  }
+  // if (vistaActual.value === 'add-user' && usuariosCreados.value >= maxUsuariosPermitidos) {
+  //   return {
+  //     title: 'Has alcanzado el límite de usuarios',
+  //     message: `Tu plan actual permite hasta ${maxUsuariosPermitidos} ${maxUsuariosPermitidos === 1 ? 'usuario' : 'usuarios'}.`,
+  //     price: 'Actualiza tu plan para añadir más usuarios y seguir creciendo.',
+  //     benefits: [
+  //       'Aumenta el número de usuarios permitidos',
+  //       'Mantén a todo tu equipo conectado',
+  //       'Escala tu organización sin limitaciones'
+  //     ],
+  //     buttonText: 'Actualizar plan',
+  //     action: () => router.push({ name: 'subscription' }),
+  //     show: true
+  //   };
+  // }
 
-  if (vistaActual.value === 'empresas' && empresasCreadas.value >= maxEmpresasPermitidas) {
-    return {
-      title: 'Has alcanzado el límite de empresas',
-      message: `Tu plan actual permite hasta ${maxEmpresasPermitidas} empresas.`,
-      price: 'Actualiza tu plan para añadir más empresas y seguir creciendo.',
-      benefits: [
-        'Amplía tu capacidad para gestionar más empresas',
-        'Administra múltiples organizaciones desde una sola plataforma',
-        'Potencia el crecimiento de tu negocio sin restricciones'
-      ],
-      buttonText: 'Actualizar plan',
-      action: () => router.push({ name: 'subscription' }),
-      show: true
-    };
-  }
-
+  // if (vistaActual.value === 'empresas' && empresasCreadas.value >= maxEmpresasPermitidas) {
+  //   return {
+  //     title: 'Has alcanzado el límite de empresas',
+  //     message: `Tu plan actual permite hasta ${maxEmpresasPermitidas} empresas.`,
+  //     price: 'Actualiza tu plan para añadir más empresas y seguir creciendo.',
+  //     benefits: [
+  //       'Amplía tu capacidad para gestionar más empresas',
+  //       'Administra múltiples organizaciones desde una sola plataforma',
+  //       'Potencia el crecimiento de tu negocio sin restricciones'
+  //     ],
+  //     buttonText: 'Actualizar plan',
+  //     action: () => router.push({ name: 'subscription' }),
+  //     show: true
+  //   };
+  // }
   
   if (periodoDePruebaFinalizado && !estadoSuscripcion) {
     return {
@@ -130,22 +115,38 @@ const modalContent = computed(() => {
       action: () => router.push({ name: 'subscription' }),
     };
   }
-  
-  if (vistaActual.value === 'trabajadores' && trabajadoresCreados.value >= maxTrabajadoresPermitidos) {
+
+  if (vistaActual.value === 'expediente-medico' && historiasDelMes.value >= maxHistoriasPermitidasAlMes) {
     return {
-      title: 'Has alcanzado el límite de trabajadores en esta empresa',
-      message: `Tu plan actual permite hasta ${maxTrabajadoresPermitidos} trabajadores por empresa.`,
-      price: 'Actualiza tu plan para extender este límite y seguir creciendo.',
+      title: 'Has alcanzado el límite de historias clínicas este mes',
+      message: `Tu plan actual permite hasta ${maxHistoriasPermitidasAlMes} historias clínicas al mes.`,
+      price: 'Actualiza tu plan para añadir más historias clínicas y seguir creciendo.',
       benefits: [
-        'Gestiona más trabajadores por empresa',
-        'Mejora el seguimiento de salud ocupacional',
-        'Obtén reportes más completos del personal'
+        'Registra y gestiona más exámenes médicos laborales al mes',
+        'Realiza un seguimiento detallado de la salud ocupacional',
+        'Mejora la atención y el control médico de los trabajadores'
       ],
       buttonText: 'Actualizar plan',
       action: () => router.push({ name: 'subscription' }),
       show: true
     };
   }
+  
+  // if (vistaActual.value === 'trabajadores' && trabajadoresCreados.value >= maxTrabajadoresPermitidos) {
+  //   return {
+  //     title: 'Has alcanzado el límite de trabajadores en esta empresa',
+  //     message: `Tu plan actual permite hasta ${maxTrabajadoresPermitidos} trabajadores por empresa.`,
+  //     price: 'Actualiza tu plan para extender este límite y seguir creciendo.',
+  //     benefits: [
+  //       'Gestiona más trabajadores por empresa',
+  //       'Mejora el seguimiento de salud ocupacional',
+  //       'Obtén reportes más completos del personal'
+  //     ],
+  //     buttonText: 'Actualizar plan',
+  //     action: () => router.push({ name: 'subscription' }),
+  //     show: true
+  //   };
+  // }
 
   return { show: false };
 });

@@ -39,6 +39,7 @@ const selectedRoutes = ref<string[]>([]);
 const periodoDePruebaFinalizado = ref<boolean | null>(null);
 const estadoSuscripcion = ref<string | null>(null);
 const finDeSuscripcion = ref<Date | null>(null);
+const historiasDelMes = ref<number | null>(null);
 
 const user = ref( JSON.parse(localStorage.getItem('user') || '{}') || null );
 
@@ -51,7 +52,8 @@ onMounted(async () => {
     periodoDePruebaFinalizado.value = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado ?? null;
     estadoSuscripcion.value = proveedorSaludStore.proveedorSalud?.estadoSuscripcion ?? null;
     finDeSuscripcion.value = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
-
+    historiasDelMes.value = await proveedorSaludStore.getHistoriasClinicasDelMes();
+    console.log("historiasDelMes.value", historiasDelMes.value);
   } else {
     console.error("No se encontró idProveedorSalud en el usuario.");
   }
@@ -162,6 +164,7 @@ const fetchData = () => {
   trabajadores.currentTrabajadorId = trabajadorId;
   trabajadores.fetchTrabajadorById(empresaId, centroTrabajoId, trabajadorId);
   formData.resetFormData();
+
 };
 
 onMounted(fetchData);
@@ -188,6 +191,18 @@ const navigateTo = (routeName, params) => {
       showSubscriptionModal.value = true;
       return;
     }
+  }
+
+  // Bloquear si el número de historias clínicas del mes supera el límite
+  if (routeName === 'crear-documento' && params.tipoDocumento === 'historiaClinica' && historiasDelMes.value != null && historiasDelMes.value >= proveedorSaludStore.proveedorSalud?.maxHistoriasPermitidasAlMes) {
+    showSubscriptionModal.value = true;
+    return;
+  }
+
+  // Bloquear navegación a aptitud si no hay historia clínica creada previamente
+  if (routeName === 'crear-documento' && params.tipoDocumento === 'aptitud' && !documentos.documentsByYear?.historiaClinica) {
+    toast.open({ message: "Debes crear una Historia Clínica antes de registrar una Aptitud al Puesto.", type: "info" });
+    return;
   }
 
   // Si la suscripción aún está activa, permitir la navegación
