@@ -25,7 +25,6 @@ const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
-console.log("documentos", documentos.documentsByYear);
 const formData = useFormDataStore();
 const proveedorSaludStore = useProveedorSaludStore();
 
@@ -81,9 +80,9 @@ const toggleDocumentoExternoModal = () => {
 };
 
 const toggleDocumentoExternoUpdateModal = () => {
-  if (! proveedorSaludStore.proveedorSalud) return;
+  if (!proveedorSaludStore.proveedorSalud) return;
 
-  if (periodoDePruebaFinalizado) {
+  if (periodoDePruebaFinalizado.value) {
     // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
     if (!estadoSuscripcion.value || estadoSuscripcion.value === 'inactive') {
       showSubscriptionModal.value = true;
@@ -129,6 +128,9 @@ const handleDeleteDocument = async () => {
       trabajadores.currentTrabajadorId!,
       selectedDocumentId.value
     );
+
+  // Resetear el estado de tipo de documento actual
+  // documentos.setCurrentTypeOfDocument(null);
 
   toast.open({ message: "Documento eliminado exitosamente." });
 

@@ -15,19 +15,6 @@ const emit = defineEmits(['closeModal', 'openSubscriptionModal'])
 const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado;
 const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
 const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
-const maxTrabajadoresPermitidos = proveedorSaludStore.proveedorSalud?.maxTrabajadoresPermitidos;
-let empresaConMasTrabajadores = ""; // Nombre de la empresa con más trabajadores
-let trabajadoresCreados = 0;
-
-onMounted(async () => {
-  const top3Empresas = await proveedorSaludStore.getTopEmpresasByWorkers();
-  if (top3Empresas?.length > 0) {
-    empresaConMasTrabajadores = top3Empresas[0].nombreComercial;
-    trabajadoresCreados = top3Empresas[0].totalTrabajadores;
-  } else {
-    console.log("No se encontraron empresas con trabajadores registrados.");
-  }
-});
 
 const nivelesEscolaridad = [
   "Primaria", "Secundaria", "Preparatoria",
@@ -56,11 +43,6 @@ const handleSubmit = async (data) => {
       emit('openSubscriptionModal');
       return;
     }
-  }
-
-  if(trabajadoresCreados >= maxTrabajadoresPermitidos) {
-    emit('openSubscriptionModal');
-    return;
   }
 
   const trabajadorData = {
