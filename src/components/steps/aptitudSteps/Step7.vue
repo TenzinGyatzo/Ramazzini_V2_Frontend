@@ -21,6 +21,7 @@ const evaluacionSugerencias = [
     'Estudios de laboratorio',
     'Rx simple de tórax',
     'Rx columna lumbar',
+    'Rx rodillas',
     'Electrocardiograma',
 ];
 
