@@ -50,10 +50,6 @@ const proveedorSalud = ref(
     JSON.parse(localStorage.getItem('proveedorSalud')) || null // Recuperar usuario guardado o establecer null si no existe
 );
 
-const proveedorSaludId = proveedorSalud.value?._id;
-const maxEmpresasPermitidas = proveedorSalud.value?.maxEmpresasPermitidas;
-let empresasCreadas = 0;
-
 onMounted(async () => {
   // await empresas.fetchEmpresas(proveedorSaludId);
   empresasCreadas = empresas.empresas.length;

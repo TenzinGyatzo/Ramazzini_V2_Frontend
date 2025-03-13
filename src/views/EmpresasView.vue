@@ -59,9 +59,12 @@ const deleteEmpresaById = async (id: string) => {
 
     // Una vez eliminada, volvemos a hacer fetch para actualizar la lista
     await empresas.fetchEmpresas(proveedorSalud.proveedorSalud!._id);
+
+    empresas.resetCurrentEmpresa();
+    
   } catch (error) {
     console.log('Error al eliminar la empresa:', error);
-    toast.open({ message: 'Error al eliminar la empresa, por favor intente nuevamente.', type: 'error' });
+    toast.open({ message: 'Error al eliminar la empresa. Por favor, elimine primero algún centro de trabajo y vuelva a intentarlo', type: 'error' });
   }
 };
 

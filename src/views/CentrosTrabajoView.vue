@@ -58,9 +58,12 @@ const deleteCentroTrabajoById = async (empresaId: string, centroTrabajoId: strin
 
     // Una vez eliminada, volvemos a hacer fetch para actualizar la lista
     await centrosTrabajo.fetchCentrosTrabajo(String(route.params.idEmpresa));
+
+    centrosTrabajo.resetCurrentCentroTrabajo();
+    
   } catch (error) {
     console.error('Error al eliminar el centro de trabajo', error);
-    toast.open({ message: 'Hubo un error, por favor intente nuevamente.', type: 'error' });
+    toast.open({ message: 'Hubo un error. Por favor, elimine primero algunos trabajadores y vuelva a intentarlo', type: 'error' });
   }
 };
 

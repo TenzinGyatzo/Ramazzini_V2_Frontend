@@ -67,9 +67,12 @@ const deleteTrabajadorById = async (empresaId: string, centroTrabajoId: string, 
 
     // Una vez eliminado, volvemos a hacer fetch para actualizar la lista
     await trabajadores.fetchTrabajadores(empresaId, centroTrabajoId);
+
+    trabajadores.resetCurrentTrabajador();
+    
   } catch (error) {
     console.log('Error al eliminar al trabajador', error);
-    toast.open({ message: 'Hubo un error, por favor intente nuevamente.', type: 'error' });
+    toast.open({ message:  'No se pudo eliminar el trabajador. Por favor, elimine primero sus documentos y vuelva a intentarlo', type: 'error' });
   }
 };
 
