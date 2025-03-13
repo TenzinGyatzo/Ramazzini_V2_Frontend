@@ -63,7 +63,7 @@ const deleteCentroTrabajoById = async (empresaId: string, centroTrabajoId: strin
     
   } catch (error) {
     console.error('Error al eliminar el centro de trabajo', error);
-    toast.open({ message: 'Hubo un error. Por favor, elimine primero algunos trabajadores y vuelva a intentarlo', type: 'error' });
+    toast.open({ message: 'Hubo un error. Algunos documentos no se pudieron eliminar. Elimínalos directamente y vuelve a intentarlo', type: 'error' });
   }
 };
 

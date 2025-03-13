@@ -64,7 +64,7 @@ const deleteEmpresaById = async (id: string) => {
     
   } catch (error) {
     console.log('Error al eliminar la empresa:', error);
-    toast.open({ message: 'Error al eliminar la empresa. Por favor, elimine primero algún centro de trabajo y vuelva a intentarlo', type: 'error' });
+    toast.open({ message: 'Error al eliminar la empresa. Algunos documentos no se pudieron eliminar. Elimínalos directamente y vuelve a intentarlo', type: 'error' });
   }
 };
 
