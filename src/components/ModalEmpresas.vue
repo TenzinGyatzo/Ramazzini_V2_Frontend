@@ -50,11 +50,6 @@ const proveedorSalud = ref(
     JSON.parse(localStorage.getItem('proveedorSalud')) || null // Recuperar usuario guardado o establecer null si no existe
 );
 
-onMounted(async () => {
-  // await empresas.fetchEmpresas(proveedorSaludId);
-  empresasCreadas = empresas.empresas.length;
-});
-
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
 
