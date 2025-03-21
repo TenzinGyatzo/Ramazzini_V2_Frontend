@@ -29,6 +29,10 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/historiaClinica`);
     },
 
+    getNotasMedicas(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/notaMedica`);
+    },
+
     createDocument(documentType: string, trabajadorId: string, data: any) {
         return api.post(`/expedientes/${trabajadorId}/documentos/${documentType}/crear`, data);
     },

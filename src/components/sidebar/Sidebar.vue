@@ -66,6 +66,7 @@ const documentTypeLabels = {
   examenVista: "Examen de la Vista",
   antidoping: "Antidoping",
   certificado: "Certificado",
+  notaMedica: "Nota Médica",
 };
 
 </script>

@@ -14,6 +14,7 @@ import VisualizadorCertificado from '@/components/steps/VisualizadorCertificado.
 import VisualizadorExamenVista from '@/components/steps/VisualizadorExamenVista.vue';
 import VisualizadorExploracionFisica from '@/components/steps/VisualizadorExploracionFisica.vue';
 import VisualizadorHistoriaClinica from '@/components/steps/VisualizadorHistoriaClinica.vue';
+import VisualizadorNotaMedica from '@/components/steps/VisualizadorNotaMedica.vue';
 
 const route = useRoute();
 const empresas = useEmpresasStore();
@@ -78,7 +79,8 @@ watchEffect(() => {
       'documento Externo': formData.formDataDocumentoExterno,
       examenVista: formData.formDataExamenVista,
       exploracionFisica: formData.formDataExploracionFisica,
-      historiaClinica: formData.formDataHistoriaClinica
+      historiaClinica: formData.formDataHistoriaClinica,
+      notaMedica: formData.formDataNotaMedica,
     };
 
     const documentoForm = documentoMap[tipoDocumento.value];
@@ -329,6 +331,18 @@ const marcarSinHallazgos = () => {
       </div>
       <div class="w-full xl:w-3/4">
         <VisualizadorHistoriaClinica />
+      </div>
+    </div>
+  </Transition>
+
+  <Transition appear mode="out-in" name="slide-up">  
+    <div v-if="documentos.currentTypeOfDocument === 'notaMedica'"
+      class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+      <div class="w-full xl:w-1/4">
+        <FormStepper />
+      </div>
+      <div class="w-full xl:w-3/4">
+        <VisualizadorNotaMedica />
       </div>
     </div>
   </Transition>

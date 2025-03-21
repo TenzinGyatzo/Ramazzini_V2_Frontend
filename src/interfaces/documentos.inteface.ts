@@ -234,3 +234,25 @@ export interface HistoriaClinica {
     createdBy: string;
     updatedBy: string;
 }
+
+export interface NotaMedica {
+    _id: string;
+    fechaNotaMedica: string;
+    motivoConsulta?: string;
+    antecedentes?: string;
+    exploracionFisica?: string;
+    tensionArterialSistolica?: number;
+    tensionArterialDiastolica?: number;
+    frecuenciaCardiaca?: number;
+    frecuenciaRespiratoria?: number;
+    temperatura?: number;
+    saturacionOxigeno?: number;
+    diagnostico?: string;
+    tratamiento?: string;
+    recomendaciones?: string;
+    observaciones?: string;
+    idTrabajador: string;
+    rutaPDF: string;
+    createdBy: string;
+    updatedBy: string;
+}

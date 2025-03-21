@@ -9,6 +9,7 @@ import type {
   ExamenVista,
   ExploracionFisica,
   HistoriaClinica,
+  NotaMedica,
 } from "@/interfaces/documentos.inteface";
 
 export type DocumentsByYear = {
@@ -20,6 +21,7 @@ export type DocumentsByYear = {
     examenesVista?: ExamenVista[];
     exploracionesFisicas?: ExploracionFisica[];
     historiasClinicas?: HistoriaClinica[];
+    notasMedicas?: NotaMedica[];
   };
 };
 
@@ -101,6 +103,15 @@ export const useDocumentosStore = defineStore("documentos", () => {
           addHistoriasClinicasByYear(historiasClinicas.data);
       } catch (error) {
         console.error("Error al obtener historiasClinicas", error);
+      }
+      try {
+        const notasMedicas = await DocumentosAPI.getNotasMedicas(
+          trabajadorId
+        );
+        if (Array.isArray(notasMedicas.data))
+          addNotasMedicasByYear(notasMedicas.data);
+      } catch (error) {
+        console.error("Error al obtener notasMedicas", error);
       }
 
       // Funciones de agrupación por año
@@ -194,6 +205,20 @@ export const useDocumentosStore = defineStore("documentos", () => {
           documentsByYear.value[year].historiasClinicas.push(documento);
         });
       }
+
+      function addNotasMedicasByYear(data: NotaMedica[]) {
+        data.forEach((documento) => {
+          const year = new Date(documento.fechaNotaMedica).getFullYear();
+          if (!documentsByYear.value[year]) {
+            documentsByYear.value[year] = {};
+          }
+          if (!documentsByYear.value[year].notasMedicas) {
+            documentsByYear.value[year].notasMedicas = [];
+          }
+          documentsByYear.value[year].notasMedicas.push(documento);
+        });
+      }
+      
     } catch (error) {
       console.error("Error al obtener documentos", error);
     } finally {

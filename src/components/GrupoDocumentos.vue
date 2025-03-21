@@ -39,6 +39,7 @@ watch(() => props.selectedRoutes, (newSelectedRoutes) => {
         (props.documents.antidopings?.length || 0) +
         (props.documents.certificados?.length || 0) +
         (props.documents.documentosExternos?.length || 0);
+        (props.documents.notasMedicas?.length || 0);
 
     // Si el número de rutas seleccionadas es menor que el total de documentos, desmarcar "Seleccionar Todos"
     selectAll.value = newSelectedRoutes.length === totalDocuments;
@@ -110,6 +111,16 @@ const toggleSelectAll = () => {
             const rutaBase = obtenerRutaDocumento(documentoExterno, 'Documento Externo');
             const fecha = obtenerFechaDocumento(documentoExterno) || 'SinFecha';
             const nombreArchivo = obtenerNombreArchivo(documentoExterno, 'Documento Externo', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            props.toggleRouteSelection(ruta, selectAll.value);
+        });
+    }
+
+    if (props.documents.notasMedicas) {
+        props.documents.notasMedicas.forEach(notaMedica => {
+            const rutaBase = obtenerRutaDocumento(notaMedica, 'Nota Medica');
+            const fecha = obtenerFechaDocumento(notaMedica) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(notaMedica, 'Nota Medica', fecha);
             const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
             props.toggleRouteSelection(ruta, selectAll.value);
         });
@@ -277,6 +288,27 @@ const toggleSelectAll = () => {
                     })()"
                     @eliminarDocumento="$emit('eliminarDocumento', documentoExterno._id, convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento), 'documentoExterno')"
                     @abrirModalUpdate="$emit('abrirModalUpdate')" 
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
+                />
+            </div>
+        </div>
+
+        <!-- Notas Medicas -->
+        <div v-if="documents.notasMedicas && documents.notasMedicas.length > 0">
+            <div v-for="notaMedica in documents.notasMedicas" :key="notaMedica._id">
+                <DocumentoItem 
+                    :notaMedica="notaMedica" 
+                    :documentoId="notaMedica._id" 
+                    :documentoTipo="'notaMedica'" 
+                    :toggleRouteSelection="toggleRouteSelection"
+                    :isSelected="(() => {
+                        const rutaBase = obtenerRutaDocumento(notaMedica, 'Nota Medica');
+                        const fecha = obtenerFechaDocumento(notaMedica) || 'SinFecha';
+                        const nombreArchivo = obtenerNombreArchivo(notaMedica, 'Nota Medica', fecha);
+                        const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                        return props.selectedRoutes.includes(ruta);
+                    })()"
+                    @eliminarDocumento="$emit('eliminarDocumento', notaMedica._id, convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica), 'notaMedica')" 
                     @openSubscriptionModal="emit('openSubscriptionModal')"
                 />
             </div>

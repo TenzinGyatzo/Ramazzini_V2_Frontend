@@ -305,6 +305,7 @@ const props = defineProps({
     examenVista: [Object, String],
     exploracionFisica: [Object, String],
     historiaClinica: [Object, String],
+    notaMedica: [Object, String],
 });
 
 ////////////////////////////////////////////
@@ -576,7 +577,36 @@ const initialScale = computed(() => {
                     </div>
                 </div>
             </div>
+
+            <div v-if="typeof notaMedica === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
+                <div class="ml-1">
+                    <input
+                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
+                        type="checkbox" :checked="isSelected"
+                        @change="(event) => handleCheckboxChange(event, notaMedica, 'Nota Medica')">
+                </div>
+                <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
+                    `${notaMedica.rutaPDF}`,
+                    `Nota Medica ${convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica)}.pdf`)">
+                    <div class="min-w-18 sm:min-w-44">
+                        <p class="leading-5 text-sm sm:text-xl font-medium">Nota Medica</p>
+                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
+                            convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica) }}</p>
+                    </div>
+                    <div v-if="!notaMedica.diagnostico"
+                        class="flex gap-2 md-lg:block hidden">
+                        <div class="w-72 md-lg:block hidden">
+                            <p class="leading-5 text-sm px-1">IDX:</p>
+                            <p class="leading-5 font-semibold text-gray-800 px-1">
+                                {{ notaMedica.diagnostico }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
+
 
         <div class="flex gap-1 sm:gap-1 md:gap-2 lg:gap-4 mx-2">
             <!-- Botón de descarga dinámico -->
@@ -587,7 +617,8 @@ const initialScale = computed(() => {
                 'Documento Externo': documentoExterno,
                 'Examen Vista': examenVista,
                 'Exploracion Fisica': exploracionFisica,
-                'Historia Clinica': historiaClinica
+                'Historia Clinica': historiaClinica,
+                'Nota Medica': notaMedica
             }" :key="key">
                 <button v-if="documento && documento.rutaDocumento" @click="descargarArchivo(documento, key)"
                     type="button"

@@ -149,7 +149,8 @@ const documentTypeLabels = {
   examenVista: "Examen de la Vista",
   antidoping: "Antidoping",
   certificado: "Certificado",
-  documentoExterno: "Documento Externo"
+  documentoExterno: "Documento Externo",
+  notaMedica: "Nota Médica",
 };
 
 const fetchData = () => {
@@ -166,7 +167,6 @@ const fetchData = () => {
   trabajadores.currentTrabajadorId = trabajadorId;
   trabajadores.fetchTrabajadorById(empresaId, centroTrabajoId, trabajadorId);
   formData.resetFormData();
-
 };
 
 onMounted(fetchData);
@@ -294,6 +294,11 @@ const toggleRouteSelection = (route: string, isSelected: boolean) => {
         idEmpresa: empresas.currentEmpresaId,
         idTrabajador: trabajadores.currentTrabajadorId,
         tipoDocumento: 'certificado'
+      })" />
+      <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Nota Médica" @click="navigateTo('crear-documento', {
+        idEmpresa: empresas.currentEmpresaId,
+        idTrabajador: trabajadores.currentTrabajadorId,
+        tipoDocumento: 'notaMedica'
       })" />
       <div class="w-full flex justify-center">
         <SliderButton class="align-self-center" text="Documento Externo" @click="toggleDocumentoExternoModal"
