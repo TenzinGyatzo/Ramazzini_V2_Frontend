@@ -23,6 +23,7 @@ export const obtenerFechaDocumento = (documento) => {
         'fechaExploracionFisica',
         'fechaHistoriaClinica',
         'fechaDocumento',
+        'fechaNotaMedica'
     ];
 
     for (const campo of camposFecha) {

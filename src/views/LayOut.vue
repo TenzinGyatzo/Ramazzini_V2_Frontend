@@ -42,7 +42,7 @@ onMounted( () => {
 
     setTimeout(() => {
         isVisible.value = true;
-    }, 500);
+    }, 400);
 
     // Agregar detector de eventos de clic en el documento
     document.addEventListener("click", handleClickOutside);
@@ -135,7 +135,8 @@ watch(
       <button 
         v-if="isVisible && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success'].includes(route.name as string)"
         @click="toggleMenu"
-        class="fixed top-4 right-4 p-3 bg-white rounded-full hover:bg-gray-50 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl border border-gray-200 z-50 transform hover:scale-110">
+        class="fixed top-4 right-4 p-3 bg-white text-gray-700 rounded-full hover:bg-gray-100 transition-all duration-300 ease-in-out shadow-md hover:shadow-xl border border-gray-300 z-50 transform hover:scale-105 focus:outline-none focus:ring-1 focus:ring-gray-500"
+        >
         <svg 
           class="w-6 h-6 text-gray-700 transition-transform duration-300 ease-in-out"
           :class="{ 'rotate-90': isMenuOpen }"
@@ -222,16 +223,17 @@ watch(
 
 /* Transición delayed-appear mejorada */
 .delayed-appear-enter-active {
-  transition: opacity 0.5s ease 0.5s; 
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .delayed-appear-leave-active {
-  transition: opacity 0.3s ease;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .delayed-appear-enter-from,
 .delayed-appear-leave-to {
   opacity: 0;
+  transform: scale(0.5) rotate(-180deg);
 }
 
 /* Transición para botones interactivos */

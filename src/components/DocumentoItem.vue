@@ -59,9 +59,11 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 // Función dinámica para descargar un archivo basado en el documento// Función dinámica para descargar un archivo basado en el documento
 const descargarArchivo = async (documento, tipoDocumento) => {
     try {
+        console.log('Descargando archivo:', { documento, tipoDocumento });
 
         const ruta = obtenerRutaDocumento(documento, tipoDocumento);
 
+        console.log('Ruta del documento:', ruta);
         if (!ruta) {
             console.warn('El documento no está disponible o no es válido:', { documento, tipoDocumento });
             alert('El documento no está disponible o no es válido.');
@@ -593,7 +595,7 @@ const initialScale = computed(() => {
                         <p class="leading-5 text-xs sm:text-base text-gray-500">{{
                             convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica) }}</p>
                     </div>
-                    <div v-if="!notaMedica.diagnostico"
+                    <div v-if="notaMedica.diagnostico"
                         class="flex gap-2 md-lg:block hidden">
                         <div class="w-72 md-lg:block hidden">
                             <p class="leading-5 text-sm px-1">IDX:</p>

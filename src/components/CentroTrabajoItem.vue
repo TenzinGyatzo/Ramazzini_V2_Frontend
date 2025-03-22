@@ -23,7 +23,7 @@ defineEmits<{
 
 // Método para formatear la dirección
 const formatDireccion = (centro: CentroTrabajo) => {
-    const parts = [];
+    const parts: string[] = [];
     if (centro.direccionCentro) parts.push(centro.direccionCentro);
     if (centro.codigoPostal) parts.push(centro.codigoPostal);
     if (centro.municipio) parts.push(centro.municipio);

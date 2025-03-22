@@ -74,7 +74,9 @@ const goToStep = (stepNumber) => {
         Motivo de consulta: <span class="font-light">{{ formData.formDataNotaMedica.motivoConsulta }}</span> 
       </p>
     </div>
-    <div v-else class="w-full cursor-pointer text-gray-500" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 2 }" @click="goToStep(2)">+ Agregar Motivo de Consulta</div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 2 }" @click="goToStep(2)">
+      + Agregar Motivo de Consulta
+    </div>
 
     <!-- Antecedentes -->
     <div v-if="formData.formDataNotaMedica.antecedentes" 
@@ -84,7 +86,7 @@ const goToStep = (stepNumber) => {
         Antecedentes: <span class="font-light">{{ formData.formDataNotaMedica.antecedentes }}</span> 
       </p>
     </div>
-    <div v-else class="w-full cursor-pointer text-gray-500" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 3 }" @click="goToStep(3)">+ Agregar Antecedentes</div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 3 }" @click="goToStep(3)">+ Agregar Antecedentes</div>
 
     <!-- Exploración Física -->
     <div v-if="formData.formDataNotaMedica.exploracionFisica" class="w-full mb-1 cursor-pointer" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 4 }" @click="goToStep(4)">
@@ -92,7 +94,7 @@ const goToStep = (stepNumber) => {
         Exploración Física: <span class="font-light">{{ formData.formDataNotaMedica.exploracionFisica }}</span> 
       </p>
     </div>
-    <div v-else class="w-full cursor-pointer text-gray-500" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 4 }" @click="goToStep(4)">+ Agregar Exploración Física</div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 4 }" @click="goToStep(4)">+ Agregar Exploración Física</div>
 
     <!-- Signos Vitales -->
     <div v-if="formData.formDataNotaMedica.tensionArterialSistolica || formData.formDataNotaMedica.tensionArterialDiastolica || formData.formDataNotaMedica.frecuenciaCardiaca || formData.formDataNotaMedica.frecuenciaRespiratoria || formData.formDataNotaMedica.temperatura || formData.formDataNotaMedica.saturacionOxigeno" class="w-full mb-1 cursor-pointer" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 5 }"
@@ -116,7 +118,7 @@ const goToStep = (stepNumber) => {
       </template>
       </p>
     </div>
-    <div v-else class="w-full cursor-pointer text-gray-500" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 5 }" @click="goToStep(5)">+ Signos Vitales</div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 5 }" @click="goToStep(5)">+ Signos Vitales</div>
 
     <!-- Diagnóstico -->
     <div v-if="formData.formDataNotaMedica.diagnostico" class="w-full mb-1 cursor-pointer" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }" @click="goToStep(6)">
@@ -124,7 +126,7 @@ const goToStep = (stepNumber) => {
         IDX: {{ formData.formDataNotaMedica.diagnostico.toUpperCase() }}
       </p>
     </div>
-    <div v-else class="w-full cursor-pointer text-gray-500" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 6 }" @click="goToStep(6)">+ Agregar Diagnóstico</div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 6 }" @click="goToStep(6)">+ Agregar Diagnóstico</div>
 
     <!-- Tratamiento -->
     <div 
@@ -142,12 +144,12 @@ const goToStep = (stepNumber) => {
             class="ml-4 relative"
           >
             <span class="absolute left-0">{{ index + 1 }}.</span>
-            <span class="block pl-4">{{ item }}</span>
+            <span class="block pl-4 font-medium">{{ item }}</span>
           </div>
         </span>
       </p>
     </div>
-    <div v-else class="w-full cursor-pointer text-gray-500" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 7 }" @click="goToStep(7)">+ Agregar Tratamiento</div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 7 }" @click="goToStep(7)">+ Agregar Tratamiento</div>
 
     <!-- Recomendaciones -->
     <div 
@@ -170,7 +172,7 @@ const goToStep = (stepNumber) => {
       </span>
       </p>
     </div>
-    <div v-else class="w-full cursor-pointer text-gray-500" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 8 }" @click="goToStep(8)">+ Agregar Recomendaciones</div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 8 }" @click="goToStep(8)">+ Agregar Recomendaciones</div>
 
     <!-- Observaciones -->
     <div v-if="formData.formDataNotaMedica.observaciones" 
@@ -180,7 +182,7 @@ const goToStep = (stepNumber) => {
         Observaciones: <span class="font-light">{{ formData.formDataNotaMedica.observaciones }}</span> 
       </p>
     </div>
-    <div v-else class="w-full cursor-pointer text-gray-500" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 9 }" @click="goToStep(9)">+ Agregar Observaciones</div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 9 }" @click="goToStep(9)">+ Agregar Observaciones</div>
 
   </div>
 </template>
