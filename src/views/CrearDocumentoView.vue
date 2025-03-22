@@ -337,11 +337,11 @@ const marcarSinHallazgos = () => {
 
   <Transition appear mode="out-in" name="slide-up">  
     <div v-if="documentos.currentTypeOfDocument === 'notaMedica'"
-      class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
-      <div class="w-full xl:w-1/4">
+      class="max-w-6xl mx-auto flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+      <div class="w-full xl:w-1/3">
         <FormStepper />
       </div>
-      <div class="w-full xl:w-3/4">
+      <div class="w-full xl:w-2/3 max-w-3xl mx-auto">
         <VisualizadorNotaMedica />
       </div>
     </div>

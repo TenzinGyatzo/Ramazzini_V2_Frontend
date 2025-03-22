@@ -35,6 +35,12 @@ watch(recomendaciones, (newValue) => {
 // Funciones para agregar o eliminar entradas
 function addRecomendacion() {
   recomendaciones.value.push('');
+  // Esperar a que el DOM se actualice y luego establecer el focus
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('input');
+    const lastInput = inputs[inputs.length - 1];
+    lastInput.focus();
+  }, 0);
 }
 
 function removeRecomendacion(index) {
