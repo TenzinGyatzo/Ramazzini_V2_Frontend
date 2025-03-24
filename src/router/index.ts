@@ -110,6 +110,12 @@ const router = createRouter({
           path: "/suscripcion-exitosa",
           name: "subscription-success",
           component: () => import('@/views/auth/SubscriptionSuccess.vue'),
+        },
+        {
+          path: "/panel-administrador",
+          name: "panel-administrador",
+          component: () => import("@/views/PanelAdministradorView.vue"),
+          meta: { requiresAdmin: true },
         }
       ],
     },
@@ -120,9 +126,34 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   // const requiresAuth = to.matched.some((url) => url.meta.requiresAuth);
   const requiresAuth = to.meta.requiresAuth; // Verifica solo la ruta actual
+  const requiresAdmin = to.meta.requiresAdmin; // Verifica solo
   const userStore = useUserStore();
 
-  if (requiresAuth) {
+  try {
+    if (requiresAuth) {
+      await userStore.fetchUser();
+      await AuthAPI.auth();
+    }
+    
+    const user = userStore.user;
+
+    // Validar si requiere ser admin y no lo es
+    if (requiresAdmin && (!user || user.role !== "Administrador")) {
+      console.warn("Acceso denegado: no eres administrador");
+      return next({ name: "inicio" });
+    }
+
+    next();
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      console.log('No autorizado');
+    } else {
+      console.error("Error inesperado:", error);
+    }
+    next("/login");
+  }
+
+/*   if (requiresAuth) {
     try {
       await userStore.fetchUser();
       await AuthAPI.auth();
@@ -138,7 +169,7 @@ router.beforeEach(async (to, from, next) => {
     }
   } else {
     next();
-  }
+  } */
 });
 
 export default router;

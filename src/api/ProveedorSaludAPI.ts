@@ -31,5 +31,9 @@ export default {
 
     getHistoriasClinicasDelMes(proveedorId: string) {
         return proveedor.get(`/historias-clinicas-del-mes/${proveedorId}`);
+    },
+
+    getAllProveedores() {
+        return proveedor.get("/obtener-proveedores-salud");
     }
 }

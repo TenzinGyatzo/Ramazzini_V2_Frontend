@@ -160,6 +160,19 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         }
     }
 
+    async function getAllProveedores() {
+        try {
+            loading.value = true;
+            const { data } = await ProveedorSaludAPI.getAllProveedores();
+            return data;
+        } catch (error) {
+            console.log(error);
+            return [];
+        } finally {
+            loading.value = false;
+        }
+    }
+
     return {
         proveedorSalud,
         loading,
@@ -171,6 +184,7 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         verificarPeriodoDePrueba,
         verificarFinSuscripcion,
         getTopEmpresasByWorkers,
-        getHistoriasClinicasDelMes
+        getHistoriasClinicasDelMes,
+        getAllProveedores
     };
 });

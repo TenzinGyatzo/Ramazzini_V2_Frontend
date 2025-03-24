@@ -155,7 +155,7 @@ watch(
         class="fixed top-16 right-4 bg-white rounded-lg shadow-lg p-4 w-64 z-40">
         <div class="space-y-2">
           <!-- Configuración -->
-          <div>
+          <div v-if="user.user?.role !== 'Administrador'">
             <p class="text-sm font-medium text-gray-700 mb-2">Configuración</p>
             <a v-if="user.user?.role === 'Principal'" @click="router.push({ name: 'perfil-proveedor' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
               Mi Negocio 
@@ -184,6 +184,14 @@ watch(
             </a>
             <a @click="router.push({ name: 'subscription' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out cursor-pointer">
               Ver Planes
+            </a>
+          </div>
+
+          <!-- Administrador -->
+          <div v-if="user.user?.role === 'Administrador'">
+            <p class="text-sm font-medium text-gray-700 mb-2">Administrador</p>
+            <a @click="router.push({ name: 'panel-administrador' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
+              Panel de Administrador
             </a>
           </div>
         </div>
