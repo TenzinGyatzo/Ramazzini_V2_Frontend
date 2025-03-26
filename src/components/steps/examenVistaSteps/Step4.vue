@@ -8,7 +8,7 @@ const documentos = useDocumentosStore();
 
 const ojoIzquierdoLejanaConCorreccion = ref(20);
 const ojoDerechoLejanaConCorreccion = ref(20);
-const conCorreccionLejanaInterpretacion = ref('Visión Normal');
+const conCorreccionLejanaInterpretacion = ref('Visión normal');
 const usaLentes = ref('No');
 
 onMounted(() => {
@@ -77,17 +77,17 @@ function interpretarAgudezaVisualLejana() {
 
 // Función auxiliar para obtener la interpretación
 function obtenerInterpretacion(valor) {
-  if (valor == 10) {
+  if (valor >= 10 && valor <= 15) {
     return "Visión excepcional";
-  } else if (valor == 20) {
-    return "Visión Normal";
-  } else if (valor == 30) {
+  } else if (valor >= 16 && valor <= 25) {
+    return "Visión normal";
+  } else if (valor >= 26 && valor <= 35) {
     return "Visión ligeramente reducida";
-  } else if (valor == 40) {
+  } else if (valor >= 36 && valor <= 45) {
     return "Visión moderadamente reducida";
-  } else if (valor == 50) {
+  } else if (valor >= 46 && valor <= 55) {
     return "Visión significativamente reducida";
-  } else if (valor >= 60) {
+  } else if (valor >= 56) {
     return "Visión muy reducida";
   }
   return "NA";
@@ -123,13 +123,13 @@ function obtenerInterpretacion(valor) {
         <div class="flex flex-col space-y-1">
           <input type="number"
             class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-            value="20" step="10" min="10" max="200" readonly />
+            value="20" step="5" min="10" max="200" readonly />
         </div>
         <p class="text-3xl">/</p>
         <div class="flex flex-col space-y-1">
           <input type="number"
             class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-            v-model="ojoIzquierdoLejanaConCorreccion" step="10" min="10" max="200" />
+            v-model="ojoIzquierdoLejanaConCorreccion" step="5" min="10" max="200" />
         </div>
       </div>
 
@@ -138,13 +138,13 @@ function obtenerInterpretacion(valor) {
         <div class="flex flex-col space-y-1">
           <input type="number"
             class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-            value="20" step="10" min="10" max="200" readonly />
+            value="20" step="5" min="10" max="200" readonly />
         </div>
         <p class="text-3xl">/</p>
         <div class="flex flex-col space-y-1">
           <input type="number"
             class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-            v-model="ojoDerechoLejanaConCorreccion" step="10" min="10" max="200" />
+            v-model="ojoDerechoLejanaConCorreccion" step="5" min="10" max="200" />
         </div>
       </div>
 

@@ -310,6 +310,24 @@ const props = defineProps({
     notaMedica: [Object, String],
 });
 
+const handleKeyDown = (event) => {
+    if (event.key === 'Escape') {
+        if (showImageViewer.value) {
+            cerrarImagen();
+        } else if (showPdfViewer.value) {
+            cerrarPdf();
+        }
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('keydown', handleKeyDown);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeyDown);
+});
+
 ////////////////////////////////////////////
 // Estado para la anchura de la ventana
 const windowWidth = ref(window.innerWidth);
