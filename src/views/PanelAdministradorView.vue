@@ -21,17 +21,28 @@ const redirigirSiNoEsAdmin = () => {
 
 const cargarProveedores = async () => {
   const listaProveedores = await proveedorSaludStore.getAllProveedores();
-  const proveedoresConSuscripcion = await Promise.all(
+
+  const proveedoresConInfo = await Promise.all(
     listaProveedores.map(async (p) => {
-      if (p.suscripcionActiva) {
-        const suscripcion = await pagosStore.getSubscriptionFromDB(p.suscripcionActiva);
-        return { ...p, suscripcion };
-      }
-      return { ...p, suscripcion: null };
+      const suscripcion = p.suscripcionActiva
+        ? await pagosStore.getSubscriptionFromDB(p.suscripcionActiva)
+        : null;
+
+      const historiasClinicasMes = await proveedorSaludStore.getHistoriasClinicasDelMesById(p._id);
+      const notasMedicasMes = await proveedorSaludStore.getNotasMedicasDelMesById(p._id);
+
+      return {
+        ...p,
+        suscripcion,
+        historiasClinicasMes,
+        notasMedicasMes,
+      };
     })
   );
-  proveedores.value = proveedoresConSuscripcion;
+
+  proveedores.value = proveedoresConInfo;
 };
+
 
 redirigirSiNoEsAdmin();
 

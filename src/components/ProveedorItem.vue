@@ -16,6 +16,8 @@ const props = defineProps({
   semaforizacionActivada: Boolean,
   logotipoEmpresa: Object,
   suscripcion: Object,
+  historiasClinicasMes: Number,
+  notasMedicasMes: Number,
 });
 
 const historiasDelMes = ref(0);
@@ -97,9 +99,10 @@ const formatCurrency = (amount) => {
             <p class="text-gray-600"><strong>🎨 Color Informe:</strong> {{ nombreColorInforme }}</p>
             <p class="text-gray-600"><strong>🚦 Semaforización:</strong> {{ semaforizacionActivada ? 'Activada' : 'Desactivada' }}</p>
             <p class="text-gray-600">
-                <strong>👥 Historias Clínicas al Mes:</strong>
-                {{ `${maxHistoriasPermitidasAlMes - historiasDelMes} permitidas` || 'No disponible' }}
+                <strong>👥 H. Clínicas Usadas en {{ mesActual }}:</strong>
+                {{ `${historiasClinicasMes} de ${maxHistoriasPermitidasAlMes} permitidas` }}
             </p>
+            <p class="text-gray-600"><strong>📝 Notas Médicas Usadas en {{ mesActual }}:</strong> {{ `${notasMedicasMes} ${notasMedicasMes === 1 ? 'nota' : 'notas'}` }}</p>
             <p class="text-gray-600"><strong>⏳ Periodo Gratuito:</strong> {{ periodoGratuito }}</p>
             <p class="text-gray-600">
                 <strong>📍 Estado: </strong>
