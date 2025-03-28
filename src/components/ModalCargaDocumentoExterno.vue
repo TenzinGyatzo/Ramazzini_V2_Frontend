@@ -43,7 +43,6 @@ const updateFileExtension = (event) => {
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
-
   // Convertir la fecha del campo fechaDocumento a formato ISO
   if (data.fechaDocumento) {
     data.fechaDocumento = convertirYYYYMMDDaISO(data.fechaDocumento);
@@ -52,7 +51,20 @@ const handleSubmit = async (data) => {
   // Asegurarse de que 'notasDocumento' sea una cadena vacía si está indefinida o null
   if (!data.notasDocumento) {
     data.notasDocumento = '';
-  } else {
+  }
+
+  // Obtener el archivo desde el input
+  const fileInput = document.querySelector('input[name="file"]');
+  const file = fileInput?.files?.[0];
+
+  // Validar tamaño máximo (1MB por límite default de Nginx)
+  const maxSizeMB = 1;
+  if (file && file.size > maxSizeMB * 1024 * 1024) {
+    toast.open({
+      message: `El archivo supera el límite de ${maxSizeMB}MB.`,
+      type: 'error'
+    });
+    return;
   }
 
   // Crear una instancia de FormData
@@ -61,15 +73,9 @@ const handleSubmit = async (data) => {
     formData.append(key, data[key]);
   });
 
-  // Verificar si el archivo está presente y agregarlo a FormData
-  const fileInput = document.querySelector('input[name="file"]');
-  if (fileInput && fileInput.files[0]) {
-    formData.append('file', fileInput.files[0]);
-  } else {
-  }
-
-  // Mostrar el contenido de FormData para depuración
-  for (let pair of formData.entries()) {
+  // Agregar archivo si existe
+  if (file) {
+    formData.append('file', file);
   }
 
   try {
@@ -79,13 +85,13 @@ const handleSubmit = async (data) => {
     toast.open({ message: 'Documento subido con éxito' });
 
     emit('updateData');
-
     closeModal();
   } catch (error) {
     console.log('Error al subir el documento:', error);
     toast.open({ message: 'Error al subir el documento, por favor intente nuevamente.', type: 'error' });
   }
 };
+
 
 // Limpiar la vista previa cuando se cierre el modal
 const closeModal = () => {
