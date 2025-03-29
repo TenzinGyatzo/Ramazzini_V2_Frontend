@@ -48,6 +48,31 @@ const goToStep = (stepNumber) => {
           <td class="px-2 py-1 border border-gray-300 font-medium">Opiáceos</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.opiaceos }}</td>
         </tr>
+        <tr v-if="formData.formDataAntidoping.benzodiacepinas" 
+          class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
+          <td class="px-2 py-1 border border-gray-300 font-medium">Benzodiacepinas</td>
+          <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.benzodiacepinas }}</td>
+        </tr>
+        <tr v-if="formData.formDataAntidoping.fenciclidina" 
+          class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
+          <td class="px-2 py-1 border border-gray-300 font-medium">Fenciclidina</td>
+          <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.fenciclidina }}</td>
+        </tr>
+        <tr v-if="formData.formDataAntidoping.metadona" 
+          class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
+          <td class="px-2 py-1 border border-gray-300 font-medium">Metadona</td>
+          <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.metadona }}</td>
+        </tr>
+        <tr v-if="formData.formDataAntidoping.barbituricos" 
+          class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
+          <td class="px-2 py-1 border border-gray-300 font-medium">Barbituricos</td>
+          <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.barbituricos }}</td>
+        </tr>
+        <tr v-if="formData.formDataAntidoping.antidepresivosTriciclicos" 
+          class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
+          <td class="px-2 py-1 border border-gray-300 font-medium">Antidepresivos T.</td>
+          <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.antidepresivosTriciclicos }}</td>
+        </tr>
       </tbody>
 
     </table>

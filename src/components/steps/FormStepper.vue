@@ -373,6 +373,8 @@ export default {
       try {
         let response;
         if (datosLimpios._id) {
+          // console.log(datosLimpios)
+          
           // Actualizar el documento
           response = await documentos.updateDocument(
             documentos.currentTypeOfDocument,
@@ -418,7 +420,6 @@ export default {
       documentos.currentTypeOfDocument = null;
       router.back();
     };
-
 
     return {
       stepsStore,
