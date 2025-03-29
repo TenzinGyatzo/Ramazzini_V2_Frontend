@@ -310,6 +310,8 @@ const props = defineProps({
     notaMedica: [Object, String],
 });
 
+const { antidoping } = props; // Desestructuración para acceder a antidoping
+
 const handleKeyDown = (event) => {
     if (event.key === 'Escape') {
         if (showImageViewer.value) {
@@ -355,6 +357,46 @@ const initialScale = computed(() => {
   if (isMediumScreen.value) return 1.4;   // 768px - 1023px
   return 0.8;                               // < 768px
 });
+
+// Lógica para mensajes dinámicos de antidopings
+const parametros = [
+  'marihuana',
+  'cocaina',
+  'anfetaminas',
+  'metanfetaminas',
+  'opiaceos',
+  'benzodiacepinas',
+  'fenciclidina',
+  'metadona',
+  'barbituricos',
+  'antidepresivosTriciclicos'
+]
+
+// Obtenemos solo los parámetros que existen en el objeto actual
+const parametrosPresentes = computed(() =>
+  parametros.filter(p => antidoping[p] !== undefined)
+)
+
+// ¿Hay algún parámetro positivo?
+const positivos = computed(() =>
+  parametrosPresentes.value.some(p => antidoping[p] === 'Positivo')
+)
+
+// ¿Todos los parámetros presentes son negativos?
+const todosNegativos = computed(() =>
+  parametrosPresentes.value.every(p => antidoping[p] === 'Negativo')
+)
+
+// Mensaje según cantidad de parámetros y estado
+const mensajeNegativo = computed(() => {
+  if (!positivos.value && todosNegativos.value) {
+    const cantidad = parametrosPresentes.value.length
+    if (cantidad === 5) return 'Negativo a cinco parámetros'
+    if (cantidad === 6) return 'Negativo a seis parámetros'
+    if (cantidad === 10) return 'Negativo a diez parámetros'
+  }
+  return null
+})
 ///////////////////////////////////////////
 </script>
 
@@ -380,9 +422,9 @@ const initialScale = computed(() => {
                     <div class="flex gap-2 md-lg:block hidden">
                         <div class="w-72">
                             <p class="leading-5 text-sm px-1">Resultados:</p>
-                            <p v-if="antidoping.marihuana === 'Positivo' || antidoping.cocaina === 'Positivo' || antidoping.anfetaminas === 'Positivo' || antidoping.metanfetaminas === 'Positivo' || antidoping.opiaceos === 'Positivo'"
-                                class="leading-5 font-semibold text-red-500 px-1">Positivo</p>
-                            <p v-else class="leading-5 font-semibold text-gray-800 px-1"> Negativo a cinco parámetros
+                            <p v-if="positivos" class="leading-5 font-semibold text-red-500 px-1">Positivo</p>
+                            <p v-else-if="mensajeNegativo" class="leading-5 font-semibold text-gray-800 px-1">
+                                {{ mensajeNegativo }}
                             </p>
                         </div>
                     </div>
