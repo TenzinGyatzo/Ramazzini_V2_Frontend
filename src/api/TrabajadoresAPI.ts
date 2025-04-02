@@ -6,6 +6,10 @@ export default {
         return api.get(`/${empresaId}/${centroTrabajoId}/trabajadores`)
     },
 
+    getTrabajadoresConHistoria(empresaId: string, centroTrabajoId: string) {
+        return api.get(`/${empresaId}/${centroTrabajoId}/trabajadores-con-historia`);
+    },      
+
     getTrabajadorById(empresaId: string, centroTrabajoId: string, trabajadorId: string) {
         return api.get(`/${empresaId}/${centroTrabajoId}/${trabajadorId}`)
     },

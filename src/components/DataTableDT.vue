@@ -53,6 +53,10 @@ onMounted(() => {
           <th>Teléfono</th>
           <th>Estado Civil</th>
           <th>Hijos</th>
+          <th>Diabético</th>
+          <th>Alérgico</th>
+          <th>Hipertensivo</th>
+          <th>Accidente Laboral</th>
           <th>Expediente</th>
           <th>Acciones</th>
         </tr>

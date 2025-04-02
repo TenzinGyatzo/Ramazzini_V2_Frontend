@@ -83,7 +83,8 @@ const toggleImportModal = () => {
 onMounted(() => {
   const empresaId = String(route.params.idEmpresa);
   const centroTrabajoId = String(route.params.idCentroTrabajo);
-  trabajadores.fetchTrabajadores(empresaId, centroTrabajoId);
+  // trabajadores.fetchTrabajadores(empresaId, centroTrabajoId);
+  trabajadores.fetchTrabajadoresConHistoria(empresaId, centroTrabajoId);
 
   // Setear los ID actuales en el store
   empresas.currentEmpresaId = empresaId;
@@ -153,6 +154,10 @@ const exportTrabajadores = async () => {
           <td>{{ trabajador.telefono ? trabajador.telefono : '-' }}</td>
           <td>{{ trabajador.estadoCivil }}</td>
           <td>{{ trabajador.hijos }}</td>
+          <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.diabeticosPP === 'Si' ? 'Sí' : 'No') : '-' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.alergicos === 'Si' ? 'Sí' : 'No') : '-' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.hipertensivosPP === 'Si' ? 'Sí' : 'No') : '-' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.accidenteLaboral === 'Si' ? 'Sí' : 'No') : '-' }}</td>
           <td>
             <button type="button"
               class="bg-emerald-600 text-white rounded-full px-2 py-1 transition-transform duration-300 ease-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-700 border-2 border-emerald-600"

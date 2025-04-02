@@ -18,6 +18,12 @@ interface Trabajador {
   updatedBy: string;
   createdAt: string;
   updatedAt: string;
+  historiaClinicaResumen?: {
+    diabeticosPP?: string | null;
+    alergicos?: string | null;
+    hipertensivosPP?: string | null;
+    accidenteLaboral?: string | null;
+  };  
 }
 
 export const useTrabajadoresStore = defineStore("trabajadores", () => {
@@ -65,6 +71,20 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
       loading.value = false;
     }
   }
+
+  async function fetchTrabajadoresConHistoria(empresaId: string, centroTrabajoId: string) {
+    try {
+      loading.value = true;
+      const { data } = await TrabajadoresAPI.getTrabajadoresConHistoria(empresaId, centroTrabajoId);
+      trabajadores.value = data;
+      return data;
+    } catch (error) {
+      console.error('Error al obtener trabajadores con historia clínica', error);
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }  
 
   async function fetchTrabajadorById(
     empresaId: string,
@@ -215,6 +235,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
     currentTrabajador,
     resetCurrentTrabajador,
     fetchTrabajadores,
+    fetchTrabajadoresConHistoria,
     fetchTrabajadorById,
     createTrabajador,
     updateTrabajador,
