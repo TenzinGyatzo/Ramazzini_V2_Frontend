@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount } from 'vue';
+import { onMounted, ref } from 'vue';
 import DataTablesCore from 'datatables.net-dt';
 import 'datatables.net-select-dt';
 import 'datatables.net-buttons-dt';
 import 'datatables.net-fixedcolumns-dt';
+
+const tablaRef = ref<HTMLElement | null>(null);
 
 let dataTableInstance: any = null;
 
@@ -27,19 +29,48 @@ onMounted(() => {
             0: "", // Texto cuando no se selecciona ninguna fila
             1: ""  // Texto cuando se selecciona una fila
           },
-          cells: "", // Texto para celdas seleccionadas (puedes dejarlo vacío)
+          cells: "", // Texto para celdas seleccionadas (puedes dejarlo vacio)
           columns: "" // Texto para columnas seleccionadas (puedes dejarlo vacío)
         }
       },
+      columnDefs: [
+        { targets: [11, 12, 13, 14], visible: false } // Oculta las columnas de historia clínica
+      ]
     } as any);
   }
+
+  document.getElementById('filtro-puesto')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    dataTableInstance.column(6).search(valor, true, false).draw();
+  });
+
+  document.getElementById('filtro-alergico')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    dataTableInstance.column(11).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
+  document.getElementById('filtro-diabetico')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    dataTableInstance.column(12).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
+  document.getElementById('filtro-hipertensivo')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    dataTableInstance.column(13).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
+  document.getElementById('filtro-accidente')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    dataTableInstance.column(14).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
 });
 
 </script>
 
 <template>
   <div class="table-container">
-    <table id="customTable" class="table-auto w-full border-collapse">
+    <table id="customTable" ref="tablaRef" class="table-auto w-full border-collapse">
       <thead>
         <tr>
           <th>#</th>
@@ -53,10 +84,10 @@ onMounted(() => {
           <th>Teléfono</th>
           <th>Estado Civil</th>
           <th>Hijos</th>
-          <th>Diabético</th>
-          <th>Alérgico</th>
-          <th>Hipertensivo</th>
-          <th>Accidente Laboral</th>
+          <th>Alg.</th>
+          <th>Dbt.</th>
+          <th>Hta.</th>
+          <th>Acc.</th>
           <th>Expediente</th>
           <th>Acciones</th>
         </tr>

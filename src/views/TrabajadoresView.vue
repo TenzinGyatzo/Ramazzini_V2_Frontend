@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, inject } from 'vue';
+import { ref, nextTick, onMounted, inject } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -80,11 +80,43 @@ const toggleImportModal = () => {
   showImportModal.value = !showImportModal.value;
 };
 
-onMounted(() => {
+  // Rellenar dinámicamente el select de puestos
+  const llenarOpcionesPuesto = () => {
+  const selectPuesto = document.getElementById('filtro-puesto') as HTMLSelectElement;
+  if (!selectPuesto) return;
+
+  // Limpiar opciones anteriores (excepto "Todos")
+  while (selectPuesto.options.length > 1) {
+    selectPuesto.remove(1);
+  }
+
+  const puestosUnicos = [...new Set(trabajadores.trabajadores.map(t => t.puesto).filter(Boolean))].sort();
+  const puestos = trabajadores.trabajadores.map(t => t.puesto);
+  console.log('Puestos encontrados:', puestos);
+
+  puestosUnicos.forEach(puesto => {
+      const option = document.createElement('option');
+      option.value = puesto;
+      option.textContent = puesto;
+      selectPuesto.appendChild(option);
+    });
+  };
+
+onMounted(async () => {
   const empresaId = String(route.params.idEmpresa);
   const centroTrabajoId = String(route.params.idCentroTrabajo);
   // trabajadores.fetchTrabajadores(empresaId, centroTrabajoId);
-  trabajadores.fetchTrabajadoresConHistoria(empresaId, centroTrabajoId);
+  await trabajadores.fetchTrabajadoresConHistoria(empresaId, centroTrabajoId);
+  await nextTick(); // Espera que el DOM y los datos estén actualizados
+  console.log('Trabajadores cargados:', trabajadores.trabajadores);
+
+  llenarOpcionesPuesto();
+
+  // Establecer IDs actuales
+  empresas.currentEmpresaId = empresaId;
+  empresas.fetchEmpresaById(empresaId);
+  centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;
+  centrosTrabajo.fetchCentroTrabajoById(empresaId, centroTrabajoId);
 
   // Setear los ID actuales en el store
   empresas.currentEmpresaId = empresaId;
@@ -139,6 +171,56 @@ const exportTrabajadores = async () => {
       </h1>
     </div>
     <div v-else>
+      <div class="flex flex-wrap gap-4 my-6 justify-center">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Puesto</label>
+          <select id="filtro-puesto" class="border px-2 py-1 rounded-md">
+            <option value="">Todos</option>
+            <!-- Puedes rellenar dinámicamente opciones si quieres, por ahora deja esto como está -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Alérgico</label>
+          <select id="filtro-alergico" class="border px-2 py-1 rounded-md">
+            <option value="">Todos</option>
+            <option value="Si">Si</option>
+            <option value="No">No</option>
+            <option value="-">Sin datos</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Diabético</label>
+          <select id="filtro-diabetico" class="border px-2 py-1 rounded-md">
+            <option value="">Todos</option>
+            <option value="Si">Si</option>
+            <option value="No">No</option>
+            <option value="-">Sin datos</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Hipertensivo</label>
+          <select id="filtro-hipertensivo" class="border px-2 py-1 rounded-md">
+            <option value="">Todos</option>
+            <option value="Si">Si</option>
+            <option value="No">No</option>
+            <option value="-">Sin datos</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Accidente laboral</label>
+          <select id="filtro-accidente" class="border px-2 py-1 rounded-md">
+            <option value="">Todos</option>
+            <option value="Si">Si</option>
+            <option value="No">No</option>
+            <option value="-">Sin datos</option>
+          </select>
+        </div>
+      </div>
+
       <!-- Usar el componente DataTableDT -->
       <DataTableDT v-if="trabajadores.trabajadores.length > 0" class="table-auto z-1">
         <tr v-for="(trabajador, index) in trabajadores.trabajadores" :key="trabajador._id"
@@ -154,10 +236,10 @@ const exportTrabajadores = async () => {
           <td>{{ trabajador.telefono ? trabajador.telefono : '-' }}</td>
           <td>{{ trabajador.estadoCivil }}</td>
           <td>{{ trabajador.hijos }}</td>
-          <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.diabeticosPP === 'Si' ? 'Sí' : 'No') : '-' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.alergicos === 'Si' ? 'Sí' : 'No') : '-' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.hipertensivosPP === 'Si' ? 'Sí' : 'No') : '-' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.accidenteLaboral === 'Si' ? 'Sí' : 'No') : '-' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.alergicos === 'Si' ? 'Si' : 'No') : '-' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.diabeticosPP === 'Si' ? 'Si' : 'No') : '-' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.hipertensivosPP === 'Si' ? 'Si' : 'No') : '-' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.accidenteLaboral === 'Si' ? 'Si' : 'No') : '-' }}</td>
           <td>
             <button type="button"
               class="bg-emerald-600 text-white rounded-full px-2 py-1 transition-transform duration-300 ease-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-700 border-2 border-emerald-600"
