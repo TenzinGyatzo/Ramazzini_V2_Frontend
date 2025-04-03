@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted, inject } from 'vue';
+import { ref, nextTick, onMounted, inject, watch, computed } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -29,6 +29,31 @@ const showImportModal = ref(false);
 const showSubscriptionModal = ref(false);
 const selectedTrabajadorId = ref<string | null>(null);
 const selectedTrabajadorNombre = ref<string | null>(null);
+
+const selectPuestoRef = ref<HTMLSelectElement | null>(null);
+
+watch(
+  [() => selectPuestoRef.value, () => trabajadores.trabajadores.length],
+  async ([select]) => {
+    if (!select || trabajadores.trabajadores.length === 0) return;
+
+    // Limpiar opciones anteriores (excepto "Todos")
+    while (select.options.length > 1) {
+      select.remove(1);
+    }
+
+    const puestos = trabajadores.trabajadores.map(t => t.puesto);
+    const puestosUnicos = [...new Set(puestos.filter(Boolean))].sort();
+
+    puestosUnicos.forEach(puesto => {
+      const option = document.createElement('option');
+      option.value = puesto;
+      option.textContent = puesto;
+      select.appendChild(option);
+    });
+  },
+  { immediate: true }
+);
 
 const openModal = async (empresa: Empresa | null = null, centroTrabajo: CentroTrabajo | null = null, trabajador: Trabajador | null = null) => {
   showModal.value = false;
@@ -66,7 +91,7 @@ const deleteTrabajadorById = async (empresaId: string, centroTrabajoId: string, 
     toast.open({ message: 'Trabajador eliminado con éxito' });
 
     // Una vez eliminado, volvemos a hacer fetch para actualizar la lista
-    await trabajadores.fetchTrabajadores(empresaId, centroTrabajoId);
+    await trabajadores.fetchTrabajadoresConHistoria(empresaId, centroTrabajoId);
 
     trabajadores.resetCurrentTrabajador();
     
@@ -80,45 +105,18 @@ const toggleImportModal = () => {
   showImportModal.value = !showImportModal.value;
 };
 
-  // Rellenar dinámicamente el select de puestos
-  const llenarOpcionesPuesto = () => {
-  const selectPuesto = document.getElementById('filtro-puesto') as HTMLSelectElement;
-  if (!selectPuesto) return;
-
-  // Limpiar opciones anteriores (excepto "Todos")
-  while (selectPuesto.options.length > 1) {
-    selectPuesto.remove(1);
-  }
-
-  const puestosUnicos = [...new Set(trabajadores.trabajadores.map(t => t.puesto).filter(Boolean))].sort();
-  const puestos = trabajadores.trabajadores.map(t => t.puesto);
-  console.log('Puestos encontrados:', puestos);
-
-  puestosUnicos.forEach(puesto => {
-      const option = document.createElement('option');
-      option.value = puesto;
-      option.textContent = puesto;
-      selectPuesto.appendChild(option);
-    });
-  };
-
 onMounted(async () => {
   const empresaId = String(route.params.idEmpresa);
   const centroTrabajoId = String(route.params.idCentroTrabajo);
-  // trabajadores.fetchTrabajadores(empresaId, centroTrabajoId);
+
+  // ✅ Obtener trabajadores
   await trabajadores.fetchTrabajadoresConHistoria(empresaId, centroTrabajoId);
-  await nextTick(); // Espera que el DOM y los datos estén actualizados
-  console.log('Trabajadores cargados:', trabajadores.trabajadores);
 
-  llenarOpcionesPuesto();
+  // 🔁 Esperar hasta que Vue haya renderizado el DOM incluyendo el <select>
+  await nextTick();
+  await nextTick(); // En ocasiones, un solo tick no basta si los datos llegan tarde
 
-  // Establecer IDs actuales
-  empresas.currentEmpresaId = empresaId;
-  empresas.fetchEmpresaById(empresaId);
-  centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;
-  centrosTrabajo.fetchCentroTrabajoById(empresaId, centroTrabajoId);
-
-  // Setear los ID actuales en el store
+  // Setear IDs y cargar empresa y centro
   empresas.currentEmpresaId = empresaId;
   empresas.fetchEmpresaById(empresaId);
   centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;
@@ -135,7 +133,10 @@ const exportTrabajadores = async () => {
   }
 };
 
-
+const puestosUnicos = computed(() => {
+  const puestos = trabajadores.trabajadores.map(t => t.puesto).filter(Boolean);
+  return [...new Set(puestos)].sort();
+});
 </script>
 
 <template>
@@ -173,10 +174,19 @@ const exportTrabajadores = async () => {
     <div v-else>
       <div class="flex flex-wrap gap-4 my-6 justify-center">
         <div>
+          <label class="block text-sm font-medium text-gray-700">Sexo</label>
+          <select id="filtro-sexo" class="border px-2 py-1 rounded-md">
+            <option value="">Todos</option>
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
+          </select>
+        </div>
+
+        <div>
           <label class="block text-sm font-medium text-gray-700">Puesto</label>
           <select id="filtro-puesto" class="border px-2 py-1 rounded-md">
             <option value="">Todos</option>
-            <!-- Puedes rellenar dinámicamente opciones si quieres, por ahora deja esto como está -->
+            <option v-for="puesto in puestosUnicos" :key="puesto" :value="puesto">{{ puesto }}</option>
           </select>
         </div>
 

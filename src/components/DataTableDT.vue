@@ -38,6 +38,11 @@ onMounted(() => {
       ]
     } as any);
   }
+  
+  document.getElementById('filtro-sexo')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    dataTableInstance.column(4).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
 
   document.getElementById('filtro-puesto')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
