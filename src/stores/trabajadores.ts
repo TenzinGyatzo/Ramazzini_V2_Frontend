@@ -24,6 +24,15 @@ interface Trabajador {
     hipertensivosPP?: string | null;
     accidenteLaboral?: string | null;
   };  
+  aptitudResumen?: {
+    aptitudPuesto?: string | null;
+  };  
+  exploracionFisicaResumen?: {
+    categoriaIMC?: string | null;
+    categoriaCircunferenciaCintura?: string | null;
+    categoriaTensionArterial?: string | null;
+    resumenExploracionFisica?: string | null;
+  };
 }
 
 export const useTrabajadoresStore = defineStore("trabajadores", () => {

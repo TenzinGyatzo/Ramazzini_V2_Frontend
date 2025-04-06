@@ -111,6 +111,7 @@ onMounted(async () => {
 
   // ✅ Obtener trabajadores
   await trabajadores.fetchTrabajadoresConHistoria(empresaId, centroTrabajoId);
+  console.log('Trabajadores:', trabajadores.trabajadores);
 
   // 🔁 Esperar hasta que Vue haya renderizado el DOM incluyendo el <select>
   await nextTick();
@@ -229,6 +230,33 @@ const puestosUnicos = computed(() => {
             <option value="-">Sin datos</option>
           </select>
         </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Categoria IMC</label>
+          <select id="filtro-imc" class="border px-2 py-1 rounded-md">
+            <option value="">Todos</option>
+            <option value="Bajo peso">Bajo peso</option>
+            <option value="Normal">Normal</option>
+            <option value="Sobrepeso">Sobrepeso</option>
+            <option value="Obesidad clase I">Obesidad clase I</option>
+            <option value="Obesidad clase II">Obesidad clase II</option>
+            <option value="Obesidad clase III">Obesidad clase III</option>
+            <option value="-">Sin datos</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Aptitud</label>
+          <select id="filtro-aptitud" class="border px-2 py-1 rounded-md">
+            <option value="">Todos</option>
+            <option value="Apto Sin Restricciones">Apto Sin Restricciones</option>
+            <option value="Apto Con Precaución">Apto Con Precaución</option>
+            <option value="Apto Con Restricciones">Apto Con Restricciones</option>
+            <option value="No Apto">No Apto</option>
+            <option value="Evaluación No Completada">Evaluación No Completada</option>
+            <option value="-">Sin datos</option>
+          </select>
+        </div>
       </div>
 
       <!-- Usar el componente DataTableDT -->
@@ -250,6 +278,8 @@ const puestosUnicos = computed(() => {
           <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.diabeticosPP === 'Si' ? 'Si' : 'No') : '-' }}</td>
           <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.hipertensivosPP === 'Si' ? 'Si' : 'No') : '-' }}</td>
           <td>{{ trabajador.historiaClinicaResumen ? (trabajador.historiaClinicaResumen.accidenteLaboral === 'Si' ? 'Si' : 'No') : '-' }}</td>
+          <td>{{ trabajador.exploracionFisicaResumen?.categoriaIMC || '-' }}</td>
+          <td>{{ trabajador.aptitudResumen?.aptitudPuesto || '-' }}</td>
           <td>
             <button type="button"
               class="bg-emerald-600 text-white rounded-full px-2 py-1 transition-transform duration-300 ease-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-700 border-2 border-emerald-600"

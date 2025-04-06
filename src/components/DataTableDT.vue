@@ -34,7 +34,7 @@ onMounted(() => {
         }
       },
       columnDefs: [
-        { targets: [11, 12, 13, 14], visible: false } // Oculta las columnas de historia clínica
+        { targets: [11, 12, 13, 14, 16], visible: false } // Oculta las columnas de historia clínica
       ]
     } as any);
   }
@@ -69,6 +69,16 @@ onMounted(() => {
     dataTableInstance.column(14).search(valor === '-' ? '^-$' : valor, true, false).draw();
   });
 
+  document.getElementById('filtro-imc')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    dataTableInstance.column(15).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
+  document.getElementById('filtro-aptitud')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    dataTableInstance.column(16).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
 });
 
 </script>
@@ -93,6 +103,8 @@ onMounted(() => {
           <th>Dbt.</th>
           <th>Hta.</th>
           <th>Acc.</th>
+          <th>IMC</th>
+          <th>Aptitud</th>
           <th>Expediente</th>
           <th>Acciones</th>
         </tr>
