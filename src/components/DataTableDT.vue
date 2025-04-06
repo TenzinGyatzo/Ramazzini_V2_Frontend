@@ -34,7 +34,7 @@ onMounted(() => {
         }
       },
       columnDefs: [
-        { targets: [11, 12, 13, 14, 16], visible: false } // Oculta las columnas de historia clínica
+        { targets: [11, 12, 13, 14, 15, 16], visible: false } // Oculta las columnas de historia clínica
       ]
     } as any);
   }
