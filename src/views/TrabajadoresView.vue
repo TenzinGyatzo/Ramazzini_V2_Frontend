@@ -138,6 +138,47 @@ const puestosUnicos = computed(() => {
   const puestos = trabajadores.trabajadores.map(t => t.puesto).filter(Boolean);
   return [...new Set(puestos)].sort();
 });
+
+const toggleEstadoLaboral = async (trabajador) => {
+  try {
+    const { currentEmpresaId } = empresas;
+    const { currentCentroTrabajoId } = centrosTrabajo;
+
+    if (!currentEmpresaId) {
+      throw new Error('Missing empresa ID');
+    }
+    if (!currentCentroTrabajoId) {
+      throw new Error('Missing centro de trabajo ID');
+    }
+    if (!trabajador?._id) {
+      throw new Error('Missing trabajador ID');
+    }
+
+    if (!trabajador.estadoLaboral) {
+      throw new Error('Estado laboral no encontrado');
+    }
+
+    const nuevoEstado = trabajador.estadoLaboral === 'Activo' ? 'Inactivo' : 'Activo';
+    const payload = { estadoLaboral: nuevoEstado };
+
+    await trabajadores.updateTrabajador(
+      currentEmpresaId, 
+      currentCentroTrabajoId, 
+      trabajador._id, 
+      payload
+    );
+
+    const mensaje = nuevoEstado === 'Activo' 
+      ? 'Trabajador reincorporado exitosamente'
+      : 'Trabajador dado de baja exitosamente';
+      
+    toast.open({ message: mensaje });
+  } catch (error) {
+    console.error('Error al actualizar el estado laboral', error);
+    toast.open({ message: 'Error al actualizar el estado laboral', type: 'error' });
+  }
+};
+
 </script>
 
 <template>
@@ -288,10 +329,18 @@ const puestosUnicos = computed(() => {
             </button>
           </td>
           <td>
-            <div class="flex gap-1">
-              <button type="button" class="p-2 px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm"
+              <div class="flex gap-1">
+                <button type="button" class="p-2 px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm"
                 @click="openModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo, trabajador)">
                 <i class="fa-regular fa-pen-to-square fa-lg"></i>
+              </button>
+              <button v-if="trabajador.estadoLaboral === 'Inactivo'" type="button" class="p-2 px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm"
+                @click="toggleEstadoLaboral(trabajador)">
+                <i class="fa-solid fa-person-arrow-up-from-line fa-lg"></i>
+              </button>
+              <button v-else type="button" class="p-2 px-2.5 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm"
+                @click="toggleEstadoLaboral(trabajador)">
+                <i class="fa-solid fa-person-arrow-down-to-line fa-lg"></i>
               </button>
               <button type="button" class="p-2 px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm"
                 @click="toggleDeleteModal(trabajador._id, trabajador.nombre)">

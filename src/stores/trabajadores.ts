@@ -13,6 +13,7 @@ interface Trabajador {
   telefono: string;
   estadoCivil: string;
   hijos: number;
+  estadoLaboral: string;
   idCentroTrabajo: string;
   createdBy: string;
   updatedBy: string;
@@ -55,6 +56,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
       telefono: "",
       estadoCivil: "",
       hijos: 0,
+      estadoLaboral: "",
       idCentroTrabajo: "",
       createdBy: "",
       updatedBy: "",
@@ -142,7 +144,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
     empresaId: string,
     centroTrabajoId: string,
     trabajadorId: string,
-    trabajadorData: Trabajador
+    trabajadorData: Partial<Trabajador>
   ) {
     try {
       loading.value = true;

@@ -60,6 +60,11 @@ const handleSubmit = async (data) => {
     updatedBy: data.updatedBy // TODO: Obtener el ID del usuario actual
   };
 
+  // Agregar estadoLaboral solo si es un nuevo registro
+  if (!trabajadores.currentTrabajador?._id) {
+    trabajadorData.estadoLaboral = "Activo";
+  }
+
   try {
     if (trabajadores.currentTrabajador?._id) {
       // Actualizar Trabajador

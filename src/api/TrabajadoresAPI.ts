@@ -18,7 +18,7 @@ export default {
         return api.post(`/${empresaId}/${centroTrabajoId}/registrar-trabajador`, trabajadorData)
     },
 
-    updateTrabajador(empresaId: string, centroTrabajoId: string, trabajadorId: string, trabajadorData: Trabajador) {
+    updateTrabajador(empresaId: string, centroTrabajoId: string, trabajadorId: string, trabajadorData: Partial<Trabajador>) {
         return api.patch(`/${empresaId}/${centroTrabajoId}/actualizar-trabajador/${trabajadorId}`, trabajadorData)
     },
 

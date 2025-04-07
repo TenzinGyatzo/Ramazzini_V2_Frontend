@@ -9,6 +9,7 @@ export interface Trabajador {
   telefono: string;
   estadoCivil: string;
   hijos: number;
+  estadoLaboral: string;
   idCentroTrabajo: string;
   createdBy: string;
   updatedBy: string;
