@@ -9,6 +9,10 @@ const tablaRef = ref<HTMLElement | null>(null);
 
 let dataTableInstance: any = null;
 
+function guardarFiltroEnLocalStorage(id: string, valor: string) {
+  localStorage.setItem(`filtro-${id}`, valor);
+}
+
 onMounted(() => {
   // Iniciar la tabla cuando se monta el componente
   if (!dataTableInstance) {
@@ -34,49 +38,105 @@ onMounted(() => {
         }
       },
       columnDefs: [
-        { targets: [11, 12, 13, 14, 15, 16], visible: false } // Oculta las columnas de historia clínica
+        { targets: [11, 12, 13, 14, 15, 16, 18], visible: false } // Oculta las columnas de historia clínica
       ]
     } as any);
   }
-  
+
+    const filtros = [
+    { id: 'sexo', columna: 4 },
+    { id: 'puesto', columna: 6 },
+    { id: 'alergico', columna: 11 },
+    { id: 'diabetico', columna: 12 },
+    { id: 'hipertensivo', columna: 13 },
+    { id: 'accidente', columna: 14 },
+    { id: 'imc', columna: 15 },
+    { id: 'aptitud', columna: 16 },
+    { id: 'estadoLaboral', columna: 18 }
+  ];
+
+  dataTableInstance.on('init', () => {
+    filtros.forEach(({ id, columna }) => {
+      const valorGuardado = localStorage.getItem(`filtro-${id}`);
+      if (valorGuardado !== null) {
+        const selectEl = document.getElementById(`filtro-${id}`) as HTMLSelectElement;
+        if (selectEl) selectEl.value = valorGuardado;
+
+        const regex = valorGuardado === '' ? '' : valorGuardado === '-' ? '^-$' : `^${valorGuardado}$`;
+        dataTableInstance.column(columna).search(regex, true, false);
+      }
+    });
+
+    dataTableInstance.draw();
+  });
+
   document.getElementById('filtro-sexo')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('sexo', valor);
     dataTableInstance.column(4).search(valor === '-' ? '^-$' : valor, true, false).draw();
   });
 
   document.getElementById('filtro-puesto')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('puesto', valor);
     dataTableInstance.column(6).search(valor, true, false).draw();
   });
 
   document.getElementById('filtro-alergico')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('alergico', valor);
     dataTableInstance.column(11).search(valor === '-' ? '^-$' : valor, true, false).draw();
   });
 
   document.getElementById('filtro-diabetico')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('diabetico', valor);
     dataTableInstance.column(12).search(valor === '-' ? '^-$' : valor, true, false).draw();
   });
 
   document.getElementById('filtro-hipertensivo')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('hipertensivo', valor);
     dataTableInstance.column(13).search(valor === '-' ? '^-$' : valor, true, false).draw();
   });
 
   document.getElementById('filtro-accidente')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('accidente', valor);
     dataTableInstance.column(14).search(valor === '-' ? '^-$' : valor, true, false).draw();
   });
 
   document.getElementById('filtro-imc')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('imc', valor);
     dataTableInstance.column(15).search(valor === '-' ? '^-$' : valor, true, false).draw();
   });
 
   document.getElementById('filtro-aptitud')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('aptitud', valor);
     dataTableInstance.column(16).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+  
+  const estadoLaboralSelect = document.getElementById('filtro-estadoLaboral') as HTMLSelectElement;
+
+  estadoLaboralSelect?.addEventListener('change', function () {
+    const valor = this.value;
+    guardarFiltroEnLocalStorage('estadoLaboral', valor);
+    dataTableInstance.column(18).search(
+      valor === '' ? '' : valor === '-' ? '^-$' : `^${valor}$`,
+      true,
+      false
+    ).draw();
+  });
+
+  // Aplicar el filtro por defecto en "Activo" cuando la tabla ya esté inicializada
+  dataTableInstance.on('init', function () {
+    if (estadoLaboralSelect) {
+      const defaultValor = estadoLaboralSelect.value;
+      const regex = defaultValor === '' ? '' : defaultValor === '-' ? '^-$' : `^${defaultValor}$`;
+      dataTableInstance.column(18).search(regex, true, false).draw();
+    }
   });
 
 });
@@ -106,6 +166,7 @@ onMounted(() => {
           <th>IMC</th>
           <th>Aptitud</th>
           <th>Expediente</th>
+          <th>Estado Laboral</th>
           <th>Acciones</th>
         </tr>
       </thead>

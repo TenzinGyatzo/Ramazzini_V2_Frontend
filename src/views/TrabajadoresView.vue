@@ -139,7 +139,7 @@ const puestosUnicos = computed(() => {
   return [...new Set(puestos)].sort();
 });
 
-const toggleEstadoLaboral = async (trabajador) => {
+const toggleEstadoLaboral = async (trabajador: { _id: string; estadoLaboral: string; }) => {
   try {
     const { currentEmpresaId } = empresas;
     const { currentCentroTrabajoId } = centrosTrabajo;
@@ -168,9 +168,11 @@ const toggleEstadoLaboral = async (trabajador) => {
       payload
     );
 
+    await trabajadores.fetchTrabajadoresConHistoria(currentEmpresaId, currentCentroTrabajoId);
+
     const mensaje = nuevoEstado === 'Activo' 
       ? 'Trabajador reincorporado exitosamente'
-      : 'Trabajador dado de baja exitosamente';
+      : 'Baja de trabajador registrada';
       
     toast.open({ message: mensaje });
   } catch (error) {
@@ -178,6 +180,37 @@ const toggleEstadoLaboral = async (trabajador) => {
     toast.open({ message: 'Error al actualizar el estado laboral', type: 'error' });
   }
 };
+
+function resetearFiltros() {
+  const ids = [
+    'sexo',
+    'puesto',
+    'alergico',
+    'diabetico',
+    'hipertensivo',
+    'accidente',
+    'imc',
+    'aptitud',
+    'estadoLaboral'
+  ];
+
+  ids.forEach(id => {
+    localStorage.removeItem(`filtro-${id}`);
+    const select = document.getElementById(`filtro-${id}`) as HTMLSelectElement;
+    if (select) {
+      select.value = '';
+      select.dispatchEvent(new Event('change'));
+    }
+  });
+
+  // Forzar que 'estadoLaboral' vuelva a 'Activo' 
+  const estadoSelect = document.getElementById('filtro-estadoLaboral') as HTMLSelectElement;
+  if (estadoSelect) {
+    estadoSelect.value = 'Activo';
+    estadoSelect.dispatchEvent(new Event('change'));
+    localStorage.setItem('filtro-estadoLaboral', 'Activo');
+  }
+}
 
 </script>
 
@@ -206,101 +239,125 @@ const toggleEstadoLaboral = async (trabajador) => {
     <GreenButton text="Carga Masiva" @click="toggleImportModal" />
     <GreenButton text="Exportar a Excel" @click="exportTrabajadores" />
   </div>
+  
+  <div>
+    <div class="flex flex-wrap gap-4 my-6 justify-center">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Sexo</label>
+        <select id="filtro-sexo" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
+          <option value="">Todos</option>
+          <option value="Masculino">Masculino</option>
+          <option value="Femenino">Femenino</option>
+        </select>
+      </div>
 
-  <Transition appear mode="out-in" name="slide-up">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Puesto</label>
+        <select id="filtro-puesto" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
+          <option value="">Todos</option>
+          <option v-for="puesto in puestosUnicos" :key="puesto" :value="puesto">{{ puesto }}</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Alérgico</label>
+        <select id="filtro-alergico" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
+          <option value="">Todos</option>
+          <option value="Si">Si</option>
+          <option value="No">No</option>
+          <option value="-">Sin datos</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Diabético</label>
+        <select id="filtro-diabetico" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
+          <option value="">Todos</option>
+          <option value="Si">Si</option>
+          <option value="No">No</option>
+          <option value="-">Sin datos</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Hipertensivo</label>
+        <select id="filtro-hipertensivo" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
+          <option value="">Todos</option>
+          <option value="Si">Si</option>
+          <option value="No">No</option>
+          <option value="-">Sin datos</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Accidente laboral</label>
+        <select id="filtro-accidente" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
+          <option value="">Todos</option>
+          <option value="Si">Si</option>
+          <option value="No">No</option>
+          <option value="-">Sin datos</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Categoria IMC</label>
+        <select id="filtro-imc" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
+          <option value="">Todos</option>
+          <option value="Bajo peso">Bajo peso</option>
+          <option value="Normal">Normal</option>
+          <option value="Sobrepeso">Sobrepeso</option>
+          <option value="Obesidad clase I">Obesidad clase I</option>
+          <option value="Obesidad clase II">Obesidad clase II</option>
+          <option value="Obesidad clase III">Obesidad clase III</option>
+          <option value="-">Sin datos</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Aptitud</label>
+        <select id="filtro-aptitud" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
+          <option value="">Todos</option>
+          <option value="Apto Sin Restricciones">Apto Sin Restricciones</option>
+          <option value="Apto Con Precaución">Apto Con Precaución</option>
+          <option value="Apto Con Restricciones">Apto Con Restricciones</option>
+          <option value="No Apto">No Apto</option>
+          <option value="Evaluación No Completada">Evaluación No Completada</option>
+          <option value="-">Sin datos</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Estado Laboral</label>
+        <select id="filtro-estadoLaboral" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
+          <option value="">Todos</option>
+          <option value="Activo" selected>Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
+      </div>
+
+      <div class="block text-xs">
+        <label class="block text-xs font-medium text-gray-100 mb-0.5">Filtros</label>
+        <button
+          @click="resetearFiltros"
+          class=" bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-3 rounded-lg 
+          border-2 border-red-200 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out
+          flex items-center justify-center mx-auto gap-2"
+        >
+          <i class="fa-solid fa-filter-circle-xmark"></i>
+          Reset Filtros
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Usar el componente DataTableDT -->
+    <Transition appear mode="out-in" name="slide-up">
     <div v-if="trabajadores.loading">
       <h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">
         Cargando...
       </h1>
     </div>
     <div v-else>
-      <div class="flex flex-wrap gap-4 my-6 justify-center">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Sexo</label>
-          <select id="filtro-sexo" class="border px-2 py-1 rounded-md">
-            <option value="">Todos</option>
-            <option value="Masculino">Masculino</option>
-            <option value="Femenino">Femenino</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Puesto</label>
-          <select id="filtro-puesto" class="border px-2 py-1 rounded-md">
-            <option value="">Todos</option>
-            <option v-for="puesto in puestosUnicos" :key="puesto" :value="puesto">{{ puesto }}</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Alérgico</label>
-          <select id="filtro-alergico" class="border px-2 py-1 rounded-md">
-            <option value="">Todos</option>
-            <option value="Si">Si</option>
-            <option value="No">No</option>
-            <option value="-">Sin datos</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Diabético</label>
-          <select id="filtro-diabetico" class="border px-2 py-1 rounded-md">
-            <option value="">Todos</option>
-            <option value="Si">Si</option>
-            <option value="No">No</option>
-            <option value="-">Sin datos</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Hipertensivo</label>
-          <select id="filtro-hipertensivo" class="border px-2 py-1 rounded-md">
-            <option value="">Todos</option>
-            <option value="Si">Si</option>
-            <option value="No">No</option>
-            <option value="-">Sin datos</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Accidente laboral</label>
-          <select id="filtro-accidente" class="border px-2 py-1 rounded-md">
-            <option value="">Todos</option>
-            <option value="Si">Si</option>
-            <option value="No">No</option>
-            <option value="-">Sin datos</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Categoria IMC</label>
-          <select id="filtro-imc" class="border px-2 py-1 rounded-md">
-            <option value="">Todos</option>
-            <option value="Bajo peso">Bajo peso</option>
-            <option value="Normal">Normal</option>
-            <option value="Sobrepeso">Sobrepeso</option>
-            <option value="Obesidad clase I">Obesidad clase I</option>
-            <option value="Obesidad clase II">Obesidad clase II</option>
-            <option value="Obesidad clase III">Obesidad clase III</option>
-            <option value="-">Sin datos</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Aptitud</label>
-          <select id="filtro-aptitud" class="border px-2 py-1 rounded-md">
-            <option value="">Todos</option>
-            <option value="Apto Sin Restricciones">Apto Sin Restricciones</option>
-            <option value="Apto Con Precaución">Apto Con Precaución</option>
-            <option value="Apto Con Restricciones">Apto Con Restricciones</option>
-            <option value="No Apto">No Apto</option>
-            <option value="Evaluación No Completada">Evaluación No Completada</option>
-            <option value="-">Sin datos</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Usar el componente DataTableDT -->
       <DataTableDT v-if="trabajadores.trabajadores.length > 0" class="table-auto z-1">
         <tr v-for="(trabajador, index) in trabajadores.trabajadores" :key="trabajador._id"
           class="hover:bg-gray-200 cursor-pointer">
@@ -328,6 +385,7 @@ const toggleEstadoLaboral = async (trabajador) => {
               Expediente
             </button>
           </td>
+          <td>{{ trabajador.estadoLaboral || '-' }}</td>
           <td>
               <div class="flex gap-1">
                 <button type="button" class="p-2 px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm"
@@ -352,7 +410,9 @@ const toggleEstadoLaboral = async (trabajador) => {
       </DataTableDT>
       <h1 v-else
         class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700 mt-10">
-        Este centro de trabajo aún no tiene trabajadores registrados</h1>
+        Este centro de trabajo aún no tiene trabajadores registrados
+      </h1>
     </div>
-  </Transition>
+    </Transition>
+  </div>
 </template>

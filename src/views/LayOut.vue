@@ -202,19 +202,22 @@ watch(
 
 <style>
 /* Transición slide-up mejorada */
-.slide-up-enter-active,
+.slide-up-enter-active {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .slide-up-leave-active {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Curva de aceleración suave */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Reduced to 0.3s for faster exit */
 }
 
 .slide-up-enter-from {
   opacity: 0;
-  transform: translateY(20px); /* Desplazamiento más corto */
+  transform: translateY(20px);
 }
 
 .slide-up-leave-to {
   opacity: 0;
-  transform: translateY(-20px); /* Desplazamiento más corto */
+  transform: translateY(-20px);
 }
 
 /* Transición fade mejorada */
