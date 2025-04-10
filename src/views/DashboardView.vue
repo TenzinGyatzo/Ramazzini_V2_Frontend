@@ -5,6 +5,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { clasificarPorEdadYSexo, ordenarPorGrupoEtario } from '@/helpers/dashboardDataProcessor';
+import GraficaGruposEtarios from '@/components/graficas/GraficaGruposEtarios.vue';
 
 const route = useRoute();
 const empresasStore = useEmpresasStore();
@@ -15,6 +16,9 @@ const centrosTrabajo = ref([]);
 const centroSeleccionado = ref('Todos')
 const sexosYFechasNacimientoActivos = ref([]);
 const tablaGruposEtarios = ref([]);
+
+const vistaActual = ref('grafico');
+const vistaKey = computed(() => `vista-${vistaActual.value}`);
 
 const cargarDatos = async (empresaId) => {
   if (!empresaId) return;
@@ -72,6 +76,60 @@ const tablaGruposEtariosFiltrada = computed(() => {
   const resultado = clasificarPorEdadYSexo([sexosYFechasNacimientoActivos.value[index]]);
   return ordenarPorGrupoEtario(resultado);
 });
+
+const graficaData = computed(() => {
+  const etiquetas = tablaGruposEtariosFiltrada.value.map(([grupo]) => grupo)
+  const hombres = tablaGruposEtariosFiltrada.value.map(([, datos]) => datos.Masculino)
+  const mujeres = tablaGruposEtariosFiltrada.value.map(([, datos]) => datos.Femenino)
+
+  return {
+    labels: etiquetas,
+    datasets: [
+      {
+        label: 'Hombres',
+        data: hombres,
+        backgroundColor: '#4B5563', // Gris oscuro
+        stack: 'Stack 0'
+      },
+      {
+        label: 'Mujeres',
+        data: mujeres,
+        backgroundColor: '#9CA3AF', // Gris medio
+        stack: 'Stack 0'
+      }
+    ]
+  }
+})
+
+const graficaOptions = {
+  indexAxis: 'y', // HORIZONTAL
+  responsive: true,
+  plugins: {
+    legend: { display: false },
+    tooltip: { enabled: true },
+    datalabels: {
+      color: '#FFFFFF', // blanco
+      anchor: 'center', // puede ser 'center', 'start', 'end'
+      align: 'center', // 'top', 'bottom', 'left', 'right', 'center'
+      formatter: (value) => value > 0 ? value : '',
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      stacked: true,
+      grid: { display: false }
+    },
+    y: {
+      stacked: true,
+      grid: { display: false }
+    }
+  }
+}
 </script>
 
 
@@ -116,35 +174,72 @@ const tablaGruposEtariosFiltrada = computed(() => {
       <!-- Grid de detalles -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 
-        <div class="bg-gray-50 p-6 rounded-lg shadow">
-          <h3 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-4">Grupos Etarios</h3>
-          <div class="overflow-x-auto mt-4">
-            <table class="min-w-full text-sm border border-gray-300 rounded">
-              <thead class="bg-gray-100 text-gray-700">
-                <tr>
-                  <th class="py-2 px-4 text-left">Grupo Etario</th>
-                  <th class="py-2 px-4 text-center">Hombres</th>
-                  <th class="py-2 px-4 text-center">Mujeres</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="[grupo, datos] in tablaGruposEtariosFiltrada"
-                  :key="grupo"
-                  class="border-t hover:bg-gray-50 transition"
-                >
-                  <td class="py-1 px-4 font-medium text-gray-700">{{ grupo }}</td>
-                  <td class="py-1 px-4 text-center text-blue-700">{{ datos.Masculino }}</td>
-                  <td class="py-1 px-4 text-center text-pink-700">{{ datos.Femenino }}</td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="bg-gray-50 p-6 rounded-lg shadow h-[350px] lg:h-[450px] xl:h-[540px] flex flex-col">
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">Grupos Etarios</h3>
+            <div class="flex gap-2">
+              <button
+                @click="vistaActual = 'grafico'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaActual === 'grafico'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Gráfico
+              </button>
+              <button
+                @click="vistaActual = 'tabla'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaActual === 'tabla'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Tabla
+              </button>
+            </div>
+          </div>
+
+          <!-- Contenido dinámico -->
+          <div class="flex-1 overflow-x-auto">
+            <template v-if="vistaActual === 'grafico'">
+              <GraficaGruposEtarios :key="vistaKey" :data="graficaData" :options="graficaOptions" />
+            </template>
+
+            <template v-else>
+              <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                <thead class="bg-gray-100 text-gray-700">
+                  <tr>
+                    <th class="py-2 px-4 text-left">Grupo Etario</th>
+                    <th class="py-2 px-4 text-center">Hombres</th>
+                    <th class="py-2 px-4 text-center">Mujeres</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="[grupo, datos] in tablaGruposEtariosFiltrada"
+                    :key="grupo"
+                    class="border-t hover:bg-gray-50 transition"
+                  >
+                    <td class="py-1 px-4 font-medium text-gray-700">{{ grupo }}</td>
+                    <td class="py-1 px-4 text-center text-blue-700">{{ datos.Masculino }}</td>
+                    <td class="py-1 px-4 text-center text-pink-700">{{ datos.Femenino }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </template>
+
           </div>
         </div>
 
-        <div class="bg-gray-50 p-6 rounded-lg shadow">
+        <div class="bg-gray-50 p-6 rounded-lg shadow h-[350px] lg:h-[450px] xl:h-[540px] flex flex-col">
           <h3 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-4">Índice de Masa Corporal</h3>
+          <div class="flex-1">
 
+          </div>
         </div>
       </div>
 
