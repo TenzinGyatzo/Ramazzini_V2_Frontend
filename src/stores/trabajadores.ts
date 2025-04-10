@@ -97,6 +97,20 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
     }
   }  
 
+  async function fetchSexosYFechasNacimientoActivos(empresaId: string, centroTrabajoId: string) {
+    try {
+      loading.value = true;
+      const { data } = await TrabajadoresAPI.getSexosYFechasNacimientoActivos(empresaId, centroTrabajoId);
+      trabajadores.value = data;
+      return data;
+    } catch (error) {
+      console.error('Error al obtener trabajadores con historia clínica', error);
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }  
+
   async function fetchTrabajadorById(
     empresaId: string,
     centroTrabajoId: string,
@@ -247,6 +261,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
     resetCurrentTrabajador,
     fetchTrabajadores,
     fetchTrabajadoresConHistoria,
+    fetchSexosYFechasNacimientoActivos,
     fetchTrabajadorById,
     createTrabajador,
     updateTrabajador,
