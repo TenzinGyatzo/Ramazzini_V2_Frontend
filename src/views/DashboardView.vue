@@ -205,32 +205,34 @@ const graficaOptions = {
 
           <!-- Contenido dinámico -->
           <div class="flex-1 overflow-x-auto">
-            <template v-if="vistaActual === 'grafico'">
-              <GraficaGruposEtarios :key="vistaKey" :data="graficaData" :options="graficaOptions" />
-            </template>
+            <Transition name="fade" mode="out-in">
+              <template v-if="vistaActual === 'grafico'">
+                <GraficaGruposEtarios :key="vistaKey" :data="graficaData" :options="graficaOptions" />
+              </template>
 
-            <template v-else>
-              <table class="min-w-full text-sm border border-gray-300 rounded h-full">
-                <thead class="bg-gray-100 text-gray-700">
-                  <tr>
-                    <th class="py-2 px-4 text-left">Grupo Etario</th>
-                    <th class="py-2 px-4 text-center">Hombres</th>
-                    <th class="py-2 px-4 text-center">Mujeres</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="[grupo, datos] in tablaGruposEtariosFiltrada"
-                    :key="grupo"
-                    class="border-t hover:bg-gray-50 transition"
-                  >
-                    <td class="py-1 px-4 font-medium text-gray-700">{{ grupo }}</td>
-                    <td class="py-1 px-4 text-center text-blue-700">{{ datos.Masculino }}</td>
-                    <td class="py-1 px-4 text-center text-pink-700">{{ datos.Femenino }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </template>
+              <template v-else>
+                <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                  <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th class="py-2 px-4 text-left">Grupo Etario</th>
+                      <th class="py-2 px-4 text-center">Hombres</th>
+                      <th class="py-2 px-4 text-center">Mujeres</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="[grupo, datos] in tablaGruposEtariosFiltrada"
+                      :key="grupo"
+                      class="border-t hover:bg-gray-50 transition"
+                    >
+                      <td class="py-1 px-4 font-medium text-gray-700">{{ grupo }}</td>
+                      <td class="py-1 px-4 text-center text-blue-700">{{ datos.Masculino }}</td>
+                      <td class="py-1 px-4 text-center text-pink-700">{{ datos.Femenino }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </template>
+            </Transition>
 
           </div>
         </div>
