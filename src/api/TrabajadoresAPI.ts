@@ -14,6 +14,10 @@ export default {
         return api.get(`/${empresaId}/${centroTrabajoId}/sexos-y-fechas-nacimiento-activos`);
     },
 
+    getDashboardData(empresaId: string, centroTrabajoId: string) {
+        return api.get(`/${empresaId}/${centroTrabajoId}/dashboard`)
+    },
+
     getTrabajadorById(empresaId: string, centroTrabajoId: string, trabajadorId: string) {
         return api.get(`/${empresaId}/${centroTrabajoId}/${trabajadorId}`)
     },

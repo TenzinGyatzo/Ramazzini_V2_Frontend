@@ -111,6 +111,24 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
     }
   }  
 
+  async function fetchDashboardData(empresaId: string, centroTrabajoId: string) {
+    try {
+      loading.value = true;
+      const { data } = await TrabajadoresAPI.getDashboardData(
+        empresaId,
+        centroTrabajoId
+      );
+      return data;
+    }
+    catch (error) {
+      console.error('Error al obtener datos del dashboard', error);
+      throw error;
+    }
+    finally {
+      loading.value = false;
+    }
+  }
+
   async function fetchTrabajadorById(
     empresaId: string,
     centroTrabajoId: string,
@@ -262,6 +280,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
     fetchTrabajadores,
     fetchTrabajadoresConHistoria,
     fetchSexosYFechasNacimientoActivos,
+    fetchDashboardData,
     fetchTrabajadorById,
     createTrabajador,
     updateTrabajador,

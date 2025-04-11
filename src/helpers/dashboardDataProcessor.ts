@@ -1,5 +1,6 @@
 import { calcularEdad } from "./dates";
 
+// GRUPOS ETARIOS
 const gruposEtarios = [
     { rango: '16–20', min: 16, max: 20 },
     { rango: '21–25', min: 21, max: 25 },
@@ -50,3 +51,47 @@ const gruposEtarios = [
     );
   }
   
+// INDICE DE MASA CORPORAL
+export const categoriasIMCOrdenadas = [
+  'Bajo peso',
+  'Normal',
+  'Sobrepeso',
+  'Obesidad clase I',
+  'Obesidad clase II',
+  'Obesidad clase III'
+];
+
+export function contarPorCategoriaIMC(data: { categoriaIMC: string | null }[]): [string, number][] {
+  const conteo: Record<string, number> = {};
+
+  for (const item of data) {
+    if (item.categoriaIMC && categoriasIMCOrdenadas.includes(item.categoriaIMC)) {
+      conteo[item.categoriaIMC] = (conteo[item.categoriaIMC] || 0) + 1;
+    }
+  }
+
+  return categoriasIMCOrdenadas.map((categoria) => [categoria, conteo[categoria] || 0]);
+}
+
+// ENFERMEDADES CRÓNICAS
+export const camposEnfermedadesOrdenadas = [
+  'diabeticosPP',
+  'hipertensivosPP',
+  'cardiopaticosPP',
+  'epilepticosPP',
+  'alergicos'
+];
+
+export function contarEnfermedadesCronicas(data: Record<string, string | null>[]): [string, number][] {
+  const resultado: [string, number][] = [];
+
+  for (const campo of camposEnfermedadesOrdenadas) {
+    const total = data.filter(item => item[campo] === 'Si').length;
+    resultado.push([campo, total]);
+  }
+
+  return resultado;
+}
+
+
+

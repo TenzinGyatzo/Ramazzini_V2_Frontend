@@ -28,5 +28,5 @@ ChartJS.register(
 </script>
 
 <template>
-  <Bar :data="data" :options="options" :height="270" />
+  <Bar :data="data" :options="options" :height="235" />
 </template>

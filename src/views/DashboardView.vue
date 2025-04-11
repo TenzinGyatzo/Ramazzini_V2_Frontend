@@ -4,8 +4,9 @@ import { useRoute } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
-import { clasificarPorEdadYSexo, ordenarPorGrupoEtario } from '@/helpers/dashboardDataProcessor';
+import { clasificarPorEdadYSexo, ordenarPorGrupoEtario, contarPorCategoriaIMC, contarEnfermedadesCronicas } from '@/helpers/dashboardDataProcessor';
 import GraficaGruposEtarios from '@/components/graficas/GraficaGruposEtarios.vue';
+import GraficaBarras from '@/components/graficas/GraficaBarras.vue';
 
 const route = useRoute();
 const empresasStore = useEmpresasStore();
@@ -14,11 +15,15 @@ const trabajadoresStore = useTrabajadoresStore();
 
 const centrosTrabajo = ref([]);
 const centroSeleccionado = ref('Todos')
-const sexosYFechasNacimientoActivos = ref([]);
 const tablaGruposEtarios = ref([]);
+const dashboardData = ref({});
 
-const vistaActual = ref('grafico');
-const vistaKey = computed(() => `vista-${vistaActual.value}`);
+const vistaGruposEtarios = ref('grafico');
+const vistaGruposEtariosKey = computed(() => `vista-${vistaGruposEtarios.value}`);
+const vistaIMC = ref('grafico');
+const vistaIMCKey = computed(() => `vista-${vistaIMC.value}`);
+const vistaEnfermedades = ref('grafico');
+const vistaEnfermedadesKey = computed(() => `vista-${vistaEnfermedades.value}`);
 
 const cargarDatos = async (empresaId) => {
   if (!empresaId) return;
@@ -29,41 +34,35 @@ const cargarDatos = async (empresaId) => {
   // 2. Centros
   centrosTrabajo.value = await centrosTrabajoStore.fetchCentrosTrabajo(empresaId);
 
-  // 3. Info de Trabajadores para gráficos de grupos etarios
-  sexosYFechasNacimientoActivos.value = await Promise.all(
+  // 3. Info para el dashboard
+  dashboardData.value = await Promise.all(
     centrosTrabajo.value.map((centro) =>
-      trabajadoresStore.fetchSexosYFechasNacimientoActivos(empresaId, centro._id)
+      trabajadoresStore.fetchDashboardData(empresaId, centro._id)
     )
   );
 
   // Logs
   console.log('Empresa data fetched:', empresasStore.currentEmpresa);
   console.log('Centros de trabajo data fetched:', centrosTrabajo.value);
-  console.log('Datos de sexos y fechas de nacimiento activos:', sexosYFechasNacimientoActivos.value);
+  console.log('Dashboard data fetched:', dashboardData.value);
 };
 
 // Llama la función al montar y si cambia el ID
 watch(() => route.params.idEmpresa, cargarDatos, { immediate: true });
-
-watch(sexosYFechasNacimientoActivos, (nuevoValor) => {
-  if (nuevoValor.length) {
-    const clasificados = clasificarPorEdadYSexo(nuevoValor);
-    tablaGruposEtarios.value = ordenarPorGrupoEtario(clasificados);
-  }
-});
 
 const centrosTrabajoOptions = computed(() => [
   'Todos',
   ...centrosTrabajo.value.map((centro) => centro.nombreCentro),
 ]);
 
+// Computed para tabla y grafica de grupos etarios
 const tablaGruposEtariosFiltrada = computed(() => {
-  if (!sexosYFechasNacimientoActivos.value.length) return [];
+  if (!dashboardData.value.length) return [];
 
   // Si se selecciona "Todos", usar toda la data
   if (centroSeleccionado.value === 'Todos') {
-    const resultado = clasificarPorEdadYSexo(sexosYFechasNacimientoActivos.value);
-    return ordenarPorGrupoEtario(resultado);
+    const conjunto = dashboardData.value.flatMap((d) => d.grupoEtario);
+    return ordenarPorGrupoEtario(clasificarPorEdadYSexo(conjunto));
   }
 
   // Si se selecciona un centro específico
@@ -73,11 +72,11 @@ const tablaGruposEtariosFiltrada = computed(() => {
 
   if (index === -1) return [];
 
-  const resultado = clasificarPorEdadYSexo([sexosYFechasNacimientoActivos.value[index]]);
-  return ordenarPorGrupoEtario(resultado);
+  const grupo = dashboardData.value[index].grupoEtario || [];
+  return ordenarPorGrupoEtario(clasificarPorEdadYSexo(grupo));
 });
 
-const graficaData = computed(() => {
+const graficaGruposEtariosData = computed(() => {
   const etiquetas = tablaGruposEtariosFiltrada.value.map(([grupo]) => grupo)
   const hombres = tablaGruposEtariosFiltrada.value.map(([, datos]) => datos.Masculino)
   const mujeres = tablaGruposEtariosFiltrada.value.map(([, datos]) => datos.Femenino)
@@ -101,7 +100,7 @@ const graficaData = computed(() => {
   }
 })
 
-const graficaOptions = {
+const graficaGruposEtariosOptions = {
   indexAxis: 'y', // HORIZONTAL
   responsive: true,
   plugins: {
@@ -130,6 +129,170 @@ const graficaOptions = {
     }
   }
 }
+
+// Computed para tabla y grafica de categorías de IMC
+const graficaIMCData = computed(() => {
+  if (!dashboardData.value.length) return { labels: [], datasets: [] };
+
+  // Obtener el array combinado de IMC según el centro seleccionado
+  const categorias = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.imc[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.imc[0] || [];
+
+  const conteo = contarPorCategoriaIMC(categorias);
+
+  return {
+    labels: conteo.map(([categoria]) => categoria),
+    datasets: [
+      {
+        label: 'Trabajadores',
+        data: conteo.map(([, cantidad]) => cantidad),
+        backgroundColor: '#4B5563' // Gris Oscuro
+      }
+    ]
+  };
+});
+
+const graficaIMCOptions = {
+  responsive: true,
+  plugins: {
+    legend: { display: false },
+    tooltip: { enabled: true },
+    datalabels: {
+      // color: '#FFFFFF',
+      color: '#4B5563', // Gris oscuro
+      anchor: 'end', // puede ser 'center', 'start', 'end'
+      align: 'top', // 'top', 'bottom', 'left', 'right', 'center'
+      formatter: value => value > 0 ? value : '',
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+  x: {
+    beginAtZero: true,
+    grid: { display: false },
+    ticks: {
+      callback: (value) => {
+        // Aquí puedes modificar el texto del valor (índice o label)
+        const label = graficaIMCData.value.labels?.[value];
+        // Reemplazar "Obesidad clase" por "Obesidad"
+        return label?.replace('Obesidad clase ', 'Obesidad ');
+      },
+      color: '#374151', // opcional: color del texto del eje x
+      font: {
+        size: 12
+      }
+    }
+  },
+  y: {
+    grid: { display: false }
+  }
+}
+
+};
+
+const tablaIMC = computed(() => {
+  if (!dashboardData.value.length) return [];
+
+  const categorias = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.imc[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.imc[0] || [];
+
+  return contarPorCategoriaIMC(categorias);
+});
+
+// Computed para tabla y grafica de enfermedades cronicas
+const tablaEnfermedades = computed(() => {
+  if (!dashboardData.value.length) return [];
+
+  const data = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.enfermedadesCronicas[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.enfermedadesCronicas[0] || [];
+
+  return contarEnfermedadesCronicas(data);
+});
+
+const graficaEnfermedadesData = computed(() => {
+  const conteo = tablaEnfermedades.value;
+
+  return {
+    labels: conteo.map(([campo]) => campo),
+    datasets: [
+      {
+        label: 'Casos con diagnóstico',
+        data: conteo.map(([, cantidad]) => cantidad),
+        backgroundColor: '#4B5563'
+      }
+    ]
+  };
+});
+
+const graficaEnfermedadesOptions = {
+  responsive: true,
+  plugins: {
+    legend: { display: false },
+    tooltip: { enabled: true },
+    datalabels: {
+      color: '#4B5563', // Gris oscuro
+      anchor: 'end', // puede ser 'center', 'start', 'end'
+      align: 'top', // 'top', 'bottom', 'left', 'right', 'center'
+      formatter: value => value > 0 ? value : '',
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        callback: (value) => {
+          const label = graficaEnfermedadesData.value.labels?.[value];
+          if (!label) return '';
+          
+          const replacements = {
+            'diabeticosPP': 'Diabéticos',
+            'hipertensivosPP': 'Hipertensivos', 
+            'cardiopaticosPP': 'Cardiopáticos',
+            'epilepticosPP': 'Epilépticos',
+            'alergicos': 'Alérgicos'
+          };
+
+          return replacements[label] || label;
+        },
+        color: '#374151',
+        font: {
+          size: 12
+        }
+      }
+    },
+    y: {
+      grid: { display: false }
+    }
+  }
+};
+
+const etiquetasEnfermedades = {
+  diabeticosPP: 'Diabéticos',
+  hipertensivosPP: 'Hipertensivos',
+  cardiopaticosPP: 'Cardiopáticos',
+  epilepticosPP: 'Epilépticos',
+  alergicos: 'Alérgicos'
+};
+
 </script>
 
 
@@ -141,7 +304,7 @@ const graficaOptions = {
 
     <div v-else>
       <!-- Header con logo a la izquierda y datos a la derecha -->
-      <div class="flex items-center gap-6 mb-4">
+      <div class="flex items-center gap-6 mb-6">
         <img
           v-if="empresasStore.currentEmpresa.logotipoEmpresa?.data"
           :src="'/uploads/logos/' + empresasStore.currentEmpresa.logotipoEmpresa.data + '?t=' + empresasStore.currentEmpresa.updatedAt"
@@ -170,7 +333,6 @@ const graficaOptions = {
 
       </div>
 
-
       <!-- Grid de detalles -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 
@@ -179,10 +341,10 @@ const graficaOptions = {
             <h3 class="text-xl font-semibold text-gray-800">Grupos Etarios</h3>
             <div class="flex gap-2">
               <button
-                @click="vistaActual = 'grafico'"
+                @click="vistaGruposEtarios = 'grafico'"
                 :class="[
                   'px-3 py-1 rounded text-sm font-medium',
-                  vistaActual === 'grafico'
+                  vistaGruposEtarios === 'grafico'
                     ? 'bg-emerald-500 text-white'
                     : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                 ]"
@@ -190,10 +352,10 @@ const graficaOptions = {
                 Gráfico
               </button>
               <button
-                @click="vistaActual = 'tabla'"
+                @click="vistaGruposEtarios = 'tabla'"
                 :class="[
                   'px-3 py-1 rounded text-sm font-medium',
-                  vistaActual === 'tabla'
+                  vistaGruposEtarios === 'tabla'
                     ? 'bg-emerald-500 text-white'
                     : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                 ]"
@@ -206,17 +368,17 @@ const graficaOptions = {
           <!-- Contenido dinámico -->
           <div class="flex-1 overflow-x-auto">
             <Transition name="fade" mode="out-in">
-              <template v-if="vistaActual === 'grafico'">
-                <GraficaGruposEtarios :key="vistaKey" :data="graficaData" :options="graficaOptions" />
+              <template v-if="vistaGruposEtarios === 'grafico'">
+                <GraficaGruposEtarios :key="vistaGruposEtariosKey" :data="graficaGruposEtariosData" :options="graficaGruposEtariosOptions" />
               </template>
 
               <template v-else>
                 <table class="min-w-full text-sm border border-gray-300 rounded h-full">
                   <thead class="bg-gray-100 text-gray-700">
                     <tr>
-                      <th class="py-2 px-4 text-left">Grupo Etario</th>
-                      <th class="py-2 px-4 text-center">Hombres</th>
-                      <th class="py-2 px-4 text-center">Mujeres</th>
+                      <th class="py-2 px-4 text-left text-lg lg:text-xl">Grupo Etario</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Hombres</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Mujeres</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -225,9 +387,9 @@ const graficaOptions = {
                       :key="grupo"
                       class="border-t hover:bg-gray-50 transition"
                     >
-                      <td class="py-1 px-4 font-medium text-gray-700">{{ grupo }}</td>
-                      <td class="py-1 px-4 text-center text-blue-700">{{ datos.Masculino }}</td>
-                      <td class="py-1 px-4 text-center text-pink-700">{{ datos.Femenino }}</td>
+                      <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ grupo }}</td>
+                      <td class="py-1 px-4 text-center text-blue-700 text-lg lg:text-xl">{{ datos.Masculino }}</td>
+                      <td class="py-1 px-4 text-center text-pink-700 text-lg lg:text-xl">{{ datos.Femenino }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -238,18 +400,130 @@ const graficaOptions = {
         </div>
 
         <div class="bg-gray-50 p-6 rounded-lg shadow h-[350px] lg:h-[450px] xl:h-[540px] flex flex-col">
-          <h3 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2 mb-4">Índice de Masa Corporal</h3>
-          <div class="flex-1">
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">Índice de Masa Corporal</h3>
+            <div class="flex gap-2">
+              <button
+                @click="vistaIMC = 'grafico'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaIMC === 'grafico'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Gráfico
+              </button>
+              <button
+                @click="vistaIMC = 'tabla'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaIMC === 'tabla'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Tabla
+              </button>
+            </div>
+          </div>
 
+          <div class="flex-1 overflow-x-auto">
+            <Transition name="fade" mode="out-in">
+              <template v-if="vistaIMC === 'grafico'">
+                <GraficaBarras :key="vistaIMCKey" :data="graficaIMCData" :options="graficaIMCOptions" />
+              </template>
+
+              <template v-else>
+                <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                  <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th class="py-2 px-4 text-left text-lg lg:text-xl">Categoría IMC</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="[categoria, cantidad] in tablaIMC"
+                      :key="categoria"
+                      class="border-t hover:bg-gray-50 transition"
+                    >
+                      <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ categoria }}</td>
+                      <td class="py-1 px-4 text-center text-emerald-700 text-lg lg:text-xl">{{ cantidad }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </template>
+            </Transition>
           </div>
         </div>
+
+        <div class="bg-gray-50 p-6 rounded-lg shadow h-[350px] lg:h-[450px] xl:h-[540px] flex flex-col">
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">Enfermedades Crónicas</h3>
+            <div class="flex gap-2">
+              <button
+                @click="vistaEnfermedades = 'grafico'"
+                :class="[ 'px-3 py-1 rounded text-sm font-medium',
+                  vistaEnfermedades === 'grafico'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Gráfico
+              </button>
+              <button
+                @click="vistaEnfermedades = 'tabla'"
+                :class="[ 'px-3 py-1 rounded text-sm font-medium',
+                  vistaEnfermedades === 'tabla'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Tabla
+              </button>
+            </div>
+          </div>
+
+          <div class="flex-1 overflow-x-auto">
+            <Transition name="fade" mode="out-in">
+              <template v-if="vistaEnfermedades === 'grafico'">
+                <GraficaBarras :key="vistaEnfermedadesKey" :data="graficaEnfermedadesData" :options="graficaEnfermedadesOptions" />
+              </template>
+
+              <template v-else>
+                <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                  <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th class="py-2 px-4 text-left text-lg lg:text-xl">Condición</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="[condicion, cantidad] in tablaEnfermedades"
+                      :key="condicion"
+                      class="border-t hover:bg-gray-50 transition"
+                    >
+                      <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
+                        {{ etiquetasEnfermedades[condicion] || condicion }}
+                      </td>
+                      <td class="py-1 px-4 text-center text-emerald-700 text-lg lg:text-xl">{{ cantidad }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </template>
+            </Transition>
+          </div>
+        </div>
+
       </div>
 
       <router-link
-        :to="`/empresas/${empresasStore.currentEmpresa._id}/centros-trabajo`"
+        :to="`/empresas`"
         class="inline-block text-gray-700 hover:text-green-500 font-medium"
       >
-        ← Ir a Centros de Trabajo
+        ← Ver todas las empresas
       </router-link>
     </div>
   </div>
