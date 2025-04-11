@@ -1,16 +1,17 @@
 <script setup>
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Title } from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { Bar } from 'vue-chartjs';
+import { Bar } from 'vue-chartjs'
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip } from 'chart.js'
+import ChartDataLabels from 'chartjs-plugin-datalabels'
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Title, ChartDataLabels);
+// Solo se registran los módulos que realmente usarás
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, ChartDataLabels)
 
 defineProps({
   data: Object,
   options: Object
-});
+})
 </script>
 
 <template>
-  <Bar :data="data" :options="options" :height="235" />
+  <Bar :data="data" :options="options" :height="150" />
 </template>

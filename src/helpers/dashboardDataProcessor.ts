@@ -73,7 +73,15 @@ export function contarPorCategoriaIMC(data: { categoriaIMC: string | null }[]): 
   return categoriasIMCOrdenadas.map((categoria) => [categoria, conteo[categoria] || 0]);
 }
 
-// ENFERMEDADES CRÓNICAS
+// ANTECEDENTES RELACIONADOS CON ENFERMEDADES CRÓNICAS
+export const etiquetasEnfermedades: Record<string, string> = {
+  diabeticosPP: 'Diabéticos',
+  hipertensivosPP: 'Hipertensivos',
+  cardiopaticosPP: 'Cardiopáticos',
+  epilepticosPP: 'Epilépticos',
+  alergicos: 'Alérgicos'
+};
+
 export const camposEnfermedadesOrdenadas = [
   'diabeticosPP',
   'hipertensivosPP',
@@ -86,6 +94,33 @@ export function contarEnfermedadesCronicas(data: Record<string, string | null>[]
   const resultado: [string, number][] = [];
 
   for (const campo of camposEnfermedadesOrdenadas) {
+    const total = data.filter(item => item[campo] === 'Si').length;
+    resultado.push([campo, total]);
+  }
+
+  return resultado;
+}
+
+// ANTECEDENTES DE PROBLEMAS LOCALIZADOS
+export const etiquetasAntecedentesReferidos: Record<string, string> = {
+  lumbalgias: 'Lumbalgias',
+  accidentes: 'Accidentes',
+  quirurgicos: 'Cirugías',
+  traumaticos: 'Traumatismos'
+};
+
+
+export const camposAntecedentesReferidos = [
+  'lumbalgias',
+  'accidentes',
+  'quirurgicos',
+  'traumaticos'
+];
+
+export function contarAntecedentesReferidos(data: Record<string, string | null>[]): [string, number][] {
+  const resultado: [string, number][] = [];
+
+  for (const campo of camposAntecedentesReferidos) {
     const total = data.filter(item => item[campo] === 'Si').length;
     resultado.push([campo, total]);
   }
