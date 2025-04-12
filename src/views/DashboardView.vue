@@ -4,8 +4,9 @@ import { useRoute } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
-import { clasificarPorEdadYSexo, ordenarPorGrupoEtario, contarPorCategoriaIMC, etiquetasEnfermedades, contarEnfermedadesCronicas, etiquetasAntecedentesReferidos, contarAntecedentesReferidos } from '@/helpers/dashboardDataProcessor';
+import { clasificarPorEdadYSexo, ordenarPorGrupoEtario, contarPorCategoriaIMC, contarPorCategoriaIMCConPorcentaje, etiquetasEnfermedades, contarEnfermedadesCronicas, etiquetasAntecedentesReferidos, contarAntecedentesReferidos, etiquetasVisionSinCorreccion, calcularRequierenLentes, categoriasVisionOrdenadas, contarVisionSinCorreccion, calcularVistaCorregida, calcularDaltonismo } from '@/helpers/dashboardDataProcessor';
 import GraficaBarras from '@/components/graficas/GraficaBarras.vue';
+import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
 
 const route = useRoute();
 const empresasStore = useEmpresasStore();
@@ -55,6 +56,18 @@ const centrosTrabajoOptions = computed(() => [
   'Todos',
   ...centrosTrabajo.value.map((centro) => centro.nombreCentro),
 ]);
+
+// Computed para contar total de trabajadores
+const totalTrabajadores = computed(() => {
+  if (!dashboardData.value.length) return 0;
+
+  if (centroSeleccionado.value === 'Todos') {
+    return dashboardData.value.reduce((total, centro) => total + (centro.grupoEtario[0]?.length || 0), 0);
+  }
+
+  const index = centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value);
+  return dashboardData.value[index]?.grupoEtario[0]?.length || 0;
+});
 
 // Computed para tabla y grafica de grupos etarios
 const tablaGruposEtariosFiltrada = computed(() => {
@@ -133,9 +146,8 @@ const graficaGruposEtariosOptions = {
 
 // Computed para tabla y grafica de categorías de IMC
 const graficaIMCData = computed(() => {
-  if (!dashboardData.value.length) return { labels: [], datasets: [] };
+  if (!dashboardData.value.length) return { labels: [], datasets: [], porcentajes: [] };
 
-  // Obtener el array combinado de IMC según el centro seleccionado
   const categorias = centroSeleccionado.value === 'Todos'
     ? dashboardData.value.flatMap((d) => d.imc[0] || [])
     : dashboardData.value[
@@ -143,15 +155,15 @@ const graficaIMCData = computed(() => {
       ]?.imc[0] || [];
 
   const conteo = contarPorCategoriaIMC(categorias);
+  const total = conteo.reduce((sum, [, cantidad]) => sum + cantidad, 0);
 
-  // Define los colores por categoría
   const coloresPorCategoria = {
-    'Bajo peso': '#3B82F6',         // Azul medio (riesgo leve)
-    'Normal': '#10B981',            // Verde jade sobrio
-    'Sobrepeso': '#00A3D7',         // azul vibrante
-    'Obesidad clase I': '#F59E0B',  // Naranja tostado
-    'Obesidad clase II': '#EA580C', // Naranja oscuro desaturado
-    'Obesidad clase III': '#DC2626' // Rojo profundo (riesgo critico)
+    'Bajo peso': '#D1D5DB',          // gray-300
+    'Normal': '#10B981',            // emerald-500 (verde saludable)
+    'Sobrepeso': '#9CA3AF',         // gray-400
+    'Obesidad clase I': '#6B7280',  // gray-500
+    'Obesidad clase II': '#4B5563', // gray-600
+    'Obesidad clase III': '#374151' // gray-700 (más oscuro)
   };
 
   return {
@@ -162,23 +174,33 @@ const graficaIMCData = computed(() => {
         data: conteo.map(([, cantidad]) => cantidad),
         backgroundColor: conteo.map(([categoria]) => coloresPorCategoria[categoria] || '#4B5563')
       }
-    ]
+    ],
+    porcentajes: conteo.map(([, cantidad]) =>
+      total > 0 ? Math.round((cantidad / total) * 100) : 0
+    )
   };
 });
 
 const graficaIMCOptions = {
-  indexAxis: 'y', // HORIZONTAL
+  indexAxis: 'y',
   responsive: true,
+  layout: {
+    padding: {
+      right: 60 // ← ¡esto es lo que importa ahora!
+    }
+  },
   plugins: {
     legend: { display: false },
     tooltip: { enabled: true },
     datalabels: {
-      color: '#FFFFFF',
-      // color: '#4B5563', // Gris oscuro
-      anchor: 'center', // puede ser 'center', 'start', 'end'
-      align: 'center', // 'top', 'bottom', 'left', 'right', 'center'
-      clip: true,
-      formatter: value => value > 0 ? value : '',
+      color: '#374151',
+      anchor: 'end',
+      align: 'end',
+      formatter: (value, context) => {
+        const total = graficaIMCData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return `${value} (${porcentaje}%)`;
+      },
       font: {
         weight: 'bold',
         size: 12
@@ -218,7 +240,13 @@ const tablaIMC = computed(() => {
         centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
       ]?.imc[0] || [];
 
-  return contarPorCategoriaIMC(categorias);
+  const conteo = contarPorCategoriaIMC(categorias);
+  const total = conteo.reduce((sum, [, cantidad]) => sum + cantidad, 0);
+
+  return conteo.map(([categoria, cantidad]) => {
+    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+    return [categoria, cantidad, porcentaje];
+  });
 });
 
 // Computed para tabla y grafica de enfermedades cronicas
@@ -360,6 +388,90 @@ const graficaAntecedentesOptions = {
     }
   }
 };
+
+// Computed para tabla y grafica de agudeza visual
+const graficaRequierenLentesData = computed(() => {
+  if (!dashboardData.value.length) return { labels: [], datasets: [] };
+
+  const examenes = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.agudezaVisual[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.agudezaVisual[0] || [];
+
+  const { requieren, noRequieren } = calcularRequierenLentes(examenes);
+  const total = requieren + noRequieren;
+  const porcentaje = total > 0 ? Math.round((requieren / total) * 100) : 0;
+
+  return {
+    requiere: requieren,
+    porcentaje,
+    chart: {
+      labels: ['Requieren lentes', 'No requieren'],
+      datasets: [
+        {
+          data: [requieren, noRequieren],
+          // backgroundColor: ['#059669', '#D1D5DB'] // Verde + gris claro
+          backgroundColor: ['#4B5563', '#D1D5DB'] // Gris oscuro + gris claro
+        }
+      ]
+    }
+  };
+});
+
+const graficaRequierenLentesOptions = {
+  responsive: true,
+  cutout: '70%',
+  plugins: {
+    tooltip: {
+      enabled: true
+    },
+    datalabels: {
+      display: false
+    },
+    legend: {
+      display: false
+    }
+  }
+}
+
+const tablaVisionSinCorreccion = computed(() => {
+  if (!dashboardData.value.length) return [];
+
+  const examenes = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.agudezaVisual[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.agudezaVisual[0] || [];
+
+  return contarVisionSinCorreccion(examenes);
+});
+
+const graficaVistaCorregidaData = computed(() => {
+  if (!dashboardData.value.length) return { labels: [], datasets: [] };
+
+  const examenes = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.agudezaVisual[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.agudezaVisual[0] || [];
+
+  return calcularVistaCorregida(examenes);
+});
+
+const graficaDaltonismoData = computed(() => {
+  if (!dashboardData.value.length) return { labels: [], datasets: [] };
+
+  const examenes = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.daltonismo[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.daltonismo[0] || [];
+
+  return calcularDaltonismo(examenes);
+});
+
+
 </script>
 
 <template>
@@ -387,14 +499,40 @@ const graficaAntecedentesOptions = {
           <h2 class="text-xl text-gray-600 mt-1">{{ empresasStore.currentEmpresa.razonSocial }}</h2>
         </div>
 
-        <div class="mb-4 ml-auto">
-          <label class="block text-sm font-medium text-gray-700">Centro de trabajo</label>
-          <select
-            v-model="centroSeleccionado"
-            class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out mt-1"
-          >
-            <option v-for="nombre in centrosTrabajoOptions" :key="nombre" :value="nombre">{{ nombre }}</option>
-          </select>
+        <!-- <div class="mb-4 ml-auto flex items-end gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Centro de trabajo</label>
+            <select
+              v-model="centroSeleccionado"
+              class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out mt-1"
+            >
+              <option v-for="nombre in centrosTrabajoOptions" :key="nombre" :value="nombre">{{ nombre }}</option>
+            </select>
+          </div>
+
+          <div class="text-sm text-gray-700 pb-1">
+            👥 <span class="font-semibold">{{ totalTrabajadores }}</span> trabajadores
+          </div>
+        </div> -->
+
+        <!-- Ajustado a nivel del encabezado -->
+        <div class="mb-4 ml-auto flex items-end gap-6">
+          <!-- Indicador de total de trabajadores -->
+          <div class="bg-white border border-gray-200 shadow-md rounded-xl px-6 py-2 text-center self-center">
+            <div class="text-xs text-gray-500"><i class="fas fa-users mr-1 text-gray-400"></i>Trabajadores evaluados</div>
+            <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ totalTrabajadores }}</div>
+          </div>
+
+          <!-- Selector de centro de trabajo -->
+          <div class="self-end">
+            <label class="block text-sm font-medium text-gray-700">Centro de trabajo</label>
+            <select
+              v-model="centroSeleccionado"
+              class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out mt-1"
+            >
+              <option v-for="nombre in centrosTrabajoOptions" :key="nombre" :value="nombre">{{ nombre }}</option>
+            </select>
+          </div>
         </div>
 
       </div>
@@ -441,17 +579,28 @@ const graficaAntecedentesOptions = {
                   <thead class="bg-gray-100 text-gray-700">
                     <tr>
                       <th class="py-2 px-4 text-left text-lg lg:text-xl">Categoría IMC</th>
-                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Total</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Trabajadores</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr
-                      v-for="[categoria, cantidad] in tablaIMC"
+                      v-for="[categoria, cantidad, porcentaje] in tablaIMC"
                       :key="categoria"
                       class="border-t hover:bg-gray-50 transition"
                     >
                       <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ categoria }}</td>
-                      <td class="py-1 px-4 text-center text-emerald-700 text-lg lg:text-xl">{{ cantidad }}</td>
+                      <td
+                        :class="[
+                          'py-1 px-4 text-center text-lg lg:text-xl',
+                          categoria === 'Normal'
+                            ? 'text-emerald-700'
+                            : ['Bajo peso', 'Sobrepeso'].includes(categoria)
+                              ? 'text-amber-600'
+                              : 'text-rose-600'
+                        ]"
+                      >
+                        {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -483,19 +632,26 @@ const graficaAntecedentesOptions = {
                   <thead class="bg-gray-100 text-gray-700">
                     <tr>
                       <th class="py-2 px-4 text-left text-lg lg:text-xl">Antecedentes</th>
-                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Total</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Casos</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr
-                      v-for="[condicion, cantidad] in tablaEnfermedades"
+                      v-for="[condicion, cantidad, porcentaje] in tablaEnfermedades"
                       :key="condicion"
                       class="border-t hover:bg-gray-50 transition"
                     >
                       <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
                         {{ etiquetasEnfermedades[condicion] || condicion }}
                       </td>
-                      <td class="py-1 px-4 text-center text-emerald-700 text-lg lg:text-xl">{{ cantidad }}</td>
+                      <td
+                        :class="[
+                          'py-1 px-4 text-center text-lg lg:text-xl',
+                          cantidad === 0 ? 'text-emerald-700' : 'text-rose-600'
+                        ]"
+                      >
+                        {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -504,18 +660,56 @@ const graficaAntecedentesOptions = {
           </div>
         </div>
 
-        <!-- Agudeza Visual: 1x2 -->
-        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col row-span-2">
-          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-            <h3 class="text-xl font-semibold text-gray-800">Agudeza Visual</h3>
-          </div>
-        </div>
-
-        <!-- Vista corregida -->
+        <!-- Agudeza Visual -->
         <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
           <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-            <h3 class="text-xl font-semibold text-gray-800">Vista Corregida</h3>
+            <h3 class="text-xl font-semibold text-gray-800">Agudeza Visual (Visión)</h3>
           </div>
+          <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+            <thead class="bg-gray-100 text-gray-700">
+              <tr>
+                <th class="py-2 px-4 text-left text-lg">Categoría</th>
+                <th class="py-2 px-4 text-center text-lg">Trab.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="[categoria, cantidad, porcentaje] in tablaVisionSinCorreccion"
+                :key="categoria"
+                class="border-t hover:bg-gray-50 transition"
+              >
+                <td class="py-1 px-4 font-medium text-gray-700 text-base">
+                  {{ etiquetasVisionSinCorreccion[categoria] || categoria }}
+                </td>
+                <td
+                  :class="[
+                    'py-1 px-4 text-center text-lg',
+                    categoria === 'Visión ligeramente reducida'
+                      ? 'text-amber-600'
+                      : ['Visión excepcional', 'Visión normal'].includes(categoria)
+                        ? 'text-emerald-700'
+                        : 'text-rose-600'
+                  ]"
+                >
+                  {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Requieren Lentes -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">Requieren Lentes</h3>
+          </div>
+          <GraficaAnillo
+            v-if="graficaRequierenLentesData.chart?.labels?.length"
+            :data="graficaRequierenLentesData.chart"
+            :options="graficaRequierenLentesOptions"
+            :cantidad="graficaRequierenLentesData.requiere"
+            :porcentaje="graficaRequierenLentesData.porcentaje"
+          />
         </div>
 
         <!-- Localizados -->
@@ -539,19 +733,26 @@ const graficaAntecedentesOptions = {
                   <thead class="bg-gray-100 text-gray-700">
                     <tr>
                       <th class="py-2 px-4 text-left text-lg lg:text-xl">Antecedentes</th>
-                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Total</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Casos</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr
-                      v-for="[condicion, cantidad] in tablaAntecedentes"
+                      v-for="[condicion, cantidad, porcentaje] in tablaAntecedentes"
                       :key="condicion"
                       class="border-t hover:bg-gray-50 transition"
                     >
                       <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
                         {{ etiquetasAntecedentesReferidos[condicion] || condicion }}
                       </td>
-                      <td class="py-1 px-4 text-center text-emerald-700 text-lg lg:text-xl">{{ cantidad }}</td>
+                      <td
+                        :class="[
+                          'py-1 px-4 text-center text-lg lg:text-xl',
+                          cantidad === 0 ? 'text-emerald-700' : 'text-rose-600'
+                        ]"
+                      >
+                        {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -560,11 +761,32 @@ const graficaAntecedentesOptions = {
           </div>
         </div>
 
+        <!-- Vista corregida -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">Vista Corregida</h3>
+          </div>
+          <GraficaAnillo
+            v-if="graficaVistaCorregidaData.chart?.labels?.length"
+            :data="graficaVistaCorregidaData.chart"
+            :options="graficaRequierenLentesOptions"
+            :cantidad="graficaVistaCorregidaData.usan"
+            :porcentaje="graficaVistaCorregidaData.porcentaje"
+          />
+        </div>
+
         <!-- Daltonismo -->
         <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
           <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
             <h3 class="text-xl font-semibold text-gray-800">Daltonismo</h3>
           </div>
+          <GraficaAnillo
+            v-if="graficaDaltonismoData.chart?.labels?.length"
+            :data="graficaDaltonismoData.chart"
+            :options="graficaRequierenLentesOptions"
+            :cantidad="graficaDaltonismoData.conDaltonismo"
+            :porcentaje="graficaDaltonismoData.porcentaje"
+          />
         </div>
 
         <!-- Riesgos: 2 columnas -->
