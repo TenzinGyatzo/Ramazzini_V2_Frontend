@@ -1,4 +1,5 @@
 import { calcularEdad } from "./dates";
+import { parseISO, isAfter, subDays } from 'date-fns';
 
 // GRUPOS ETARIOS
 const gruposEtarios = [
@@ -212,11 +213,11 @@ export function contarVisionSinCorreccion(examenes: any[]): [string, number, num
     }
   }
 
-  return categoriasVisionOrdenadas.map((categoria) => [
-    categoria,
-    conteo[categoria] || 0,
-    total > 0 ? Math.round((conteo[categoria] / total) * 100) : 0
-  ]);
+  return categoriasVisionOrdenadas.map((categoria) => {
+    const cantidad = conteo[categoria] || 0;
+    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+    return [categoria, cantidad, porcentaje];
+  });
 }
 
 export function calcularVistaCorregida(examenes: any[]) {
@@ -250,7 +251,7 @@ export function calcularVistaCorregida(examenes: any[]) {
       datasets: [
         {
           data: [usan, requieren - usan],
-          backgroundColor: ['#059669', '#D1D5DB'] // Esmeralda + gris claro
+          backgroundColor: ['#10b981', '#D1D5DB'] // Esmeralda #059669 + gris claro 
         }
       ]
     }
@@ -288,6 +289,92 @@ export function calcularDaltonismo(examenes: any[]) {
     }
   };
 }
+
+// APTITUD AL PUESTO
+export const etiquetasAptitudPuesto: Record<string, string> = {
+  'Apto Sin Restricciones': 'Sin restricciones',
+  'Apto Con Precaución': 'Con precaución',
+  'Apto Con Restricciones': 'Con restricciones',
+  'No Apto': 'No apto',
+  'Evaluación No Completada': 'No completada'
+};
+
+export const etiquetasAptitudPuestoTabla: Record<string, string> = {
+  'Apto Sin Restricciones': 'Apto sin restricciones',
+  'Apto Con Precaución': 'Apto con precaución',
+  'Apto Con Restricciones': 'Apto con restricciones',
+  'No Apto': 'No apto',
+  'Evaluación No Completada': 'No completada'
+};
+
+export const categoriasAptitud = [
+  "Apto Sin Restricciones",
+  "Apto Con Precaución",
+  "Apto Con Restricciones",
+  "No Apto",
+  "Evaluación No Completada"
+];
+
+export function contarPorAptitudPuesto(data: { aptitudPuesto: string | null }[]): [string, number, number][] {
+  const total = data.length;
+  const conteo: Record<string, number> = {};
+
+  for (const item of data) {
+    if (item.aptitudPuesto && categoriasAptitud.includes(item.aptitudPuesto)) {
+      conteo[item.aptitudPuesto] = (conteo[item.aptitudPuesto] || 0) + 1;
+    }
+  }
+
+  return categoriasAptitud.map((categoria) => {
+    const cantidad = conteo[categoria] || 0;
+    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+    return [categoria, cantidad, porcentaje];
+  });
+}
+
+// CIRCUNFERENCIA CINTURA
+export function calcularCircunferenciaCintura(data: any[]) {
+  let alto = 0;
+  let aumentado = 0;
+  let bajo = 0;
+
+  for (const item of data) {
+    const categoria = item.categoriaCircunferenciaCintura?.trim();
+    if (categoria === 'Alto Riesgo') alto++;
+    else if (categoria === 'Riesgo Aumentado') aumentado++;
+    else if (categoria === 'Bajo Riesgo') bajo++;
+  }
+
+  const total = alto + aumentado + bajo;
+  const porcentaje = total > 0 ? Math.round((alto / total) * 100) : 0;
+
+  return {
+    alto,
+    porcentaje,
+    chart: {
+      labels: ['Alto Riesgo', 'Riesgo Aumentado', 'Bajo Riesgo'],
+      datasets: [
+        {
+          data: [alto, aumentado, bajo],
+          // backgroundColor: ['#F97316', '#FBBF24', '#D1D5DB'] // Naranja cálido, amarillo cálido y gris claro
+          backgroundColor: ['#e11d48', '#F97316', '#D1D5DB'] // Rojo, naranja cálido y gris claro
+        }
+      ]
+    }
+  };
+}
+
+// CONSULTAS
+export function contarConsultasUltimos30Dias(fechas: string[]): number {
+  const hoy = new Date();
+  const hace30Dias = subDays(hoy, 30);
+
+  return fechas.filter((fecha) => {
+    const parsed = parseISO(fecha);
+    return isAfter(parsed, hace30Dias);
+  }).length;
+}
+
 
 
 
