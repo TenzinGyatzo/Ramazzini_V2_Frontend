@@ -16,7 +16,7 @@ defineProps({
 
 <template>
   <div class="relative h-full flex flex-col items-center justify-center">
-    <div class="w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 xl:w-64 xl:h-64">
+    <div class="w-52 h-52 md:w-52 md:h-52 lg:w-56 lg:h-56 xl:w-60 xl:h-60 2xl:w-64 2xl:h-64">
       <Doughnut :data="data" :options="options" />
     </div>
 

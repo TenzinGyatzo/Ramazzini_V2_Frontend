@@ -375,6 +375,38 @@ export function contarConsultasUltimos30Dias(fechas: string[]): number {
   }).length;
 }
 
+// EXPOSICIÓN A AGENTES DE RIESGO
+export const etiquetasAgentesRiesgo: Record<string, string> = {
+  'Ergonómicos': 'Ergonómicos',
+  'Ruido': 'Ruido',
+  'Polvos': 'Polvos',
+  'Químicos': 'Químicos',
+  'Psicosociales': 'Psicosociales',
+  'Temperaturas elevadas': 'Temp. elevadas',
+  'Temperaturas abatidas': 'Temp. abatidas',
+  'Vibraciones': 'Vibraciones',
+  'Biológicos Infecciosos': 'Biológicos'
+};
+
+export function contarAgentesRiesgo(data: { agentesRiesgoActuales?: string[] }[]): [string, number, number][] {
+  const totalTrabajadores = data.length;
+  const conteo: Record<string, number> = {};
+
+  for (const trabajador of data) {
+    const agentes = trabajador.agentesRiesgoActuales || [];
+    for (const agente of agentes) {
+      conteo[agente] = (conteo[agente] || 0) + 1;
+    }
+  }
+
+  return Object.keys(etiquetasAgentesRiesgo).map((agente) => {
+    const cantidad = conteo[agente] || 0;
+    const porcentaje = totalTrabajadores > 0 ? Math.round((cantidad / totalTrabajadores) * 100) : 0;
+    return [agente, cantidad, porcentaje];
+  });
+}
+
+
 
 
 

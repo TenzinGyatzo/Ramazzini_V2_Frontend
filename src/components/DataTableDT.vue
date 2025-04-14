@@ -38,7 +38,8 @@ onMounted(() => {
         }
       },
       columnDefs: [
-        { targets: [11, 12, 13, 14, 15, 16, 18], visible: false } // Oculta las columnas de historia clínica
+        { targets: [11, 12, 13, 14, 15, 16, 17], visible: false }, // Oculta las columnas de historia clínica
+        { targets: 19, width: '160px' } // Acciones
       ]
     } as any);
   }
@@ -52,7 +53,7 @@ onMounted(() => {
     { id: 'accidente', columna: 14 },
     { id: 'imc', columna: 15 },
     { id: 'aptitud', columna: 16 },
-    { id: 'estadoLaboral', columna: 18 }
+    { id: 'estadoLaboral', columna: 17 }
   ];
 
   dataTableInstance.on('init', () => {
@@ -123,7 +124,7 @@ onMounted(() => {
   estadoLaboralSelect?.addEventListener('change', function () {
     const valor = this.value;
     guardarFiltroEnLocalStorage('estadoLaboral', valor);
-    dataTableInstance.column(18).search(
+    dataTableInstance.column(17).search(
       valor === '' ? '' : valor === '-' ? '^-$' : `^${valor}$`,
       true,
       false
@@ -135,7 +136,7 @@ onMounted(() => {
     if (estadoLaboralSelect) {
       const defaultValor = estadoLaboralSelect.value;
       const regex = defaultValor === '' ? '' : defaultValor === '-' ? '^-$' : `^${defaultValor}$`;
-      dataTableInstance.column(18).search(regex, true, false).draw();
+      dataTableInstance.column(17).search(regex, true, false).draw();
     }
   });
 
@@ -144,12 +145,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="table-container">
-    <table id="customTable" ref="tablaRef" class="table-auto w-full border-collapse">
+  <div class="table-container overflow-x-auto">
+    <table id="customTable" ref="tablaRef" class="table-auto min-w-[1200px] border-collapse">
       <thead>
         <tr>
           <th>#</th>
-          <th>Nombre</th>
+          <th >Nombre</th>
           <th>Fecha Registro</th>
           <th>Edad</th>
           <th>Sexo</th>
@@ -165,9 +166,9 @@ onMounted(() => {
           <th>Acc.</th>
           <th>IMC</th>
           <th>Aptitud</th>
-          <th>Expediente</th>
           <th>Estado Laboral</th>
-          <th>Acciones</th>
+          <th>Expediente</th>
+          <th class="w-[200px]">Acciones</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-300">
@@ -188,6 +189,16 @@ onMounted(() => {
   table-layout: auto;
   /* Mantén el comportamiento automático para el layout */
 }
+
+/* Forzar ancho fijo de la última columna sin importar el viewport */
+table.dataTable th:last-child,
+table.dataTable td:last-child {
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
+  white-space: nowrap;
+}
+
 </style>
 
 

@@ -1,0 +1,114 @@
+<script setup>
+import { ref, inject } from 'vue';
+import { useEmpresasStore } from '@/stores/empresas';
+import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
+import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { calcularAntiguedad } from '@/helpers/dates';
+
+const toast = inject('toast');
+const emit = defineEmits(['closeModal']);
+
+const empresas = useEmpresasStore();
+const centrosTrabajo = useCentrosTrabajoStore();
+const trabajadores = useTrabajadoresStore();
+
+const agentesSeleccionados = ref(
+  trabajadores.currentTrabajador?.agentesRiesgoActuales || []
+);
+
+const opcionesAgentes = [
+  "Ergonómicos", "Ruido", "Polvos", "Químicos",
+  "Temperaturas elevadas", "Psicosociales", "Temperaturas abatidas",
+  "Vibraciones", "Biológicos Infecciosos"
+];
+
+const closeModal = () => {
+  emit('closeModal');
+};
+
+const handleSubmit = async () => {
+  try {
+    const trabajadorId = trabajadores.currentTrabajador?._id;
+    const empresaId = empresas.currentEmpresaId;
+    const centroId = centrosTrabajo.currentCentroTrabajoId;
+
+    if (!trabajadorId || !empresaId || !centroId) return;
+
+    await trabajadores.updateTrabajador(empresaId, centroId, trabajadorId, {
+      agentesRiesgoActuales: agentesSeleccionados.value
+    });
+
+    toast.open({ message: 'Agentes de riesgo actualizados', type: 'success' });
+    emit('closeModal');
+  } catch (error) {
+    console.error(error);
+    toast.open({ message: 'Error al actualizar los agentes de riesgo.', type: 'error' });
+  }
+};
+</script>
+
+<template>
+  <div class="modal fixed top-0 left-0 z-50 p-8 h-screen w-full grid place-items-center">
+    <!-- Fondo -->
+    <div class="absolute top-0 left-0 w-full h-full bg-emerald-900 bg-opacity-50 backdrop-blur-sm" @click="closeModal" />
+
+    <Transition name="fade">
+      <div class="modal-inner relative bg-white w-full sm:w-4/5 md:w-3/5 xl:w-2/5 2xl:w-1/3 p-10 rounded-lg shadow-md shadow-slate-900 max-h-[90vh] overflow-y-auto text-gray-800">
+        <!-- Botón cerrar -->
+        <div class="absolute h-16 w-16 flex justify-center items-center top-0 right-0 text-5xl text-gray-400 hover:text-gray-500 cursor-pointer" @click="closeModal">
+          &times;
+        </div>
+
+        <h1 class="text-2xl font-semibold mb-2">Agentes de riesgo del trabajador</h1>
+        <hr class="mb-4">
+        <!-- Información del trabajador -->
+        <div class="mb-3 p-4 bg-gray-50 rounded-lg">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Nombre del trabajador</p>
+              <p class="text-lg font-semibold text-gray-800">{{ trabajadores.currentTrabajador?.nombre }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600">Puesto</p>
+              <p class="text-lg font-semibold text-gray-800">{{ trabajadores.currentTrabajador?.puesto }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600">Empresa</p>
+              <p class="text-lg font-semibold text-gray-800">{{ empresas.currentEmpresa?.nombreComercial }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600">Antigüedad</p>
+              <p class="text-lg font-semibold text-gray-800">{{ calcularAntiguedad(trabajadores.currentTrabajador?.fechaIngreso) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de agentes de riesgo -->
+        <div class="mb-6">
+          <p class="text-sm font-medium text-gray-600 mb-3">Seleccione los agentes de riesgo:</p>
+          <div class="grid grid-cols-2 gap-0">
+            <label v-for="agente in opcionesAgentes" 
+             :key="agente" 
+             class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded-md cursor-pointer transition-colors">
+              <input type="checkbox" 
+               :value="agente" 
+               v-model="agentesSeleccionados" 
+               class="form-checkbox h-4 w-4 accent-emerald-600">
+              <span class="text-sm text-gray-700">{{ agente }}</span>
+            </label>
+          </div>
+        </div>
+
+        <button @click="handleSubmit"
+          class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-all">
+          Guardar cambios
+        </button>
+
+        <button @click="closeModal"
+          class="mt-3 w-full py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-100">
+          Cancelar
+        </button>
+      </div>
+    </Transition>
+  </div>
+</template>

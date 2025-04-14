@@ -3,7 +3,7 @@ import CentroTrabajoItem from '@/components/CentroTrabajoItem.vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { ref, onMounted, inject } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import GreenButton from '@/components/GreenButton.vue';
 import ModalCentros from '@/components/ModalCentros.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
@@ -15,6 +15,7 @@ const toast: any = inject('toast');
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const route = useRoute();
+const router = useRouter();
 
 const showModal = ref(false);
 const showDeleteModal = ref(false);
@@ -93,14 +94,24 @@ onMounted(() => {
       <GreenButton text="Nuevo Centro +" @click="openModal(null)" />
     </div>
     <Transition appear mode="out-in" name="slide-up">
-<!--  <div v-if="centrosTrabajo.loading">
-        <h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1>
-      </div> -->
       <div>
-        <CentroTrabajoItem v-if="empresas.currentEmpresa && centrosTrabajo.centrosTrabajo.length > 0"
-          v-for="centro in centrosTrabajo.centrosTrabajo" :key="centro._id" :centro="centro"
-          :empresa="empresas.currentEmpresa" class="mb-5" @editarCentro="openModal"
+        <div v-if="empresas.currentEmpresa && centrosTrabajo.centrosTrabajo.length > 0">
+          <div v-for="centro in centrosTrabajo.centrosTrabajo" :key="centro._id">
+          <CentroTrabajoItem :centro="centro"
+          :empresa="empresas.currentEmpresa" class="mb-2" @editarCentro="openModal"
           @eliminarCentro="toggleDeleteModal" />
+          </div>
+          <!-- <router-link
+            :to="`/empresas`"
+            class="inline-block text-gray-700 hover:text-green-500 font-medium"
+          >
+            ← Ver estadísticas de la empresa
+          </router-link> -->
+          <button type="button" @click="router.push({ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresa._id } })"
+                class="block mx-auto text-sm w-1/8 mt-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 p-2 transition duration-300">
+              <i class="fas fa-chart-line mr-2"></i> Ver estadísticas de la empresa
+          </button>
+        </div>
         <h1 v-else
           class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700">Esta
           empresa aún no tiene centros de trabajo registrados</h1>

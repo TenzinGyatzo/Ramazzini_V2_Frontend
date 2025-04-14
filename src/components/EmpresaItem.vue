@@ -48,7 +48,7 @@ defineEmits<{
         <div class="mt-4 flex justify-center gap-4">
             <button type="button" @click="router.push({ name: 'dashboard-empresa', params: { idEmpresa: empresa._id } })"
                 class="text-xs w-1/4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg p-1 transition duration-300">
-                Dashboard
+                Estadísticas
             </button>
             <button type="button" @click="$emit('editarEmpresa', empresa)"
                 class="text-xs w-1/4 bg-gray-600 hover:bg-slate-700 text-white rounded-lg p-1 transition duration-300">
