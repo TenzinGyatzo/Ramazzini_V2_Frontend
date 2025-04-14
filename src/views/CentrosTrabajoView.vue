@@ -101,12 +101,6 @@ onMounted(() => {
           :empresa="empresas.currentEmpresa" class="mb-2" @editarCentro="openModal"
           @eliminarCentro="toggleDeleteModal" />
           </div>
-          <!-- <router-link
-            :to="`/empresas`"
-            class="inline-block text-gray-700 hover:text-green-500 font-medium"
-          >
-            ← Ver estadísticas de la empresa
-          </router-link> -->
           <button type="button" @click="router.push({ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresa._id } })"
                 class="block mx-auto text-sm w-1/8 mt-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 p-2 transition duration-300">
               <i class="fas fa-chart-line mr-2"></i> Ver estadísticas de la empresa

@@ -50,7 +50,7 @@ const handleSubmit = async () => {
 <template>
   <div class="modal fixed top-0 left-0 z-50 p-8 h-screen w-full grid place-items-center">
     <!-- Fondo -->
-    <div class="absolute top-0 left-0 w-full h-full bg-emerald-900 bg-opacity-50 backdrop-blur-sm" @click="closeModal" />
+    <div class="absolute top-0 left-0 w-full h-full bg-emerald-900 bg-opacity-50 backdrop-blur-sm" @click="closeModal"></div>
 
     <Transition name="fade">
       <div class="modal-inner relative bg-white w-full sm:w-4/5 md:w-3/5 xl:w-2/5 2xl:w-1/3 p-10 rounded-lg shadow-md shadow-slate-900 max-h-[90vh] overflow-y-auto text-gray-800">
@@ -59,7 +59,7 @@ const handleSubmit = async () => {
           &times;
         </div>
 
-        <h1 class="text-2xl font-semibold mb-2">Agentes de riesgo del trabajador</h1>
+        <h1 class="text-2xl font-semibold mb-2">Exposición a agentes de riesgo</h1>
         <hr class="mb-4">
         <!-- Información del trabajador -->
         <div class="mb-3 p-4 bg-gray-50 rounded-lg">
@@ -85,7 +85,7 @@ const handleSubmit = async () => {
 
         <!-- Lista de agentes de riesgo -->
         <div class="mb-6">
-          <p class="text-sm font-medium text-gray-600 mb-3">Seleccione los agentes de riesgo:</p>
+          <p class="text-sm font-medium text-gray-600 mb-2">Seleccione los agentes a los que se expone el trabajador:</p>
           <div class="grid grid-cols-2 gap-0">
             <label v-for="agente in opcionesAgentes" 
              :key="agente" 

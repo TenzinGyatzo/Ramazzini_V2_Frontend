@@ -38,8 +38,8 @@ onMounted(() => {
         }
       },
       columnDefs: [
-        { targets: [11, 12, 13, 14, 15, 16, 17], visible: false }, // Oculta las columnas de historia clínica
-        { targets: 19, width: '160px' } // Acciones
+        { targets: [11, 12, 13, 14, 15, 16, 17, 18], visible: false }, // Oculta las columnas de historia clínica
+        { targets: 20, width: '160px' } // Acciones
       ]
     } as any);
   }
@@ -53,7 +53,8 @@ onMounted(() => {
     { id: 'accidente', columna: 14 },
     { id: 'imc', columna: 15 },
     { id: 'aptitud', columna: 16 },
-    { id: 'estadoLaboral', columna: 17 }
+    { id: 'estadoLaboral', columna: 17 },
+    { id: 'agentesRiesgo', columna: 18 }
   ];
 
   dataTableInstance.on('init', () => {
@@ -140,6 +141,14 @@ onMounted(() => {
     }
   });
 
+  document.getElementById('filtro-exposicion')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('exposicion', valor);
+
+    const regex = valor === '' ? '' : valor === '-' ? '^$' : valor; // '-' representa "sin exposición"
+    dataTableInstance.column(18).search(regex, true, false).draw();
+  });
+
 });
 
 </script>
@@ -167,6 +176,7 @@ onMounted(() => {
           <th>IMC</th>
           <th>Aptitud</th>
           <th>Estado Laboral</th>
+          <th>Exposición</th>
           <th>Expediente</th>
           <th class="w-[200px]">Acciones</th>
         </tr>

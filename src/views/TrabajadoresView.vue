@@ -193,7 +193,8 @@ function resetearFiltros() {
     'accidente',
     'imc',
     'aptitud',
-    'estadoLaboral'
+    'estadoLaboral',
+    'exposicion'
   ];
 
   ids.forEach(id => {
@@ -286,6 +287,23 @@ const closeRisksModal = () => {
       </div>
 
       <div>
+        <label class="block text-sm font-medium text-gray-700">Exposición a riesgos</label>
+        <select id="filtro-exposicion" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
+          <option value="">Todos</option>
+          <option value="Ergonómicos">Ergonómicos</option>
+          <option value="Ruido">Ruido</option>
+          <option value="Polvos">Polvos</option>
+          <option value="Químicos">Químicos</option>
+          <option value="Psicosociales">Psicosociales</option>
+          <option value="Temperaturas elevadas">Temperaturas elevadas</option>
+          <option value="Temperaturas abatidas">Temperaturas abatidas</option>
+          <option value="Vibraciones">Vibraciones</option>
+          <option value="Biológicos Infecciosos">Biológicos Infecciosos</option>
+          <option value="-">Sin exposición</option>
+        </select>
+      </div>
+
+      <!-- <div>
         <label class="block text-sm font-medium text-gray-700">Alérgico</label>
         <select id="filtro-alergico" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
           <option value="">Todos</option>
@@ -293,7 +311,7 @@ const closeRisksModal = () => {
           <option value="No">No</option>
           <option value="-">Sin datos</option>
         </select>
-      </div>
+      </div> -->
 
       <div>
         <label class="block text-sm font-medium text-gray-700">Diabético</label>
@@ -406,6 +424,14 @@ const closeRisksModal = () => {
           <td>{{ trabajador.aptitudResumen?.aptitudPuesto || '-' }}</td>
           <td>{{ trabajador.estadoLaboral || '-' }}</td>
           <td>
+            <template v-if="trabajador.agentesRiesgoActuales && trabajador.agentesRiesgoActuales.length">
+              {{ trabajador.agentesRiesgoActuales.join(', ') }}
+            </template>
+            <template v-else>
+              -
+            </template>
+          </td>
+          <td>
             <button type="button"
               class="bg-emerald-600 text-white rounded-full px-2 py-1 transition-transform duration-300 ease-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-700 border-2 border-emerald-600"
               @click="router.push({ name: 'expediente-medico', params: { idEmpresa: empresas.currentEmpresaId, idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId, idTrabajador: trabajador._id } })">
@@ -470,10 +496,16 @@ const closeRisksModal = () => {
 
         </tr>
       </DataTableDT>
+      
       <h1 v-else
         class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700 mt-10">
         Este centro de trabajo aún no tiene trabajadores registrados
       </h1>
+
+      <button type="button" @click="router.push({ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresaId } })"
+            class="block mx-auto text-sm w-1/8 mt-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 p-2 transition duration-300">
+          <i class="fas fa-chart-line mr-2"></i> Ver estadísticas de la empresa
+      </button>
     </div>
     </Transition>
   </div>

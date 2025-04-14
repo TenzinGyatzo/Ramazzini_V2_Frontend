@@ -1451,12 +1451,12 @@ const graficaAgentesRiesgoOptions = {
 
       </div>
 
-      <router-link
-        :to="`/empresas`"
-        class="inline-block text-gray-700 hover:text-green-500 font-medium"
+      <button
+        @click="$router.back()"
+        class="inline-block text-gray-700 hover:text-emerald-500 font-medium"
       >
-        ← Ver todas las empresas
-      </router-link>
+        ← Regresar
+      </button>
     </div>
   </div>
 </template>
