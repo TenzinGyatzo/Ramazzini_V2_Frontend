@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, onMounted, inject, watch, computed } from 'vue';
+import { ref, reactive, nextTick, onMounted, inject, watch, computed } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -33,6 +33,34 @@ const selectedTrabajadorId = ref<string | null>(null);
 const selectedTrabajadorNombre = ref<string | null>(null);
 
 const selectPuestoRef = ref<HTMLSelectElement | null>(null);
+
+const filtrosAplicados = reactive(new Set<string>());
+
+const mostrarFiltros = ref(false);
+
+function actualizarEstadoFiltro(id: string, valor: string) {
+  if (
+    (id === 'estadoLaboral' && valor === 'Activo') ||
+    (id !== 'estadoLaboral' && valor === '')
+  ) {
+    filtrosAplicados.delete(id);
+  } else {
+    filtrosAplicados.add(id);
+  }
+}
+
+const filtros = reactive<Record<string, string>>({
+  sexo: '',
+  puesto: '',
+  alergico: '',
+  diabetico: '',
+  hipertensivo: '',
+  accidente: '',
+  imc: '',
+  aptitud: '',
+  estadoLaboral: 'Activo',
+  exposicion: '',
+});
 
 watch(
   [() => selectPuestoRef.value, () => trabajadores.trabajadores.length],
@@ -124,6 +152,34 @@ onMounted(async () => {
   empresas.fetchEmpresaById(empresaId);
   centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;
   centrosTrabajo.fetchCentroTrabajoById(empresaId, centroTrabajoId);
+
+  const ids = [
+    'sexo',
+    'puesto',
+    'alergico',
+    'diabetico',
+    'hipertensivo',
+    'accidente',
+    'imc',
+    'aptitud',
+    'estadoLaboral',
+    'exposicion'
+  ];
+
+  ids.forEach(id => {
+    const select = document.getElementById(`filtro-${id}`) as HTMLSelectElement;
+    const valorGuardado = localStorage.getItem(`filtro-${id}`) ?? '';
+
+    filtros[id] = valorGuardado;
+    actualizarEstadoFiltro(id, filtros[id]);
+
+    if (select) {
+      select.addEventListener('change', () => {
+        actualizarEstadoFiltro(id, filtros[id]);
+      });
+    }
+  });
+
 });
 
 const exportTrabajadores = async () => {
@@ -184,35 +240,13 @@ const toggleEstadoLaboral = async (trabajador: { _id: string; estadoLaboral: str
 };
 
 function resetearFiltros() {
-  const ids = [
-    'sexo',
-    'puesto',
-    'alergico',
-    'diabetico',
-    'hipertensivo',
-    'accidente',
-    'imc',
-    'aptitud',
-    'estadoLaboral',
-    'exposicion'
-  ];
+  const ids = Object.keys(filtros);
 
   ids.forEach(id => {
+    filtros[id] = id === 'estadoLaboral' ? 'Activo' : '';
     localStorage.removeItem(`filtro-${id}`);
-    const select = document.getElementById(`filtro-${id}`) as HTMLSelectElement;
-    if (select) {
-      select.value = '';
-      select.dispatchEvent(new Event('change'));
-    }
+    actualizarEstadoFiltro(id, filtros[id]);
   });
-
-  // Forzar que 'estadoLaboral' vuelva a 'Activo' 
-  const estadoSelect = document.getElementById('filtro-estadoLaboral') as HTMLSelectElement;
-  if (estadoSelect) {
-    estadoSelect.value = 'Activo';
-    estadoSelect.dispatchEvent(new Event('change'));
-    localStorage.setItem('filtro-estadoLaboral', 'Activo');
-  }
 }
 
 const openRisksModal = async (empresa: Empresa | null = null, centroTrabajo: CentroTrabajo | null = null, trabajador: Trabajador | null = null) => {
@@ -234,6 +268,13 @@ const openRisksModal = async (empresa: Empresa | null = null, centroTrabajo: Cen
 const closeRisksModal = () => {
   showRisksModal.value = false;
 };
+
+function actualizarFiltroYGuardar(id: string) {
+  actualizarEstadoFiltro(id, filtros[id]);
+  localStorage.setItem(`filtro-${id}`, filtros[id]);
+}
+
+const hayFiltrosActivos = computed(() => filtrosAplicados.size > 0);
 
 </script>
 
@@ -268,28 +309,89 @@ const closeRisksModal = () => {
   </div>
   
   <div>
-    <div class="flex flex-wrap gap-4 my-6 justify-center">
+    <div class="flex justify-center items-center gap-3 my-4">
+      <button
+        @click="mostrarFiltros = !mostrarFiltros"
+        class="text-sm px-3 py-1.5 rounded-md text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-300 transition duration-200 flex items-center gap-2"
+      >
+        <i :class="mostrarFiltros ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+        {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
+      </button>
+
+      <div
+        v-if="hayFiltrosActivos"
+        class="flex items-center gap-1 text-xs text-emerald-600 font-medium"
+      >
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        Filtros activos
+      </div>
+    </div>
+
+    <Transition name="desplegar-filtros" mode="out-in">
+    <div v-if="mostrarFiltros" class="flex flex-wrap gap-4 my-6 justify-center">
       <div>
         <label class="block text-sm font-medium text-gray-700">Sexo</label>
-        <select id="filtro-sexo" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
-          <option value="">Todos</option>
+        <select
+          id="filtro-sexo"
+          v-model="filtros.sexo"
+          @change="actualizarFiltroYGuardar('sexo')"
+          :class="[
+            'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+            filtrosAplicados.has('sexo') ? 'border-1 border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+          ]"
+        >
+          <option value="">-Todos-</option>
           <option value="Masculino">Masculino</option>
           <option value="Femenino">Femenino</option>
         </select>
+        <div
+          v-if="filtrosAplicados.has('sexo')" 
+          class="flex items-center gap-1 mt-1"
+        >
+          <i class="fas fa-filter text-xs text-emerald-500"></i>
+          <span class="text-emerald-600 text-xs">
+          Filtro aplicado
+          </span>
+        </div>
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700">Puesto</label>
-        <select id="filtro-puesto" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
-          <option value="">Todos</option>
+        <select 
+          id="filtro-puesto" 
+          v-model="filtros.puesto"
+          @change="actualizarFiltroYGuardar('puesto')"
+          :class="[
+              'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+              filtrosAplicados.has('puesto') ? 'border-1 border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+            ]"
+        >
+          <option value="">-Todos-</option>
           <option v-for="puesto in puestosUnicos" :key="puesto" :value="puesto">{{ puesto }}</option>
         </select>
+        <div
+          v-if="filtrosAplicados.has('puesto')" 
+          class="flex items-center gap-1 mt-1"
+        >
+          <i class="fas fa-filter text-xs text-emerald-500"></i>
+          <span class="text-emerald-600 text-xs">
+          Filtro aplicado
+          </span>
+        </div>
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700">Exposición a riesgos</label>
-        <select id="filtro-exposicion" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
-          <option value="">Todos</option>
+        <select 
+          id="filtro-exposicion" 
+          v-model="filtros.exposicion"
+          @change="actualizarFiltroYGuardar('exposicion')"
+          :class="[ 
+              'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+              filtrosAplicados.has('exposicion') ? 'border-1 border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+            ]"
+        >
+          <option value="">-Todos-</option>
           <option value="Ergonómicos">Ergonómicos</option>
           <option value="Ruido">Ruido</option>
           <option value="Polvos">Polvos</option>
@@ -301,11 +403,20 @@ const closeRisksModal = () => {
           <option value="Biológicos Infecciosos">Biológicos Infecciosos</option>
           <option value="-">Sin exposición</option>
         </select>
+        <div
+          v-if="filtrosAplicados.has('exposicion')" 
+          class="flex items-center gap-1 mt-1"
+        >
+          <i class="fas fa-filter text-xs text-emerald-500"></i>
+          <span class="text-emerald-600 text-xs">
+          Filtro aplicado
+          </span>
+        </div>
       </div>
 
       <!-- <div>
         <label class="block text-sm font-medium text-gray-700">Alérgico</label>
-        <select id="filtro-alergico" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
+        <select id="filtro-alergico" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out">
           <option value="">Todos</option>
           <option value="Si">Si</option>
           <option value="No">No</option>
@@ -315,38 +426,97 @@ const closeRisksModal = () => {
 
       <div>
         <label class="block text-sm font-medium text-gray-700">Diabético</label>
-        <select id="filtro-diabetico" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
-          <option value="">Todos</option>
+        <select
+          id="filtro-diabetico"
+          v-model="filtros.diabetico"
+          @change="actualizarFiltroYGuardar('diabetico')"
+          :class="[ 
+            'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+            filtrosAplicados.has('diabetico') ? 'border-1 border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+          ]"
+        >
+          <option value="">-Todos-</option>
           <option value="Si">Si</option>
           <option value="No">No</option>
           <option value="-">Sin datos</option>
         </select>
+        <div
+          v-if="filtrosAplicados.has('diabetico')" 
+          class="flex items-center gap-1 mt-1"
+        >
+          <i class="fas fa-filter text-xs text-emerald-500"></i>
+          <span class="text-emerald-600 text-xs">
+          Filtro aplicado
+          </span>
+        </div>
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700">Hipertensivo</label>
-        <select id="filtro-hipertensivo" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
-          <option value="">Todos</option>
+        <select
+          id="filtro-hipertensivo"
+          v-model="filtros.hipertensivo"
+          @change="actualizarFiltroYGuardar('hipertensivo')"
+          :class="[
+            'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+            filtrosAplicados.has('hipertensivo') ? 'border-1 border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+          ]"
+        >
+          <option value="">-Todos-</option>
           <option value="Si">Si</option>
           <option value="No">No</option>
           <option value="-">Sin datos</option>
         </select>
+        <div
+          v-if="filtrosAplicados.has('hipertensivo')" 
+          class="flex items-center gap-1 mt-1"
+        >
+          <i class="fas fa-filter text-xs text-emerald-500"></i>
+          <span class="text-emerald-600 text-xs">
+          Filtro aplicado
+          </span>
+        </div>
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700">Accidente laboral</label>
-        <select id="filtro-accidente" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
-          <option value="">Todos</option>
+        <select
+          id="filtro-accidente"
+          v-model="filtros.accidente"
+          @change="actualizarFiltroYGuardar('accidente')"
+          :class="[
+            'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+            filtrosAplicados.has('accidente') ? 'border-1 border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+          ]"
+        >
+          <option value="">-Todos-</option>
           <option value="Si">Si</option>
           <option value="No">No</option>
           <option value="-">Sin datos</option>
         </select>
+        <div
+          v-if="filtrosAplicados.has('accidente')" 
+          class="flex items-center gap-1 mt-1"
+        >
+          <i class="fas fa-filter text-xs text-emerald-500"></i>
+          <span class="text-emerald-600 text-xs">
+          Filtro aplicado
+          </span>
+        </div>
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700">Categoria IMC</label>
-        <select id="filtro-imc" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
-          <option value="">Todos</option>
+        <select
+          id="filtro-imc"
+          v-model="filtros.imc"
+          @change="actualizarFiltroYGuardar('imc')"
+          :class="[
+            'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+            filtrosAplicados.has('imc') ? 'border-1 border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+          ]"
+        >
+          <option value="">-Todos-</option>
           <option value="Bajo peso">Bajo peso</option>
           <option value="Normal">Normal</option>
           <option value="Sobrepeso">Sobrepeso</option>
@@ -355,12 +525,29 @@ const closeRisksModal = () => {
           <option value="Obesidad clase III">Obesidad clase III</option>
           <option value="-">Sin datos</option>
         </select>
+        <div
+          v-if="filtrosAplicados.has('imc')" 
+          class="flex items-center gap-1 mt-1"
+        >
+          <i class="fas fa-filter text-xs text-emerald-500"></i>
+          <span class="text-emerald-600 text-xs">
+          Filtro aplicado
+          </span>
+        </div>
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700">Aptitud</label>
-        <select id="filtro-aptitud" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
-          <option value="">Todos</option>
+        <select
+          id="filtro-aptitud"
+          v-model="filtros.aptitud"
+          @change="actualizarFiltroYGuardar('aptitud')"
+          :class="[ 
+            'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+            filtrosAplicados.has('aptitud') ? 'border-1 border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+          ]"
+        >
+          <option value="">-Todos-</option>
           <option value="Apto Sin Restricciones">Apto Sin Restricciones</option>
           <option value="Apto Con Precaución">Apto Con Precaución</option>
           <option value="Apto Con Restricciones">Apto Con Restricciones</option>
@@ -368,15 +555,41 @@ const closeRisksModal = () => {
           <option value="Evaluación No Completada">Evaluación No Completada</option>
           <option value="-">Sin datos</option>
         </select>
+        <div
+          v-if="filtrosAplicados.has('aptitud')" 
+          class="flex items-center gap-1 mt-1"
+        >
+          <i class="fas fa-filter text-xs text-emerald-500"></i>
+          <span class="text-emerald-600 text-xs">
+          Filtro aplicado
+          </span>
+        </div>
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700">Estado Laboral</label>
-        <select id="filtro-estadoLaboral" class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out">
+        <select
+          id="filtro-estadoLaboral"
+          v-model="filtros.estadoLaboral"
+          @change="actualizarFiltroYGuardar('estadoLaboral')"
+          :class="[ 
+            'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+            filtrosAplicados.has('estadoLaboral') ? 'border-1 border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+          ]"
+        >
           <option value="">Todos</option>
-          <option value="Activo" selected>Activo</option>
+          <option value="Activo" selected>-Activo-</option>
           <option value="Inactivo">Inactivo</option>
         </select>
+        <div
+          v-if="filtrosAplicados.has('estadoLaboral')" 
+          class="flex items-center gap-1 mt-1"
+        >
+          <i class="fas fa-filter text-xs text-emerald-500"></i>
+          <span class="text-emerald-600 text-xs">
+          Filtro aplicado
+          </span>
+        </div>
       </div>
 
       <div class="block text-xs">
@@ -388,11 +601,12 @@ const closeRisksModal = () => {
           flex items-center justify-center mx-auto gap-2"
         >
           <i class="fa-solid fa-filter-circle-xmark"></i>
-          Reset Filtros
+          Quitar Filtros
         </button>
       </div>
 
     </div>
+    </Transition>
 
     <!-- Usar el componente DataTableDT -->
     <Transition appear mode="out-in" name="slide-up">
@@ -510,3 +724,26 @@ const closeRisksModal = () => {
     </Transition>
   </div>
 </template>
+
+<style scoped>
+.desplegar-filtros-enter-active,
+.desplegar-filtros-leave-active {
+  transition: all 0.4s ease;
+  overflow: hidden;
+}
+
+.desplegar-filtros-enter-from,
+.desplegar-filtros-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.desplegar-filtros-enter-to,
+.desplegar-filtros-leave-from {
+  opacity: 1;
+  max-height: 1000px; /* lo suficientemente grande */
+  transform: translateY(0);
+}
+
+</style>
