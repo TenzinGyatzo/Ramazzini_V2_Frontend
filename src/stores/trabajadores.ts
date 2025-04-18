@@ -35,6 +35,16 @@ interface Trabajador {
     categoriaTensionArterial?: string | null;
     resumenExploracionFisica?: string | null;
   };
+  examenVistaResumen?: {
+    sinCorreccionLejanaInterpretacion?: string | null;
+    requiereLentesUsoGeneral?: string | null;
+    ojoIzquierdoLejanaConCorreccion?: string | null;
+    ojoDerechoLejanaConCorreccion?: string | null;
+    interpretacionIshihara?: string | null;
+  };
+  consultaResumen?: {
+    fechaNotaMedica?: string | null;
+  };
 }
 
 export const useTrabajadoresStore = defineStore("trabajadores", () => {

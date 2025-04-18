@@ -180,12 +180,22 @@ export function calcularRequierenLentes(examenes: any[]): { requieren: number; n
   let requieren = 0;
   let noRequieren = 0;
 
-  for (const examen of examenes) {
+  /* for (const examen of examenes) {
     const interpretacion = examen.sinCorreccionLejanaInterpretacion?.trim();
 
     if (interpretacion === 'Visión normal' || interpretacion === 'Visión excepcional') {
       noRequieren++;
     } else {
+      requieren++;
+    }
+  } */
+
+  for (const examen of examenes) {
+    const requiere = examen.requiereLentesUsoGeneral?.trim();
+
+    if (requiere === 'No') {
+      noRequieren++;
+    } else if (requiere === 'Si') {
       requieren++;
     }
   }

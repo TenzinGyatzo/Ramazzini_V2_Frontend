@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, onBeforeUnmount, ref } from 'vue';
 import DataTablesCore from 'datatables.net-dt';
 import 'datatables.net-select-dt';
 import 'datatables.net-buttons-dt';
 import 'datatables.net-fixedcolumns-dt';
+import $ from 'jquery';
 
 const tablaRef = ref<HTMLElement | null>(null);
 
@@ -38,7 +39,7 @@ onMounted(() => {
         }
       },
       columnDefs: [
-        { targets: [11, 12, 13, 14, 15, 16, 17, 18], visible: false }, // Oculta las columnas de historia clínica
+        { targets: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], visible: false }, // Oculta las columnas 
         { targets: 20, width: '160px' } // Acciones
       ]
     } as any);
@@ -47,29 +48,23 @@ onMounted(() => {
     const filtros = [
     { id: 'sexo', columna: 4 },
     { id: 'puesto', columna: 6 },
-    { id: 'alergico', columna: 11 },
-    { id: 'diabetico', columna: 12 },
-    { id: 'hipertensivo', columna: 13 },
-    { id: 'accidente', columna: 14 },
-    { id: 'imc', columna: 15 },
-    { id: 'aptitud', columna: 16 },
-    { id: 'estadoLaboral', columna: 17 },
-    { id: 'agentesRiesgo', columna: 18 }
+    { id: 'imc', columna: 11 },
+    { id: 'cintura', columna: 12 },
+    { id: 'aptitud', columna: 13 },
+    { id: 'lentes', columna: 14 },
+    { id: 'correccionVisual', columna: 15 },
+    { id: 'agudeza', columna: 16 },
+    { id: 'daltonismo', columna: 17 },
+    { id: 'diabetico', columna: 18 },
+    { id: 'hipertensivo', columna: 19 },
+    { id: 'accidente', columna: 20 },
+    { id: 'agentesRiesgo', columna: 21 },
+    { id: 'consultas', columna: 22 },
+    { id: 'estadoLaboral', columna: 23 },
   ];
 
-  dataTableInstance.on('init', () => {
-    filtros.forEach(({ id, columna }) => {
-      const valorGuardado = localStorage.getItem(`filtro-${id}`);
-      if (valorGuardado !== null) {
-        const selectEl = document.getElementById(`filtro-${id}`) as HTMLSelectElement;
-        if (selectEl) selectEl.value = valorGuardado;
-
-        const regex = valorGuardado === '' ? '' : valorGuardado === '-' ? '^-$' : `^${valorGuardado}$`;
-        dataTableInstance.column(columna).search(regex, true, false);
-      }
-    });
-
-    dataTableInstance.draw();
+  dataTableInstance.on('init', function () {
+    aplicarTodosLosFiltrosDesdeLocalStorage();
   });
 
   document.getElementById('filtro-sexo')?.addEventListener('change', function () {
@@ -84,48 +79,50 @@ onMounted(() => {
     dataTableInstance.column(6).search(valor, true, false).draw();
   });
 
-  document.getElementById('filtro-alergico')?.addEventListener('change', function () {
-    const valor = (this as HTMLSelectElement).value;
-    guardarFiltroEnLocalStorage('alergico', valor);
-    dataTableInstance.column(11).search(valor === '-' ? '^-$' : valor, true, false).draw();
-  });
-
-  document.getElementById('filtro-diabetico')?.addEventListener('change', function () {
-    const valor = (this as HTMLSelectElement).value;
-    guardarFiltroEnLocalStorage('diabetico', valor);
-    dataTableInstance.column(12).search(valor === '-' ? '^-$' : valor, true, false).draw();
-  });
-
-  document.getElementById('filtro-hipertensivo')?.addEventListener('change', function () {
-    const valor = (this as HTMLSelectElement).value;
-    guardarFiltroEnLocalStorage('hipertensivo', valor);
-    dataTableInstance.column(13).search(valor === '-' ? '^-$' : valor, true, false).draw();
-  });
-
-  document.getElementById('filtro-accidente')?.addEventListener('change', function () {
-    const valor = (this as HTMLSelectElement).value;
-    guardarFiltroEnLocalStorage('accidente', valor);
-    dataTableInstance.column(14).search(valor === '-' ? '^-$' : valor, true, false).draw();
-  });
-
   document.getElementById('filtro-imc')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
     guardarFiltroEnLocalStorage('imc', valor);
-    dataTableInstance.column(15).search(valor === '-' ? '^-$' : valor, true, false).draw();
+    dataTableInstance.column(11).search(valor === '-' ? '^-$' : valor, true, false).draw();
   });
 
   document.getElementById('filtro-aptitud')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
     guardarFiltroEnLocalStorage('aptitud', valor);
-    dataTableInstance.column(16).search(valor === '-' ? '^-$' : valor, true, false).draw();
+    dataTableInstance.column(13).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
+  document.getElementById('filtro-diabetico')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('diabetico', valor);
+    dataTableInstance.column(18).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
+  document.getElementById('filtro-hipertensivo')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('hipertensivo', valor);
+    dataTableInstance.column(19).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
+  document.getElementById('filtro-accidente')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('accidente', valor);
+    dataTableInstance.column(20).search(valor === '-' ? '^-$' : valor, true, false).draw();
   });
   
+  document.getElementById('filtro-exposicion')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('exposicion', valor);
+
+    const regex = valor === '' ? '' : valor === '-' ? '^-$' : valor; // '-' representa "sin exposición"
+    dataTableInstance.column(21).search(regex, true, false).draw();
+  });
+
   const estadoLaboralSelect = document.getElementById('filtro-estadoLaboral') as HTMLSelectElement;
 
   estadoLaboralSelect?.addEventListener('change', function () {
     const valor = this.value;
     guardarFiltroEnLocalStorage('estadoLaboral', valor);
-    dataTableInstance.column(17).search(
+    dataTableInstance.column(23).search(
       valor === '' ? '' : valor === '-' ? '^-$' : `^${valor}$`,
       true,
       false
@@ -137,18 +134,183 @@ onMounted(() => {
     if (estadoLaboralSelect) {
       const defaultValor = estadoLaboralSelect.value;
       const regex = defaultValor === '' ? '' : defaultValor === '-' ? '^-$' : `^${defaultValor}$`;
-      dataTableInstance.column(17).search(regex, true, false).draw();
+      dataTableInstance.column(23).search(regex, true, false).draw();
     }
   });
 
-  document.getElementById('filtro-exposicion')?.addEventListener('change', function () {
+  document.getElementById('filtro-periodo')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
-    guardarFiltroEnLocalStorage('exposicion', valor);
+    guardarFiltroEnLocalStorage('periodo', valor);
 
-    const regex = valor === '' ? '' : valor === '-' ? '^$' : valor; // '-' representa "sin exposición"
-    dataTableInstance.column(18).search(regex, true, false).draw();
+    const hoy = new Date();
+    let fechaInicio: Date | null = null;
+    let fechaFin: Date | null = null;
+
+    switch (valor) {
+      case 'Hoy':
+        fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+        fechaFin = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() + 1);
+        break;
+
+      case 'Esta semana':
+        const diaSemana = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1; // lunes = 0, domingo = 6
+        fechaInicio = new Date(hoy);
+        fechaInicio.setDate(hoy.getDate() - diaSemana);
+        fechaInicio.setHours(0, 0, 0, 0);
+        fechaFin = new Date(hoy);
+        fechaFin.setDate(fechaInicio.getDate() + 7);
+        fechaFin.setHours(0, 0, 0, 0);
+        break;
+
+      case 'Este mes':
+        fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        fechaFin = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 1);
+        break;
+
+      case 'Mes anterior':
+        fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+        fechaFin = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        break;
+
+      case 'Últimos 3 meses': {
+        const anio = hoy.getFullYear();
+        const mes = hoy.getMonth(); // 0 = enero
+
+        fechaInicio = new Date(anio, mes - 2, 1); // Primer día de hace 2 meses
+        fechaFin = new Date(anio, mes + 1, 1);    // Primer día del mes siguiente
+        break;
+      }
+
+      case 'Este año':
+        fechaInicio = new Date(hoy.getFullYear(), 0, 1);
+        fechaFin = new Date(hoy.getFullYear() + 1, 0, 1);
+        break;
+
+      case 'Año anterior':
+        fechaInicio = new Date(hoy.getFullYear() - 1, 0, 1);
+        fechaFin = new Date(hoy.getFullYear(), 0, 1);
+        break;
+
+      default:
+        dataTableInstance.column(2).search('').draw();
+        return;
+    }
+
+    console.log('[DEBUG] Periodo seleccionado:', valor);
+    console.log('[DEBUG] Fecha inicio:', fechaInicio?.toISOString());
+    console.log('[DEBUG] Fecha fin:', fechaFin?.toISOString());
+
+
+    if (fechaInicio) {
+      const desde = fechaInicio.getTime();
+      // Limpiar filtro anterior si existe
+      if (filtroPeriodoReferencia) {
+        $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(f => f !== filtroPeriodoReferencia);
+        filtroPeriodoReferencia = null;
+      }
+
+      // Definir nuevo filtro si aplica
+      if (fechaInicio) {
+        const desde = fechaInicio.getTime();
+        const hasta = fechaFin ? fechaFin.getTime() : null; // Si no hay fecha fin, no se aplica filtro
+
+        filtroPeriodoReferencia = function (settings, data) {
+          const fechaTexto = data[2]; // dd-mm-yyyy
+          const partes = fechaTexto.split('-');
+          if (partes.length !== 3) return true; // ignora si está mal formateada
+
+          const fecha = new Date(+partes[2], +partes[1] - 1, +partes[0]);
+          const time = fecha.getTime();
+
+          return time >= desde && time < hasta;
+        };
+        $.fn.dataTable.ext.search.push(filtroPeriodoReferencia);
+      }
+
+      dataTableInstance.draw();
+    }
+  });
+});
+
+// Fuera de la función principal
+let filtroPeriodoReferencia: ((settings: any, data: any[]) => boolean) | null = null;
+
+function aplicarTodosLosFiltrosDesdeLocalStorage() {
+  const filtros = [
+    { id: 'sexo', columna: 4 },
+    { id: 'puesto', columna: 6 },
+    { id: 'imc', columna: 11 },
+    { id: 'cintura', columna: 12 },
+    { id: 'aptitud', columna: 13 },
+    { id: 'lentes', columna: 14 },
+    { id: 'correccionVisual', columna: 15 },
+    { id: 'agudeza', columna: 16 },
+    { id: 'daltonismo', columna: 17 },
+    { id: 'diabetico', columna: 18 },
+    { id: 'hipertensivo', columna: 19 },
+    { id: 'accidente', columna: 20 },
+    { id: 'exposicion', columna: 21 },
+    { id: 'consultas', columna: 22 },
+    { id: 'estadoLaboral', columna: 23 }
+  ];
+
+  // Limpiar el filtro anterior de periodo si ya se había aplicado
+  if (filtroPeriodoReferencia) {
+    $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(f => f !== filtroPeriodoReferencia);
+    filtroPeriodoReferencia = null;
+  }
+
+  // Aplicar filtros por texto
+  filtros.forEach(({ id, columna }) => {
+    const valor = localStorage.getItem(`filtro-${id}`) || '';
+    const regex = valor === '' ? '' : valor === '-' ? '^-$' : `^${valor}$`;
+    dataTableInstance.column(columna).search(regex, true, false);
   });
 
+  // Aplicar filtro por periodo (fecha)
+  const valorPeriodo = localStorage.getItem('filtro-periodo') || '';
+  if (valorPeriodo && valorPeriodo !== 'Todo el tiempo') {
+    const hoy = new Date();
+    let fechaInicio: Date | null = null;
+
+    switch (valorPeriodo) {
+      case 'Este mes':
+        fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        break;
+      case 'Mes Anterior':
+        fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+        break;
+      case 'Últimos 3 meses':
+        fechaInicio = new Date(hoy);
+        fechaInicio.setMonth(hoy.getMonth() - 3);
+        break;
+      case 'Últimos 6 meses':
+        fechaInicio = new Date(hoy);
+        fechaInicio.setMonth(hoy.getMonth() - 6);
+        break;
+      case 'Último año':
+        fechaInicio = new Date(hoy);
+        fechaInicio.setFullYear(hoy.getFullYear() - 1);
+        break;
+    }
+
+    if (fechaInicio) {
+      const desde = fechaInicio.getTime();
+      filtroPeriodoReferencia = function (settings, data) {
+        const fechaTexto = data[2]; // columna "Fecha Registro"
+        const partes = fechaTexto.split('-');
+        const fecha = new Date(+partes[2], +partes[1] - 1, +partes[0]);
+        return fecha.getTime() >= desde;
+      };
+      $.fn.dataTable.ext.search.push(filtroPeriodoReferencia);
+    }
+  }
+
+  dataTableInstance.draw();
+}
+
+defineExpose({
+  aplicarTodosLosFiltrosDesdeLocalStorage
 });
 
 </script>
@@ -159,8 +321,8 @@ onMounted(() => {
       <thead>
         <tr>
           <th>#</th>
-          <th >Nombre</th>
-          <th>Fecha Registro</th>
+          <th>Nombre</th>
+          <th>Última actualización</th>
           <th>Edad</th>
           <th>Sexo</th>
           <th>Escolaridad</th>
@@ -169,14 +331,19 @@ onMounted(() => {
           <th>Teléfono</th>
           <th>Estado Civil</th>
           <th>Hijos</th>
-          <th>Alg.</th>
+          <th>IMC</th>
+          <th>Cintura</th>
+          <th>Aptitud</th>
+          <th>Req. Lentes</th>
+          <th>Corrección</th>
+          <th>Agudeza</th>
+          <th>Daltonismo</th>
           <th>Dbt.</th>
           <th>Hta.</th>
           <th>Acc.</th>
-          <th>IMC</th>
-          <th>Aptitud</th>
+          <th>Agentes Riesgo</th>
+          <th>Consultas</th>
           <th>Estado Laboral</th>
-          <th>Exposición</th>
           <th>Expediente</th>
           <th class="w-[200px]">Acciones</th>
         </tr>
