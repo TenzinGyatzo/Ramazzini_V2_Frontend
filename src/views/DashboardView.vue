@@ -1,6 +1,6 @@
 <script setup>
-import { ref, watch, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, watch, computed, inject } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -10,6 +10,8 @@ import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
 import { subDays, format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
+const toast = inject('toast');
+const router = useRouter()
 const route = useRoute();
 const empresasStore = useEmpresasStore();
 const centrosTrabajoStore = useCentrosTrabajoStore();
@@ -41,6 +43,9 @@ const cargarDatos = async (empresaId) => {
 
   // 2. Centros
   centrosTrabajo.value = await centrosTrabajoStore.fetchCentrosTrabajo(empresaId);
+  if (centrosTrabajo.value.length > 0) {
+    centroSeleccionado.value = centrosTrabajo.value[0].nombreCentro;
+  }
 
   // 3. Info para el dashboard
   dashboardData.value = await Promise.all(
@@ -50,9 +55,9 @@ const cargarDatos = async (empresaId) => {
   );
 
   // Logs
-  console.log('Empresa data fetched:', empresasStore.currentEmpresa);
-  console.log('Centros de trabajo data fetched:', centrosTrabajo.value);
-  console.log('Dashboard data fetched:', dashboardData.value);
+  // console.log('Empresa data fetched:', empresasStore.currentEmpresa);
+  // console.log('Centros de trabajo data fetched:', centrosTrabajo.value);
+  // console.log('Dashboard data fetched:', dashboardData.value);
 };
 
 // Llama la función al montar y si cambia el ID
@@ -74,81 +79,6 @@ const totalTrabajadores = computed(() => {
   const index = centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value);
   return dashboardData.value[index]?.grupoEtario[0]?.length || 0;
 });
-
-// Computed para tabla y grafica de grupos etarios
-const tablaGruposEtariosFiltrada = computed(() => {
-  if (!dashboardData.value.length) return [];
-
-  // Si se selecciona "Todos", usar toda la data
-  if (centroSeleccionado.value === 'Todos') {
-    const conjunto = dashboardData.value.flatMap((d) => d.grupoEtario);
-    return ordenarPorGrupoEtario(clasificarPorEdadYSexo(conjunto));
-  }
-
-  // Si se selecciona un centro específico
-  const index = centrosTrabajo.value.findIndex(
-    (centro) => centro.nombreCentro === centroSeleccionado.value
-  );
-
-  if (index === -1) return [];
-
-  const grupo = dashboardData.value[index].grupoEtario || [];
-  return ordenarPorGrupoEtario(clasificarPorEdadYSexo(grupo));
-});
-
-const graficaGruposEtariosData = computed(() => {
-  const etiquetas = tablaGruposEtariosFiltrada.value.map(([grupo]) => grupo)
-  const hombres = tablaGruposEtariosFiltrada.value.map(([, datos]) => datos.Masculino)
-  const mujeres = tablaGruposEtariosFiltrada.value.map(([, datos]) => datos.Femenino)
-
-  return {
-    labels: etiquetas,
-    datasets: [
-      {
-        label: 'Hombres',
-        data: hombres,
-        backgroundColor: '#4B5563', // Gris oscuro
-        stack: 'Stack 0'
-      },
-      {
-        label: 'Mujeres',
-        data: mujeres,
-        backgroundColor: '#9CA3AF', // Gris medio
-        stack: 'Stack 0'
-      }
-    ]
-  }
-})
-
-const graficaGruposEtariosOptions = {
-  // indexAxis: 'y', // HORIZONTAL
-  responsive: true,
-  plugins: {
-    legend: { display: false },
-    tooltip: { enabled: true },
-    datalabels: {
-      color: '#FFFFFF', // blanco
-      anchor: 'center', // puede ser 'center', 'start', 'end'
-      align: 'center', // 'top', 'bottom', 'left', 'right', 'center'
-      formatter: (value) => value > 0 ? value : '',
-      font: {
-        weight: 'bold',
-        size: 12
-      },
-      clamp: true
-    }
-  },
-  scales: {
-    x: {
-      stacked: true,
-      grid: { display: false }
-    },
-    y: {
-      stacked: true,
-      grid: { display: false }
-    }
-  }
-}
 
 // Computed para tabla y grafica de categorías de IMC
 const graficaIMCData = computed(() => {
@@ -249,6 +179,12 @@ const graficaIMCOptions = {
         font: { size: 12 }
       }
     }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
   }
 };
 
@@ -269,6 +205,111 @@ const tablaIMC = computed(() => {
     return [categoria, cantidad, porcentaje];
   });
 });
+
+// Computed para tabla y grafica de aptitud al puesto
+const tablaAptitud = computed(() => {
+  if (!dashboardData.value.length) return [];
+
+  const aptitudes = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.aptitudes[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.aptitudes[0] || [];
+
+  return contarPorAptitudPuesto(aptitudes);
+});
+
+const graficaAptitudData = computed(() => {
+  const conteo = tablaAptitud.value;
+
+  const colores = {
+    'Apto Sin Restricciones': '#10B981',  // Verde
+    'Apto Con Precaución': '#F59E0B',     // Amarillo/ámbar
+    'Apto Con Restricciones': '#F97316',  // Naranja
+    'No Apto': '#DC2626',                 // Rojo
+    'Evaluación No Completada': '#9CA3AF' // Gris claro
+  };
+
+  return {
+    labels: conteo.map(([categoria]) => categoria),
+    datasets: [
+      {
+        label: 'Trabajadores',
+        data: conteo.map(([, cantidad]) => cantidad),
+        backgroundColor: conteo.map(([categoria]) => colores[categoria] || '#6B7280') // fallback gris
+      }
+    ]
+  };
+});
+
+const graficaAptitudOptions = {
+  indexAxis: 'y',
+  responsive: true,
+  layout: {
+    padding: {
+      right: 60 
+    }
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        // ✅ Este corrige el título del tooltip (primera línea en el hover)
+        title: (context) => {
+          const index = context[0].dataIndex;
+          const raw = context[0].label;
+          return etiquetasAptitudPuestoTabla[raw] || raw;
+        },
+        // ✅ Este es el contenido (segunda línea)
+        label: (context) => {
+          const index = context.dataIndex;
+          const [categoria, cantidad, porcentaje] = tablaAptitud.value[index];
+          return `Trabajadores: ${cantidad} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      anchor: 'end',
+      align: 'end',
+      color: '#374151',
+      font: { weight: 'bold', size: 12 },
+      formatter: (_valor, context) => {
+        const index = context.dataIndex;
+        const [_, cantidad, porcentaje] = tablaAptitud.value[index];
+        return `${cantidad} (${porcentaje}%)`;
+      }
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        stepSize: 1,
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      grid: { display: false },
+      ticks: {
+        callback: (value) => {
+          const etiqueta = graficaAptitudData.value.labels?.[value];
+          return etiquetasAptitudPuesto[etiqueta] || etiqueta;
+        },
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  }
+};
 
 // Computed para tabla y grafica de enfermedades cronicas
 const tablaEnfermedades = computed(() => {
@@ -428,7 +469,7 @@ const graficaRequierenLentesData = computed(() => {
     requiere: requieren,
     porcentaje,
     chart: {
-      labels: ['Requieren lentes', 'No requieren'],
+      labels: ['Requiere lentes', 'No requiere'],
       datasets: [
         {
           data: [requieren, noRequieren],
@@ -458,6 +499,12 @@ const opcionesGenericasAnillo = {
     },
     legend: {
       display: false
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
     }
   }
 };
@@ -513,105 +560,6 @@ const graficaDaltonismoData = computed(() => {
 
   return calcularDaltonismo(examenes);
 });
-
-// Computed para tabla y grafica de aptitud al puesto
-const tablaAptitud = computed(() => {
-  if (!dashboardData.value.length) return [];
-
-  const aptitudes = centroSeleccionado.value === 'Todos'
-    ? dashboardData.value.flatMap((d) => d.aptitudes[0] || [])
-    : dashboardData.value[
-        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
-      ]?.aptitudes[0] || [];
-
-  return contarPorAptitudPuesto(aptitudes);
-});
-
-const graficaAptitudData = computed(() => {
-  const conteo = tablaAptitud.value;
-
-  const colores = {
-    'Apto Sin Restricciones': '#10B981',  // Verde
-    'Apto Con Precaución': '#F59E0B',     // Amarillo/ámbar
-    'Apto Con Restricciones': '#F97316',  // Naranja
-    'No Apto': '#DC2626',                 // Rojo
-    'Evaluación No Completada': '#9CA3AF' // Gris claro
-  };
-
-  return {
-    labels: conteo.map(([categoria]) => categoria),
-    datasets: [
-      {
-        label: 'Trabajadores',
-        data: conteo.map(([, cantidad]) => cantidad),
-        backgroundColor: conteo.map(([categoria]) => colores[categoria] || '#6B7280') // fallback gris
-      }
-    ]
-  };
-});
-
-const graficaAptitudOptions = {
-  indexAxis: 'y',
-  responsive: true,
-  layout: {
-    padding: {
-      right: 60 
-    }
-  },
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      enabled: true,
-      callbacks: {
-        // ✅ Este corrige el título del tooltip (primera línea en el hover)
-        title: (context) => {
-          const index = context[0].dataIndex;
-          const raw = context[0].label;
-          return etiquetasAptitudPuestoTabla[raw] || raw;
-        },
-        // ✅ Este es el contenido (segunda línea)
-        label: (context) => {
-          const index = context.dataIndex;
-          const [categoria, cantidad, porcentaje] = tablaAptitud.value[index];
-          return `Trabajadores: ${cantidad} (${porcentaje}%)`;
-        }
-      }
-    },
-    datalabels: {
-      anchor: 'end',
-      align: 'end',
-      color: '#374151',
-      font: { weight: 'bold', size: 12 },
-      formatter: (_valor, context) => {
-        const index = context.dataIndex;
-        const [_, cantidad, porcentaje] = tablaAptitud.value[index];
-        return `${cantidad} (${porcentaje}%)`;
-      }
-    }
-  },
-  scales: {
-    x: {
-      beginAtZero: true,
-      grid: { display: false },
-      ticks: {
-        stepSize: 1,
-        color: '#374151',
-        font: { size: 12 }
-      }
-    },
-    y: {
-      grid: { display: false },
-      ticks: {
-        callback: (value) => {
-          const etiqueta = graficaAptitudData.value.labels?.[value];
-          return etiquetasAptitudPuesto[etiqueta] || etiqueta;
-        },
-        color: '#374151',
-        font: { size: 12 }
-      }
-    }
-  }
-};
 
 // Computed para tabla y grafica de circunferencia de cintura
 const graficaCircunferenciaData = computed(() => {
@@ -755,8 +703,267 @@ const graficaAgentesRiesgoOptions = {
         font: { size: 12 }
       }
     }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
   }
 };
+
+// Computed para tabla y grafica de grupos etarios
+const tablaGruposEtariosFiltrada = computed(() => {
+  if (!dashboardData.value.length) return [];
+
+  // Si se selecciona "Todos", usar toda la data
+  if (centroSeleccionado.value === 'Todos') {
+    const conjunto = dashboardData.value.flatMap((d) => d.grupoEtario);
+    return ordenarPorGrupoEtario(clasificarPorEdadYSexo(conjunto));
+  }
+
+  // Si se selecciona un centro específico
+  const index = centrosTrabajo.value.findIndex(
+    (centro) => centro.nombreCentro === centroSeleccionado.value
+  );
+
+  if (index === -1) return [];
+
+  const grupo = dashboardData.value[index].grupoEtario || [];
+  return ordenarPorGrupoEtario(clasificarPorEdadYSexo(grupo));
+});
+
+const graficaGruposEtariosData = computed(() => {
+  const etiquetas = tablaGruposEtariosFiltrada.value.map(([grupo]) => grupo)
+  const hombres = tablaGruposEtariosFiltrada.value.map(([, datos]) => datos.Masculino)
+  const mujeres = tablaGruposEtariosFiltrada.value.map(([, datos]) => datos.Femenino)
+
+  return {
+    labels: etiquetas,
+    datasets: [
+      {
+        label: 'Hombres',
+        data: hombres,
+        backgroundColor: '#4B5563', // Gris oscuro
+        stack: 'Stack 0'
+      },
+      {
+        label: 'Mujeres',
+        data: mujeres,
+        backgroundColor: '#9CA3AF', // Gris medio
+        stack: 'Stack 0'
+      }
+    ]
+  }
+})
+
+const graficaGruposEtariosOptions = {
+  // indexAxis: 'y', // HORIZONTAL
+  responsive: true,
+  plugins: {
+    legend: { display: false },
+    tooltip: { enabled: true },
+    datalabels: {
+      color: '#FFFFFF', // blanco
+      anchor: 'center', // puede ser 'center', 'start', 'end'
+      align: 'center', // 'top', 'bottom', 'left', 'right', 'center'
+      formatter: (value) => value > 0 ? value : '',
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      stacked: true,
+      grid: { display: false }
+    },
+    y: {
+      stacked: true,
+      grid: { display: false }
+    }
+  }
+}
+
+// Handlers para ir a la vista de trabajadores con filtros aplicados
+function manejarRedireccionFiltroChart(labelOriginal, filtroId, mapaValores = {}) {
+  if (centroSeleccionado.value === 'Todos') {
+    toast.open({
+      message: 'Selecciona un centro de trabajo para ver los trabajadores correspondientes.',
+      type: 'info'
+    });
+    return;
+  }
+
+  const valorFiltro = mapaValores[labelOriginal] ?? labelOriginal;
+  const empresaId = String(route.params.idEmpresa);
+  const centro = centrosTrabajo.value.find(c => c.nombreCentro === centroSeleccionado.value);
+  if (!centro) return;
+
+  router.push({
+    name: 'trabajadores',
+    params: {
+      idEmpresa: empresaId,
+      idCentroTrabajo: centro._id
+    },
+    query: {
+      [filtroId]: valorFiltro
+    }
+  });
+}
+
+function handleClickGraficaIMC(evt, elements) {
+  if (!elements.length) return;
+
+  const index = elements[0].index;
+  const label = graficaIMCData.value.labels[index]; // ← categoría IMC
+
+  manejarRedireccionFiltroChart(label, 'imc');
+}
+
+function handleClickTablaIMC(categoria) {
+  if (centroSeleccionado.value === 'Todos') {
+    toast.open({
+      message: 'Selecciona un centro de trabajo para ver los trabajadores con esa categoría de IMC.',
+      type: 'info'
+    });
+    return;
+  }
+
+  manejarRedireccionFiltroChart(categoria, 'imc');
+}
+
+function handleClickGraficaAptitud(evt, elements) {
+  if (!elements.length) return;
+
+  const index = elements[0].index;
+  const label = graficaAptitudData.value.labels[index]; // ← Resultado de aptitud
+
+  manejarRedireccionFiltroChart(label, 'aptitud');
+}
+
+function handleClickTablaAptitud(categoria) {
+  if (centroSeleccionado.value === 'Todos') {
+    toast.open({
+      message: 'Selecciona un centro de trabajo para ver los trabajadores con esa aptitud.',
+      type: 'info'
+    });
+    return;
+  }
+
+  manejarRedireccionFiltroChart(categoria, 'aptitud');
+}
+
+function handleClickGraficaAgentesRiesgo(evt, elements) {
+  if (!elements.length) return;
+
+  const index = elements[0].index;
+  const label = graficaAgentesRiesgoData.value.labels[index]; // Ej: 'Ruido', 'Químicos', etc.
+
+  manejarRedireccionFiltroChart(label, 'exposicion');
+}
+
+function handleClickGraficaRequierenLentes(evt, elements) {
+  if (!elements.length) return;
+  const index = elements[0].index;
+  const label = graficaRequierenLentesData.value.chart.labels[index];
+  manejarRedireccionFiltroChart(label, 'lentes');
+}
+
+function handleClickGraficaVistaCorregida(evt, elements) {
+  if (!elements.length) return;
+  const index = elements[0].index;
+  const label = graficaVistaCorregidaData.value.chart.labels[index];
+  manejarRedireccionFiltroChart(label, 'correccionVisual');
+}
+
+function handleClickGraficaDaltonismo(evt, elements) {
+  if (!elements.length) return;
+  const index = elements[0].index;
+  const label = graficaDaltonismoData.value.chart.labels[index];
+  manejarRedireccionFiltroChart(label, 'daltonismo', {
+    'Daltónicos': 'Daltonismo',
+    'Sin daltonismo': 'Normal'
+  });
+}
+
+function handleClickTablaAgudeza(categoria) {
+  if (centroSeleccionado.value === 'Todos') {
+    toast.open({
+      message: 'Selecciona un centro de trabajo para ver los trabajadores correspondientes.',
+      type: 'info'
+    });
+    return;
+  }
+
+  manejarRedireccionFiltroChart(categoria, 'agudeza');
+}
+
+function handleClickTablaEnfermedades(condicion) {
+  if (centroSeleccionado.value === 'Todos') {
+    toast.open({
+      message: 'Selecciona un centro de trabajo para ver los trabajadores correspondientes.',
+      type: 'info'
+    });
+    return;
+  }
+
+  // Mapeo de campo original al filtro que tienes en la vista de trabajadores
+  const campoFiltro = {
+    diabeticosPP: 'diabetico',
+    hipertensivosPP: 'hipertensivo',
+    // cardiopaticosPP: 'cardiopatico',
+    // epilepticosPP: 'epileptico'
+  }[condicion];
+
+  if (!campoFiltro) return;
+
+  manejarRedireccionFiltroChart('Si', campoFiltro); // ← Todos son casos positivos ("Si")
+}
+
+function handleClickTablaAntecedentes(condicion) {
+  if (centroSeleccionado.value === 'Todos') {
+    toast.open({
+      message: 'Selecciona un centro de trabajo para ver los trabajadores correspondientes.',
+      type: 'info'
+    });
+    return;
+  }
+
+  const campoFiltro = {
+    // lumbalgia: 'lumbalgia',
+    // traumaticos: 'traumatico',
+    // quirurgicos: 'quirurgico',
+    accidentes: 'accidente'
+  }[condicion];
+
+  if (!campoFiltro) return;
+
+  manejarRedireccionFiltroChart('Si', campoFiltro);
+}
+
+function handleClickConsultas() {
+  if (totalConsultasUltimos30Dias.value === 0) return;
+
+  if (centroSeleccionado.value === 'Todos') {
+    toast.open({
+      message: 'Selecciona un centro de trabajo para ver los trabajadores con consultas médicas recientes.',
+      type: 'info'
+    });
+    return;
+  }
+
+  manejarRedireccionFiltroChart('Si', 'consultas');
+}
+
+function handleClickGraficaCintura(evt, elements) {
+  if (!elements.length) return;
+  const index = elements[0].index;
+  const label = graficaCircunferenciaData.value.chart.labels[index]; // Ej: 'Bajo Riesgo', 'Alto Riesgo', etc.
+  manejarRedireccionFiltroChart(label, 'cintura');
+}
 
 </script>
 
@@ -851,7 +1058,10 @@ const graficaAgentesRiesgoOptions = {
           <div class="flex-1 overflow-x-auto">
             <Transition name="fade" mode="out-in">
               <template v-if="vistaIMC === 'grafico'">
-                <GraficaBarras :key="vistaIMCKey" :data="graficaIMCData" :options="graficaIMCOptions" />
+                <GraficaBarras 
+                  :key="vistaIMCKey" 
+                  :data="graficaIMCData" 
+                  :options="{ ...graficaIMCOptions, onClick: handleClickGraficaIMC }" />
               </template>
 
               <template v-else>
@@ -866,7 +1076,8 @@ const graficaAgentesRiesgoOptions = {
                     <tr
                       v-for="[categoria, cantidad, porcentaje] in tablaIMC"
                       :key="categoria"
-                      class="border-t hover:bg-gray-50 transition"
+                      class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      @click="handleClickTablaIMC(categoria)"
                     >
                       <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ categoria }}</td>
                       <td
@@ -930,7 +1141,10 @@ const graficaAgentesRiesgoOptions = {
           <div class="flex-1 overflow-x-auto">
             <Transition name="fade" mode="out-in">
               <template v-if="vistaAptitud === 'grafico'">
-                <GraficaBarras :key="vistaAptitudKey" :data="graficaAptitudData" :options="graficaAptitudOptions" />
+                <GraficaBarras 
+                  :key="vistaAptitudKey" 
+                  :data="graficaAptitudData" 
+                  :options="{ ...graficaAptitudOptions, onClick: handleClickGraficaAptitud }" />
               </template>
 
               <template v-else>
@@ -946,7 +1160,8 @@ const graficaAgentesRiesgoOptions = {
                     <tr
                       v-for="[categoria, cantidad, porcentaje] in tablaAptitud"
                       :key="categoria"
-                      class="border-t hover:bg-gray-50 transition"
+                      class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      @click="handleClickTablaAptitud(categoria)"
                     >
                     <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
                       {{ etiquetasAptitudPuestoTabla[categoria] || categoria }}
@@ -993,7 +1208,7 @@ const graficaAgentesRiesgoOptions = {
           <GraficaAnillo
             v-if="graficaRequierenLentesData.chart?.labels?.length"
             :data="graficaRequierenLentesData.chart"
-            :options="opcionesGenericasAnillo"
+            :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaRequierenLentes }"
             :cantidad="graficaRequierenLentesData.requiere"
             :porcentaje="graficaRequierenLentesData.porcentaje"
           />
@@ -1026,7 +1241,7 @@ const graficaAgentesRiesgoOptions = {
           <GraficaAnillo
             v-if="graficaVistaCorregidaData.chart?.labels?.length"
             :data="graficaVistaCorregidaData.chart"
-            :options="opcionesGenericasAnillo"
+            :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaVistaCorregida }"
             :cantidad="graficaVistaCorregidaData.usan"
             :porcentaje="graficaVistaCorregidaData.porcentaje"
           />
@@ -1055,7 +1270,7 @@ const graficaAgentesRiesgoOptions = {
           <GraficaAnillo
             v-if="graficaDaltonismoData.chart?.labels?.length"
             :data="graficaDaltonismoData.chart"
-            :options="opcionesGenericasAnillo"
+            :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaDaltonismo }"
             :cantidad="graficaDaltonismoData.conDaltonismo"
             :porcentaje="graficaDaltonismoData.porcentaje"
           />
@@ -1093,7 +1308,8 @@ const graficaAgentesRiesgoOptions = {
                 <tr
                   v-for="[categoria, cantidad, porcentaje] in tablaVisionSinCorreccion"
                   :key="categoria"
-                  class="border-t hover:bg-gray-50 transition"
+                  class="border-t hover:bg-gray-200 transition cursor-pointer"
+                  @click="handleClickTablaAgudeza(categoria)"
                 >
                   <td class="py-1 px-4 font-medium text-gray-700 text-base whitespace-nowrap">
                     {{ etiquetasVisionSinCorreccion[categoria] || categoria }}
@@ -1135,7 +1351,11 @@ const graficaAgentesRiesgoOptions = {
           <div class="flex-1 overflow-x-auto">
             <Transition name="fade" mode="out-in">
               <template v-if="vistaEnfermedades === 'grafico'">
-                <GraficaBarras :key="vistaEnfermedadesKey" :data="graficaEnfermedadesData" :options="graficaEnfermedadesOptions" />
+                <GraficaBarras 
+                  :key="vistaEnfermedadesKey" 
+                  :data="graficaEnfermedadesData" 
+                  :options="{ ...graficaEnfermedadesOptions, onClick: handleClickGraficaEnfermedades }"
+                />
               </template>
 
               <template v-else>
@@ -1150,7 +1370,11 @@ const graficaAgentesRiesgoOptions = {
                     <tr
                       v-for="[condicion, cantidad, porcentaje] in tablaEnfermedades"
                       :key="condicion"
-                      class="border-t hover:bg-gray-50 transition"
+                      :class="[
+                      'border-t', 'transition',
+                      ['diabeticosPP', 'hipertensivosPP'].includes(condicion) ? 'hover:bg-gray-200 cursor-pointer' : ''
+                      ]"
+                      @click="['diabeticosPP', 'hipertensivosPP'].includes(condicion) ? handleClickTablaEnfermedades(condicion) : null"
                     >
                       <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
                         {{ etiquetasEnfermedades[condicion] || condicion }}
@@ -1209,7 +1433,11 @@ const graficaAgentesRiesgoOptions = {
                     <tr
                       v-for="[condicion, cantidad, porcentaje] in tablaAntecedentes"
                       :key="condicion"
-                      class="border-t hover:bg-gray-50 transition"
+                      :class="[
+                      'border-t',
+                      ['accidentes'].includes(condicion) ? 'hover:bg-gray-200 cursor-pointer' : ''
+                      ]"
+                      @click="['accidentes'].includes(condicion) ? handleClickTablaAntecedentes(condicion) : null"
                     >
                       <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
                         {{ etiquetasAntecedentesReferidos[condicion] || condicion }}
@@ -1277,7 +1505,7 @@ const graficaAgentesRiesgoOptions = {
                 <GraficaBarras
                   :key="vistaAgentesKey"
                   :data="graficaAgentesRiesgoData"
-                  :options="graficaAgentesRiesgoOptions"
+                  :options="{ ...graficaAgentesRiesgoOptions, onClick: handleClickGraficaAgentesRiesgo }"
                 />
               </template>
 
@@ -1403,7 +1631,13 @@ const graficaAgentesRiesgoOptions = {
           </div>
 
           <!-- Número principal -->
-          <div class="flex-1 flex items-center justify-center">
+          <div 
+            :class="[
+              'flex-1 flex items-center justify-center text-center rounded-lg transition',
+              totalConsultasUltimos30Dias > 0 ? 'cursor-pointer hover:bg-emerald-50' : 'cursor-default'
+            ]"
+            @click="handleClickConsultas"
+          >
             <div class="text-center">
               <div class="text-8xl font-medium text-emerald-600">
                 {{ totalConsultasUltimos30Dias }}
@@ -1439,7 +1673,7 @@ const graficaAgentesRiesgoOptions = {
           <GraficaAnillo
             v-if="graficaCircunferenciaData.chart?.labels?.length"
             :data="graficaCircunferenciaData.chart"
-            :options="opcionesGenericasAnillo"
+            :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaCintura }"
             :cantidad="graficaCircunferenciaData.alto"
             :porcentaje="graficaCircunferenciaData.porcentaje"
           />

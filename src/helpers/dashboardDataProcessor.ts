@@ -21,7 +21,6 @@ const gruposEtarios = [
     return grupo ? grupo.rango : null;
   }
   
-
   export function clasificarPorEdadYSexo(
     data: { sexo: string, fechaNacimiento: string }[][]
   ): Record<string, { Masculino: number, Femenino: number }> {
@@ -142,7 +141,6 @@ export const etiquetasAntecedentesReferidos: Record<string, string> = {
   traumaticos: 'Traumatismos'
 };
 
-
 export const camposAntecedentesReferidos = [
   'lumbalgias',
   'accidentes',
@@ -257,7 +255,7 @@ export function calcularVistaCorregida(examenes: any[]) {
     requieren,
     porcentaje,
     chart: {
-      labels: ['Usan lentes', 'No usan lentes'],
+      labels: ['Corregida', 'Sin corregir'],
       datasets: [
         {
           data: [usan, requieren - usan],

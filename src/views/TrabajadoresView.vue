@@ -6,6 +6,8 @@ import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useRoute, useRouter } from 'vue-router';
 import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
+import { exportarTrabajadoresDesdeFrontend } from '@/helpers/exportarExcel';
+import $ from 'jquery';
 
 import GreenButton from '@/components/GreenButton.vue';
 import DataTableDT from '@/components/DataTableDT.vue';
@@ -38,6 +40,7 @@ const selectedTrabajadorNombre = ref<string | null>(null);
 const dataTableRef = ref();
 const mostrarFiltros = ref(false);
 const filtrosAplicados = reactive(new Set<string>());
+const mostrarTabla = ref(false);
 
 // 4. Filtros
 const filtrosConfig = [
@@ -54,7 +57,7 @@ const filtrosConfig = [
     'Apto Sin Restricciones', 'Apto Con Precaución', 'Apto Con Restricciones',
     'No Apto', 'Evaluación No Completada', '-'
   ]},
-  { id: 'lentes', label: 'Requiere Lentes', opciones: ['Si', 'No', '-'] },
+  { id: 'lentes', label: 'Requiere Lentes', opciones: ['Requiere lentes', 'No requiere', '-'] },
   { id: 'correccionVisual', label: 'Vista corregida', opciones: ['Corregida', 'Sin corregir', 'No requiere', '-'] },
   { id: 'agudeza', label: 'Agudeza Visual', opciones: [
     'Visión excepcional',
@@ -67,7 +70,7 @@ const filtrosConfig = [
   { id: 'daltonismo', label: 'Visión de color', opciones: ['Normal', 'Daltonismo']},
   { id: 'diabetico', label: 'Diabético', opciones: ['Si', 'No', '-'] },
   { id: 'hipertensivo', label: 'Hipertensivo', opciones: ['Si', 'No', '-'] },
-  { id: 'accidente', label: 'Accidente laboral', opciones: ['Si', 'No', '-'] },
+  { id: 'accidente', label: 'Accidente', opciones: ['Si', 'No', '-'] },
   { id: 'exposicion', label: 'Exposición a riesgos', opciones: [
     'Ergonómicos', 'Ruido', 'Polvos', 'Químicos', 'Psicosociales',
     'Temperaturas elevadas', 'Temperaturas abatidas', 'Vibraciones', 'Biológicos Infecciosos', '-'
@@ -133,11 +136,21 @@ onMounted(async () => {
   const empresaId = String(route.params.idEmpresa);
   const centroTrabajoId = String(route.params.idCentroTrabajo);
   const guardado = localStorage.getItem('mostrarFiltros');
-  
+
+  // const t0 = performance.now();
   await trabajadores.fetchTrabajadoresConHistoria(empresaId, centroTrabajoId);
   await nextTick();
+  mostrarTabla.value = true;
+  // const t1 = performance.now();
+  // console.log('Tiempo en cargar y renderizar trabajadores:', t1 - t0, 'ms');
+  // console.log('Trabajadores:', trabajadores.trabajadores);
+
+  const query = route.query;
+
+  aplicarFiltrosDesdeQuery(route.query);
+  router.replace({ query: {} });
   await nextTick();
-  console.log('Trabajadores:', trabajadores.trabajadores);
+  dataTableRef.value?.aplicarTodosLosFiltrosDesdeLocalStorage();
   
   empresas.currentEmpresaId = empresaId;
   empresas.fetchEmpresaById(empresaId);
@@ -272,12 +285,115 @@ const determinarVistaCorregida = (
   }
 };
 
+function generarNombreArchivoExcel(): string {
+  const partes: string[] = ['trabajadores'];
+
+  filtrosAplicados.forEach((filtroId) => {
+    const valor = filtros[filtroId];
+    if (valor) {
+      // Normaliza: sin espacios y en minúsculas
+      const valorNormalizado = valor.toLowerCase().replace(/\s+/g, '-');
+      partes.push(`${filtroId}-${valorNormalizado}`);
+    }
+  });
+
+  const fechaActual = new Date().toISOString().slice(0, 10); // yyyy-mm-dd
+  partes.push(fechaActual);
+
+  return partes.join('_') + '.xlsx';
+}
+
+const exportarFiltrados = () => {
+  if (!dataTableRef.value) return;
+
+  const table = $('#customTable').DataTable();
+  const data = table.rows({ filter: 'applied' }).data();
+
+  const trabajadoresFiltrados: any[] = [];
+
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+
+    trabajadoresFiltrados.push({
+      nombre: row[1],
+      edad: row[3],
+      sexo: row[4],
+      escolaridad: row[5],
+      puesto: row[6],
+      antiguedad: row[7],
+      telefono: row[8],
+      estadoCivil: row[9],
+      hijos: row[10],
+      imc: row[11],
+      cintura: row[12],
+      aptitud: row[13],
+      requiereLentes: row[14],
+      correccionVisual: row[15],
+      agudeza: row[16],
+      daltonismo: row[17],
+      diabetico: row[18],
+      hipertensivo: row[19],
+      accidente: row[20],
+      agentesRiesgo: row[21],
+      consultas: row[22],
+      estadoLaboral: row[23],
+    });
+  }
+
+  const nombreArchivo = generarNombreArchivoExcel();
+  exportarTrabajadoresDesdeFrontend(trabajadoresFiltrados, nombreArchivo);
+
+};
+
+const filtrosValidos = {
+  imc: ['Bajo peso', 'Normal', 'Sobrepeso', 'Obesidad clase I', 'Obesidad clase II', 'Obesidad clase III'],
+  aptitud: ['Apto Sin Restricciones', 'Apto Con Precaución', 'Apto Con Restricciones', 'No Apto', 'Evaluación No Completada'],
+  lentes: ['Requiere lentes', 'No requiere'],
+  correccionVisual: ['Corregida', 'Sin corregir', 'No requiere'],
+  daltonismo: ['Daltonismo', 'Normal'],
+  agudeza: [
+    'Visión excepcional', 'Visión normal', 'Visión ligeramente reducida', 'Visión moderadamente reducida', 
+    'Visión significativamente reducida', 'Visión muy reducida'
+  ],
+  diabetico: ['Si', 'No', '-'],
+  hipertensivo: ['Si', 'No', '-'],
+  // cardiopatico: ['Si', 'No', '-'],
+  // epileptico: ['Si', 'No', '-'],
+  // quirurgico: ['Si', 'No', '-'],
+  // traumatico: ['Si', 'No', '-'],
+  // lumbalgia: ['Si', 'No', '-'],
+  accidente: ['Si', 'No', '-'],
+  exposicion: [
+    'Ergonómicos', 'Ruido', 'Polvos', 'Químicos', 'Psicosociales', 'Temperaturas elevadas', 'Temperaturas abatidas', 
+    'Vibraciones', 'Biológicos Infecciosos', '-'
+  ],
+  consultas: ['Si', 'No'],
+  cintura: ['Bajo Riesgo', 'Riesgo Aumentado', 'Alto Riesgo', '-']
+};
+
+function aplicarFiltrosDesdeQuery(query: RouteLocationNormalizedLoaded['query']) {
+  const filtrosEnQuery = Object.entries(filtrosValidos).filter(([filtroId, valores]) => {
+    const valor = query[filtroId];
+    return typeof valor === 'string' && valores.includes(valor);
+  });
+
+  if (filtrosEnQuery.length > 0) {
+    resetearFiltros(); // 🔁 Limpia localStorage y estado reactivo
+  }
+
+  filtrosEnQuery.forEach(([filtroId, _valores]) => {
+    const valor = query[filtroId] as string;
+    filtros[filtroId] = valor;
+    localStorage.setItem(`filtro-${filtroId}`, valor);
+    actualizarEstadoFiltro(filtroId, valor);
+  });
+}
+
 // 8. Computadas
 const puestosUnicos = computed(() => {
   const puestos = trabajadores.trabajadores.map(t => t.puesto).filter(Boolean);
   return [...new Set(puestos)].sort();
 });
-
 
 </script>
 
@@ -314,7 +430,8 @@ const puestosUnicos = computed(() => {
   <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-8 my-6">
     <GreenButton text="Nuevo Trabajador +" @click="openModal(null)" />
     <GreenButton text="Carga Masiva" @click="toggleImportModal" />
-    <GreenButton text="Exportar a Excel" @click="exportTrabajadores" />
+    <!-- <GreenButton text="Exportar Todos" @click="exportTrabajadores" /> -->
+    <GreenButton text="Exportar Trabajadores" @click="exportarFiltrados" />
   </div>
 
   <!-- Toggle filtros + indicador -->
@@ -381,7 +498,7 @@ const puestosUnicos = computed(() => {
       <h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1>
     </div>
     <div v-else>
-      <DataTableDT ref="dataTableRef" v-if="trabajadores.trabajadores.length > 0" class="table-auto z-1">
+      <DataTableDT ref="dataTableRef" v-if="mostrarTabla" class="table-auto z-1">
         <tr
           v-for="(trabajador, index) in trabajadores.trabajadores"
           :key="trabajador._id"
@@ -401,13 +518,13 @@ const puestosUnicos = computed(() => {
           <td>{{ trabajador.exploracionFisicaResumen?.categoriaIMC || '-' }}</td>
           <td>{{ trabajador.exploracionFisicaResumen?.categoriaCircunferenciaCintura || '-' }}</td>
           <td>{{ trabajador.aptitudResumen?.aptitudPuesto || '-' }}</td>
-          <td>{{ trabajador.examenVistaResumen?.requiereLentesUsoGeneral === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.examenVistaResumen?.requiereLentesUsoGeneral === 'Si' ? 'Requiere lentes' : 'No requiere' }}</td>
           <td>{{ determinarVistaCorregida(trabajador.examenVistaResumen?.requiereLentesUsoGeneral, Number(trabajador.examenVistaResumen?.ojoIzquierdoLejanaConCorreccion), Number(trabajador.examenVistaResumen?.ojoDerechoLejanaConCorreccion)) }}</td>
           <td>{{ trabajador.examenVistaResumen?.sinCorreccionLejanaInterpretacion || '-' }}</td>
           <td>{{ trabajador.examenVistaResumen?.interpretacionIshihara || '-' }}</td>
           <td>{{ trabajador.historiaClinicaResumen?.diabeticosPP === 'Si' ? 'Si' : 'No' }}</td>
           <td>{{ trabajador.historiaClinicaResumen?.hipertensivosPP === 'Si' ? 'Si' : 'No' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen?.accidenteLaboral === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.accidentes === 'Si' ? 'Si' : 'No' }}</td>
           <td>{{ trabajador.agentesRiesgoActuales?.join(', ') || '-' }}</td>
           <td>{{ trabajador.consultaResumen?.fechaNotaMedica ? 'Si' : 'No' }}</td>
           <td>{{ trabajador.estadoLaboral || '-' }}</td>

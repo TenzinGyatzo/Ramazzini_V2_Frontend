@@ -7,7 +7,6 @@ import 'datatables.net-fixedcolumns-dt';
 import $ from 'jquery';
 
 const tablaRef = ref<HTMLElement | null>(null);
-
 let dataTableInstance: any = null;
 
 function guardarFiltroEnLocalStorage(id: string, valor: string) {
@@ -18,6 +17,7 @@ onMounted(() => {
   // Iniciar la tabla cuando se monta el componente
   if (!dataTableInstance) {
     dataTableInstance = new DataTablesCore('#customTable', {
+      deferRender: true,
       select: true,
       order: [[0, 'desc']],
       /* fixedColumns:{
@@ -196,11 +196,6 @@ onMounted(() => {
         return;
     }
 
-    console.log('[DEBUG] Periodo seleccionado:', valor);
-    console.log('[DEBUG] Fecha inicio:', fechaInicio?.toISOString());
-    console.log('[DEBUG] Fecha fin:', fechaFin?.toISOString());
-
-
     if (fechaInicio) {
       const desde = fechaInicio.getTime();
       // Limpiar filtro anterior si existe
@@ -249,25 +244,33 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
     { id: 'diabetico', columna: 18 },
     { id: 'hipertensivo', columna: 19 },
     { id: 'accidente', columna: 20 },
-    { id: 'exposicion', columna: 21 },
+    { id: 'exposicion', columna: 21 }, // <-- este tiene lógica especial
     { id: 'consultas', columna: 22 },
     { id: 'estadoLaboral', columna: 23 }
   ];
 
-  // Limpiar el filtro anterior de periodo si ya se había aplicado
+  // 1. Limpiar filtros anteriores
+  dataTableInstance.columns().search('');
   if (filtroPeriodoReferencia) {
     $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(f => f !== filtroPeriodoReferencia);
     filtroPeriodoReferencia = null;
   }
 
-  // Aplicar filtros por texto
+  // 2. Aplicar filtros por columna
   filtros.forEach(({ id, columna }) => {
     const valor = localStorage.getItem(`filtro-${id}`) || '';
-    const regex = valor === '' ? '' : valor === '-' ? '^-$' : `^${valor}$`;
-    dataTableInstance.column(columna).search(regex, true, false);
+
+    if (id === 'exposicion') {
+      // Aplicar como expresión regular simple, sin anclar (^$) para permitir coincidencias parciales
+      const regex = valor === '' ? '' : valor === '-' ? '^-$' : valor;
+      dataTableInstance.column(columna).search(regex, true, false);
+    } else {
+      const regex = valor === '' ? '' : valor === '-' ? '^-$' : `^${valor}$`;
+      dataTableInstance.column(columna).search(regex, true, false);
+    }
   });
 
-  // Aplicar filtro por periodo (fecha)
+  // 3. Aplicar filtro por fecha (periodo)
   const valorPeriodo = localStorage.getItem('filtro-periodo') || '';
   if (valorPeriodo && valorPeriodo !== 'Todo el tiempo') {
     const hoy = new Date();
@@ -299,6 +302,7 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
       filtroPeriodoReferencia = function (settings, data) {
         const fechaTexto = data[2]; // columna "Fecha Registro"
         const partes = fechaTexto.split('-');
+        if (partes.length !== 3) return true;
         const fecha = new Date(+partes[2], +partes[1] - 1, +partes[0]);
         return fecha.getTime() >= desde;
       };
@@ -306,6 +310,7 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
     }
   }
 
+  // 4. Redibujar tabla
   dataTableInstance.draw();
 }
 
@@ -322,8 +327,8 @@ defineExpose({
         <tr>
           <th>#</th>
           <th>Nombre</th>
-          <th>Última actualización</th>
-          <th>Edad</th>
+          <th>Última<br>actualización</th>
+          <th>Edad&nbsp;&nbsp;&nbsp;&nbsp;</th>
           <th>Sexo</th>
           <th>Escolaridad</th>
           <th>Puesto</th>
