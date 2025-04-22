@@ -506,7 +506,7 @@ const mensajeNegativo = computed(() => {
                                 {{ documentoExterno.notasDocumento.trim() !== '' &&
                                     documentoExterno.notasDocumento.trim()
                                     !== 'undefined' ?
-                                    documentoExterno.notasDocumento : 'Presionar editar para agregar notas &nbsp&nbsp --->'
+                                    documentoExterno.notasDocumento : 'Sin notas'
                                 }}
                             </p>
                         </div>
