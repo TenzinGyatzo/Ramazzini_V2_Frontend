@@ -4,7 +4,7 @@ import { ref, reactive, nextTick, onMounted, inject, watch, computed } from 'vue
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router';
 import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
 import { exportarTrabajadoresDesdeFrontend } from '@/helpers/exportarExcel';
 import $ from 'jquery';
@@ -307,7 +307,8 @@ const exportarFiltrados = () => {
   if (!dataTableRef.value) return;
 
   const table = $('#customTable').DataTable();
-  const data = table.rows({ filter: 'applied' }).data();
+  const data = table.rows().nodes().filter((tr: HTMLElement) => $(tr).is(':visible'));
+  const rowData = Array.from(data).map(row => table.row(row).data());
 
   const trabajadoresFiltrados: any[] = [];
 

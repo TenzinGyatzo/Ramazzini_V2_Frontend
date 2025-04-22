@@ -24,7 +24,7 @@ interface Trabajador {
     diabeticosPP?: string | null;
     alergicos?: string | null;
     hipertensivosPP?: string | null;
-    accidenteLaboral?: string | null;
+    accidentes?: string | null;
   };  
   aptitudResumen?: {
     aptitudPuesto?: string | null;
