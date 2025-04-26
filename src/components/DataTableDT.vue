@@ -39,29 +39,11 @@ onMounted(() => {
         }
       },
       columnDefs: [
-        { targets: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], visible: false }, // Oculta las columnas 
+        { targets: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29], visible: false }, // Oculta las columnas 
         { targets: 20, width: '160px' } // Acciones
       ]
     } as any);
   }
-
-    const filtros = [
-    { id: 'sexo', columna: 4 },
-    { id: 'puesto', columna: 6 },
-    { id: 'imc', columna: 11 },
-    { id: 'cintura', columna: 12 },
-    { id: 'aptitud', columna: 13 },
-    { id: 'lentes', columna: 14 },
-    { id: 'correccionVisual', columna: 15 },
-    { id: 'agudeza', columna: 16 },
-    { id: 'daltonismo', columna: 17 },
-    { id: 'diabetico', columna: 18 },
-    { id: 'hipertensivo', columna: 19 },
-    { id: 'accidente', columna: 20 },
-    { id: 'agentesRiesgo', columna: 21 },
-    { id: 'consultas', columna: 22 },
-    { id: 'estadoLaboral', columna: 23 },
-  ];
 
   dataTableInstance.on('init', function () {
     aplicarTodosLosFiltrosDesdeLocalStorage();
@@ -103,18 +85,54 @@ onMounted(() => {
     dataTableInstance.column(19).search(valor === '-' ? '^-$' : valor, true, false).draw();
   });
 
+  document.getElementById('filtro-cardiopatico')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('cardiopatico', valor);
+    dataTableInstance.column(20).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
+  document.getElementById('filtro-epilepsia')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('epilepsia', valor);
+    dataTableInstance.column(21).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
+  document.getElementById('filtro-alergia')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('alergia', valor);
+    dataTableInstance.column(22).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+  
+  document.getElementById('filtro-lumbalgia')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('lumbalgia', valor);
+    dataTableInstance.column(23).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+  
   document.getElementById('filtro-accidente')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
     guardarFiltroEnLocalStorage('accidente', valor);
-    dataTableInstance.column(20).search(valor === '-' ? '^-$' : valor, true, false).draw();
+    dataTableInstance.column(24).search(valor === '-' ? '^-$' : valor, true, false).draw();
   });
   
+  document.getElementById('filtro-quirurgico')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('quirurgico', valor);
+    dataTableInstance.column(25).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
+  document.getElementById('filtro-traumatico')?.addEventListener('change', function () {
+    const valor = (this as HTMLSelectElement).value;
+    guardarFiltroEnLocalStorage('traumatico', valor);
+    dataTableInstance.column(26).search(valor === '-' ? '^-$' : valor, true, false).draw();
+  });
+
   document.getElementById('filtro-exposicion')?.addEventListener('change', function () {
     const valor = (this as HTMLSelectElement).value;
     guardarFiltroEnLocalStorage('exposicion', valor);
 
     const regex = valor === '' ? '' : valor === '-' ? '^-$' : valor; // '-' representa "sin exposición"
-    dataTableInstance.column(21).search(regex, true, false).draw();
+    dataTableInstance.column(27).search(regex, true, false).draw();
   });
 
   const estadoLaboralSelect = document.getElementById('filtro-estadoLaboral') as HTMLSelectElement;
@@ -122,7 +140,7 @@ onMounted(() => {
   estadoLaboralSelect?.addEventListener('change', function () {
     const valor = this.value;
     guardarFiltroEnLocalStorage('estadoLaboral', valor);
-    dataTableInstance.column(23).search(
+    dataTableInstance.column(29).search(
       valor === '' ? '' : valor === '-' ? '^-$' : `^${valor}$`,
       true,
       false
@@ -134,7 +152,7 @@ onMounted(() => {
     if (estadoLaboralSelect) {
       const defaultValor = estadoLaboralSelect.value;
       const regex = defaultValor === '' ? '' : defaultValor === '-' ? '^-$' : `^${defaultValor}$`;
-      dataTableInstance.column(23).search(regex, true, false).draw();
+      dataTableInstance.column(29).search(regex, true, false).draw();
     }
   });
 
@@ -207,7 +225,7 @@ onMounted(() => {
       // Definir nuevo filtro si aplica
       if (fechaInicio) {
         const desde = fechaInicio.getTime();
-        const hasta = fechaFin ? fechaFin.getTime() : null; // Si no hay fecha fin, no se aplica filtro
+          const hasta = fechaFin ? fechaFin.getTime() : Date.now(); // Si no hay fecha fin, usa la fecha actual
 
         filtroPeriodoReferencia = function (settings, data) {
           const fechaTexto = data[2]; // dd-mm-yyyy
@@ -243,10 +261,16 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
     { id: 'daltonismo', columna: 17 },
     { id: 'diabetico', columna: 18 },
     { id: 'hipertensivo', columna: 19 },
-    { id: 'accidente', columna: 20 },
-    { id: 'exposicion', columna: 21 }, // <-- este tiene lógica especial
-    { id: 'consultas', columna: 22 },
-    { id: 'estadoLaboral', columna: 23 }
+    { id: 'cardiopatico', columna: 20 },
+    { id: 'epilepsia', columna: 21 },
+    { id: 'alergia', columna: 22 },
+    { id: 'lumbalgia', columna: 23 },
+    { id: 'accidente', columna: 24 },
+    { id: 'quirurgico', columna: 25 },
+    { id: 'traumatico', columna: 26 },
+    { id: 'exposicion', columna: 27 }, // <-- este tiene lógica especial
+    { id: 'consultas', columna: 28 },
+    { id: 'estadoLaboral', columna: 29 }
   ];
 
   // 1. Limpiar filtros anteriores
@@ -345,7 +369,13 @@ defineExpose({
           <th>Daltonismo</th>
           <th>Dbt.</th>
           <th>Hta.</th>
+          <th>Card.</th>
+          <th>Epil.</th>
+          <th>Aler.</th>
+          <th>Lumb.</th>
           <th>Acc.</th>
+          <th>Ciru.</th>
+          <th>Traum.</th>
           <th>Agentes Riesgo</th>
           <th>Consultas</th>
           <th>Estado Laboral</th>

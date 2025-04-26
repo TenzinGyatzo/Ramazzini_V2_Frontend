@@ -70,7 +70,13 @@ const filtrosConfig = [
   { id: 'daltonismo', label: 'Visión de color', opciones: ['Normal', 'Daltonismo']},
   { id: 'diabetico', label: 'Diabético', opciones: ['Si', 'No', '-'] },
   { id: 'hipertensivo', label: 'Hipertensivo', opciones: ['Si', 'No', '-'] },
-  { id: 'accidente', label: 'Accidente', opciones: ['Si', 'No', '-'] },
+  { id: 'cardiopatico', label: 'Cardiopatías', opciones: ['Si', 'No', '-'] },
+  { id: 'epilepsia', label: 'Epilepsias', opciones: ['Si', 'No', '-'] },
+  { id: 'alergia', label: 'Alergias', opciones: ['Si', 'No', '-'] },
+  { id: 'lumbalgia', label: 'Lumbalgia', opciones: ['Si', 'No', '-'] },
+  { id: 'accidente', label: 'Accidentes', opciones: ['Si', 'No', '-'] },
+  { id: 'quirurgico', label: 'Cirugias', opciones: ['Si', 'No', '-'] },
+  { id: 'traumatico', label: 'Traumatismos', opciones: ['Si', 'No', '-'] },
   { id: 'exposicion', label: 'Exposición a riesgos', opciones: [
     'Ergonómicos', 'Ruido', 'Polvos', 'Químicos', 'Psicosociales',
     'Temperaturas elevadas', 'Temperaturas abatidas', 'Vibraciones', 'Biológicos Infecciosos', '-'
@@ -95,7 +101,13 @@ const filtros = reactive<Record<string, string>>({
   daltonismo: '',
   diabetico: '',
   hipertensivo: '',
+  cardiopatico: '',
+  epilepsia: '',
+  alergia: '',
+  lumbalgia: '',
   accidente: '',
+  quirurgico: '',
+  traumatico: '',
   exposicion: '',
   consultas: '',
   periodo: '',
@@ -143,7 +155,7 @@ onMounted(async () => {
   mostrarTabla.value = true;
   // const t1 = performance.now();
   // console.log('Tiempo en cargar y renderizar trabajadores:', t1 - t0, 'ms');
-  // console.log('Trabajadores:', trabajadores.trabajadores);
+  console.log('Trabajadores:', trabajadores.trabajadores);
 
   const query = route.query;
 
@@ -334,10 +346,16 @@ const exportarFiltrados = () => {
       daltonismo: row[17],
       diabetico: row[18],
       hipertensivo: row[19],
-      accidente: row[20],
-      agentesRiesgo: row[21],
-      consultas: row[22],
-      estadoLaboral: row[23],
+      cardiopatico: row[20],
+      epilepsia: row[21],
+      alergia: row[22],
+      lumbalgia: row[23],
+      accidente: row[24],
+      quirurgico: row[25],
+      traumatico: row[26],
+      agentesRiesgo: row[27],
+      consultas: row[28],
+      estadoLaboral: row[29],
     });
   }
 
@@ -358,12 +376,13 @@ const filtrosValidos = {
   ],
   diabetico: ['Si', 'No', '-'],
   hipertensivo: ['Si', 'No', '-'],
-  // cardiopatico: ['Si', 'No', '-'],
-  // epileptico: ['Si', 'No', '-'],
-  // quirurgico: ['Si', 'No', '-'],
-  // traumatico: ['Si', 'No', '-'],
-  // lumbalgia: ['Si', 'No', '-'],
+  cardiopatico: ['Si', 'No', '-'],
+  epilepsia: ['Si', 'No', '-'],
+  alergia: ['Si', 'No', '-'],
+  lumbalgia: ['Si', 'No', '-'],
   accidente: ['Si', 'No', '-'],
+  quirurgico: ['Si', 'No', '-'],
+  traumatico: ['Si', 'No', '-'],
   exposicion: [
     'Ergonómicos', 'Ruido', 'Polvos', 'Químicos', 'Psicosociales', 'Temperaturas elevadas', 'Temperaturas abatidas', 
     'Vibraciones', 'Biológicos Infecciosos', '-'
@@ -525,7 +544,13 @@ const puestosUnicos = computed(() => {
           <td>{{ trabajador.examenVistaResumen?.interpretacionIshihara || '-' }}</td>
           <td>{{ trabajador.historiaClinicaResumen?.diabeticosPP === 'Si' ? 'Si' : 'No' }}</td>
           <td>{{ trabajador.historiaClinicaResumen?.hipertensivosPP === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.cardiopaticosPP === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.epilepticosPP === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.alergicos === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.lumbalgias === 'Si' ? 'Si' : 'No' }}</td>
           <td>{{ trabajador.historiaClinicaResumen?.accidentes === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.quirurgicos === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.traumaticos === 'Si' ? 'Si' : 'No' }}</td>
           <td>{{ trabajador.agentesRiesgoActuales?.join(', ') || '-' }}</td>
           <td>{{ trabajador.consultaResumen?.fechaNotaMedica ? 'Si' : 'No' }}</td>
           <td>{{ trabajador.estadoLaboral || '-' }}</td>

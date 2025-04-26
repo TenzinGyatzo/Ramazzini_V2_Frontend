@@ -22,9 +22,14 @@ interface Trabajador {
   updatedAt: string;
   historiaClinicaResumen?: {
     diabeticosPP?: string | null;
-    alergicos?: string | null;
     hipertensivosPP?: string | null;
+    cardiopaticosPP?: string | null;
+    epilepticosPP?: string | null;
+    alergicos?: string | null;
+    lumbalgias?: string | null;
     accidentes?: string | null;
+    quirurgicos?: string | null;
+    traumaticos?: string | null;
   };  
   aptitudResumen?: {
     aptitudPuesto?: string | null;

@@ -914,8 +914,9 @@ function handleClickTablaEnfermedades(condicion) {
   const campoFiltro = {
     diabeticosPP: 'diabetico',
     hipertensivosPP: 'hipertensivo',
-    // cardiopaticosPP: 'cardiopatico',
-    // epilepticosPP: 'epileptico'
+    cardiopaticosPP: 'cardiopatico',
+    epilepticosPP: 'epilepsia',
+    alergicos: 'alergia',
   }[condicion];
 
   if (!campoFiltro) return;
@@ -933,10 +934,10 @@ function handleClickTablaAntecedentes(condicion) {
   }
 
   const campoFiltro = {
-    // lumbalgia: 'lumbalgia',
-    // traumaticos: 'traumatico',
-    // quirurgicos: 'quirurgico',
-    accidentes: 'accidente'
+    lumbalgias: 'lumbalgia',
+    accidentes: 'accidente',
+    quirurgicos: 'quirurgico',
+    traumaticos: 'traumatico'
   }[condicion];
 
   if (!campoFiltro) return;
@@ -1370,11 +1371,8 @@ function handleClickGraficaCintura(evt, elements) {
                     <tr
                       v-for="[condicion, cantidad, porcentaje] in tablaEnfermedades"
                       :key="condicion"
-                      :class="[
-                      'border-t', 'transition',
-                      ['diabeticosPP', 'hipertensivosPP'].includes(condicion) ? 'hover:bg-gray-200 cursor-pointer' : ''
-                      ]"
-                      @click="['diabeticosPP', 'hipertensivosPP'].includes(condicion) ? handleClickTablaEnfermedades(condicion) : null"
+                      class="border-t hover:bg-gray-200 cursor-pointer transition"
+                      @click="handleClickTablaEnfermedades(condicion)"
                     >
                       <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
                         {{ etiquetasEnfermedades[condicion] || condicion }}
@@ -1433,11 +1431,8 @@ function handleClickGraficaCintura(evt, elements) {
                     <tr
                       v-for="[condicion, cantidad, porcentaje] in tablaAntecedentes"
                       :key="condicion"
-                      :class="[
-                      'border-t',
-                      ['accidentes'].includes(condicion) ? 'hover:bg-gray-200 cursor-pointer' : ''
-                      ]"
-                      @click="['accidentes'].includes(condicion) ? handleClickTablaAntecedentes(condicion) : null"
+                      class="border-t hover:bg-gray-200 cursor-pointer transition"
+                      @click="handleClickTablaAntecedentes(condicion)"
                     >
                       <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
                         {{ etiquetasAntecedentesReferidos[condicion] || condicion }}
