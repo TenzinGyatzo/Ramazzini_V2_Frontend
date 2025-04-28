@@ -16,6 +16,7 @@ import ModalEliminar from '@/components/ModalEliminar.vue';
 import ModalCargaMasiva from '@/components/ModalCargaMasiva.vue';
 import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
 import ModalRiesgos from '@/components/ModalRiesgos.vue';
+import ModalRTs from '@/components/ModalRTs.vue';
 
 import type { Empresa } from '@/interfaces/empresa.interface';
 import type { CentroTrabajo } from '@/interfaces/centro-trabajo.interface';
@@ -34,6 +35,7 @@ const showModal = ref(false);
 const showDeleteModal = ref(false);
 const showImportModal = ref(false);
 const showSubscriptionModal = ref(false);
+const showRTsModal = ref(false);
 const showRisksModal = ref(false);
 const selectedTrabajadorId = ref<string | null>(null);
 const selectedTrabajadorNombre = ref<string | null>(null);
@@ -220,6 +222,22 @@ const toggleDeleteModal = (id: string | null = null, nombre: string | null = nul
   selectedTrabajadorNombre.value = nombre;
 };
 
+const openRTsModal = async (empresa: Empresa | null, centro: CentroTrabajo | null, trabajador: Trabajador | null) => {
+  showRTsModal.value = false;
+  trabajadores.loadingModal;
+  if (empresa && centro && trabajador) {
+    try {
+      await trabajadores.fetchTrabajadorById(empresa._id, centro._id, trabajador._id);
+    } catch (error) {
+      console.error('Error al cargar el trabajador:', error);
+    }
+  }
+  trabajadores.loadingModal = false;
+  showRTsModal.value = true;
+};
+
+const closeRTsModal = () => showRTsModal.value = false;
+
 const openRisksModal = async (empresa: Empresa | null, centro: CentroTrabajo | null, trabajador: Trabajador | null) => {
   showRisksModal.value = false;
   trabajadores.loadingModal;
@@ -325,7 +343,7 @@ const exportarFiltrados = () => {
   const trabajadoresFiltrados: any[] = [];
 
   for (let i = 0; i < data.length; i++) {
-    const row = data[i];
+    const row = rowData[i];
 
     trabajadoresFiltrados.push({
       nombre: row[1],
@@ -366,14 +384,15 @@ const exportarFiltrados = () => {
 
 const filtrosValidos = {
   imc: ['Bajo peso', 'Normal', 'Sobrepeso', 'Obesidad clase I', 'Obesidad clase II', 'Obesidad clase III'],
+  cintura: ['Bajo Riesgo', 'Riesgo Aumentado', 'Alto Riesgo', '-'],
   aptitud: ['Apto Sin Restricciones', 'Apto Con Precaución', 'Apto Con Restricciones', 'No Apto', 'Evaluación No Completada'],
   lentes: ['Requiere lentes', 'No requiere'],
   correccionVisual: ['Corregida', 'Sin corregir', 'No requiere'],
-  daltonismo: ['Daltonismo', 'Normal'],
   agudeza: [
     'Visión excepcional', 'Visión normal', 'Visión ligeramente reducida', 'Visión moderadamente reducida', 
     'Visión significativamente reducida', 'Visión muy reducida'
   ],
+  daltonismo: ['Daltonismo', 'Normal'],
   diabetico: ['Si', 'No', '-'],
   hipertensivo: ['Si', 'No', '-'],
   cardiopatico: ['Si', 'No', '-'],
@@ -388,7 +407,6 @@ const filtrosValidos = {
     'Vibraciones', 'Biológicos Infecciosos', '-'
   ],
   consultas: ['Si', 'No'],
-  cintura: ['Bajo Riesgo', 'Riesgo Aumentado', 'Alto Riesgo', '-']
 };
 
 function aplicarFiltrosDesdeQuery(query: RouteLocationNormalizedLoaded['query']) {
@@ -440,6 +458,10 @@ const puestosUnicos = computed(() => {
 
   <Transition appear name="fade">
     <ModalCargaMasiva v-if="showImportModal" @openSubscriptionModal="showSubscriptionModal = true" @closeModal="toggleImportModal" />
+  </Transition>
+
+  <Transition appear name="fade">
+    <ModalRTs v-if="showRTsModal" @closeModal="closeRTsModal" />
   </Transition>
 
   <Transition appear name="fade">
@@ -566,6 +588,18 @@ const puestosUnicos = computed(() => {
           <td>
             <!-- Acciones: Riesgos, Editar, Alta/Baja, Eliminar -->
             <div class="relative h-[32px]">
+              <!-- RTs -->
+              <!-- <button
+                type="button"
+                class="group absolute left-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-violet-200 hover:bg-violet-300 text-violet-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-violet-200 hover:border-violet-100 whitespace-nowrap flex items-center overflow-hidden text-sm"
+                @click="openRTsModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, trabajador)"
+              >
+                RT
+                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm">
+                  Riesgos de Trabajo
+                </span>
+              </button> -->
+
               <!-- Riesgos -->
               <button
                 type="button"

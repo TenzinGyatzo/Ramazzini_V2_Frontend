@@ -40,7 +40,7 @@ onMounted(() => {
       },
       columnDefs: [
         { targets: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29], visible: false }, // Oculta las columnas 
-        { targets: 20, width: '160px' } // Acciones
+        { targets: 31, width: '248px' } // Acciones
       ]
     } as any);
   }
@@ -380,7 +380,7 @@ defineExpose({
           <th>Consultas</th>
           <th>Estado Laboral</th>
           <th>Expediente</th>
-          <th class="w-[200px]">Acciones</th>
+          <th class="w-[248px]">Acciones</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-300">
