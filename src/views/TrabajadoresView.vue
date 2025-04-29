@@ -151,15 +151,20 @@ onMounted(async () => {
   const centroTrabajoId = String(route.params.idCentroTrabajo);
   const guardado = localStorage.getItem('mostrarFiltros');
 
-  // const t0 = performance.now();
+  const t0 = performance.now();
   await trabajadores.fetchTrabajadoresConHistoria(empresaId, centroTrabajoId);
   await nextTick();
   mostrarTabla.value = true;
-  // const t1 = performance.now();
-  // console.log('Tiempo en cargar y renderizar trabajadores:', t1 - t0, 'ms');
-  console.log('Trabajadores:', trabajadores.trabajadores);
 
-  const query = route.query;
+  const t1 = performance.now();
+  console.log('Tiempo en cargar y renderizar trabajadores:', t1 - t0, 'ms');
+
+  requestIdleCallback(() => {
+    const renderEnd = performance.now();
+    console.log('Tiempo desde nextTick hasta render:', renderEnd - t1, 'ms');
+  });
+
+  console.log('Trabajadores:', trabajadores.trabajadores);
 
   aplicarFiltrosDesdeQuery(route.query);
   router.replace({ query: {} });
@@ -295,23 +300,6 @@ const toggleEstadoLaboral = async (trabajador: { _id: string; estadoLaboral: str
   } catch (error) {
     console.error('Error al actualizar el estado laboral', error);
     toast.open({ message: 'Error al actualizar el estado laboral', type: 'error' });
-  }
-};
-
-const determinarVistaCorregida = (
-  requiereLentesUsoGeneral?: string | null,
-  ojoIzquierdoLejanaConCorreccion?: number | null,
-  ojoDerechoLejanaConCorreccion?: number | null
-): string => {
-  if (requiereLentesUsoGeneral === 'No') {
-    return 'No requiere';
-  } else if (requiereLentesUsoGeneral === 'Si') {
-    // Si al menos un ojo tiene corrección
-    return ((ojoIzquierdoLejanaConCorreccion ?? 0) > 0 || (ojoDerechoLejanaConCorreccion ?? 0) > 0) 
-      ? 'Corregida' 
-      : 'Sin corregir';
-  } else {
-    return '-';
   }
 };
 
@@ -540,131 +528,12 @@ const puestosUnicos = computed(() => {
       <h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1>
     </div>
     <div v-else>
-      <DataTableDT ref="dataTableRef" v-if="mostrarTabla" class="table-auto z-1">
-        <tr
-          v-for="(trabajador, index) in trabajadores.trabajadores"
-          :key="trabajador._id"
-          class="hover:bg-gray-200 cursor-pointer"
-        >
-          <td>{{ index + 1 }}</td>
-          <td>{{ trabajador.nombre }}</td>
-          <td>{{ convertirFechaISOaDDMMYYYY(trabajador.updatedAt) }}</td>
-          <td>{{ calcularEdad(trabajador.fechaNacimiento) }} años</td>
-          <td>{{ trabajador.sexo }}</td>
-          <td>{{ trabajador.escolaridad }}</td>
-          <td>{{ trabajador.puesto }}</td>
-          <td>{{ calcularAntiguedad(trabajador.fechaIngreso) }}</td>
-          <td>{{ trabajador.telefono || '-' }}</td>
-          <td>{{ trabajador.estadoCivil }}</td>
-          <td>{{ trabajador.hijos }}</td>
-          <td>{{ trabajador.exploracionFisicaResumen?.categoriaIMC || '-' }}</td>
-          <td>{{ trabajador.exploracionFisicaResumen?.categoriaCircunferenciaCintura || '-' }}</td>
-          <td>{{ trabajador.aptitudResumen?.aptitudPuesto || '-' }}</td>
-          <td>{{ trabajador.examenVistaResumen?.requiereLentesUsoGeneral === 'Si' ? 'Requiere lentes' : 'No requiere' }}</td>
-          <td>{{ determinarVistaCorregida(trabajador.examenVistaResumen?.requiereLentesUsoGeneral, Number(trabajador.examenVistaResumen?.ojoIzquierdoLejanaConCorreccion), Number(trabajador.examenVistaResumen?.ojoDerechoLejanaConCorreccion)) }}</td>
-          <td>{{ trabajador.examenVistaResumen?.sinCorreccionLejanaInterpretacion || '-' }}</td>
-          <td>{{ trabajador.examenVistaResumen?.interpretacionIshihara || '-' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen?.diabeticosPP === 'Si' ? 'Si' : 'No' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen?.hipertensivosPP === 'Si' ? 'Si' : 'No' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen?.cardiopaticosPP === 'Si' ? 'Si' : 'No' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen?.epilepticosPP === 'Si' ? 'Si' : 'No' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen?.alergicos === 'Si' ? 'Si' : 'No' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen?.lumbalgias === 'Si' ? 'Si' : 'No' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen?.accidentes === 'Si' ? 'Si' : 'No' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen?.quirurgicos === 'Si' ? 'Si' : 'No' }}</td>
-          <td>{{ trabajador.historiaClinicaResumen?.traumaticos === 'Si' ? 'Si' : 'No' }}</td>
-          <td>{{ trabajador.agentesRiesgoActuales?.join(', ') || '-' }}</td>
-          <td>{{ trabajador.consultaResumen?.fechaNotaMedica ? 'Si' : 'No' }}</td>
-          <td>{{ trabajador.estadoLaboral || '-' }}</td>
-          <td>
-            <button
-              type="button"
-              class="bg-emerald-600 text-white rounded-full px-2 py-1 transition-transform duration-300 ease-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-700 border-2 border-emerald-600"
-              @click="router.push({ name: 'expediente-medico', params: { idEmpresa: empresas.currentEmpresaId, idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId, idTrabajador: trabajador._id } })"
-            >
-              Expediente
-            </button>
-          </td>
-          <td>
-            <!-- Acciones: Riesgos, Editar, Alta/Baja, Eliminar -->
-            <div class="relative h-[32px]">
-              <!-- RTs -->
-              <!-- <button
-                type="button"
-                class="group absolute left-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-violet-200 hover:bg-violet-300 text-violet-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-violet-200 hover:border-violet-100 whitespace-nowrap flex items-center overflow-hidden text-sm"
-                @click="openRTsModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, trabajador)"
-              >
-                RT
-                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm">
-                  Riesgos de Trabajo
-                </span>
-              </button> -->
-
-              <!-- Riesgos -->
-              <button
-                type="button"
-                class="group absolute left-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-gray-300 hover:bg-amber-400 text-gray-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-gray-300 hover:border-amber-100 whitespace-nowrap flex items-center overflow-hidden"
-                @click="openRisksModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, trabajador)"
-              >
-                <i class="fa-solid fa-exclamation-triangle"></i>
-                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm">
-                  Riesgos
-                </span>
-              </button>
-
-              <!-- Editar -->
-              <button
-                type="button"
-                class="group absolute left-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-sky-100 whitespace-nowrap flex items-center overflow-hidden"
-                @click="openModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo, trabajador)"
-              >
-                <i class="fa-regular fa-pen-to-square"></i>
-                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm">
-                  Editar
-                </span>
-              </button>
-
-              <!-- Alta -->
-              <button
-                v-if="trabajador.estadoLaboral === 'Inactivo'"
-                type="button"
-                class="group absolute right-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-green-100 whitespace-nowrap flex items-center overflow-hidden"
-                @click="toggleEstadoLaboral(trabajador)"
-              >
-                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:mr-2 transition-all duration-300 text-sm">
-                  Alta
-                </span>
-                <i class="fa-solid fa-person-arrow-up-from-line"></i>
-              </button>
-
-              <!-- Baja -->
-              <button
-                v-else
-                type="button"
-                class="group absolute right-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-orange-100 whitespace-nowrap flex items-center overflow-hidden"
-                @click="toggleEstadoLaboral(trabajador)"
-              >
-                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:mr-2 transition-all duration-300 text-sm">
-                  Baja
-                </span>
-                <i class="fa-solid fa-person-arrow-down-to-line"></i>
-              </button>
-
-              <!-- Eliminar -->
-              <button
-                type="button"
-                class="group absolute right-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-red-100 whitespace-nowrap flex items-center overflow-hidden"
-                @click="toggleDeleteModal(trabajador._id, trabajador.nombre)"
-              >
-                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:mr-2 transition-all duration-300 text-sm order-1">
-                  Eliminar
-                </span>
-                <i class="fa-solid fa-trash-can order-2"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </DataTableDT>
+      <DataTableDT
+        ref="dataTableRef"
+        :rows="trabajadores.trabajadores || []"
+        v-if="mostrarTabla"
+        class="table-auto z-1"
+      />
 
       <h1 v-else class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700 mt-10">
         Este centro de trabajo aún no tiene trabajadores registrados
