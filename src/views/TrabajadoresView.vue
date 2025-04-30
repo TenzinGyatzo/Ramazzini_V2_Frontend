@@ -533,6 +533,10 @@ const puestosUnicos = computed(() => {
         :rows="trabajadores.trabajadores || []"
         v-if="mostrarTabla"
         class="table-auto z-1"
+        @riesgos="openRisksModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, $event)"
+        @editar="openModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo, $event)"
+        @toggle-estado-laboral="toggleEstadoLaboral($event)"
+        @eliminar="toggleDeleteModal($event.id, $event.nombre)"
       />
 
       <h1 v-else class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700 mt-10">

@@ -24,7 +24,10 @@ function guardarFiltroEnLocalStorage(id: string, valor: string) {
 }
 
 const emit = defineEmits<{
-  (e: 'editar', empresa: any, centroTrabajo: any, trabajador: any): void;
+  (e: 'editar', trabajador: any): void;
+  (e: 'riesgos', trabajador: any): void;
+  (e: 'toggle-estado-laboral', trabajador: any): void;
+  (e: 'eliminar', payload: { id: string; nombre: string }): void;
 }>();
 
 onMounted(() => {
@@ -89,8 +92,24 @@ onMounted(() => {
           data: null,
           title: 'Acciones',
           render: function (data, type, row) {
-            return `
+          const esInactivo = row.estadoLaboral === 'Inactivo';
+
+          return `
               <div class="relative h-[32px]">
+
+              <!-- Riesgos -->
+                <button
+                  type="button"
+                  class="btn-riesgos group absolute left-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-gray-300 hover:bg-amber-400 text-gray-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-gray-300 hover:border-amber-100 whitespace-nowrap flex items-center overflow-hidden"
+                  data-id="${row._id}"
+                >
+                  <i class="fa-solid fa-exclamation-triangle"></i>
+                  <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm">
+                    Riesgos
+                  </span>
+                </button>
+
+              <!-- Editar -->
                 <button
                   type="button"
                   class="btn-editar group absolute left-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-sky-100 whitespace-nowrap flex items-center overflow-hidden"
@@ -101,6 +120,35 @@ onMounted(() => {
                     Editar
                   </span>
                 </button>
+
+              <!-- Alta o Baja -->
+                ${
+                  esInactivo
+                    ? `<button type="button" class="btn-alta-baja group absolute right-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-green-100 whitespace-nowrap flex items-center overflow-hidden"
+                        data-id="${row._id}">
+                        <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:mr-2 transition-all duration-300 text-sm">Alta</span>
+                        <i class="fa-solid fa-person-arrow-up-from-line"></i>
+                      </button>`
+                    : `<button type="button" class="btn-alta-baja group absolute right-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-orange-100 whitespace-nowrap flex items-center overflow-hidden"
+                        data-id="${row._id}">
+                        <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:mr-2 transition-all duration-300 text-sm">Baja</span>
+                        <i class="fa-solid fa-person-arrow-down-to-line"></i>
+                      </button>`
+                }
+
+                <!-- Eliminar -->
+                <button
+                  type="button"
+                  class="btn-eliminar group absolute right-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-red-100 whitespace-nowrap flex items-center overflow-hidden"
+                  data-id="${row._id}"
+                  data-nombre="${row.nombre}"
+                >
+                  <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:mr-2 transition-all duration-300 text-sm order-1">
+                    Eliminar
+                  </span>
+                  <i class="fa-solid fa-trash-can order-2"></i>
+                </button>
+
               </div>
             `;
           }
@@ -132,12 +180,34 @@ onMounted(() => {
       }
     });
 
+    $(document).on('click', '.btn-riesgos', function () {
+      const id = $(this).data('id');
+      const trabajador = props.rows.find(t => t._id === id);
+      if (trabajador) {
+        emit('riesgos', trabajador);
+      }
+    });
+
     $(document).on('click', '.btn-editar', function () {
       const id = $(this).data('id');
       const trabajador = props.rows.find(t => t._id === id);
       if (trabajador) {
-        emit('editar', empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo, trabajador);
+        emit('editar', trabajador);
       }
+    });
+
+    $(document).on('click', '.btn-alta-baja', function () {
+      const id = $(this).data('id');
+      const trabajador = props.rows.find(t => t._id === id);
+      if (trabajador) {
+        emit('toggle-estado-laboral', trabajador);
+      }
+    });
+
+    $(document).on('click', '.btn-eliminar', function () {
+      const id = $(this).data('id');
+      const nombre = $(this).data('nombre');
+      emit('eliminar', { id, nombre });
     });
 
     dataTableInstance.on('init', function () {
