@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, computed, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 

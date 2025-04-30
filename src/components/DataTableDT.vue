@@ -6,11 +6,18 @@ import 'datatables.net-buttons-dt';
 import 'datatables.net-fixedcolumns-dt';
 import $ from 'jquery';
 import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
+import { useRouter } from 'vue-router';
+import { useEmpresasStore } from '@/stores/empresas';
+import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 
 const props = defineProps<{ rows: any[] }>();
 
 const tablaRef = ref<HTMLElement | null>(null);
 let dataTableInstance: any = null;
+
+const router = useRouter();
+const empresas = useEmpresasStore();
+const centrosTrabajo = useCentrosTrabajoStore();
 
 function guardarFiltroEnLocalStorage(id: string, valor: string) {
   localStorage.setItem(`filtro-${id}`, valor);
@@ -96,12 +103,35 @@ onMounted(() => {
       }
     });
 
+    $(document).on('click', '.btn-expediente', function () {
+      const idTrabajador = $(this).data('id');
+      const trabajador = props.rows.find(t => t._id === idTrabajador);
+
+      if (trabajador) {
+        router.push({
+          name: 'expediente-medico',
+          params: {
+            idEmpresa: empresas.currentEmpresaId,
+            idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId,
+            idTrabajador: trabajador._id
+          }
+        });
+      }
+    });
+
+
     dataTableInstance.on('init', function () {
       aplicarTodosLosFiltrosDesdeLocalStorage();
     });
   }
 });
 
+onBeforeUnmount(() => {
+  $(document).off('click', '.btn-expediente');
+  $(document).off('click', '.btn-editar');
+  $(document).off('click', '.btn-eliminar');
+  // y así sucesivamente
+});
 
 // Fuera de la función principal
 let filtroPeriodoReferencia: ((settings: any, data: any[]) => boolean) | null = null;
