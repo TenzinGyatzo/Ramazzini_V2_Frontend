@@ -23,6 +23,10 @@ function guardarFiltroEnLocalStorage(id: string, valor: string) {
   localStorage.setItem(`filtro-${id}`, valor);
 }
 
+const emit = defineEmits<{
+  (e: 'editar', empresa: any, centroTrabajo: any, trabajador: any): void;
+}>();
+
 onMounted(() => {
   if (!dataTableInstance) {
     const determinarVistaCorregida = (
@@ -75,7 +79,7 @@ onMounted(() => {
           data: null,
           title: 'Expediente',
           render: function (data, type, row) {
-            return `<button class="btn-expediente text-white bg-emerald-600 rounded-full px-2 py-1 border-2 border-emerald-600"
+            return `<button class="btn-expediente bg-emerald-600 text-white rounded-full px-2 py-1 transition-transform duration-300 ease-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-700 border-2 border-emerald-600"
                             data-id="${row._id}">
                       Expediente
                     </button>`;
@@ -84,15 +88,24 @@ onMounted(() => {
         {
           data: null,
           title: 'Acciones',
-          render: function () {
+          render: function (data, type, row) {
             return `
-              <div style="display:flex; gap:4px; justify-content: center;">
-                <button class="btn btn-sm btn-warning">Editar</button>
-                <button class="btn btn-sm btn-danger">Eliminar</button>
+              <div class="relative h-[32px]">
+                <button
+                  type="button"
+                  class="btn-editar group absolute left-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-sky-100 whitespace-nowrap flex items-center overflow-hidden"
+                  data-id="${row._id}"
+                >
+                  <i class="fa-regular fa-pen-to-square"></i>
+                  <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm">
+                    Editar
+                  </span>
+                </button>
               </div>
             `;
           }
-        }
+        },
+
       ],
       deferRender: true,
       scrollX: true,
@@ -119,6 +132,13 @@ onMounted(() => {
       }
     });
 
+    $(document).on('click', '.btn-editar', function () {
+      const id = $(this).data('id');
+      const trabajador = props.rows.find(t => t._id === id);
+      if (trabajador) {
+        emit('editar', empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo, trabajador);
+      }
+    });
 
     dataTableInstance.on('init', function () {
       aplicarTodosLosFiltrosDesdeLocalStorage();
