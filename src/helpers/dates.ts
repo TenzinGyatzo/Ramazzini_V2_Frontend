@@ -111,6 +111,19 @@ function calcularAntiguedad(dateString: string): string {
     return fecha.toISOString(); // Convertimos la fecha a formato ISO
   }
 
+  const determinarVistaCorregida = (
+    requiereLentesUsoGeneral?: string | null,
+    ojoIzquierdoLejanaConCorreccion?: number | null,
+    ojoDerechoLejanaConCorreccion?: number | null
+  ): string => {
+    if (requiereLentesUsoGeneral === 'No') return 'No requiere';
+    if (requiereLentesUsoGeneral === 'Si') {
+      return ((ojoIzquierdoLejanaConCorreccion ?? 0) > 0 || (ojoDerechoLejanaConCorreccion ?? 0) > 0)
+        ? 'Corregida' : 'Sin corregir';
+    }
+    return '-';
+  };
+
 
 export {
   convertirFechaISOaDDMMYYYY,
@@ -119,5 +132,6 @@ export {
   calcularAntiguedad,
   formatDateDDMMYYYY,
   formatDateYYYYMMDD,
-  convertirYYYYMMDDaISO
+  convertirYYYYMMDDaISO,
+  determinarVistaCorregida
 };

@@ -5,7 +5,7 @@ import 'datatables.net-select-dt';
 import 'datatables.net-buttons-dt';
 import 'datatables.net-fixedcolumns-dt';
 import $ from 'jquery';
-import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
+import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad, determinarVistaCorregida } from '@/helpers/dates';
 import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
@@ -32,24 +32,12 @@ const emit = defineEmits<{
 
 onMounted(() => {
   if (!dataTableInstance) {
-    const determinarVistaCorregida = (
-      requiereLentesUsoGeneral?: string | null,
-      ojoIzquierdoLejanaConCorreccion?: number | null,
-      ojoDerechoLejanaConCorreccion?: number | null
-    ): string => {
-      if (requiereLentesUsoGeneral === 'No') return 'No requiere';
-      if (requiereLentesUsoGeneral === 'Si') {
-        return ((ojoIzquierdoLejanaConCorreccion ?? 0) > 0 || (ojoDerechoLejanaConCorreccion ?? 0) > 0)
-          ? 'Corregida' : 'Sin corregir';
-      }
-      return '-';
-    };
 
     dataTableInstance = new DataTablesCore('#customTable', {
       data: props.rows,
       columns: [
         { data: null, title: '#', render: (data, type, row, meta) => meta.row + 1 },
-        { data: 'nombre', title: 'Nombre' },
+        { data: 'nombre', title: 'Nombre completo' },
         { data: 'updatedAt', title: 'Última actualización', render: d => convertirFechaISOaDDMMYYYY(d) },
         { data: 'fechaNacimiento', title: 'Edad', render: d => calcularEdad(d) + ' años' },
         { data: 'sexo', title: 'Sexo' },
@@ -82,10 +70,24 @@ onMounted(() => {
           data: null,
           title: 'Expediente',
           render: function (data, type, row) {
-            return `<button class="btn-expediente bg-emerald-600 text-white rounded-full px-2 py-1 transition-transform duration-300 ease-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-700 border-2 border-emerald-600"
-                            data-id="${row._id}">
-                      Expediente
-                    </button>`;
+            const url = router.resolve({
+              name: 'expediente-medico',
+              params: {
+                idEmpresa: empresas.currentEmpresaId,
+                idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId,
+                idTrabajador: row._id
+              }
+            }).href;
+
+            return `
+              <a
+                href="${url}"
+                class="btn-expediente bg-emerald-600 text-white rounded-full px-2 py-1 transition-transform duration-300 ease-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-700 border-2 border-emerald-600"
+                data-id="${row._id}"
+              >
+                Expediente
+              </a>
+            `;
           }
         },
         {
@@ -159,12 +161,33 @@ onMounted(() => {
       scrollX: true,
       select: true,
       order: [[0, 'desc']],
+      scrollCollapse: true,
+      scrollY: '800px',
       language: {
-        url: '//cdn.datatables.net/plug-ins/2.1.8/i18n/es-ES.json'
-      }
+        url: '//cdn.datatables.net/plug-ins/2.1.8/i18n/es-ES.json',
+        // @ts-expect-error: DataTables select extension no está tipado en language
+        select: {
+          rows: {
+            _: "", // Texto cuando se seleccionan varias filas
+            0: "", // Texto cuando no se selecciona ninguna fila
+            1: ""  // Texto cuando se selecciona una fila
+          },
+          cells: "", // Texto para celdas seleccionadas (puedes dejarlo vacio)
+          columns: "" // Texto para columnas seleccionadas (puedes dejarlo vacío)
+        }
+      },
+      columnDefs: [
+        { targets: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29], visible: false }, // Oculta las columnas 
+        { targets: 31, width: '160px' } // Acciones 200 para agregar otro botón
+      ]
     });
 
-    $(document).on('click', '.btn-expediente', function () {
+    $(document).on('click', '.btn-expediente', function (e) {
+      // Solo intercepta si NO es clic con Ctrl/Command o botón medio
+      if (e.ctrlKey || e.metaKey || e.which === 2) return;
+
+      e.preventDefault();
+
       const idTrabajador = $(this).data('id');
       const trabajador = props.rows.find(t => t._id === idTrabajador);
 
@@ -324,7 +347,7 @@ defineExpose({
 
 <template>
   <div class="table-container overflow-x-auto">
-    <table id="customTable" ref="tablaRef" class="display nowrap w-full"></table>
+    <table id="customTable" ref="tablaRef" class="display w-full"></table>
   </div>
 </template>
 
@@ -336,16 +359,16 @@ defineExpose({
 
 #customTable {
   width: 100%;
-  table-layout: auto;
+  table-layout: fixed;
   /* Mantén el comportamiento automático para el layout */
 }
 
 /* Forzar ancho fijo de la última columna sin importar el viewport */
 table.dataTable th:last-child,
 table.dataTable td:last-child {
-  width: 200px !important;
-  min-width: 200px !important;
-  max-width: 200px !important;
+  width: 160px !important;
+  min-width: 160px !important;
+  max-width: 160px !important;
   white-space: nowrap;
 }
 
@@ -354,6 +377,10 @@ table.dataTable td:last-child {
 
 <style>
 @import 'datatables.net-dt';
+
+:root {
+  --dt-row-selected: 16, 185, 129 !important; /* RGB del #10b981 */
+}
 
 table.dataTable th.dt-type-numeric,
 table.dataTable th.dt-type-date,
@@ -365,11 +392,6 @@ table.dataTable td.dt-type-date {
 table.dataTable>tbody>tr>th,
 table.dataTable>tbody>tr>td {
   padding: 4px 6px;
-}
-
-table.dataTable>tbody>tr.selected>* {
-  box-shadow: inset 0 0 0 9999px #10b981;
-  color: rgb(255, 255, 255);
 }
 
 div.dt-container .dt-paging .dt-paging-button.current,
@@ -430,4 +452,24 @@ div.dt-container .dt-paging .dt-paging-button:active {
 .dtfc-top-blocker {
   display: none !important;
 }
+
+table.dataTable tbody tr:hover > * {
+  background-color: #e5e7eb !important; /* gray-300 de Tailwind */
+}
+
+/* Asegura que el botón "Expediente" mantenga texto blanco al seleccionar la fila */
+table.dataTable tbody tr.selected .btn-expediente {
+  color: white !important;
+}
+
+table.dataTable tbody tr > td,
+table.dataTable tbody tr > th {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+table.dataTable tbody td {
+  line-height: 1.3 !important; /* o prueba con 1.1 o incluso 1.0 */
+}
+
 </style>

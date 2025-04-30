@@ -5,7 +5,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router';
-import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
+import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad, determinarVistaCorregida } from '@/helpers/dates';
 import { exportarTrabajadoresDesdeFrontend } from '@/helpers/exportarExcel';
 import $ from 'jquery';
 
@@ -151,20 +151,20 @@ onMounted(async () => {
   const centroTrabajoId = String(route.params.idCentroTrabajo);
   const guardado = localStorage.getItem('mostrarFiltros');
 
-  const t0 = performance.now();
+  // const t0 = performance.now();
   await trabajadores.fetchTrabajadoresConHistoria(empresaId, centroTrabajoId);
   await nextTick();
   mostrarTabla.value = true;
 
-  const t1 = performance.now();
-  console.log('Tiempo en cargar y renderizar trabajadores:', t1 - t0, 'ms');
+  // const t1 = performance.now();
+  // console.log('Tiempo en cargar y renderizar trabajadores:', t1 - t0, 'ms');
 
-  requestIdleCallback(() => {
-    const renderEnd = performance.now();
-    console.log('Tiempo desde nextTick hasta render:', renderEnd - t1, 'ms');
-  });
+  // requestIdleCallback(() => {
+  //   const renderEnd = performance.now();
+  //   console.log('Tiempo desde nextTick hasta render:', renderEnd - t1, 'ms');
+  // });
 
-  console.log('Trabajadores:', trabajadores.trabajadores);
+  //console.log('Trabajadores:', trabajadores.trabajadores);
 
   aplicarFiltrosDesdeQuery(route.query);
   router.replace({ query: {} });
@@ -325,49 +325,47 @@ const exportarFiltrados = () => {
   if (!dataTableRef.value) return;
 
   const table = $('#customTable').DataTable();
-  const data = table.rows().nodes().filter((tr: HTMLElement) => $(tr).is(':visible'));
-  const rowData = Array.from(data).map(row => table.row(row).data());
+  const rowData = table.rows({ search: 'applied' }).data().toArray(); // ✅ todas las filas filtradas
 
-  const trabajadoresFiltrados: any[] = [];
-
-  for (let i = 0; i < data.length; i++) {
-    const row = rowData[i];
-
-    trabajadoresFiltrados.push({
-      nombre: row[1],
-      edad: row[3],
-      sexo: row[4],
-      escolaridad: row[5],
-      puesto: row[6],
-      antiguedad: row[7],
-      telefono: row[8],
-      estadoCivil: row[9],
-      hijos: row[10],
-      imc: row[11],
-      cintura: row[12],
-      aptitud: row[13],
-      requiereLentes: row[14],
-      correccionVisual: row[15],
-      agudeza: row[16],
-      daltonismo: row[17],
-      diabetico: row[18],
-      hipertensivo: row[19],
-      cardiopatico: row[20],
-      epilepsia: row[21],
-      alergia: row[22],
-      lumbalgia: row[23],
-      accidente: row[24],
-      quirurgico: row[25],
-      traumatico: row[26],
-      agentesRiesgo: row[27],
-      consultas: row[28],
-      estadoLaboral: row[29],
-    });
-  }
+  const trabajadoresFiltrados: any[] = rowData.map((row: any) => ({
+    nombre: row.nombre,
+    edad: calcularEdad(row.fechaNacimiento),
+    sexo: row.sexo,
+    escolaridad: row.escolaridad,
+    puesto: row.puesto,
+    antiguedad: calcularAntiguedad(row.fechaIngreso),
+    telefono: row.telefono,
+    estadoCivil: row.estadoCivil,
+    hijos: row.hijos,
+    imc: row.exploracionFisicaResumen?.categoriaIMC || '-',
+    cintura: row.exploracionFisicaResumen?.categoriaCircunferenciaCintura || '-',
+    aptitud: row.aptitudResumen?.aptitudPuesto || '-',
+    requiereLentes: row.examenVistaResumen?.requiereLentesUsoGeneral || '-',
+    correccionVisual: determinarVistaCorregida(
+      row.examenVistaResumen?.requiereLentesUsoGeneral,
+      Number(row.examenVistaResumen?.ojoIzquierdoLejanaConCorreccion),
+      Number(row.examenVistaResumen?.ojoDerechoLejanaConCorreccion)
+    ),
+    agudeza: row.examenVistaResumen?.sinCorreccionLejanaInterpretacion || '-',
+    daltonismo: row.examenVistaResumen?.interpretacionIshihara || '-',
+    diabetico: row.historiaClinicaResumen?.diabeticosPP || '-',
+    hipertensivo: row.historiaClinicaResumen?.hipertensivosPP || '-',
+    cardiopatico: row.historiaClinicaResumen?.cardiopaticosPP || '-',
+    epilepsia: row.historiaClinicaResumen?.epilepticosPP || '-',
+    alergia: row.historiaClinicaResumen?.alergicos || '-',
+    lumbalgia: row.historiaClinicaResumen?.lumbalgias || '-',
+    accidente: row.historiaClinicaResumen?.accidentes || '-',
+    quirurgico: row.historiaClinicaResumen?.quirurgicos || '-',
+    traumatico: row.historiaClinicaResumen?.traumaticos || '-',
+    agentesRiesgo: Array.isArray(row.agentesRiesgoActuales) && row.agentesRiesgoActuales.length
+      ? row.agentesRiesgoActuales.join(', ')
+      : '-',
+    consultas: row.consultaResumen?.fechaNotaMedica ? 'Si' : 'No',
+    estadoLaboral: row.estadoLaboral || '-'
+  }));
 
   const nombreArchivo = generarNombreArchivoExcel();
   exportarTrabajadoresDesdeFrontend(trabajadoresFiltrados, nombreArchivo);
-
 };
 
 const filtrosValidos = {
