@@ -24,8 +24,9 @@ function guardarFiltroEnLocalStorage(id: string, valor: string) {
 }
 
 const emit = defineEmits<{
-  (e: 'editar', trabajador: any): void;
+  (e: 'riesgo-trabajo', trabajador: any): void;
   (e: 'riesgos', trabajador: any): void;
+  (e: 'editar', trabajador: any): void;
   (e: 'toggle-estado-laboral', trabajador: any): void;
   (e: 'eliminar', payload: { id: string; nombre: string }): void;
 }>();
@@ -99,22 +100,34 @@ onMounted(() => {
           return `
               <div class="relative h-[32px]">
 
+              <!-- RTs -->
+                <button
+                  type="button"
+                  class="btn-rt group absolute left-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-violet-200 hover:bg-violet-300 text-violet-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-violet-200 hover:border-violet-100 whitespace-nowrap flex items-center overflow-hidden text-sm"
+                  data-id="${row._id}"
+                >
+                  RT
+                  <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm">
+                    Riesgo de Trabajo
+                  </span>
+                </button>
+
               <!-- Riesgos -->
                 <button
                   type="button"
-                  class="btn-riesgos group absolute left-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-gray-300 hover:bg-amber-400 text-gray-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-gray-300 hover:border-amber-100 whitespace-nowrap flex items-center overflow-hidden"
+                  class="btn-riesgos group absolute left-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-gray-300 hover:bg-amber-400 text-gray-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-gray-300 hover:border-amber-100 whitespace-nowrap flex items-center overflow-hidden"
                   data-id="${row._id}"
                 >
                   <i class="fa-solid fa-exclamation-triangle"></i>
                   <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm">
-                    Riesgos
+                    Agentes de Riesgo
                   </span>
                 </button>
 
               <!-- Editar -->
                 <button
                   type="button"
-                  class="btn-editar group absolute left-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-sky-100 whitespace-nowrap flex items-center overflow-hidden"
+                  class="btn-editar group absolute left-24 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-sky-100 whitespace-nowrap flex items-center overflow-hidden"
                   data-id="${row._id}"
                 >
                   <i class="fa-regular fa-pen-to-square"></i>
@@ -178,7 +191,7 @@ onMounted(() => {
       },
       columnDefs: [
         { targets: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29], visible: false }, // Oculta las columnas 
-        { targets: 31, width: '160px' } // Acciones 200 para agregar otro botón
+        { targets: 31, width: '210px' } // Acciones 200 para agregar otro botón
       ]
     });
 
@@ -200,6 +213,14 @@ onMounted(() => {
             idTrabajador: trabajador._id
           }
         });
+      }
+    });
+
+    $(document).on('click', '.btn-rt', function () {
+      const id = $(this).data('id');
+      const trabajador = props.rows.find(t => t._id === id);
+      if (trabajador) {
+        emit('riesgo-trabajo', trabajador);
       }
     });
 

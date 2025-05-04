@@ -1,11 +1,11 @@
 <script setup lang="ts">
 // 1. Imports
-import { ref, reactive, nextTick, onMounted, inject, watch, computed, provide } from 'vue';
+import { ref, reactive, nextTick, onMounted, inject, watch, computed } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router';
-import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad, determinarVistaCorregida } from '@/helpers/dates';
+import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
 import { exportarTrabajadoresDesdeFrontend } from '@/helpers/exportarExcel';
 import $ from 'jquery';
 
@@ -33,17 +33,6 @@ const router = useRouter();
 // 3. Refs y estado reactivo
 const showModal = ref(false);
 const showDeleteModal = ref(false);
-const deleteConfig = ref<{
-  tipo: string;
-  id: string | null;
-  descripcion: string;
-  onConfirm: ((id: string) => Promise<void>) | null;
-}>({
-  tipo: '',
-  id: null,
-  descripcion: '',
-  onConfirm: null
-});
 const showImportModal = ref(false);
 const showSubscriptionModal = ref(false);
 const showRTsModal = ref(false);
@@ -166,16 +155,11 @@ onMounted(async () => {
   await trabajadores.fetchTrabajadoresConHistoria(empresaId, centroTrabajoId);
   await nextTick();
   mostrarTabla.value = true;
-
   // const t1 = performance.now();
   // console.log('Tiempo en cargar y renderizar trabajadores:', t1 - t0, 'ms');
+  console.log('Trabajadores:', trabajadores.trabajadores);
 
-  // requestIdleCallback(() => {
-  //   const renderEnd = performance.now();
-  //   console.log('Tiempo desde nextTick hasta render:', renderEnd - t1, 'ms');
-  // });
-
-  //console.log('Trabajadores:', trabajadores.trabajadores);
+  const query = route.query;
 
   aplicarFiltrosDesdeQuery(route.query);
   router.replace({ query: {} });
@@ -231,25 +215,6 @@ const openModal = async (empresa: Empresa | null = null, centroTrabajo: CentroTr
 };
 
 const closeModal = () => showModal.value = false;
-
-const solicitarEliminacion = (tipo, id, descripcion, onConfirm) => {
-  deleteConfig.value = { tipo, id, descripcion, onConfirm };
-  showDeleteModal.value = true;
-};
-provide('solicitarEliminacion', solicitarEliminacion);
-
-const confirmarEliminacion = async () => {
-  try {
-    if (typeof deleteConfig.value.onConfirm === 'function'&& deleteConfig.value.id) {
-      await deleteConfig.value.onConfirm(deleteConfig.value.id);
-    }
-  } catch (err) {
-    toast.open({ message: `Error al eliminar ${deleteConfig.value.tipo}`, type: 'error' });
-  } finally {
-    showDeleteModal.value = false;
-    deleteConfig.value = { tipo: '', id: null, descripcion: '', onConfirm: null };
-  }
-};
 
 const toggleDeleteModal = (id: string | null = null, nombre: string | null = null) => {
   showDeleteModal.value = !showDeleteModal.value;
@@ -312,19 +277,6 @@ const deleteTrabajadorById = async (empresaId: string, centroTrabajoId: string, 
   }
 };
 
-const eliminarTrabajador = async (trabajadorId: string) => {
-  try {
-    const empresaId = empresas.currentEmpresaId;
-    const centroTrabajoId = centrosTrabajo.currentCentroTrabajoId;
-
-    if (!empresaId || !centroTrabajoId) throw new Error('Faltan datos');
-
-    await deleteTrabajadorById(empresaId, centroTrabajoId, trabajadorId);
-  } catch (err) {
-    toast.open({ message: 'Error al eliminar trabajador', type: 'error' });
-  }
-};
-
 const toggleEstadoLaboral = async (trabajador: { _id: string; estadoLaboral: string; }) => {
   try {
     const { currentEmpresaId } = empresas;
@@ -343,6 +295,23 @@ const toggleEstadoLaboral = async (trabajador: { _id: string; estadoLaboral: str
   } catch (error) {
     console.error('Error al actualizar el estado laboral', error);
     toast.open({ message: 'Error al actualizar el estado laboral', type: 'error' });
+  }
+};
+
+const determinarVistaCorregida = (
+  requiereLentesUsoGeneral?: string | null,
+  ojoIzquierdoLejanaConCorreccion?: number | null,
+  ojoDerechoLejanaConCorreccion?: number | null
+): string => {
+  if (requiereLentesUsoGeneral === 'No') {
+    return 'No requiere';
+  } else if (requiereLentesUsoGeneral === 'Si') {
+    // Si al menos un ojo tiene corrección
+    return ((ojoIzquierdoLejanaConCorreccion ?? 0) > 0 || (ojoDerechoLejanaConCorreccion ?? 0) > 0) 
+      ? 'Corregida' 
+      : 'Sin corregir';
+  } else {
+    return '-';
   }
 };
 
@@ -368,47 +337,49 @@ const exportarFiltrados = () => {
   if (!dataTableRef.value) return;
 
   const table = $('#customTable').DataTable();
-  const rowData = table.rows({ search: 'applied' }).data().toArray(); // ✅ todas las filas filtradas
+  const data = table.rows().nodes().filter((tr: HTMLElement) => $(tr).is(':visible'));
+  const rowData = Array.from(data).map(row => table.row(row).data());
 
-  const trabajadoresFiltrados: any[] = rowData.map((row: any) => ({
-    nombre: row.nombre,
-    edad: calcularEdad(row.fechaNacimiento),
-    sexo: row.sexo,
-    escolaridad: row.escolaridad,
-    puesto: row.puesto,
-    antiguedad: calcularAntiguedad(row.fechaIngreso),
-    telefono: row.telefono,
-    estadoCivil: row.estadoCivil,
-    hijos: row.hijos,
-    imc: row.exploracionFisicaResumen?.categoriaIMC || '-',
-    cintura: row.exploracionFisicaResumen?.categoriaCircunferenciaCintura || '-',
-    aptitud: row.aptitudResumen?.aptitudPuesto || '-',
-    requiereLentes: row.examenVistaResumen?.requiereLentesUsoGeneral || '-',
-    correccionVisual: determinarVistaCorregida(
-      row.examenVistaResumen?.requiereLentesUsoGeneral,
-      Number(row.examenVistaResumen?.ojoIzquierdoLejanaConCorreccion),
-      Number(row.examenVistaResumen?.ojoDerechoLejanaConCorreccion)
-    ),
-    agudeza: row.examenVistaResumen?.sinCorreccionLejanaInterpretacion || '-',
-    daltonismo: row.examenVistaResumen?.interpretacionIshihara || '-',
-    diabetico: row.historiaClinicaResumen?.diabeticosPP || '-',
-    hipertensivo: row.historiaClinicaResumen?.hipertensivosPP || '-',
-    cardiopatico: row.historiaClinicaResumen?.cardiopaticosPP || '-',
-    epilepsia: row.historiaClinicaResumen?.epilepticosPP || '-',
-    alergia: row.historiaClinicaResumen?.alergicos || '-',
-    lumbalgia: row.historiaClinicaResumen?.lumbalgias || '-',
-    accidente: row.historiaClinicaResumen?.accidentes || '-',
-    quirurgico: row.historiaClinicaResumen?.quirurgicos || '-',
-    traumatico: row.historiaClinicaResumen?.traumaticos || '-',
-    agentesRiesgo: Array.isArray(row.agentesRiesgoActuales) && row.agentesRiesgoActuales.length
-      ? row.agentesRiesgoActuales.join(', ')
-      : '-',
-    consultas: row.consultaResumen?.fechaNotaMedica ? 'Si' : 'No',
-    estadoLaboral: row.estadoLaboral || '-'
-  }));
+  const trabajadoresFiltrados: any[] = [];
+
+  for (let i = 0; i < data.length; i++) {
+    const row = rowData[i];
+
+    trabajadoresFiltrados.push({
+      nombre: row[1],
+      edad: row[3],
+      sexo: row[4],
+      escolaridad: row[5],
+      puesto: row[6],
+      antiguedad: row[7],
+      telefono: row[8],
+      estadoCivil: row[9],
+      hijos: row[10],
+      imc: row[11],
+      cintura: row[12],
+      aptitud: row[13],
+      requiereLentes: row[14],
+      correccionVisual: row[15],
+      agudeza: row[16],
+      daltonismo: row[17],
+      diabetico: row[18],
+      hipertensivo: row[19],
+      cardiopatico: row[20],
+      epilepsia: row[21],
+      alergia: row[22],
+      lumbalgia: row[23],
+      accidente: row[24],
+      quirurgico: row[25],
+      traumatico: row[26],
+      agentesRiesgo: row[27],
+      consultas: row[28],
+      estadoLaboral: row[29],
+    });
+  }
 
   const nombreArchivo = generarNombreArchivoExcel();
   exportarTrabajadoresDesdeFrontend(trabajadoresFiltrados, nombreArchivo);
+
 };
 
 const filtrosValidos = {
@@ -476,12 +447,12 @@ const puestosUnicos = computed(() => {
 
   <Transition appear name="fade">
     <ModalEliminar
-      v-if="showDeleteModal"
-      :idRegistro="deleteConfig.id ?? ''"
-      :identificacion="deleteConfig.descripcion"
-      :tipoRegistro="deleteConfig.tipo"
-      @closeModal="showDeleteModal = false"
-      @confirmDelete="confirmarEliminacion"
+      v-if="showDeleteModal && selectedTrabajadorId && selectedTrabajadorNombre"
+      :idRegistro="selectedTrabajadorId"
+      :identificacion="selectedTrabajadorNombre"
+      tipoRegistro="Trabajador"
+      @closeModal="toggleDeleteModal"
+      @confirmDelete="deleteTrabajadorById"
     />
   </Transition>
 
@@ -490,7 +461,7 @@ const puestosUnicos = computed(() => {
   </Transition>
 
   <Transition appear name="fade">
-    <ModalRTs v-if="showRTsModal" @closeModal="closeRTsModal" @solicitarEliminacion="solicitarEliminacion" />
+    <ModalRTs v-if="showRTsModal" @closeModal="closeRTsModal" />
   </Transition>
 
   <Transition appear name="fade">
@@ -569,17 +540,131 @@ const puestosUnicos = computed(() => {
       <h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1>
     </div>
     <div v-else>
-      <DataTableDT
-        ref="dataTableRef"
-        :rows="trabajadores.trabajadores || []"
-        v-if="mostrarTabla"
-        class="table-auto z-1"
-        @riesgo-trabajo="openRTsModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, $event)"
-        @riesgos="openRisksModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, $event)"
-        @editar="openModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo, $event)"
-        @toggle-estado-laboral="toggleEstadoLaboral($event)"
-        @eliminar="solicitarEliminacion('Trabajador', $event.id, $event.nombre, eliminarTrabajador)"
-      />
+      <DataTableDT ref="dataTableRef" v-if="mostrarTabla" class="table-auto z-1">
+        <tr
+          v-for="(trabajador, index) in trabajadores.trabajadores"
+          :key="trabajador._id"
+          class="hover:bg-gray-200 cursor-pointer"
+        >
+          <td>{{ index + 1 }}</td>
+          <td>{{ trabajador.nombre }}</td>
+          <td>{{ convertirFechaISOaDDMMYYYY(trabajador.updatedAt) }}</td>
+          <td>{{ calcularEdad(trabajador.fechaNacimiento) }} años</td>
+          <td>{{ trabajador.sexo }}</td>
+          <td>{{ trabajador.escolaridad }}</td>
+          <td>{{ trabajador.puesto }}</td>
+          <td>{{ calcularAntiguedad(trabajador.fechaIngreso) }}</td>
+          <td>{{ trabajador.telefono || '-' }}</td>
+          <td>{{ trabajador.estadoCivil }}</td>
+          <td>{{ trabajador.hijos }}</td>
+          <td>{{ trabajador.exploracionFisicaResumen?.categoriaIMC || '-' }}</td>
+          <td>{{ trabajador.exploracionFisicaResumen?.categoriaCircunferenciaCintura || '-' }}</td>
+          <td>{{ trabajador.aptitudResumen?.aptitudPuesto || '-' }}</td>
+          <td>{{ trabajador.examenVistaResumen?.requiereLentesUsoGeneral === 'Si' ? 'Requiere lentes' : 'No requiere' }}</td>
+          <td>{{ determinarVistaCorregida(trabajador.examenVistaResumen?.requiereLentesUsoGeneral, Number(trabajador.examenVistaResumen?.ojoIzquierdoLejanaConCorreccion), Number(trabajador.examenVistaResumen?.ojoDerechoLejanaConCorreccion)) }}</td>
+          <td>{{ trabajador.examenVistaResumen?.sinCorreccionLejanaInterpretacion || '-' }}</td>
+          <td>{{ trabajador.examenVistaResumen?.interpretacionIshihara || '-' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.diabeticosPP === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.hipertensivosPP === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.cardiopaticosPP === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.epilepticosPP === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.alergicos === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.lumbalgias === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.accidentes === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.quirurgicos === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.historiaClinicaResumen?.traumaticos === 'Si' ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.agentesRiesgoActuales?.join(', ') || '-' }}</td>
+          <td>{{ trabajador.consultaResumen?.fechaNotaMedica ? 'Si' : 'No' }}</td>
+          <td>{{ trabajador.estadoLaboral || '-' }}</td>
+          <td>
+            <button
+              type="button"
+              class="bg-emerald-600 text-white rounded-full px-2 py-1 transition-transform duration-300 ease-out transform hover:scale-105 shadow-md hover:shadow-lg hover:bg-emerald-500 hover:text-white hover:border-emerald-700 border-2 border-emerald-600"
+              @click="router.push({ name: 'expediente-medico', params: { idEmpresa: empresas.currentEmpresaId, idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId, idTrabajador: trabajador._id } })"
+            >
+              Expediente
+            </button>
+          </td>
+          <td>
+            <!-- Acciones: Riesgos, Editar, Alta/Baja, Eliminar -->
+            <div class="relative h-[32px]">
+              <!-- RTs -->
+              <!-- <button
+                type="button"
+                class="group absolute left-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-violet-200 hover:bg-violet-300 text-violet-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-violet-200 hover:border-violet-100 whitespace-nowrap flex items-center overflow-hidden text-sm"
+                @click="openRTsModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, trabajador)"
+              >
+                RT
+                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm">
+                  Riesgos de Trabajo
+                </span>
+              </button> -->
+
+              <!-- Riesgos -->
+              <button
+                type="button"
+                class="group absolute left-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-gray-300 hover:bg-amber-400 text-gray-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-gray-300 hover:border-amber-100 whitespace-nowrap flex items-center overflow-hidden"
+                @click="openRisksModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, trabajador)"
+              >
+                <i class="fa-solid fa-exclamation-triangle"></i>
+                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm">
+                  Riesgos
+                </span>
+              </button>
+
+              <!-- Editar -->
+              <button
+                type="button"
+                class="group absolute left-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-sky-100 whitespace-nowrap flex items-center overflow-hidden"
+                @click="openModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo, trabajador)"
+              >
+                <i class="fa-regular fa-pen-to-square"></i>
+                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm">
+                  Editar
+                </span>
+              </button>
+
+              <!-- Alta -->
+              <button
+                v-if="trabajador.estadoLaboral === 'Inactivo'"
+                type="button"
+                class="group absolute right-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-green-100 whitespace-nowrap flex items-center overflow-hidden"
+                @click="toggleEstadoLaboral(trabajador)"
+              >
+                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:mr-2 transition-all duration-300 text-sm">
+                  Alta
+                </span>
+                <i class="fa-solid fa-person-arrow-up-from-line"></i>
+              </button>
+
+              <!-- Baja -->
+              <button
+                v-else
+                type="button"
+                class="group absolute right-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-orange-100 whitespace-nowrap flex items-center overflow-hidden"
+                @click="toggleEstadoLaboral(trabajador)"
+              >
+                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:mr-2 transition-all duration-300 text-sm">
+                  Baja
+                </span>
+                <i class="fa-solid fa-person-arrow-down-to-line"></i>
+              </button>
+
+              <!-- Eliminar -->
+              <button
+                type="button"
+                class="group absolute right-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-red-100 whitespace-nowrap flex items-center overflow-hidden"
+                @click="toggleDeleteModal(trabajador._id, trabajador.nombre)"
+              >
+                <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:mr-2 transition-all duration-300 text-sm order-1">
+                  Eliminar
+                </span>
+                <i class="fa-solid fa-trash-can order-2"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </DataTableDT>
 
       <h1 v-else class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700 mt-10">
         Este centro de trabajo aún no tiene trabajadores registrados
