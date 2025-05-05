@@ -8,7 +8,7 @@ export default {
 
     getTrabajadoresConHistoria(empresaId: string, centroTrabajoId: string) {
         return api.get(`/${empresaId}/${centroTrabajoId}/trabajadores-con-historia`);
-    },    
+    }, 
     
     getSexosYFechasNacimientoActivos(empresaId: string, centroTrabajoId: string) {
         return api.get(`/${empresaId}/${centroTrabajoId}/sexos-y-fechas-nacimiento-activos`);

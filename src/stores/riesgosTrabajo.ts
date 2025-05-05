@@ -12,14 +12,14 @@ export const useRiesgoTrabajoStore = defineStore("riesgos-trabajo", () => {
   function resetCurrentRiesgoTrabajo() {
     currentRiesgoTrabajo.value = {
       _id: "",
-      fechaRiesgo: new Date(),
+      fechaRiesgo: "",
       NSS: "",
       tipoRiesgo: "",
       naturalezaLesion: "",
       parteCuerpoAfectada: "",
       manejo: "",
       alta: "",
-      fechaAlta: new Date(),
+      fechaAlta: "",
       diasIncapacidad: 0,
       secuelas: "",
       porcentajeIPP: 0,
@@ -29,6 +29,11 @@ export const useRiesgoTrabajoStore = defineStore("riesgos-trabajo", () => {
       updatedBy: "",
       createdAt: "",
       updatedAt: "",
+      nombreTrabajador: "",
+      puestoTrabajador: "",
+      fechaNacimiento: "",
+      fechaIngreso: "",
+      idCentroTrabajo: "",
     };
     currentRiesgoTrabajoId.value = "";
   }
@@ -37,7 +42,11 @@ export const useRiesgoTrabajoStore = defineStore("riesgos-trabajo", () => {
     try {
       loading.value = true;
       const { data } = await RiesgosTrabajoAPI.getRiesgosTrabajo(trabajadorId);
-      riesgosTrabajo.value = data;
+      riesgosTrabajo.value = data.map(riesgo => ({
+        ...riesgo,
+        nombreTrabajador: riesgo.trabajador?.nombre,
+        puestoTrabajador: riesgo.trabajador?.puesto,
+      }));
       return data;
     } catch (error) {
       // console.log(error);

@@ -25,6 +25,10 @@ export default {
     });
   },
 
+  getRiesgosTrabajoPorEmpresa(empresaId: string) {
+    return api.get(`/${empresaId}/riesgos-trabajo`);
+  },
+
   deleteEmpresaById(empresaId: string) {
     return api.delete(`/eliminar-empresa/${empresaId}`);
   },

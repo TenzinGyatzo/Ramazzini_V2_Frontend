@@ -72,6 +72,11 @@ const router = createRouter({
           component: () => import("../views/DashboardView.vue"),
         },
         {
+          path: "riesgos-trabajo/:idEmpresa",
+          name: "riesgos-trabajo",
+          component: () => import("../views/RiesgosTrabajoView.vue"),
+        },
+        {
           path: "empresas",
           name: "empresas",
           component: () => import("../views/EmpresasView.vue"),

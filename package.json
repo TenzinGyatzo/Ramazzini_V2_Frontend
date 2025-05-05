@@ -40,6 +40,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@tailwindcss/line-clamp": "^0.4.4",
     "@tsconfig/node20": "^20.1.4",
     "@types/datatables.net-buttons": "^1.4.10",
     "@types/node": "^20.16.10",

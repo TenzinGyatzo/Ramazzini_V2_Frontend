@@ -1,21 +1,28 @@
 export interface RiesgoTrabajo {
-    _id: string;
-    fechaRiesgo: Date;
-    NSS?: string;
-    tipoRiesgo?: string;
-    naturalezaLesion?: string;
-    parteCuerpoAfectada?: string;
-    manejo?: string;
-    alta?: string;
-    fechaAlta?: Date;
-    diasIncapacidad?: number;
-    secuelas?: string;
-    porcentajeIPP?: number;
-    notas?: string;
-    idTrabajador: string;
-    createdBy: string;
-    updatedBy: string;
-    createdAt: string;
-    updatedAt: string;
-  }
+  _id: string;
+  idTrabajador: string;
+  nombreTrabajador: string;
+  puestoTrabajador: string;
+  fechaNacimiento: string;
+  fechaIngreso: string;
+  NSS?: string;
+  idCentroTrabajo: string;
+  tipoRiesgo?: string;
+  fechaRiesgo?: string;
+  naturalezaLesion?: string;
+  parteCuerpoAfectada?: string;
+  alta?: string;
+  fechaAlta?: string;
+  diasIncapacidad?: number;
+  porcentajeIPP?: number;
+  secuelas?: string;
+  manejo?: string;
+  notas?: string;
+  createdBy: string;
+  updatedBy: string;
+  createdAt: string;
+  updatedAt: string;
+  
+}
+
   

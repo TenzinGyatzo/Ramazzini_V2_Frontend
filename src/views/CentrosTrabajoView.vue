@@ -101,10 +101,27 @@ onMounted(() => {
           :empresa="empresas.currentEmpresa" class="mb-2" @editarCentro="openModal"
           @eliminarCentro="toggleDeleteModal" />
           </div>
-          <button type="button" @click="router.push({ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresa._id } })"
-                class="block mx-auto text-sm w-1/8 mt-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 p-2 transition duration-300">
-              <i class="fas fa-chart-line mr-2"></i> Ver estadísticas de la empresa
+          
+        <!-- Botones de acciones -->
+        <div class="flex justify-center gap-4 mt-10">
+          <button
+            type="button"
+            @click="router.push({ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresa._id } })"
+            class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow transition duration-300"
+          >
+            <i class="fas fa-chart-line"></i>
+            Estadísticas
           </button>
+          <button
+            type="button"
+            @click="router.push({ name: 'riesgos-trabajo', params: { idEmpresa: empresas.currentEmpresa._id } })"
+            class="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow transition duration-300"
+          >
+            <i class="fas fa-hard-hat"></i>
+            Riesgos de Trabajo
+          </button>
+        </div>
+
         </div>
         <h1 v-else
           class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700">Esta

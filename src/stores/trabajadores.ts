@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import TrabajadoresAPI from "../api/TrabajadoresAPI";
+import type { RiesgoTrabajo } from "@/interfaces/riesgo-trabajo.interface";
+import EmpresasAPI from "@/api/EmpresasAPI";
 
 interface Trabajador {
   _id: string;
@@ -50,6 +52,7 @@ interface Trabajador {
   consultaResumen?: {
     fechaNotaMedica?: string | null;
   };
+  riesgosTrabajo?: RiesgoTrabajo[];
 }
 
 export const useTrabajadoresStore = defineStore("trabajadores", () => {
@@ -113,6 +116,19 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
       loading.value = false;
     }
   }  
+
+  async function fetchRiesgosTrabajoPorEmpresa(empresaId: string) {
+    try {
+      loading.value = true;
+      const { data } = await EmpresasAPI.getRiesgosTrabajoPorEmpresa(empresaId);
+      return data;
+    } catch (error) {
+      console.error('Error al obtener riesgos por empresa', error);
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
 
   async function fetchSexosYFechasNacimientoActivos(empresaId: string, centroTrabajoId: string) {
     try {
@@ -296,6 +312,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
     resetCurrentTrabajador,
     fetchTrabajadores,
     fetchTrabajadoresConHistoria,
+    fetchRiesgosTrabajoPorEmpresa,
     fetchSexosYFechasNacimientoActivos,
     fetchDashboardData,
     fetchTrabajadorById,
