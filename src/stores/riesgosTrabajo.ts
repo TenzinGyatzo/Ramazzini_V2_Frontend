@@ -13,6 +13,7 @@ export const useRiesgoTrabajoStore = defineStore("riesgos-trabajo", () => {
     currentRiesgoTrabajo.value = {
       _id: "",
       fechaRiesgo: "",
+      recaida: "",
       NSS: "",
       tipoRiesgo: "",
       naturalezaLesion: "",
@@ -30,6 +31,7 @@ export const useRiesgoTrabajoStore = defineStore("riesgos-trabajo", () => {
       createdAt: "",
       updatedAt: "",
       nombreTrabajador: "",
+      sexoTrabajador: "",
       puestoTrabajador: "",
       fechaNacimiento: "",
       fechaIngreso: "",

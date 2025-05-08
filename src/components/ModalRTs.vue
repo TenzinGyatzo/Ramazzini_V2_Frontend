@@ -1,12 +1,11 @@
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, inject, computed, watch } from 'vue';
 import { useUserStore } from "@/stores/user";
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useRiesgoTrabajoStore } from '@/stores/riesgosTrabajo';
 import { calcularAntiguedad } from '@/helpers/dates';
-import ModalEliminar from './ModalEliminar.vue';
 
 const toast = inject('toast');
 const emit = defineEmits(['closeModal']);
@@ -20,6 +19,11 @@ const riesgosTrabajoStore = useRiesgoTrabajoStore();
 const modo = ref('listado');
 const rtEnEdicion = ref(null); // será un objeto con los datos del RT si se edita
 const userId = userStore.user._id;
+
+const nssError = computed(() => {
+  if (!rtEnEdicion.value?.NSS) return '';
+  return rtEnEdicion.value.NSS.length !== 11 ? 'El NSS debe tener exactamente 11 caracteres.' : '';
+});
 
 const closeModal = () => {
   emit('closeModal');
@@ -39,10 +43,16 @@ const toggleDeleteModal = (id, rt) => {
 
 const handleSubmit = async () => {
   try {
+    if (nssError.value) {
+      toast.open({ message: nssError.value, type: 'error' });
+      return;
+    }
+
     const trabajadorId = trabajadoresStore.currentTrabajador?._id;
     if (!trabajadorId) return;
 
     const payload = limpiarCamposOpcionales(rtEnEdicion.value);
+    console.log('payload', payload);
 
     if (modo.value === 'editar') {
       await riesgosTrabajoStore.updateRiesgoTrabajo(
@@ -118,6 +128,18 @@ const eliminarRT = async (id) => {
   }
 };
 
+watch(() => rtEnEdicion.value?.secuelas, (nuevoValor) => {
+  if (nuevoValor === 'No') {
+    rtEnEdicion.value.porcentajeIPP = 0; // Vaciar el campo
+  }
+});
+
+// Lista de sugerencias
+const sugerenciasParteCuerpo = [ "Dedos", "Mano", "Muñeca", "Antebrazo", "Codo", "Brazo", "Hombro", "Cabeza", "Ojos", "Cervical", "Cuello", "Tórax", "Abdomen", "Espalda", "Lumbar", "Cadera", "Muslo", "Rodilla", "Pierna", "Tobillo", "Pie", "Dedos pie"];
+
+const sugerenciasNatLesion = [ "Contusión", "Traumatismo", "Fractura", "Luxación", "Esguince", "Corte", "Quemadura", "Herida", "Policontundido"];
+
+
 </script>
 
 <template>
@@ -166,47 +188,72 @@ const eliminarRT = async (id) => {
             </div>
 
             <div
-            v-else
-            v-for="rt in trabajadoresStore.currentTrabajador?.riesgosTrabajo"
-            :key="rt._id"
-            class="p-4 border rounded-lg shadow-sm flex justify-between items-center bg-gray-50"
+              v-else
+              v-for="rt in trabajadoresStore.currentTrabajador?.riesgosTrabajo"
+              :key="rt._id"
+              class="p-3 border rounded-lg shadow-sm bg-gray-50 flex flex-col gap-0 text-gray-700"
             >
-            <div>
-            <p class="font-semibold text-gray-700">
-              {{ rt.naturalezaLesion || 'Sin descripción de lesión' }} — {{ new Date(rt.fechaRiesgo).toLocaleDateString() }}
-            </p>
+              <!-- Naturaleza de la lesión y fecha -->
+              <div class="flex justify-between items-center">
+                <p class="font-semibold text-gray-800">{{ rt.naturalezaLesion || 'Sin descripción de lesión' }} 
+                  <span v-if="rt.recaida" class="font-normal text-xs text-red-500">&nbsp;(Recaída)</span>
+                  <span class="font-normal text-xs">&nbsp;—  &nbsp;{{ rt.parteCuerpoAfectada }}</span>
+                </p>
+                <span class="text-sm text-gray-500">{{ rt.fechaRiesgo ? new Date(rt.fechaRiesgo).toLocaleDateString() : 'Fecha no disponible' }}</span>
+              </div>
 
-            <p v-if="rt.manejo || rt.tipoRiesgo" class="text-sm text-gray-500">
-              <span v-if="rt.manejo">Manejo: {{ rt.manejo }}</span>
-              <span v-if="rt.manejo && rt.tipoRiesgo"> - </span>
-              <span v-if="rt.tipoRiesgo">Tipo: {{ rt.tipoRiesgo }}</span>
-            </p>
+              <!-- Tipo de Riesgo y Manejo -->
+              <div class="flex flex-wrap gap-x-3 text-sm text-gray-600">
+                <span v-if="rt.tipoRiesgo">
+                  <strong>Tipo:</strong> {{ rt.tipoRiesgo }}
+                </span>
+                <span v-if="rt.manejo">
+                  <strong>Manejo:</strong> {{ rt.manejo }}
+                </span>
+                <span v-if="rt.NSS">
+                  <strong>NSS:</strong> {{ rt.NSS }}
+                </span>
+              </div>
 
-            <p v-if="rt.alta || rt.diasIncapacidad" class="text-sm text-gray-500">
-              <span v-if="rt.alta === 'Incapacidad Activa'">Incapacidad Activa</span>
-              <span v-else-if="rt.alta === 'Alta Interna'">
-              Alta: 
-              <span v-if="rt.fechaAlta">{{ new Date(rt.fechaAlta).toLocaleDateString() }} </span>
-              (Interna)
-              </span>
-              <span v-else-if="rt.alta === 'Alta ST2'">
-              Alta: 
-              <span v-if="rt.fechaAlta">{{ new Date(rt.fechaAlta).toLocaleDateString() }} </span>
-              (ST2)
-              </span>
-              <span v-if="rt.alta && rt.diasIncapacidad !== undefined && rt.diasIncapacidad !== null"> - </span>
-              <span>{{ rt.diasIncapacidad ?? 0 }} días de incapacidad</span>
-            </p>
+              <!-- Estado de Alta e Incapacidad -->
+              <div v-if="rt.alta || rt.diasIncapacidad" class="flex flex-wrap gap-x-3 text-sm text-gray-600">
+                <span v-if="rt.alta === 'Incapacidad Activa'" class="text-red-600 font-normal">
+                  Incapacidad Activa
+                </span>
+                <span v-else-if="rt.alta">
+                  <strong>Alta:</strong> {{ rt.fechaAlta ? new Date(rt.fechaAlta).toLocaleDateString() : 'Fecha no disponible' }}
+                </span>
+                <div v-if="rt.diasIncapacidad" class="flex items-center gap-x-1">
+                  <strong>Incapacidad:</strong>
+                  <span class="text-yellow-600 font-normal">{{ rt.diasIncapacidad }} días</span>
+                </div>
+                <!-- Recepción de ST2 -->
+                <div v-if="rt.manejo === 'IMSS'" class="flex flex-wrap gap-x-1 text-sm text-gray-600">
+                  <strong>ST2:</strong>
+                  <span v-if="rt.alta === 'Alta ST2'" class="text-green-600">Recibida</span>
+                  <span v-else class="text-red-600">Pendiente</span>
+                </div>
+              </div>
+
+              <!-- Secuelas e IPP -->
+                <div v-if="rt.secuelas" class="flex flex-wrap gap-x-3 text-sm text-gray-600">
+                <span v-if="rt.secuelas === 'Si' && rt.porcentajeIPP">
+                  <strong>Secuelas:</strong> {{ rt.secuelas }} 
+                  <strong class="ml-2">IPP:</strong> {{ rt.porcentajeIPP }}%
+                </span> 
+                </div>
+
+              <!-- Botones de acción -->
+              <div class="flex justify-end gap-2 mt-1">
+                <button @click="editarRT(rt)" class="text-blue-600 hover:underline text-xs">Editar</button>
+                <button @click="toggleDeleteModal(rt._id, rt)" class="text-red-600 hover:underline text-xs">Eliminar</button>
+              </div>
             </div>
-            <div class="flex gap-2">
-              <button @click="editarRT(rt)" class="text-blue-600 hover:underline text-sm">Editar</button>
-              <button @click="toggleDeleteModal(rt._id, rt)" class="text-red-600 hover:underline text-sm">Eliminar</button>
-            </div>
-            </div>
+
 
           <button @click="nuevoRT"
             class="mt-4 w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg">
-            Registrar nuevo Riesgo de Trabajo
+            Registrar Nueva RT o Recaída
           </button>
 
           <button @click="closeModal"
@@ -216,40 +263,65 @@ const eliminarRT = async (id) => {
         </div>
 
         <!-- Formulario para crear o editar RT -->
-        <div v-if="modo === 'nuevo' || modo === 'editar'" class="space-y-4 mb-6">
+        <div v-if="modo === 'nuevo' || modo === 'editar'" class="space-y-4">
           <h2 class="text-lg font-semibold text-gray-800 mb-2">
             {{ modo === 'editar' ? 'Editar Riesgo de Trabajo' : 'Registrar nuevo Riesgo de Trabajo' }}
           </h2>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
+          
+          <!-- Primera fila -->
+          <div class="grid grid-cols-9 gap-4 items-start">
+            <!-- Columna 1: Fecha del Riesgo -->
+            <div class="col-span-3">
               <label class="block text-sm font-medium text-gray-600">Fecha del Riesgo</label>
-              <input type="date" v-model="rtEnEdicion.fechaRiesgo" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
+              <input type="date" v-model="rtEnEdicion.fechaRiesgo" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" />
             </div>
 
-            <div>
+            <!-- Columna 2: Recaída (Etiqueta e Input separados) -->
+            <div class="col-span-2 flex flex-col items-start">
+              <label class="block text-sm font-medium text-gray-600">Recaída</label>
+              <select v-model="rtEnEdicion.recaida" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500">
+                <option disabled value="">Selecciona</option>
+                <option>Si</option>
+                <option>No</option>
+              </select>
+            </div>
+
+            <!-- Columna 3: Tipo de Riesgo -->
+            <div class="col-span-4">
               <label class="block text-sm font-medium text-gray-600">Tipo de Riesgo</label>
-              <select v-model="rtEnEdicion.tipoRiesgo" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+              <select v-model="rtEnEdicion.tipoRiesgo" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500">
                 <option disabled value="">Selecciona un tipo</option>
                 <option>Accidente de Trabajo</option>
                 <option>Accidente de Trayecto</option>
                 <option>Enfermedad de Trabajo</option>
               </select>
             </div>
+          </div>
 
+          <!-- Segunda fila -->
+          <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-600">Naturaleza de la lesión</label>
-              <input type="text" v-model="rtEnEdicion.naturalezaLesion" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
+              <input type="text" v-model="rtEnEdicion.naturalezaLesion" placeholder="Descripción de la lesión" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" list="nat-lesion-sugerencias" />
+              <datalist id="nat-lesion-sugerencias">
+                <option v-for="sugerencia in sugerenciasNatLesion" :key="sugerencia" :value="sugerencia">{{ sugerencia }}</option>
+              </datalist>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-600">Parte del cuerpo afectada</label>
-              <input type="text" v-model="rtEnEdicion.parteCuerpoAfectada" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
+              <input type="text" v-model="rtEnEdicion.parteCuerpoAfectada" placeholder="Zona afectada" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" list="parte-cuerpo-sugerencias" />
+              <datalist id="parte-cuerpo-sugerencias">
+                <option v-for="sugerencia in sugerenciasParteCuerpo" :key="sugerencia" :value="sugerencia">{{ sugerencia }}</option>
+              </datalist>
             </div>
+          </div>
 
+          <!-- Tercera fila -->
+          <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-600">Manejo</label>
-              <select v-model="rtEnEdicion.manejo" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
+              <select v-model="rtEnEdicion.manejo" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500">
                 <option disabled value="">Selecciona un manejo</option>
                 <option>IMSS</option>
                 <option>Interno</option>
@@ -258,13 +330,16 @@ const eliminarRT = async (id) => {
 
             <div>
               <label class="block text-sm font-medium text-gray-600">NSS</label>
-              <input type="text" v-model="rtEnEdicion.NSS" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
+              <input type="text" v-model="rtEnEdicion.NSS" placeholder="Número de Seguridad Social" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" />
             </div>
+          </div>
 
+          <!-- Cuarta fila -->
+          <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700">Estatus de Alta</label>
-              <select v-model="rtEnEdicion.alta" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
-                <option disabled value="">Selecciona una opción</option>
+              <label class="block text-sm font-medium text-gray-600">Estatus de Alta</label>
+              <select v-model="rtEnEdicion.alta" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500">
+                <option disabled value="">Selecciona un estatus</option>
                 <option>Incapacidad Activa</option>
                 <option>Alta ST2</option>
                 <option>Alta Interna</option>
@@ -272,60 +347,63 @@ const eliminarRT = async (id) => {
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Fecha de Alta</label>
-              <input type="date" v-model="rtEnEdicion.fechaAlta" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
+              <label class="block text-sm font-medium text-gray-600">Fecha de Alta</label>
+              <input type="date" v-model="rtEnEdicion.fechaAlta" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" />
+            </div>
+          </div>
+
+          <!-- Quinta fila -->
+          <div class="grid grid-cols-3 gap-4 items-start">
+            <!-- Días de Incapacidad -->
+            <div class="col-span-1">
+              <label class="block text-sm font-medium text-gray-600">Días de Incapacidad</label>
+              <input type="number" min="0" v-model="rtEnEdicion.diasIncapacidad" placeholder="0" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" />
             </div>
 
-            <!-- Fila agrupada para días de incapacidad, secuelas y porcentaje IPP -->
-            <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <!-- Días de Incapacidad -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Días de Incapacidad</label>
-                <input type="number" min="0" v-model="rtEnEdicion.diasIncapacidad"
-                  class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 
-                        focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
-              </div>
-
-              <!-- Secuelas -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Secuelas</label>
-                <select v-model="rtEnEdicion.secuelas" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
-                  <option disabled value="">Selecciona una opción</option>
-                  <option>No</option>
-                  <option>Si</option>
-                </select>
-              </div>
-
-              <!-- Porcentaje de IPP -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Porcentaje de IPP</label>
-                <input type="number" min="0" max="100" v-model="rtEnEdicion.porcentajeIPP"
-                  class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 
-                        focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
-              </div>
+            <!-- Secuelas y Porcentaje de IPP -->
+            <div class="col-span-1 flex flex-col items-start">
+              <label class="block text-sm font-medium text-gray-600">Secuelas</label>
+              <select v-model="rtEnEdicion.secuelas" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500">
+                <option disabled value="">Selecciona</option>
+                <option>Si</option>
+                <option>No</option>
+              </select>
             </div>
 
-            <div class="sm:col-span-2">
-              <label class="block text-sm font-medium text-gray-700">Notas u observaciones</label>
-              <textarea v-model="rtEnEdicion.notas" rows="3" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></textarea>
-            </div>
-
-            <div class="hidden">
-              <input type="hidden" v-model="rtEnEdicion.idTrabajador" />
-              <input type="hidden" v-model="rtEnEdicion.createdBy" />
-              <input type="hidden" v-model="rtEnEdicion.updatedBy" />
+            <div class="col-span-1">
+              <label class="block text-sm font-medium text-gray-600">Porcentaje de IPP</label>
+              <input 
+                type="number" 
+                min="0" 
+                max="100" 
+                v-model="rtEnEdicion.porcentajeIPP" 
+                placeholder="0" 
+                :disabled="!rtEnEdicion.secuelas || rtEnEdicion.secuelas === 'No'" 
+                class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500 disabled:bg-gray-100 disabled:text-gray-400"
+              />
             </div>
 
           </div>
 
+          <!-- Notas -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700">Notas u observaciones</label>
+            <textarea v-model="rtEnEdicion.notas" rows="3" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></textarea>
+          </div>
+
+          <!-- Campos ocultos -->
+          <div class="hidden">
+            <input type="hidden" v-model="rtEnEdicion.idTrabajador" />
+            <input type="hidden" v-model="rtEnEdicion.createdBy" />
+            <input type="hidden" v-model="rtEnEdicion.updatedBy" />
+          </div>
+
+          <!-- Botones de acción -->
           <div class="flex justify-between mt-4 gap-4">
-            <button @click="modo = 'listado'; rtEnEdicion = null"
-              class="w-1/2 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-100">
+            <button @click="modo = 'listado'; rtEnEdicion = null" class="w-1/2 py-2 bg-white border text-gray-700 font-medium rounded-lg hover:bg-gray-100">
               Cancelar
             </button>
-
-            <button @click="handleSubmit"
-              class="w-1/2 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-all">
+            <button @click="handleSubmit" class="w-1/2 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-all">
               Guardar
             </button>
           </div>
@@ -335,3 +413,12 @@ const eliminarRT = async (id) => {
     </Transition>
   </div>
 </template>
+
+<style>
+.toggle-checkbox:checked + div {
+  background-color: #10b981;
+}
+.toggle-checkbox:checked + div + .dot {
+  transform: translateX(1rem);
+}
+</style>
