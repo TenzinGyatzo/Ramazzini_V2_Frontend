@@ -363,9 +363,56 @@ onMounted(async () => {
 
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-8 auto-rows-[370px] sm:auto-rows-[400px] md:auto-rows-[425px] lg:auto-rows-[450px]">
+  <div class="mx-auto">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-8 auto-rows-[370px] sm:auto-rows-[400px] md:auto-rows-[425px] lg:auto-rows-[450px]">
 
+      <!-- Naturaleza Lesión: 2 columnas -->
+      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+        <h3 class="text-xl font-semibold text-gray-800">Naturaleza Lesión</h3>
       </div>
+
+      <!-- Parte de Cuerpo Afectada: 2 columnas -->
+      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+        <h3 class="text-xl font-semibold text-gray-800">Parte de Cuerpo Afectada</h3>
+      </div>
+
+      <!-- Tipo de Riesgo, Estado Alta, Puestos de Trabajo -->
+      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+        <h3 class="text-xl font-semibold text-gray-800">Tipo de Riesgo</h3>
+      </div>
+
+      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+        <h3 class="text-xl font-semibold text-gray-800">Estado Alta</h3>
+      </div>
+
+      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+        <h3 class="text-xl font-semibold text-gray-800">Puestos de Trabajo</h3>
+      </div>
+
+      <!-- Total Días, Distribución Días, Casos IPP -->
+      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+        <h3 class="text-xl font-semibold text-gray-800">Total de Días</h3>
+      </div>
+
+      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+        <h3 class="text-xl font-semibold text-gray-800">Distribución de Días de Incapacidad</h3>
+      </div>
+
+      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+        <h3 class="text-xl font-semibold text-gray-800">Casos IPP</h3>
+      </div>
+
+      <!-- Manejo y Recaídas -->
+      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+        <h3 class="text-xl font-semibold text-gray-800">Manejo</h3>
+      </div>
+
+      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+        <h3 class="text-xl font-semibold text-gray-800">Recaídas</h3>
+      </div>
+
+    </div>
+  </div>
 
       <button
         @click="$router.back()"
