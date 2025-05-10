@@ -331,6 +331,7 @@ const sugerenciasNatLesion = [ "Contusión", "Traumatismo", "Fractura", "Luxaci�
             <div>
               <label class="block text-sm font-medium text-gray-600">NSS</label>
               <input type="text" v-model="rtEnEdicion.NSS" placeholder="Número de Seguridad Social" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" />
+              <p v-if="nssError" class="text-red-500 text-sm mt-1">{{ nssError }}</p>
             </div>
           </div>
 

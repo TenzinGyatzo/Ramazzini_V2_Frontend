@@ -969,7 +969,7 @@ function handleClickGraficaCintura(evt, elements) {
 </script>
 
 <template>
-  <div class="px-6 py-8 mx-auto">
+  <div class="mx-auto">
     <div v-if="!empresasStore.currentEmpresa" class="text-center py-8">
       <p class="text-gray-600 text-lg">Loading empresa data...</p>
     </div>

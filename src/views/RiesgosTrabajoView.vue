@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick } from 'vue';
+import { ref, onMounted, computed, nextTick, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
@@ -38,6 +38,11 @@ const recaidaSeleccionada = ref<string>('todos');
 const tipoRiesgoSeleccionado = ref<string>('todos');
 const manejoSeleccionado = ref<string>('todos');
 const altaSeleccionada = ref<string>('todos');
+const diasIncapacidadSeleccionados = ref<string>('todos');
+const secuelasSeleccionadas = ref<string>('todos');
+const busquedaTexto = ref<string>("");
+const riesgosOriginales = ref<RiesgoTrabajo[]>([]);
+const inputBusqueda = ref<HTMLInputElement | null>(null);
 
 /* =====================
    Computed: Filtros Dinámicos
@@ -48,7 +53,15 @@ const hayFiltrosActivos = computed(() => {
     puestoSeleccionado.value !== 'todos' ||
     periodoSeleccionado.value !== 'todos' ||
     edadSeleccionada.value !== 'todos' ||
-    naturalezaSeleccionada.value !== 'todos' 
+    antiguedadSeleccionada.value !== 'todos' ||
+    naturalezaSeleccionada.value !== 'todos' ||
+    parteCuerpoSeleccionada.value !== 'todos' ||
+    recaidaSeleccionada.value !== 'todos' ||
+    tipoRiesgoSeleccionado.value !== 'todos' ||
+    manejoSeleccionado.value !== 'todos' ||
+    altaSeleccionada.value !== 'todos' ||
+    diasIncapacidadSeleccionados.value !== 'todos' ||
+    secuelasSeleccionadas.value !== 'todos'
   );
 });
 
@@ -159,6 +172,52 @@ const parteCuerpoDisponibles = computed(() => {
   return Array.from(partesSet).sort();
 });
 
+const opcionesDiasIncapacidad = [ "0–10", "11–30", "31–60", "61–90", "91–120", "121–150", "> 150" ];
+
+function cumpleRangoDiasIncapacidad(dias: number, rango: string): boolean {
+  if (rango === "> 150") return dias > 150;
+
+  const [inicio, fin] = rango.split("–").map(Number);
+  return dias >= inicio && dias <= fin;
+}
+
+function filtrarPorBusqueda() {
+  const texto = busquedaTexto.value.trim().toLowerCase();
+  
+  if (texto) {
+    // Filtramos localmente sin recargar
+    riesgosEmpresa.value = riesgosOriginales.value.filter((riesgo) => {
+      return (
+        (riesgo.nombreTrabajador && riesgo.nombreTrabajador.toLowerCase().includes(texto)) ||
+        (riesgo.puestoTrabajador && riesgo.puestoTrabajador.toLowerCase().includes(texto)) ||
+        (riesgo.naturalezaLesion && riesgo.naturalezaLesion.toLowerCase().includes(texto)) ||
+        (riesgo.parteCuerpoAfectada && riesgo.parteCuerpoAfectada.toLowerCase().includes(texto)) ||
+        (riesgo.tipoRiesgo && riesgo.tipoRiesgo.toLowerCase().includes(texto)) ||
+        (riesgo.manejo && riesgo.manejo.toLowerCase().includes(texto)) ||
+        (riesgo.alta && riesgo.alta.toLowerCase().includes(texto)) ||
+        (riesgo.secuelas && riesgo.secuelas.toLowerCase().includes(texto)) ||
+        (riesgo.recaida && riesgo.recaida.toLowerCase().includes(texto)) ||
+        (riesgo.notas && riesgo.notas.toLowerCase().includes(texto)) ||
+        (riesgo.NSS && riesgo.NSS.toLowerCase().includes(texto)) || 
+        (riesgo.fechaRiesgo && new Date(riesgo.fechaRiesgo).toLocaleDateString().includes(texto)) ||
+        (riesgo.fechaIngreso && new Date(riesgo.fechaIngreso).toLocaleDateString().includes(texto)) ||
+        (riesgo.fechaAlta && new Date(riesgo.fechaAlta).toLocaleDateString().includes(texto)) ||
+        (riesgo.diasIncapacidad && String(riesgo.diasIncapacidad).includes(texto)) ||
+        (riesgo.porcentajeIPP && String(riesgo.porcentajeIPP).includes(texto))
+      );
+    });
+  } else {
+    // Si el texto está vacío, restauramos los datos originales sin recargar desde el backend
+    riesgosEmpresa.value = [...riesgosOriginales.value];
+  }
+}
+
+watch(busquedaTexto, (newVal, oldVal) => {
+  if (inputBusqueda.value) {
+    inputBusqueda.value.focus();
+  }
+});
+
 /* =====================
    Computed: Agrupación de Riesgos
 ===================== */
@@ -178,7 +237,8 @@ const riesgosAgrupados = computed(() => {
           (parteCuerpoSeleccionada.value === 'todos' || r.parteCuerpoAfectada === parteCuerpoSeleccionada.value) &&
           (tipoRiesgoSeleccionado.value === 'todos' || r.tipoRiesgo === tipoRiesgoSeleccionado.value) &&
           (manejoSeleccionado.value === 'todos' || r.manejo === manejoSeleccionado.value) &&
-          (altaSeleccionada.value === 'todos' || r.alta === altaSeleccionada.value);
+          (altaSeleccionada.value === 'todos' || r.alta === altaSeleccionada.value) &&
+          (secuelasSeleccionadas.value === 'todos' || r.secuelas === secuelasSeleccionadas.value);
 
         // Filtro por Recaída (Sí, No, o vacío)
         const cumpleFiltroRecaida = 
@@ -190,7 +250,7 @@ const riesgosAgrupados = computed(() => {
         const { inicio, fin } = rangoFechas.value;
         const cumpleFiltroPeriodo = periodoSeleccionado.value === 'todos' || 
           (!inicio || !fin) || 
-          (new Date(r.fechaRiesgo) >= inicio && new Date(r.fechaRiesgo) <= fin);
+          (r.fechaRiesgo && new Date(r.fechaRiesgo) >= inicio && new Date(r.fechaRiesgo) <= fin);
 
         // Filtro por Edad
         const cumpleFiltroEdad = edadSeleccionada.value === 'todos' || 
@@ -202,12 +262,18 @@ const riesgosAgrupados = computed(() => {
           (r.fechaIngreso && calcularAntiguedadAnios(r.fechaIngreso) >= obtenerAntiguedadMinima(antiguedadSeleccionada.value) && 
           calcularAntiguedadAnios(r.fechaIngreso) <= obtenerAntiguedadMaxima(antiguedadSeleccionada.value));
 
-        return cumpleFiltroBasico && cumpleFiltroRecaida && cumpleFiltroPeriodo && cumpleFiltroEdad && cumpleFiltroAntiguedad;
+        // Filtro por Días de Incapacidad
+        const cumpleFiltroDiasIncapacidad = 
+          diasIncapacidadSeleccionados.value === 'todos' ||
+          (r.diasIncapacidad && cumpleRangoDiasIncapacidad(r.diasIncapacidad, diasIncapacidadSeleccionados.value));
+
+        return cumpleFiltroBasico && cumpleFiltroRecaida && cumpleFiltroPeriodo && cumpleFiltroEdad && cumpleFiltroAntiguedad && cumpleFiltroDiasIncapacidad;
       });
 
       return {
         centroId: centro._id,
         centroNombre: centro.nombreCentro,
+        centroDireccion: centro.direccionCentro,
         riesgos,
       };
     });
@@ -225,16 +291,44 @@ function toggleNota(id: string) {
 }
 
 function asignarRefNota(id: string, el: Element | ComponentPublicInstance | null) {
-  if (el instanceof HTMLElement) refsNotas.value[id] = el;
-  else refsNotas.value[id] = null;
+  if (el instanceof HTMLElement) {
+    refsNotas.value[id] = el;
+    verificarOverflow(id); // Verificamos overflow cada vez que se asigna
+  } else {
+    refsNotas.value[id] = null;
+  }
 }
 
 function verificarOverflow(id: string) {
-  const el = refsNotas.value[id];
-  if (el) {
-    notasConOverflow.value[id] = el.scrollHeight > el.clientHeight;
-  }
+  nextTick(() => {
+    const el = refsNotas.value[id];
+    if (el) {
+      // Verificamos si el contenido se desborda
+      notasConOverflow.value[id] = el.scrollHeight > el.clientHeight;
+      
+      // Si ya está expandido, no limitamos la altura
+      if (notasExpandibles.value[id]) {
+        el.style.maxHeight = "none";
+      } else {
+        el.style.maxHeight = "4rem"; // Limitar altura si no está expandido
+      }
+    }
+  });
 }
+
+// Verificar overflow para todas las notas al cargar
+function inicializarNotas() {
+  nextTick(() => {
+    for (const id in refsNotas.value) {
+      verificarOverflow(id);
+    }
+  });
+}
+
+// Llamar a la inicialización después del montaje
+onMounted(() => {
+  inicializarNotas();
+});
 
 /* =====================
    Funciones de Utilidad
@@ -255,6 +349,8 @@ function limpiarFiltros() {
   tipoRiesgoSeleccionado.value = 'todos';
   manejoSeleccionado.value = 'todos';
   altaSeleccionada.value = 'todos';
+  diasIncapacidadSeleccionados.value = 'todos';
+  secuelasSeleccionadas.value = 'todos';
 }
 
 /* =====================
@@ -264,7 +360,9 @@ onMounted(async () => {
   await empresasStore.fetchEmpresaById(empresaId);
   await centrosStore.fetchCentrosTrabajo(empresaId);
 
-  riesgosEmpresa.value = await trabajadoresStore.fetchRiesgosTrabajoPorEmpresa(empresaId);
+  const riesgos = await trabajadoresStore.fetchRiesgosTrabajoPorEmpresa(empresaId);
+  riesgosOriginales.value = [...riesgos]; // Guardamos una copia de los riesgos completos
+  riesgosEmpresa.value = riesgosOriginales.value; // Mostramos los riesgos
   console.log('Riesgos de trabajo:', riesgosEmpresa.value);
 
   datosCargados.value = true;
@@ -621,6 +719,55 @@ onMounted(async () => {
           </div>
         </div>
 
+        <!-- Filtro por Días de Incapacidad -->
+        <div class="ml-4 items-center gap-2">
+          <label class="block text-xs md:text-sm font-medium text-gray-700">Días de Incapacidad</label>
+          <select
+            v-model="diasIncapacidadSeleccionados"
+            :class="[
+              'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+              diasIncapacidadSeleccionados !== 'todos' 
+                ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+            ]"
+          >
+            <option value="todos">Todos</option>
+            <option v-for="rango in opcionesDiasIncapacidad" :key="rango" :value="rango">
+              {{ rango }}
+            </option>
+          </select>
+
+          <!-- Testigo de Filtro Aplicado (Días de Incapacidad) -->
+          <div v-if="diasIncapacidadSeleccionados !== 'todos'" class="flex items-center gap-1 mt-1">
+            <i class="fas fa-filter text-xs text-emerald-500"></i>
+            <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+          </div>
+        </div>
+
+        <!-- Filtro por Secuelas -->
+        <div class="ml-4 items-center gap-2">
+          <label class="block text-xs md:text-sm font-medium text-gray-700">Secuelas</label>
+          <select
+            v-model="secuelasSeleccionadas"
+            :class="[
+              'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+              secuelasSeleccionadas !== 'todos'
+                ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
+                : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+            ]"
+          >
+            <option value="todos">Todos</option>
+            <option value="Si">Si</option>
+            <option value="No">No</option>
+          </select>
+
+          <!-- Testigo de Filtro Aplicado (secuelas) -->
+          <div v-if="secuelasSeleccionadas !== 'todos'" class="flex items-center gap-1 mt-1">
+            <i class="fas fa-filter text-xs text-emerald-500"></i>
+            <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+          </div>
+        </div>
+
         <!-- Botón para limpiar filtros -->
         <div class="text-xs ml-4 items-center gap-2">
           <label class="block text-xs font-medium text-gray-100 mb-0.5">Filtros</label>
@@ -635,27 +782,45 @@ onMounted(async () => {
       </div>
     </Transition>
 
+    <!-- Buscador -->
+    <div class="ml-4 items-center gap-2">
+      <label class="block text-xs md:text-sm font-medium text-gray-700">Buscar</label>
+      <input
+        type="text"
+        v-model="busquedaTexto"
+        @input="filtrarPorBusqueda"
+        placeholder="Buscar pornombre, puesto, naturaleza..."
+        ref="inputBusqueda"
+        class="border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out focus:border-emerald-500 focus:ring-emerald-500"
+      />
+    </div>
+
     <!-- =======================
          Lista de Riesgos Agrupados por Centro
     ======================= -->
     <div v-for="grupo in riesgosAgrupados" :key="grupo.centroId" class="mb-4">
       <button
-        class="text-lg font-semibold flex items-center justify-between w-full text-left hover:bg-gray-200 p-4 rounded-lg border border-gray-300 shadow-sm transition"
+        class="text-lg font-semibold flex items-center justify-between w-full text-left bg-white hover:bg-gray-200 p-4 rounded-lg border border-gray-300 shadow-sm transition"
         @click="toggleCentro(grupo.centroId)"
       >
-        <h2 class="text-lg font-semibold text-gray-800 flex items-center justify-between">
-          {{ grupo.centroNombre }}&nbsp;&nbsp; 
+        <div class="flex items-center gap-4">
+          <div>
+            <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              {{ grupo.centroNombre }}&nbsp;&nbsp; 
+            </h2>
+            <p class="text-sm font-normal text-gray-500">{{ grupo.centroDireccion }}</p>
+          </div>
           <span
             :class="[
               'text-sm font-medium px-2 py-0.5 rounded-full border',
               grupo.riesgos.length === 0
-                ? 'bg-gray-200 text-gray-600 border-gray-300'
-                : 'bg-amber-100 text-amber-700 border-amber-300'
+              ? 'bg-gray-200 text-gray-600 border-gray-300'
+              : 'bg-amber-100 text-amber-700 border-amber-300'
             ]"
           >
             {{ grupo.riesgos.length }} RT{{ grupo.riesgos.length === 1 ? '' : 's' }}
           </span>
-        </h2>
+        </div>
         <span>
           <i :class="centrosAbiertos[grupo.centroId] ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
         </span>
