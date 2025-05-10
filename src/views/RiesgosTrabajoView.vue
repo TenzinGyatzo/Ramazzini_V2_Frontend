@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -8,11 +8,14 @@ import type { RiesgoTrabajo } from '@/interfaces/riesgo-trabajo.interface';
 import { calcularEdad, calcularAntiguedad } from '@/helpers/dates';
 import type { ComponentPublicInstance } from 'vue';
 import { startOfMonth, endOfMonth, subMonths, subDays, startOfYear, endOfYear, subYears } from 'date-fns';
+import GreenButton from '@/components/GreenButton.vue';
+import { exportarRiesgosTrabajoDesdeFrontend } from '@/helpers/exportarExcel';
 
 /* =====================
    Variables y Stores
 ===================== */
 const route = useRoute();
+const router = useRouter();
 const empresasStore = useEmpresasStore();
 const centrosStore = useCentrosTrabajoStore();
 const trabajadoresStore = useTrabajadoresStore();
@@ -183,12 +186,28 @@ function cumpleRangoDiasIncapacidad(dias: number, rango: string): boolean {
 
 function filtrarPorBusqueda() {
   const texto = busquedaTexto.value.trim().toLowerCase();
-  
+
   if (texto) {
-    // Filtramos localmente sin recargar
     riesgosEmpresa.value = riesgosOriginales.value.filter((riesgo) => {
+      // Caso 1: Buscar "Recaída"
+      if (/^r(ec(a(i(d(a)?)?)?)?)?$/.test(texto)) {
+        return riesgo.recaida === "Si";
+      }
+
+      // Caso 2: Buscar "Secuelas"
+      if (/^s(ec(u(e(l(a(s)?)?)?)?)?)?$/.test(texto)) {
+        return riesgo.secuelas === "Si";
+      }
+
+      // Caso 3: Buscar "IPP"
+      if (/^i(pp?)?$/.test(texto)) {
+        return riesgo.porcentajeIPP && parseInt(String(riesgo.porcentajeIPP)) > 0;
+      }
+
+      // Caso General: Filtrado por texto libre en cualquier campo
       return (
         (riesgo.nombreTrabajador && riesgo.nombreTrabajador.toLowerCase().includes(texto)) ||
+        (riesgo.sexoTrabajador && riesgo.sexoTrabajador.toLowerCase().includes(texto)) ||
         (riesgo.puestoTrabajador && riesgo.puestoTrabajador.toLowerCase().includes(texto)) ||
         (riesgo.naturalezaLesion && riesgo.naturalezaLesion.toLowerCase().includes(texto)) ||
         (riesgo.parteCuerpoAfectada && riesgo.parteCuerpoAfectada.toLowerCase().includes(texto)) ||
@@ -198,7 +217,7 @@ function filtrarPorBusqueda() {
         (riesgo.secuelas && riesgo.secuelas.toLowerCase().includes(texto)) ||
         (riesgo.recaida && riesgo.recaida.toLowerCase().includes(texto)) ||
         (riesgo.notas && riesgo.notas.toLowerCase().includes(texto)) ||
-        (riesgo.NSS && riesgo.NSS.toLowerCase().includes(texto)) || 
+        (riesgo.NSS && riesgo.NSS.toLowerCase().includes(texto)) ||
         (riesgo.fechaRiesgo && new Date(riesgo.fechaRiesgo).toLocaleDateString().includes(texto)) ||
         (riesgo.fechaIngreso && new Date(riesgo.fechaIngreso).toLocaleDateString().includes(texto)) ||
         (riesgo.fechaAlta && new Date(riesgo.fechaAlta).toLocaleDateString().includes(texto)) ||
@@ -286,14 +305,23 @@ const notasExpandibles = ref<Record<string, boolean>>({});
 const refsNotas = ref<Record<string, HTMLElement | null>>({});
 const notasConOverflow = ref<Record<string, boolean>>({});
 
+// Verificar overflow cada vez que cambie la referencia
+watch(
+  () => refsNotas.value,
+  () => {
+    verificarOverflowTodas();
+  },
+  { deep: true, immediate: true }
+);
+
 function toggleNota(id: string) {
   notasExpandibles.value[id] = !notasExpandibles.value[id];
+  verificarOverflow(id);
 }
 
 function asignarRefNota(id: string, el: Element | ComponentPublicInstance | null) {
   if (el instanceof HTMLElement) {
     refsNotas.value[id] = el;
-    verificarOverflow(id); // Verificamos overflow cada vez que se asigna
   } else {
     refsNotas.value[id] = null;
   }
@@ -304,20 +332,21 @@ function verificarOverflow(id: string) {
     const el = refsNotas.value[id];
     if (el) {
       // Verificamos si el contenido se desborda
-      notasConOverflow.value[id] = el.scrollHeight > el.clientHeight;
+      const tieneOverflow = el.scrollHeight > el.clientHeight;
+      notasConOverflow.value[id] = tieneOverflow;
       
-      // Si ya está expandido, no limitamos la altura
+      // Si está expandido, mostramos todo
       if (notasExpandibles.value[id]) {
         el.style.maxHeight = "none";
       } else {
-        el.style.maxHeight = "4rem"; // Limitar altura si no está expandido
+        el.style.maxHeight = tieneOverflow ? "4rem" : "none"; // Limitar altura si tiene overflow
       }
     }
   });
 }
 
-// Verificar overflow para todas las notas al cargar
-function inicializarNotas() {
+// Verificar overflow para todas las notas al cargar o cambiar
+function verificarOverflowTodas() {
   nextTick(() => {
     for (const id in refsNotas.value) {
       verificarOverflow(id);
@@ -327,7 +356,7 @@ function inicializarNotas() {
 
 // Llamar a la inicialización después del montaje
 onMounted(() => {
-  inicializarNotas();
+  verificarOverflowTodas();
 });
 
 /* =====================
@@ -351,6 +380,59 @@ function limpiarFiltros() {
   altaSeleccionada.value = 'todos';
   diasIncapacidadSeleccionados.value = 'todos';
   secuelasSeleccionadas.value = 'todos';
+}
+
+function exportarFiltrados() {
+  if (!riesgosAgrupados.value || riesgosAgrupados.value.length === 0) {
+    console.warn("No hay riesgos para exportar.");
+    return;
+  }
+
+  // Extraer todos los riesgos filtrados de los grupos
+  const riesgosFiltrados: any[] = riesgosAgrupados.value.flatMap(grupo => grupo.riesgos).map((riesgo) => ({
+    NombreTrabajador: riesgo.nombreTrabajador || '-',
+    Sexo: riesgo.sexoTrabajador || '-',
+    Edad: riesgo.fechaNacimiento ? calcularEdad(riesgo.fechaNacimiento) : '-',
+    Puesto: riesgo.puestoTrabajador || '-',
+    FechaRiesgo: riesgo.fechaRiesgo ? new Date(riesgo.fechaRiesgo).toLocaleDateString() : '-',
+    Naturaleza: riesgo.naturalezaLesion || '-',
+    ParteCuerpo: riesgo.parteCuerpoAfectada || '-',
+    TipoRiesgo: riesgo.tipoRiesgo || '-',
+    Manejo: riesgo.manejo || '-',
+    Alta: riesgo.alta || '-',
+    DíasIncapacidad: riesgo.diasIncapacidad || '-',
+    Recaída: riesgo.recaida || '-',
+    Secuelas: riesgo.secuelas || '-',
+    PorcentajeIPP: riesgo.porcentajeIPP || '-',
+    Notas: riesgo.notas || '-',
+  }));
+
+  if (riesgosFiltrados.length === 0) {
+    console.warn("No hay riesgos filtrados para exportar.");
+    return;
+  }
+
+  const nombreArchivo = generarNombreArchivoExcel();
+  exportarRiesgosTrabajoDesdeFrontend(riesgosFiltrados, nombreArchivo);
+}
+
+function generarNombreArchivoExcel(): string {
+  const partes: string[] = ['riesgos-trabajo'];
+
+  if (centroSeleccionado.value !== 'todos') partes.push(`centro-${centroSeleccionado.value}`);
+  if (sexoSeleccionado.value !== 'todos') partes.push(`sexo-${sexoSeleccionado.value}`);
+  if (puestoSeleccionado.value !== 'todos') partes.push(`puesto-${puestoSeleccionado.value}`);
+  if (naturalezaSeleccionada.value !== 'todos') partes.push(`naturaleza-${naturalezaSeleccionada.value}`);
+  if (parteCuerpoSeleccionada.value !== 'todos') partes.push(`parte-${parteCuerpoSeleccionada.value}`);
+  if (tipoRiesgoSeleccionado.value !== 'todos') partes.push(`tipo-${tipoRiesgoSeleccionado.value}`);
+  if (manejoSeleccionado.value !== 'todos') partes.push(`manejo-${manejoSeleccionado.value}`);
+  if (recaidaSeleccionada.value !== 'todos') partes.push(`recaida-${recaidaSeleccionada.value}`);
+  if (secuelasSeleccionadas.value !== 'todos') partes.push(`secuelas-${secuelasSeleccionadas.value}`);
+
+  const fechaActual = new Date().toISOString().slice(0, 10); // yyyy-mm-dd
+  partes.push(fechaActual);
+
+  return partes.join('_') + '.xlsx';
 }
 
 /* =====================
@@ -377,7 +459,6 @@ onMounted(async () => {
   }, 0);
 });
 </script>
-
 
 <template>
   <!-- =======================
@@ -412,6 +493,10 @@ onMounted(async () => {
         </h2>
       </div>
 
+      <div class="ml-auto">
+        <GreenButton text="Exportar Trabajadores" @click="exportarFiltrados" />
+      </div>
+
       <!-- Filtro por Centro de Trabajo -->
       <div class="ml-auto items-center gap-2">
         <label class="block text-xs md:text-sm font-medium text-gray-700">Centro de trabajo</label>
@@ -430,25 +515,43 @@ onMounted(async () => {
     <!-- =======================
       Toggle Filtros + Indicador
     ======================= -->
-    <div class="flex justify-center items-center gap-3 my-4">
-      <button
-        @click="mostrarFiltros = !mostrarFiltros"
-        class="text-sm px-3 py-1.5 rounded-md text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-300 transition duration-200 flex items-center gap-2"
-      >
-        <i :class="mostrarFiltros ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-        {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
-      </button>
+    <div class="flex justify-between items-center gap-3 my-4">
+      <div class="w-32"></div> <!-- Spacer para alinear el toggle al centro -->
+      
+      <div class="flex items-center gap-3">
+        <button
+          @click="mostrarFiltros = !mostrarFiltros"
+          class="text-sm px-3 py-1.5 rounded-md text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-300 transition duration-200 flex items-center gap-2"
+        >
+          <i :class="mostrarFiltros ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+          {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
+        </button>
 
-      <div v-if="hayFiltrosActivos" class="flex items-center gap-1 text-xs text-emerald-600 font-medium">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        Filtros activos
+        <div v-if="hayFiltrosActivos" class="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Filtros activos
+        </div>
+      </div>
+
+      <div class="relative w-40 md:w-60 lg:w-80">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <i class="fa-solid fa-magnifying-glass text-gray-500 focus:text-emerald-500"></i>
+        </span>
+        <input
+          v-model="busquedaTexto"
+          type="text"
+          @input="filtrarPorBusqueda"
+          placeholder="Buscar..."
+          class="w-full pl-10 pr-4 py-2 border border-gray-300 hover:shadow-md rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+        />
       </div>
     </div>
+
 
     <!-- =======================
          Filtros Desplegables (Con Toggle)
     ======================= -->
-    <Transition name="desplegar-filtros" mode="out-in">
+    <Transition name="desplegar" mode="out-in">
       <div v-if="mostrarFiltros" class="flex flex-wrap gap-4 my-6 justify-center">
         <!-- Filtro por Sexo -->
         <div class="ml-4 items-center gap-2">
@@ -782,19 +885,6 @@ onMounted(async () => {
       </div>
     </Transition>
 
-    <!-- Buscador -->
-    <div class="ml-4 items-center gap-2">
-      <label class="block text-xs md:text-sm font-medium text-gray-700">Buscar</label>
-      <input
-        type="text"
-        v-model="busquedaTexto"
-        @input="filtrarPorBusqueda"
-        placeholder="Buscar pornombre, puesto, naturaleza..."
-        ref="inputBusqueda"
-        class="border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out focus:border-emerald-500 focus:ring-emerald-500"
-      />
-    </div>
-
     <!-- =======================
          Lista de Riesgos Agrupados por Centro
     ======================= -->
@@ -826,6 +916,7 @@ onMounted(async () => {
         </span>
       </button>
       
+      <Transition name="desplegar" mode="out-in">
       <div v-if="centrosAbiertos[grupo.centroId]" class="mt-2 grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
         <div v-if="grupo.riesgos.length === 0" class="text-sm italic text-gray-400 mb-4">
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Este centro no tiene riesgos registrados.
@@ -954,7 +1045,20 @@ onMounted(async () => {
 
         </div>
       </div>
+      </Transition>
+
     </div>
+
+          <div class="flex justify-center gap-4 mt-10">
+        <button
+          type="button"
+          @click="router.push({ name: 'dashboard-rt', params: { idEmpresa: empresasStore.currentEmpresaId } })"
+          class="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow transition duration-300"
+        >
+          <i class="fas fa-chart-line"></i>
+          Estadísticas de RTs
+        </button>
+      </div>
 
     <!-- =======================
          Botón de Regreso
@@ -964,3 +1068,26 @@ onMounted(async () => {
     </button>
   </div>
 </template>
+
+<style scoped>
+.desplegar-enter-active,
+.desplegar-leave-active {
+  transition: all 0.4s ease;
+  overflow: hidden;
+}
+
+.desplegar-enter-from,
+.desplegar-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.desplegar-enter-to,
+.desplegar-leave-from {
+  opacity: 1;
+  max-height: 1000px; /* lo suficientemente grande */
+  transform: translateY(0);
+}
+
+</style>

@@ -593,7 +593,7 @@ const puestosUnicos = computed(() => {
           class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow transition duration-300"
         >
           <i class="fas fa-chart-line"></i>
-          Estadísticas
+          Estadísticas de salud
         </button>
         <button
           type="button"
