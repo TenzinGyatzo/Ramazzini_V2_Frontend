@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import type { RiesgoTrabajo } from '@/interfaces/riesgo-trabajo.interface';
-import { calcularEdad, calcularAntiguedad } from '@/helpers/dates';
-import type { ComponentPublicInstance } from 'vue';
+import { contarPorNaturalezaLesion } from '@/helpers/dashboardRiesgosProcessor';
+import GraficaBarras from '@/components/graficas/GraficaBarras.vue';
+import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
+import { calcularEdad } from '@/helpers/dates';
 import { startOfMonth, endOfMonth, subMonths, subDays, startOfYear, endOfYear, subYears } from 'date-fns';
-import { exportarRiesgosTrabajoDesdeFrontend } from '@/helpers/exportarExcel';
 
 /* =====================
    Variables y Stores
@@ -20,16 +21,95 @@ const centrosStore = useCentrosTrabajoStore();
 const trabajadoresStore = useTrabajadoresStore();
 
 const empresaId = String(route.params.idEmpresa);
-const datosCargados = ref(false);
+const centrosTrabajo = ref<CentroTrabajo[]>([]);
+const centroSeleccionado = ref('Todos');
 const riesgosEmpresa = ref<RiesgoTrabajo[]>([]);
-const centrosAbiertos = ref<Record<string, boolean>>({});
+const riesgosOriginales = ref<RiesgoTrabajo[]>([]);
 const totalRiesgos = ref(0);
+const datosCargados = ref(false);
+
+/* =====================
+   Watchers y Fetch de Datos
+===================== */
+watch(() => route.params.idEmpresa, cargarDatos, { immediate: true });
+
+async function cargarDatos() {
+  if (!empresaId) return;
+
+  // 1. Empresa
+  await empresasStore.fetchEmpresaById(empresaId);
+
+  // 2. Centros
+  centrosTrabajo.value = await centrosStore.fetchCentrosTrabajo(empresaId);
+  if (centrosTrabajo.value.length > 0) {
+    centroSeleccionado.value = centrosTrabajo.value[0].nombreCentro;
+  }
+
+  // 3. Riesgos de Trabajo
+  riesgosOriginales.value = await trabajadoresStore.fetchRiesgosTrabajoPorEmpresa(empresaId);
+  riesgosEmpresa.value = [...riesgosOriginales.value];
+  totalRiesgos.value = riesgosEmpresa.value.length;
+  datosCargados.value = true;
+}
+
+/* =====================
+   Computed: Opciones y Configuración
+===================== */
+const centrosTrabajoOptions = computed(() => [
+  'Todos',
+  ...centrosTrabajo.value.map((centro) => centro.nombreCentro),
+]);
+
+// Computed para filtrar riesgos por centro seleccionado
+const riesgosFiltrados = computed(() => {
+  if (centroSeleccionado.value === 'Todos') {
+    return riesgosEmpresa.value;
+  }
+
+  return riesgosEmpresa.value.filter((riesgo) =>
+    centrosTrabajo.value.some(
+      (centro) =>
+        centro.nombreCentro === centroSeleccionado.value &&
+        riesgo.idCentroTrabajo === centro._id
+    )
+  );
+});
+
+/* =====================
+   Computed: Data de Gráfica
+===================== */
+const graficaNaturalezaLesionData = computed(() => {
+  if (!riesgosFiltrados.value.length) return { labels: [], datasets: [] };
+
+  const resultados = contarPorNaturalezaLesion(riesgosFiltrados.value);
+
+  return {
+    labels: resultados.map(([label]) => label),
+    datasets: [
+      {
+        data: resultados.map(([_, cantidad]) => cantidad),
+        backgroundColor: '#4B5563'
+      }
+    ]
+  };
+});
+
+/* =====================
+   Manejo de Eventos
+===================== */
+function handleClickGraficaNaturalezaLesion(event) {
+  const index = event[0]?.index;
+  if (index !== undefined) {
+    const naturaleza = graficaNaturalezaLesionData.value.labels[index];
+    console.log('Clic en naturaleza:', naturaleza);
+  }
+}
 
 /* =====================
    Filtros Reactivos
 ===================== */
 const mostrarFiltros = ref(false);
-const centroSeleccionado = ref<string>('todos');
+interface CentroTrabajo { nombreCentro: string; [key: string]: any; }
 const sexoSeleccionado = ref<string>('todos');
 const puestoSeleccionado = ref<string>('todos');
 const periodoSeleccionado = ref<string>('todos');
@@ -44,7 +124,6 @@ const altaSeleccionada = ref<string>('todos');
 const diasIncapacidadSeleccionados = ref<string>('todos');
 const secuelasSeleccionadas = ref<string>('todos');
 const busquedaTexto = ref<string>("");
-const riesgosOriginales = ref<RiesgoTrabajo[]>([]);
 const inputBusqueda = ref<HTMLInputElement | null>(null);
 
 /* =====================
@@ -301,19 +380,105 @@ const riesgosAgrupados = computed(() => {
 /* =====================
    Inicialización: Fetch de Datos
 ===================== */
-onMounted(async () => {
-  await empresasStore.fetchEmpresaById(empresaId);
-  await centrosStore.fetchCentrosTrabajo(empresaId);
 
-  const riesgos = await trabajadoresStore.fetchRiesgosTrabajoPorEmpresa(empresaId);
-  riesgosOriginales.value = [...riesgos]; // Guardamos una copia de los riesgos completos
-  riesgosEmpresa.value = riesgosOriginales.value; // Mostramos los riesgos
-  console.log('Riesgos de trabajo:', riesgosEmpresa.value);
+/* Funciones Utiles */
+function limpiarFiltros() {
+  sexoSeleccionado.value = 'todos';
+  puestoSeleccionado.value = 'todos';
+  periodoSeleccionado.value = 'todos';
+  edadSeleccionada.value = 'todos';
+  antiguedadSeleccionada.value = 'todos';
+  naturalezaSeleccionada.value = 'todos';
+  parteCuerpoSeleccionada.value = 'todos';
+  recaidaSeleccionada.value = 'todos';
+  tipoRiesgoSeleccionado.value = 'todos';
+  manejoSeleccionado.value = 'todos';
+  altaSeleccionada.value = 'todos';
+  diasIncapacidadSeleccionados.value = 'todos';
+  secuelasSeleccionadas.value = 'todos';
+}
 
-  totalRiesgos.value = riesgosEmpresa.value.length;
+/* =====================
+   Variables Reactivas para Gráfica de Naturaleza Lesión
+===================== */
+const vistaNaturalezaLesion = ref('grafico');
+const vistaNaturalezaLesionKey = ref(0);
+const tablaNaturalezaLesion = ref<Record<string, number>>({});
 
-  datosCargados.value = true;
-});
+/* =====================
+   Computed: Opciones de la Gráfica
+===================== */
+const graficaNaturalezaLesionOptions = {
+  indexAxis: 'y',
+  responsive: true,
+  layout: {
+    padding: {
+      right: 60
+    }
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          const total = graficaNaturalezaLesionData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `Casos: ${value} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      color: '#374151',
+      anchor: 'end',
+      align: 'end',
+      formatter: (value) => {
+        const total = graficaNaturalezaLesionData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return `${value} (${porcentaje}%)`;
+      },
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        stepSize: 1,
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  }
+};
+
+/* =====================
+   Manejo de Eventos
+===================== */
+
+function handleClickTablaNaturalezaLesion(naturaleza) {
+  console.log('Clic en naturaleza (Tabla):', naturaleza);
+}
+
 </script>
 
 <template>
@@ -344,10 +509,14 @@ onMounted(async () => {
         <!-- Ajustado a nivel del encabezado -->
         <div class="mb-4 ml-auto flex items-end gap-6">
           <!-- Indicador de total de trabajadores -->
-          <div class="bg-white border border-gray-200 shadow-md rounded-xl px-6 py-2 text-center self-center">
-            <div class="text-xs text-gray-500"><i class="fas fa-users mr-1 text-gray-400"></i><span class="hidden md:block">RTs</span></div>
-            <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ totalRiesgos }}</div>
-          </div>
+            <div class="bg-white border border-gray-200 shadow-md rounded-xl px-6 py-2 text-center self-center">
+            <div class="text-xs text-gray-500">
+              <i class="fas fa-users mr-1 text-gray-400"></i>
+              <span class="lg:hidden">RTs</span>
+              <span class="hidden lg:block">Riesgos de Trabajo</span>
+            </div>
+            <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ riesgosFiltrados.length }}</div>
+            </div>
 
           <!-- Selector de centro de trabajo -->
           <div class="self-end">
@@ -356,63 +525,504 @@ onMounted(async () => {
               v-model="centroSeleccionado"
               class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-xs md:text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out mt-1"
             >
-              <option v-for="centro in centrosStore.centrosTrabajo" :key="centro._id" :value="centro._id">{{ centro.nombreCentro }}</option>
+              <option v-for="centro in centrosTrabajoOptions" :key="centro" :value="centro">{{ centro }}</option>
             </select>
           </div>
         </div>
 
       </div>
 
-  <div class="mx-auto">
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-8 auto-rows-[370px] sm:auto-rows-[400px] md:auto-rows-[425px] lg:auto-rows-[450px]">
+      <!-- =======================
+        Toggle Filtros + Indicador
+      ======================= -->
+      <div class="flex justify-between items-center gap-3 my-4">
+        <div class="w-32"></div> <!-- Spacer para alinear el toggle al centro -->
+        
+        <div class="flex items-center gap-3">
+          <button
+            @click="mostrarFiltros = !mostrarFiltros"
+            class="text-sm px-3 py-1.5 rounded-md text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-300 transition duration-200 flex items-center gap-2"
+          >
+            <i :class="mostrarFiltros ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+            {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
+          </button>
 
-      <!-- Naturaleza Lesión: 2 columnas -->
-      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-        <h3 class="text-xl font-semibold text-gray-800">Naturaleza Lesión</h3>
+          <div v-if="hayFiltrosActivos" class="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Filtros activos
+          </div>
+        </div>
+
+        <div class="relative w-40 md:w-60 lg:w-80">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fa-solid fa-magnifying-glass text-gray-500 focus:text-emerald-500"></i>
+          </span>
+          <input
+            v-model="busquedaTexto"
+            type="text"
+            @input="filtrarPorBusqueda"
+            placeholder="Buscar..."
+            class="w-full pl-10 pr-4 py-2 border border-gray-300 hover:shadow-md rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+          />
+        </div>
       </div>
 
-      <!-- Parte de Cuerpo Afectada: 2 columnas -->
-      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-        <h3 class="text-xl font-semibold text-gray-800">Parte de Cuerpo Afectada</h3>
-      </div>
+      <!-- =======================
+          Filtros Desplegables (Con Toggle)
+      ======================= -->
+      <Transition name="desplegar" mode="out-in">
+        <div v-if="mostrarFiltros" class="flex flex-wrap gap-4 my-6 justify-center">
+          <!-- Filtro por Sexo -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Sexo</label>
+            <select
+              v-model="sexoSeleccionado"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                sexoSeleccionado !== 'todos' 
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+            </select>
+            <!-- Testigo de Filtro Aplicado (Sexo) -->
+            <div v-if="sexoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
+      
+          <!-- Filtro por Puesto -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Puesto</label>
+            <select
+              v-model="puestoSeleccionado"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                puestoSeleccionado !== 'todos' 
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option v-for="puesto in puestosDisponibles" :key="puesto" :value="puesto">
+                {{ puesto }}
+              </option>
+            </select>
+            <!-- Testigo de Filtro Aplicado (Puesto) -->
+            <div v-if="puestoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
 
-      <!-- Tipo de Riesgo, Estado Alta, Puestos de Trabajo -->
-      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-        <h3 class="text-xl font-semibold text-gray-800">Tipo de Riesgo</h3>
-      </div>
+          <!-- Filtro por Periodo -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Periodo</label>
+            <select
+              v-model="periodoSeleccionado"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                periodoSeleccionado !== 'todos' 
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option v-for="opcion in opcionesPeriodo" :key="opcion" :value="opcion">
+                {{ opcion }}
+              </option>
+            </select>
 
-      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-        <h3 class="text-xl font-semibold text-gray-800">Estado Alta</h3>
-      </div>
+            <!-- Testigo de Filtro Aplicado (Periodo) -->
+            <div v-if="periodoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
 
-      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-        <h3 class="text-xl font-semibold text-gray-800">Puestos de Trabajo</h3>
-      </div>
+          <!-- Filtro por Edad -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Edad</label>
+            <select
+              v-model="edadSeleccionada"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                edadSeleccionada !== 'todos' 
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option v-for="rango in opcionesEdad" :key="rango" :value="rango">
+                {{ rango }}
+              </option>
+            </select>
 
-      <!-- Total Días, Distribución Días, Casos IPP -->
-      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-        <h3 class="text-xl font-semibold text-gray-800">Total de Días</h3>
-      </div>
+            <!-- Testigo de Filtro Aplicado (Edad) -->
+            <div v-if="edadSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
 
-      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-        <h3 class="text-xl font-semibold text-gray-800">Distribución de Días de Incapacidad</h3>
-      </div>
+          <!-- Filtro por Antigüedad -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Antigüedad</label>
+            <select
+              v-model="antiguedadSeleccionada"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                antiguedadSeleccionada !== 'todos' 
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option v-for="rango in opcionesAntiguedad" :key="rango" :value="rango">
+                {{ rango }}
+              </option>
+            </select>
 
-      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-        <h3 class="text-xl font-semibold text-gray-800">Casos IPP</h3>
-      </div>
+            <!-- Testigo de Filtro Aplicado (Antigüedad) -->
+            <div v-if="antiguedadSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
 
-      <!-- Manejo y Recaídas -->
-      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-        <h3 class="text-xl font-semibold text-gray-800">Manejo</h3>
-      </div>
+          <!-- Filtro por Naturaleza de la Lesión -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Naturaleza de la Lesión</label>
+            <select
+              v-model="naturalezaSeleccionada"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                naturalezaSeleccionada !== 'todos' 
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option v-for="naturaleza in naturalezasDisponibles" :key="naturaleza" :value="naturaleza">
+                {{ naturaleza }}
+              </option>
+            </select>
+            <!-- Testigo de Filtro Aplicado (Naturaleza) -->
+            <div v-if="naturalezaSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
 
-      <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-        <h3 class="text-xl font-semibold text-gray-800">Recaídas</h3>
-      </div>
+          <!-- Filtro por Parte del Cuerpo Afectada -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Parte del Cuerpo Afectada</label>
+            <select
+              v-model="parteCuerpoSeleccionada"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                parteCuerpoSeleccionada !== 'todos' 
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option v-for="parte in parteCuerpoDisponibles" :key="parte" :value="parte">
+                {{ parte }}
+              </option>
+            </select>
 
-    </div>
-  </div>
+            <!-- Testigo de Filtro Aplicado (Parte del Cuerpo) -->
+            <div v-if="parteCuerpoSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
+
+          <!-- Filtro por Recaída -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Recaída</label>
+            <select
+              v-model="recaidaSeleccionada"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                recaidaSeleccionada !== 'todos' 
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option value="Si">Sí</option>
+              <option value="No">No</option>
+            </select>
+
+            <!-- Testigo de Filtro Aplicado (Recaída) -->
+            <div v-if="recaidaSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
+          
+          <!-- Filtro por Tipo de Riesgo -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Tipo de Riesgo</label>
+            <select
+              v-model="tipoRiesgoSeleccionado"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                tipoRiesgoSeleccionado !== 'todos' 
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option value="Accidente de Trabajo">Accidente de Trabajo</option>
+              <option value="Accidente de Trayecto">Accidente de Trayecto</option>
+              <option value="Enfermedad de Trabajo">Enfermedad de Trabajo</option>
+            </select>
+
+            <!-- Testigo de Filtro Aplicado (Tipo de Riesgo) -->
+            <div v-if="tipoRiesgoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
+          
+          <!-- Filtro por Manejo -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Manejo</label>
+            <select
+              v-model="manejoSeleccionado"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                manejoSeleccionado !== 'todos'
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option value="IMSS">IMSS</option>
+              <option value="Interno">Interno</option>
+            </select>
+
+            <!-- Testigo de Filtro Aplicado (Manejo) -->
+            <div v-if="manejoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
+
+          <!-- Filtro por Alta -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Alta</label>
+            <select
+              v-model="altaSeleccionada"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                altaSeleccionada !== 'todos'
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option value="Incapacidad Activa">Incapacidad Activa</option>
+              <option value="Alta ST2">Alta ST2</option>
+              <option value="Alta Interna">Alta Interna</option>
+            </select>
+
+            <!-- Testigo de Filtro Aplicado (Alta) -->
+            <div v-if="altaSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
+
+          <!-- Filtro por Días de Incapacidad -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Días de Incapacidad</label>
+            <select
+              v-model="diasIncapacidadSeleccionados"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                diasIncapacidadSeleccionados !== 'todos' 
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option v-for="rango in opcionesDiasIncapacidad" :key="rango" :value="rango">
+                {{ rango }}
+              </option>
+            </select>
+
+            <!-- Testigo de Filtro Aplicado (Días de Incapacidad) -->
+            <div v-if="diasIncapacidadSeleccionados !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
+
+          <!-- Filtro por Secuelas -->
+          <div class="ml-4 items-center gap-2">
+            <label class="block text-xs md:text-sm font-medium text-gray-700">Secuelas</label>
+            <select
+              v-model="secuelasSeleccionadas"
+              :class="[
+                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                secuelasSeleccionadas !== 'todos'
+                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
+                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+              ]"
+            >
+              <option value="todos">Todos</option>
+              <option value="Si">Si</option>
+              <option value="No">No</option>
+            </select>
+
+            <!-- Testigo de Filtro Aplicado (secuelas) -->
+            <div v-if="secuelasSeleccionadas !== 'todos'" class="flex items-center gap-1 mt-1">
+              <i class="fas fa-filter text-xs text-emerald-500"></i>
+              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+            </div>
+          </div>
+
+          <!-- Botón para limpiar filtros -->
+          <div class="text-xs ml-4 items-center gap-2">
+            <label class="block text-xs font-medium text-gray-100 mb-0.5">Filtros</label>
+            <button
+              @click="limpiarFiltros"
+              class="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-1.5 px-3 rounded-lg border-2 border-red-200 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out flex items-center justify-center gap-2"
+            >
+              <i class="fa-solid fa-filter-circle-xmark"></i>
+              Quitar Filtros
+            </button>
+          </div>
+        </div>
+      </Transition>
+
+      <div class="mx-auto">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-8 auto-rows-[370px] sm:auto-rows-[400px] md:auto-rows-[425px] lg:auto-rows-[450px]">
+
+        <!-- Naturaleza Lesión: 2 columnas -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              Naturaleza Lesión
+              <span class="relative cursor-help">
+                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                <span
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-72 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                >
+                  Muestra la distribución de riesgos de trabajo según la naturaleza de la lesión.
+                </span>
+              </span>
+            </h3>
+            <div class="flex gap-2">
+              <button
+                @click="vistaNaturalezaLesion = 'grafico'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaNaturalezaLesion === 'grafico'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Gráfico
+              </button>
+              <button
+                @click="vistaNaturalezaLesion = 'tabla'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaNaturalezaLesion === 'tabla'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Tabla
+              </button>
+            </div>
+          </div>
+
+          <div class="flex-1 overflow-x-auto">
+            <Transition name="fade" mode="out-in">
+              <template v-if="vistaNaturalezaLesion === 'grafico'">
+                <GraficaBarras
+                  :data="graficaNaturalezaLesionData"
+                  :options="graficaNaturalezaLesionOptions"
+                />
+              </template>
+
+              <template v-else>
+                <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                  <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th class="py-2 px-4 text-left text-lg">Naturaleza Lesión</th>
+                      <th class="py-2 px-4 text-center text-lg">Casos</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="(cantidad, naturaleza) in tablaNaturalezaLesion"
+                      :key="naturaleza"
+                      class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      @click="handleClickTablaNaturalezaLesion(naturaleza)"
+                    >
+                      <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ naturaleza }}</td>
+                      <td class="py-1 px-4 text-center text-lg">{{ cantidad }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </template>
+            </Transition>
+          </div>
+        </div>
+
+          <!-- Parte de Cuerpo Afectada: 2 columnas -->
+          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+            <h3 class="text-xl font-semibold text-gray-800">Parte de Cuerpo Afectada</h3>
+          </div>
+
+          <!-- Tipo de Riesgo, Estado Alta, Puestos de Trabajo -->
+          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+            <h3 class="text-xl font-semibold text-gray-800">Tipo de Riesgo</h3>
+          </div>
+
+          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+            <h3 class="text-xl font-semibold text-gray-800">Estado Alta</h3>
+          </div>
+
+          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+            <h3 class="text-xl font-semibold text-gray-800">Puestos de Trabajo</h3>
+          </div>
+
+          <!-- Total Días, Distribución Días, Casos IPP -->
+          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+            <h3 class="text-xl font-semibold text-gray-800">Total de Días</h3>
+          </div>
+
+          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+            <h3 class="text-xl font-semibold text-gray-800">Distribución de Días de Incapacidad</h3>
+          </div>
+
+          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+            <h3 class="text-xl font-semibold text-gray-800">Casos IPP</h3>
+          </div>
+
+          <!-- Manejo y Recaídas -->
+          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+            <h3 class="text-xl font-semibold text-gray-800">Manejo</h3>
+          </div>
+
+          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+            <h3 class="text-xl font-semibold text-gray-800">Recaídas</h3>
+          </div>
+
+        </div>
+      </div>
 
       <button
         @click="$router.back()"
