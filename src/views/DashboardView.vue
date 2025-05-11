@@ -38,21 +38,26 @@ const vistaAgentesKey = computed(() => `vista-${vistaAgentes.value}`);
 const cargarDatos = async (empresaId) => {
   if (!empresaId) return;
 
-  // 1. Empresa
-  await empresasStore.fetchEmpresaById(empresaId);
+  // 1. Empresa y Centros de Trabajo en paralelo
+  const [empresa, centros] = await Promise.all([
+    empresasStore.fetchEmpresaById(empresaId),
+    centrosTrabajoStore.fetchCentrosTrabajo(empresaId)
+  ]);
 
-  // 2. Centros
-  centrosTrabajo.value = await centrosTrabajoStore.fetchCentrosTrabajo(empresaId);
-  if (centrosTrabajo.value.length > 0) {
-    centroSeleccionado.value = centrosTrabajo.value[0].nombreCentro;
+  empresasStore.currentEmpresa = empresa;
+  centrosTrabajo.value = centros;
+  centroSeleccionado.value = centros.length > 0 ? centros[0].nombreCentro : 'Todos';
+
+  // 2. Info para el dashboard (en paralelo)
+  if (centros.length > 0) {
+    dashboardData.value = await Promise.all(
+      centros.map((centro) =>
+        trabajadoresStore.fetchDashboardData(empresaId, centro._id)
+      )
+    );
+  } else {
+    dashboardData.value = [];
   }
-
-  // 3. Info para el dashboard
-  dashboardData.value = await Promise.all(
-    centrosTrabajo.value.map((centro) =>
-      trabajadoresStore.fetchDashboardData(empresaId, centro._id)
-    )
-  );
 
   // Logs
   // console.log('Empresa data fetched:', empresasStore.currentEmpresa);
