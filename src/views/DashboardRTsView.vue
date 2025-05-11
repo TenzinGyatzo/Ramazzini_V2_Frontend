@@ -11,9 +11,6 @@ import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
 import { calcularEdad } from '@/helpers/dates';
 import { startOfMonth, endOfMonth, subMonths, subDays, startOfYear, endOfYear, subYears } from 'date-fns';
 
-/* =====================
-   Variables y Stores
-===================== */
 const route = useRoute();
 const router = useRouter();
 const empresasStore = useEmpresasStore();
@@ -28,39 +25,41 @@ const riesgosOriginales = ref<RiesgoTrabajo[]>([]);
 const totalRiesgos = ref(0);
 const datosCargados = ref(false);
 
-/* =====================
-   Watchers y Fetch de Datos
-===================== */
-watch(() => route.params.idEmpresa, cargarDatos, { immediate: true });
+const vistaNaturalezaLesion = ref('grafico');
 
 async function cargarDatos() {
   if (!empresaId) return;
 
-  // 1. Empresa
-  await empresasStore.fetchEmpresaById(empresaId);
+  // 1. Cargar Empresa, Centros y Riesgos en paralelo
+  const [empresa, centros, riesgos] = await Promise.all([
+    empresasStore.fetchEmpresaById(empresaId),
+    centrosStore.fetchCentrosTrabajo(empresaId),
+    trabajadoresStore.fetchRiesgosTrabajoPorEmpresa(empresaId)
+  ]);
 
-  // 2. Centros
-  centrosTrabajo.value = await centrosStore.fetchCentrosTrabajo(empresaId);
-  if (centrosTrabajo.value.length > 0) {
-    centroSeleccionado.value = centrosTrabajo.value[0].nombreCentro;
-  }
+  // 2. Asignar datos cargados
+  centrosTrabajo.value = centros;
+  centroSeleccionado.value = centros.length > 0 ? centros[0].nombreCentro : 'Todos';
 
-  // 3. Riesgos de Trabajo
-  riesgosOriginales.value = await trabajadoresStore.fetchRiesgosTrabajoPorEmpresa(empresaId);
-  riesgosEmpresa.value = [...riesgosOriginales.value];
-  totalRiesgos.value = riesgosEmpresa.value.length;
+  // 3. Asignar Riesgos
+  riesgosOriginales.value = riesgos;
+  riesgosEmpresa.value = riesgos;
+  totalRiesgos.value = riesgos.length;
   datosCargados.value = true;
 }
 
-/* =====================
-   Computed: Opciones y Configuración
-===================== */
+watch(() => route.params.idEmpresa, cargarDatos, { immediate: true });
+
 const centrosTrabajoOptions = computed(() => [
   'Todos',
   ...centrosTrabajo.value.map((centro) => centro.nombreCentro),
 ]);
 
-// Computed para filtrar riesgos por centro seleccionado
+// Computed para contar el total de riesgos de trabajo
+const totalRiesgosFiltrados = computed(() => {
+  return riesgosFiltrados.value.length;
+});
+
 const riesgosFiltrados = computed(() => {
   if (centroSeleccionado.value === 'Todos') {
     return riesgosEmpresa.value;
@@ -75,9 +74,7 @@ const riesgosFiltrados = computed(() => {
   );
 });
 
-/* =====================
-   Computed: Data de Gráfica
-===================== */
+// Computed para tabla y grafica de Naturaleza Lesión
 const graficaNaturalezaLesionData = computed(() => {
   if (!riesgosFiltrados.value.length) return { labels: [], datasets: [] };
 
@@ -94,16 +91,81 @@ const graficaNaturalezaLesionData = computed(() => {
   };
 });
 
-/* =====================
-   Manejo de Eventos
-===================== */
-function handleClickGraficaNaturalezaLesion(event) {
-  const index = event[0]?.index;
-  if (index !== undefined) {
-    const naturaleza = graficaNaturalezaLesionData.value.labels[index];
-    console.log('Clic en naturaleza:', naturaleza);
+const graficaNaturalezaLesionOptions = {
+  indexAxis: 'y',
+  responsive: true,
+  layout: {
+    padding: {
+      right: 60
+    }
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          const total = graficaNaturalezaLesionData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `Casos: ${value} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      color: '#374151',
+      anchor: 'end',
+      align: 'end',
+      formatter: (value) => {
+        const total = graficaNaturalezaLesionData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return `${value} (${porcentaje}%)`;
+      },
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        stepSize: 1,
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
   }
-}
+};
+
+// Tabla basada en los mismos datos de la gráfica
+const tablaNaturalezaLesion = computed(() => {
+  if (!riesgosFiltrados.value.length) return [];
+
+  const resultados = contarPorNaturalezaLesion(riesgosFiltrados.value);
+  const total = resultados.reduce((sum, [, cantidad]) => sum + cantidad, 0);
+
+  return resultados.map(([naturaleza, cantidad]) => {
+    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+    return [naturaleza, cantidad, porcentaje];
+  });
+});
 
 /* =====================
    Filtros Reactivos
@@ -378,10 +440,8 @@ const riesgosAgrupados = computed(() => {
 });
 
 /* =====================
-   Inicialización: Fetch de Datos
+   Funciones útiles
 ===================== */
-
-/* Funciones Utiles */
 function limpiarFiltros() {
   sexoSeleccionado.value = 'todos';
   puestoSeleccionado.value = 'todos';
@@ -399,85 +459,20 @@ function limpiarFiltros() {
 }
 
 /* =====================
-   Variables Reactivas para Gráfica de Naturaleza Lesión
-===================== */
-const vistaNaturalezaLesion = ref('grafico');
-const vistaNaturalezaLesionKey = ref(0);
-const tablaNaturalezaLesion = ref<Record<string, number>>({});
-
-/* =====================
-   Computed: Opciones de la Gráfica
-===================== */
-const graficaNaturalezaLesionOptions = {
-  indexAxis: 'y',
-  responsive: true,
-  layout: {
-    padding: {
-      right: 60
-    }
-  },
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      enabled: true,
-      callbacks: {
-        label: (context) => {
-          const value = context.raw;
-          const total = graficaNaturalezaLesionData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
-          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
-          return `Casos: ${value} (${porcentaje}%)`;
-        }
-      }
-    },
-    datalabels: {
-      color: '#374151',
-      anchor: 'end',
-      align: 'end',
-      formatter: (value) => {
-        const total = graficaNaturalezaLesionData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
-        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
-        return `${value} (${porcentaje}%)`;
-      },
-      font: {
-        weight: 'bold',
-        size: 12
-      },
-      clamp: true
-    }
-  },
-  scales: {
-    x: {
-      beginAtZero: true,
-      grid: { display: false },
-      ticks: {
-        stepSize: 1,
-        color: '#374151',
-        font: { size: 12 }
-      }
-    },
-    y: {
-      grid: { display: false },
-      ticks: {
-        color: '#374151',
-        font: { size: 12 }
-      }
-    }
-  },
-  onHover: (event, elements) => {
-    const canvas = event.chart?.canvas;
-    if (canvas) {
-      canvas.style.cursor = elements.length ? 'pointer' : 'default';
-    }
-  }
-};
-
-/* =====================
    Manejo de Eventos
 ===================== */
+function handleClickGraficaNaturalezaLesion(event) {
+  const index = event[0]?.index;
+  if (index !== undefined) {
+    const naturaleza = graficaNaturalezaLesionData.value.labels[index];
+    console.log('Clic en naturaleza:', naturaleza);
+  }
+}
 
 function handleClickTablaNaturalezaLesion(naturaleza) {
   console.log('Clic en naturaleza (Tabla):', naturaleza);
 }
+
 
 </script>
 
@@ -515,7 +510,7 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
               <span class="lg:hidden">RTs</span>
               <span class="hidden lg:block">Riesgos de Trabajo</span>
             </div>
-            <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ riesgosFiltrados.length }}</div>
+            <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ totalRiesgosFiltrados }}</div>
             </div>
 
           <!-- Selector de centro de trabajo -->
@@ -904,82 +899,87 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
         </div>
       </Transition>
 
+      <!-- =======================
+          Gráficas y Tablas
+      ======================= -->
       <div class="mx-auto">
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-8 auto-rows-[370px] sm:auto-rows-[400px] md:auto-rows-[425px] lg:auto-rows-[450px]">
 
-        <!-- Naturaleza Lesión: 2 columnas -->
-        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              Naturaleza Lesión
-              <span class="relative cursor-help">
-                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                <span
-                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-72 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                >
-                  Muestra la distribución de riesgos de trabajo según la naturaleza de la lesión.
+          <!-- Naturaleza Lesión: 2 columnas -->
+          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                Naturaleza Lesión
+                <span class="relative cursor-help">
+                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                  <span
+                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-72 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                  >
+                    Muestra la distribución de riesgos de trabajo según la naturaleza de la lesión.
+                  </span>
                 </span>
-              </span>
-            </h3>
-            <div class="flex gap-2">
-              <button
-                @click="vistaNaturalezaLesion = 'grafico'"
-                :class="[
-                  'px-3 py-1 rounded text-sm font-medium',
-                  vistaNaturalezaLesion === 'grafico'
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                ]"
-              >
-                Gráfico
-              </button>
-              <button
-                @click="vistaNaturalezaLesion = 'tabla'"
-                :class="[
-                  'px-3 py-1 rounded text-sm font-medium',
-                  vistaNaturalezaLesion === 'tabla'
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                ]"
-              >
-                Tabla
-              </button>
+              </h3>
+              <div class="flex gap-2">
+                <button
+                  @click="vistaNaturalezaLesion = 'grafico'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaNaturalezaLesion === 'grafico'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Gráfico
+                </button>
+                <button
+                  @click="vistaNaturalezaLesion = 'tabla'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaNaturalezaLesion === 'tabla'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Tabla
+                </button>
+              </div>
+            </div>
+
+            <div class="flex-1 overflow-x-auto">
+              <Transition name="fade" mode="out-in">
+                <template v-if="vistaNaturalezaLesion === 'grafico'">
+                  <GraficaBarras
+                    :data="graficaNaturalezaLesionData"
+                    :options="graficaNaturalezaLesionOptions"
+                  />
+                </template>
+
+                <template v-else>
+                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                    <thead class="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th class="py-2 px-4 text-left text-lg">Naturaleza Lesión</th>
+                        <th class="py-2 px-4 text-center text-lg">Casos</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="[naturaleza, cantidad, porcentaje] in tablaNaturalezaLesion"
+                        :key="naturaleza"
+                        class="border-t hover:bg-gray-200 transition cursor-pointer"
+                        @click="handleClickTablaNaturalezaLesion(naturaleza)"
+                      >
+                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ naturaleza }}</td>
+                        <td class="py-1 px-4 text-center text-gray-800 text-lg">
+                          {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </template>
+              </Transition>
             </div>
           </div>
-
-          <div class="flex-1 overflow-x-auto">
-            <Transition name="fade" mode="out-in">
-              <template v-if="vistaNaturalezaLesion === 'grafico'">
-                <GraficaBarras
-                  :data="graficaNaturalezaLesionData"
-                  :options="graficaNaturalezaLesionOptions"
-                />
-              </template>
-
-              <template v-else>
-                <table class="min-w-full text-sm border border-gray-300 rounded h-full">
-                  <thead class="bg-gray-100 text-gray-700">
-                    <tr>
-                      <th class="py-2 px-4 text-left text-lg">Naturaleza Lesión</th>
-                      <th class="py-2 px-4 text-center text-lg">Casos</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="(cantidad, naturaleza) in tablaNaturalezaLesion"
-                      :key="naturaleza"
-                      class="border-t hover:bg-gray-200 transition cursor-pointer"
-                      @click="handleClickTablaNaturalezaLesion(naturaleza)"
-                    >
-                      <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ naturaleza }}</td>
-                      <td class="py-1 px-4 text-center text-lg">{{ cantidad }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </template>
-            </Transition>
-          </div>
-        </div>
 
           <!-- Parte de Cuerpo Afectada: 2 columnas -->
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
