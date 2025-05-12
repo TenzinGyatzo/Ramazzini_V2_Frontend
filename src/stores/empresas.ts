@@ -67,6 +67,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
       const { data } = await EmpresasAPI.getEmpresaById(id);
       currentEmpresa.value = data; // Guardamos los datos de la empresa en el store
       currentEmpresaId.value = id;
+      return data; 
     } catch (error) {
       console.error("Error al cargar la empresa:", error);
     } finally {

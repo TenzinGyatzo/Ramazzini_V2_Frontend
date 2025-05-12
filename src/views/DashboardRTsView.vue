@@ -5,11 +5,17 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import type { RiesgoTrabajo } from '@/interfaces/riesgo-trabajo.interface';
-import { contarPorNaturalezaLesion } from '@/helpers/dashboardRiesgosProcessor';
+import { contarPorNaturalezaLesion, contarPorParteCuerpo, contarPorPuestosTrabajo, contarPorRangoDiasIncapacidad, rangosDiasIncapacidad, contarPorTipoRiesgo, tiposRiesgo, etiquetasTiposRiesgo } from '@/helpers/dashboardRiesgosProcessor';
 import GraficaBarras from '@/components/graficas/GraficaBarras.vue';
 import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
 import { calcularEdad } from '@/helpers/dates';
 import { startOfMonth, endOfMonth, subMonths, subDays, startOfYear, endOfYear, subYears } from 'date-fns';
+
+interface DashboardCentro {
+  nombreCentro: string;
+  riesgos: RiesgoTrabajo[];
+  riesgosFiltrados: RiesgoTrabajo[];
+}
 
 const route = useRoute();
 const router = useRouter();
@@ -18,16 +24,23 @@ const centrosStore = useCentrosTrabajoStore();
 const trabajadoresStore = useTrabajadoresStore();
 
 const empresaId = String(route.params.idEmpresa);
-const centrosTrabajo = ref<CentroTrabajo[]>([]);
+const dashboardData = ref<DashboardCentro[]>([]);
+const centrosTrabajo = ref<{ nombreCentro: string; _id: string }[]>([]);
 const centroSeleccionado = ref('Todos');
-const riesgosEmpresa = ref<RiesgoTrabajo[]>([]);
-const riesgosOriginales = ref<RiesgoTrabajo[]>([]);
-const totalRiesgos = ref(0);
 const datosCargados = ref(false);
 
 const vistaNaturalezaLesion = ref('grafico');
+const vistaParteCuerpo = ref('grafico');
+const vistaTiposRiesgo = ref('grafico');
+const vistaPuestosTrabajo = ref('grafico');
+const vistaDiasIncapacidad = ref('grafico');
+
+const puestosDisponiblesFijos = ref<string[]>([]);
+const naturalezasDisponiblesFijos = ref<string[]>([]);
+const partesCuerpoDisponiblesFijos = ref<string[]>([]);
 
 async function cargarDatos() {
+  const empresaId = String(route.params.idEmpresa);
   if (!empresaId) return;
 
   // 1. Cargar Empresa, Centros y Riesgos en paralelo
@@ -37,17 +50,40 @@ async function cargarDatos() {
     trabajadoresStore.fetchRiesgosTrabajoPorEmpresa(empresaId)
   ]);
 
+  // Capturamos las opciones únicas de estos tres filtros con tipado seguro
+  puestosDisponiblesFijos.value = Array.from(new Set<string>(
+    riesgos.map((r) => r.puestoTrabajador).filter((v): v is string => !!v)
+  )).sort();
+
+  naturalezasDisponiblesFijos.value = Array.from(new Set<string>(
+    riesgos.map((r) => r.naturalezaLesion).filter((v): v is string => !!v)
+  )).sort();
+
+  partesCuerpoDisponiblesFijos.value = Array.from(new Set<string>(
+    riesgos.map((r) => r.parteCuerpoAfectada).filter((v): v is string => !!v)
+  )).sort();
+
   // 2. Asignar datos cargados
+  empresasStore.currentEmpresa = empresa;
   centrosTrabajo.value = centros;
   centroSeleccionado.value = centros.length > 0 ? centros[0].nombreCentro : 'Todos';
 
-  // 3. Asignar Riesgos
-  riesgosOriginales.value = riesgos;
-  riesgosEmpresa.value = riesgos;
-  totalRiesgos.value = riesgos.length;
+  // 3. Estructurar dashboardData similar a DashboardView
+  dashboardData.value = centros.map((centro) => ({
+    nombreCentro: centro.nombreCentro,
+    riesgos: riesgos.filter((riesgo) => riesgo.idCentroTrabajo === centro._id),
+    riesgosFiltrados: [] // ✅ Definimos riesgosFiltrados directamente
+  }));
+
+  // 4. Inicializamos riesgosFiltrados como copia de riesgos
+  dashboardData.value.forEach((centro) => {
+    centro.riesgosFiltrados = [...centro.riesgos];
+  });
+
   datosCargados.value = true;
 }
 
+// Llama la función al montar y si cambia el ID
 watch(() => route.params.idEmpresa, cargarDatos, { immediate: true });
 
 const centrosTrabajoOptions = computed(() => [
@@ -56,22 +92,55 @@ const centrosTrabajoOptions = computed(() => [
 ]);
 
 // Computed para contar el total de riesgos de trabajo
-const totalRiesgosFiltrados = computed(() => {
-  return riesgosFiltrados.value.length;
+const totalRiesgos = computed(() => {
+  if (!dashboardData.value.length) return 0;
+
+  if (centroSeleccionado.value === 'Todos') {
+    return dashboardData.value.reduce((total, centro) => total + (centro.riesgos.length || 0), 0);
+  }
+
+  const index = centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value);
+  return dashboardData.value[index]?.riesgos.length || 0;
 });
 
 const riesgosFiltrados = computed(() => {
-  if (centroSeleccionado.value === 'Todos') {
-    return riesgosEmpresa.value;
-  }
+  return dashboardData.value.flatMap((centro) => {
+    if (centroSeleccionado.value !== 'Todos' && centro.nombreCentro !== centroSeleccionado.value) {
+      return [];
+    }
 
-  return riesgosEmpresa.value.filter((riesgo) =>
-    centrosTrabajo.value.some(
-      (centro) =>
-        centro.nombreCentro === centroSeleccionado.value &&
-        riesgo.idCentroTrabajo === centro._id
-    )
-  );
+    return centro.riesgos.filter((riesgo) => {
+      const edad = riesgo.fechaNacimiento 
+        ? calcularEdad(riesgo.fechaNacimiento) 
+        : null;
+      const antiguedad = riesgo.fechaIngreso 
+        ? calcularAntiguedadAnios(riesgo.fechaIngreso) 
+        : null;
+
+      return (
+        (sexoSeleccionado.value === 'todos' || riesgo.sexoTrabajador === sexoSeleccionado.value) &&
+        (puestoSeleccionado.value === 'todos' || riesgo.puestoTrabajador === puestoSeleccionado.value) &&
+        (naturalezaSeleccionada.value === 'todos' || riesgo.naturalezaLesion === naturalezaSeleccionada.value) &&
+        (parteCuerpoSeleccionada.value === 'todos' || riesgo.parteCuerpoAfectada === parteCuerpoSeleccionada.value) &&
+        (recaidaSeleccionada.value === 'todos' || (recaidaSeleccionada.value === 'Si' && riesgo.recaida === 'Si') ||
+          (recaidaSeleccionada.value === 'No' && (riesgo.recaida === 'No' || riesgo.recaida == null))) &&
+        (tipoRiesgoSeleccionado.value === 'todos' || riesgo.tipoRiesgo === tipoRiesgoSeleccionado.value) &&
+        (manejoSeleccionado.value === 'todos' || riesgo.manejo === manejoSeleccionado.value) &&
+        (altaSeleccionada.value === 'todos' || riesgo.alta === altaSeleccionada.value) &&
+        (diasIncapacidadSeleccionados.value === 'todos' || cumpleRangoDiasIncapacidad(riesgo.diasIncapacidad ?? 0, diasIncapacidadSeleccionados.value)) &&
+        (secuelasSeleccionadas.value === 'todos' || riesgo.secuelas === secuelasSeleccionadas.value) &&
+        (periodoSeleccionado.value === 'todos' || 
+          (rangoFechas.value.inicio && rangoFechas.value.fin &&
+          typeof riesgo.fechaRiesgo === 'string' &&
+          new Date(riesgo.fechaRiesgo).getTime() >= rangoFechas.value.inicio.getTime() &&
+          new Date(riesgo.fechaRiesgo).getTime() <= rangoFechas.value.fin.getTime())) &&
+        (edadSeleccionada.value === 'todos' || 
+          (edad !== null && edad >= obtenerEdadMinima(edadSeleccionada.value) && edad <= obtenerEdadMaxima(edadSeleccionada.value))) &&
+        (antiguedadSeleccionada.value === 'todos' || 
+          (antiguedad !== null && antiguedad >= obtenerAntiguedadMinima(antiguedadSeleccionada.value) && antiguedad <= obtenerAntiguedadMaxima(antiguedadSeleccionada.value)))
+      );
+    });
+  });
 });
 
 // Computed para tabla y grafica de Naturaleza Lesión
@@ -79,19 +148,53 @@ const graficaNaturalezaLesionData = computed(() => {
   if (!riesgosFiltrados.value.length) return { labels: [], datasets: [] };
 
   const resultados = contarPorNaturalezaLesion(riesgosFiltrados.value);
+  const etiquetas = resultados.map(([label]) => label);
+  const hombres = resultados.map(([, masculino]) => masculino);
+  const mujeres = resultados.map(([, , femenino]) => femenino);
 
   return {
-    labels: resultados.map(([label]) => label),
+    labels: etiquetas,
     datasets: [
       {
-        data: resultados.map(([_, cantidad]) => cantidad),
-        backgroundColor: '#4B5563'
+        label: 'Hombres',
+        data: hombres,
+        backgroundColor: '#4B5563', // Gris oscuro
+        stack: 'Stack 0',
+      },
+      {
+        label: 'Mujeres',
+        data: mujeres,
+        backgroundColor: '#9CA3AF', // Gris medio
+        stack: 'Stack 0',
       }
     ]
   };
 });
 
-const graficaNaturalezaLesionOptions = {
+
+const tablaNaturalezaLesion = computed(() => {
+  if (!riesgosFiltrados.value.length) return [];
+  
+  const resultados = contarPorNaturalezaLesion(riesgosFiltrados.value);
+  const totalHombres = resultados.reduce((acc, [, h]) => acc + h, 0);
+  const totalMujeres = resultados.reduce((acc, [, , m]) => acc + m, 0);
+  
+
+  return resultados.map(([naturaleza, hombres, mujeres]) => {
+    const porcentajeHombres = totalHombres > 0 ? Math.round((hombres / totalHombres) * 100) : 0;
+    const porcentajeMujeres = totalMujeres > 0 ? Math.round((mujeres / totalMujeres) * 100) : 0;
+
+    return {
+      naturaleza,
+      hombres,
+      mujeres,
+      porcentajeHombres,
+      porcentajeMujeres
+    };
+  });
+});
+
+const graficaBarrasHorizontalesOptions = {
   indexAxis: 'y',
   responsive: true,
   layout: {
@@ -100,24 +203,31 @@ const graficaNaturalezaLesionOptions = {
     }
   },
   plugins: {
-    legend: { display: false },
+    legend: {
+      display: false // ✅ Leyenda desactivada
+    },
     tooltip: {
       enabled: true,
       callbacks: {
         label: (context) => {
           const value = context.raw;
-          const total = graficaNaturalezaLesionData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+          const totalHombres = context.chart.data.datasets[0]?.data.reduce((a, b) => a + b, 0) || 0;
+          const totalMujeres = context.chart.data.datasets[1]?.data.reduce((a, b) => a + b, 0) || 0;
+          const total = totalHombres + totalMujeres;
           const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
-          return `Casos: ${value} (${porcentaje}%)`;
+          return `${context.dataset.label}: ${value} (${porcentaje}%)`;
         }
       }
     },
     datalabels: {
-      color: '#374151',
-      anchor: 'end',
-      align: 'end',
-      formatter: (value) => {
-        const total = graficaNaturalezaLesionData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+      color: '#FFFFFF', // blanco
+      anchor: 'center',
+      align: 'center',
+      formatter: (value, context) => {
+        if (value === 0) return null; // ✅ No mostrar si el valor es 0
+        const totalHombres = context.chart.data.datasets[0]?.data.reduce((a, b) => a + b, 0) || 0;
+        const totalMujeres = context.chart.data.datasets[1]?.data.reduce((a, b) => a + b, 0) || 0;
+        const total = totalHombres + totalMujeres;
         const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
         return `${value} (${porcentaje}%)`;
       },
@@ -131,6 +241,7 @@ const graficaNaturalezaLesionOptions = {
   scales: {
     x: {
       beginAtZero: true,
+      stacked: true,
       grid: { display: false },
       ticks: {
         stepSize: 1,
@@ -139,6 +250,7 @@ const graficaNaturalezaLesionOptions = {
       }
     },
     y: {
+      stacked: true,
       grid: { display: false },
       ticks: {
         color: '#374151',
@@ -154,18 +266,339 @@ const graficaNaturalezaLesionOptions = {
   }
 };
 
-// Tabla basada en los mismos datos de la gráfica
-const tablaNaturalezaLesion = computed(() => {
+// Computed para tabla y gráfica de parte del cuerpo afectada
+const graficaParteCuerpoData = computed(() => {
+  if (!riesgosFiltrados.value.length) return { labels: [], datasets: [] };
+
+  const resultados = contarPorParteCuerpo(riesgosFiltrados.value);
+  const etiquetas = resultados.map(([label]) => label);
+  const hombres = resultados.map(([, masculino]) => masculino);
+  const mujeres = resultados.map(([, , femenino]) => femenino);
+
+  return {
+    labels: etiquetas,
+    datasets: [
+      {
+        label: 'Hombres',
+        data: hombres,
+        backgroundColor: '#4B5563', // Gris oscuro
+        stack: 'Stack 0',
+      },
+      {
+        label: 'Mujeres',
+        data: mujeres,
+        backgroundColor: '#9CA3AF', // Gris medio
+        stack: 'Stack 0',
+      }
+    ]
+  };
+});
+
+const tablaParteCuerpo = computed(() => {
   if (!riesgosFiltrados.value.length) return [];
 
-  const resultados = contarPorNaturalezaLesion(riesgosFiltrados.value);
-  const total = resultados.reduce((sum, [, cantidad]) => sum + cantidad, 0);
+  const resultados = contarPorParteCuerpo(riesgosFiltrados.value);
+  const totalHombres = resultados.reduce((acc, [, h]) => acc + h, 0);
+  const totalMujeres = resultados.reduce((acc, [, , m]) => acc + m, 0);
 
-  return resultados.map(([naturaleza, cantidad]) => {
-    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
-    return [naturaleza, cantidad, porcentaje];
+  return resultados.map(([parte, hombres, mujeres]) => {
+    const porcentajeHombres = totalHombres > 0 ? Math.round((hombres / totalHombres) * 100) : 0;
+    const porcentajeMujeres = totalMujeres > 0 ? Math.round((mujeres / totalMujeres) * 100) : 0;
+
+    return {
+      parte,
+      hombres,
+      mujeres,
+      porcentajeHombres,
+      porcentajeMujeres
+    };
   });
 });
+
+// Computed para tabla y gráfica de tipo de riesgo
+const graficaTiposRiesgoData = computed(() => {
+  if (!riesgosFiltrados.value.length) return { labels: [], datasets: [] };
+
+  const resultados = contarPorTipoRiesgo(riesgosFiltrados.value);
+  const etiquetas = tiposRiesgo.map((tipo) => etiquetasTiposRiesgo[tipo] || tipo);
+  const hombres = tiposRiesgo.map((tipo) => resultados[tipo]?.hombres || 0);
+  const mujeres = tiposRiesgo.map((tipo) => resultados[tipo]?.mujeres || 0);
+
+  return {
+    labels: etiquetas,
+    datasets: [
+      {
+        label: 'Hombres',
+        data: hombres,
+        backgroundColor: '#4B5563', // Gris oscuro
+        stack: 'Stack 0',
+      },
+      {
+        label: 'Mujeres',
+        data: mujeres,
+        backgroundColor: '#9CA3AF', // Gris claro
+        stack: 'Stack 0',
+      }
+    ]
+  };
+});
+
+const tablaTiposRiesgo = computed(() => {
+  if (!riesgosFiltrados.value.length) return [];
+
+  const resultados = contarPorTipoRiesgo(riesgosFiltrados.value);
+  const totalHombres = Object.values(resultados).reduce((acc, val) => acc + (val.hombres || 0), 0);
+  const totalMujeres = Object.values(resultados).reduce((acc, val) => acc + (val.mujeres || 0), 0);
+
+  return tiposRiesgo.map((tipo) => {
+    const hombres = resultados[tipo]?.hombres || 0;
+    const mujeres = resultados[tipo]?.mujeres || 0;
+    const total = hombres + mujeres;
+    const porcentajeHombres = totalHombres > 0 ? Math.round((hombres / totalHombres) * 100) : 0;
+    const porcentajeMujeres = totalMujeres > 0 ? Math.round((mujeres / totalMujeres) * 100) : 0;
+
+    return {
+      tipo: etiquetasTiposRiesgo[tipo] || tipo,
+      hombres,
+      mujeres,
+      total,
+      porcentajeHombres,
+      porcentajeMujeres
+    };
+  });
+});
+
+const graficaTiposRiesgoOptions = computed(() => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  indexAxis: 'x', // Barras verticales
+  scales: {
+    x: {
+      stacked: true,
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      beginAtZero: true,
+      stacked: true,
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  },
+  plugins: {
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        title: (context) => {
+          // ✅ Mostramos el nombre completo en el tooltip
+          const label = context[0].label;
+          const etiquetasCompletas = {
+            Trabajo: "Accidente de Trabajo",
+            Trayecto: "Accidente de Trayecto",
+            Enfermedad: "Enfermedad de Trabajo",
+          };
+          return etiquetasCompletas[label] || label;
+        },
+        label: (context) => {
+          const value = context.raw;
+          return `${context.dataset.label}: ${value}`;
+        }
+      }
+    },
+    legend: {
+      display: false
+    },
+    datalabels: {
+      display: true, // ✅ Aseguramos que estén habilitados
+      color: '#FFFFFF', // ✅ Blanco
+      font: {
+        weight: 'bold',
+        size: 14
+      },
+      formatter: (value, context) => {
+        if (value === 0) return ''; // No mostrar si el valor es 0
+        return `${value}`;
+      }
+    }
+  }
+}));
+
+
+
+// Computed para tabla y gráfica de puestos de trabajo
+const graficaPuestosTrabajoData = computed(() => {
+  if (!riesgosFiltrados.value.length) return { labels: [], datasets: [] };
+
+  const resultados = contarPorPuestosTrabajo(riesgosFiltrados.value);
+  const etiquetas = resultados.map(([label]) => label);
+  const hombres = resultados.map(([, masculino]) => masculino);
+  const mujeres = resultados.map(([, , femenino]) => femenino);
+
+  return {
+    labels: etiquetas,
+    datasets: [
+      {
+        label: 'Hombres',
+        data: hombres,
+        backgroundColor: '#4B5563', // Gris oscuro
+        stack: 'Stack 0',
+      },
+      {
+        label: 'Mujeres',
+        data: mujeres,
+        backgroundColor: '#9CA3AF', // Gris medio
+        stack: 'Stack 0',
+      }
+    ]
+  };
+});
+
+const tablaPuestosTrabajo = computed(() => {
+  if (!riesgosFiltrados.value.length) return [];
+
+  const resultados = contarPorPuestosTrabajo(riesgosFiltrados.value);
+  const totalHombres = resultados.reduce((acc, [, h]) => acc + h, 0);
+  const totalMujeres = resultados.reduce((acc, [, , m]) => acc + m, 0);
+
+  return resultados.map(([puesto, hombres, mujeres]) => {
+    const porcentajeHombres = totalHombres > 0 ? Math.round((hombres / totalHombres) * 100) : 0;
+    const porcentajeMujeres = totalMujeres > 0 ? Math.round((mujeres / totalMujeres) * 100) : 0;
+
+    return {
+      puesto,
+      hombres,
+      mujeres,
+      porcentajeHombres,
+      porcentajeMujeres
+    };
+  });
+});
+
+// Computed para tabla y gráfica de días de incapacidad
+const graficaDiasIncapacidadData = computed(() => {
+  if (!riesgosFiltrados.value.length) return { labels: [], datasets: [] };
+
+  const resultados = contarPorRangoDiasIncapacidad(riesgosFiltrados.value);
+  const etiquetas = rangosDiasIncapacidad;
+  const hombres = etiquetas.map((rango) => resultados[rango]?.hombres || 0);
+  const mujeres = etiquetas.map((rango) => resultados[rango]?.mujeres || 0);
+
+  return {
+    labels: etiquetas,
+    datasets: [
+      {
+        label: 'Hombres',
+        data: hombres,
+        backgroundColor: '#4B5563', // Gris oscuro
+        stack: 'Stack 0',
+      },
+      {
+        label: 'Mujeres',
+        data: mujeres,
+        backgroundColor: '#9CA3AF', // Gris medio
+        stack: 'Stack 0',
+      }
+    ]
+  };
+});
+
+const tablaDiasIncapacidad = computed(() => {
+  if (!riesgosFiltrados.value.length) return [];
+
+  const resultados = contarPorRangoDiasIncapacidad(riesgosFiltrados.value);
+  const totalHombres = Object.values(resultados).reduce((acc, val) => acc + (val.hombres || 0), 0);
+  const totalMujeres = Object.values(resultados).reduce((acc, val) => acc + (val.mujeres || 0), 0);
+
+  return rangosDiasIncapacidad.map((rango) => {
+    const hombres = resultados[rango]?.hombres || 0;
+    const mujeres = resultados[rango]?.mujeres || 0;
+    const porcentajeHombres = totalHombres > 0 ? Math.round((hombres / totalHombres) * 100) : 0;
+    const porcentajeMujeres = totalMujeres > 0 ? Math.round((mujeres / totalMujeres) * 100) : 0;
+
+    return {
+      rango,
+      hombres,
+      mujeres,
+      porcentajeHombres,
+      porcentajeMujeres
+    };
+  });
+});
+
+const graficaDiasIncapacidadOptions = computed(() => ({
+  indexAxis: 'x', // ✅ Barras verticales
+  maintainAspectRatio: false,
+  responsive: true,
+  layout: {
+    padding: {
+      right: 60
+    }
+  },
+  plugins: {
+    legend: {
+      display: false
+    },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          const totalHombres = context.chart.data.datasets[0]?.data.reduce((a, b) => a + b, 0) || 0;
+          const totalMujeres = context.chart.data.datasets[1]?.data.reduce((a, b) => a + b, 0) || 0;
+          const total = totalHombres + totalMujeres;
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `${context.dataset.label}: ${value} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      color: '#FFFFFF', // blanco
+      anchor: 'center',
+      align: 'center',
+      formatter: (value, context) => {
+        if (value === 0) return null; // ✅ No mostrar si el valor es 0
+        const totalHombres = context.chart.data.datasets[0]?.data.reduce((a, b) => a + b, 0) || 0;
+        const totalMujeres = context.chart.data.datasets[1]?.data.reduce((a, b) => a + b, 0) || 0;
+        const total = totalHombres + totalMujeres;
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return `${value} (${porcentaje}%)`;
+      },
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      stacked: true,
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      beginAtZero: true,
+      stacked: true,
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  }
+}));
+
+
+
 
 /* =====================
    Filtros Reactivos
@@ -209,13 +642,9 @@ const hayFiltrosActivos = computed(() => {
   );
 });
 
-const puestosDisponibles = computed(() => {
-  const puestosSet = new Set<string>();
-  riesgosEmpresa.value.forEach(riesgo => {
-    if (riesgo.puestoTrabajador) puestosSet.add(riesgo.puestoTrabajador);
-  });
-  return Array.from(puestosSet).sort();
-});
+const puestosDisponibles = computed(() => puestosDisponiblesFijos.value);
+const naturalezasDisponibles = computed(() => naturalezasDisponiblesFijos.value);
+const parteCuerpoDisponibles = computed(() => partesCuerpoDisponiblesFijos.value);
 
 const opcionesPeriodo = [ "Este mes", "Mes anterior", "Últimos 90 días", "Últimos 6 meses", "Este año", "Año anterior" ];
 
@@ -294,28 +723,6 @@ function obtenerAntiguedadMaxima(rango: string): number {
   return Number(rango.split("–")[1]);
 }
 
-const naturalezasDisponibles = computed(() => {
-  const naturalezasSet = new Set<string>();
-  riesgosEmpresa.value.forEach(riesgo => {
-    if (riesgo.naturalezaLesion) naturalezasSet.add(riesgo.naturalezaLesion);
-  });
-  return Array.from(naturalezasSet).sort();
-});
-
-const parteCuerpoDisponibles = computed(() => {
-  const partesSet = new Set<string>();
-  
-  // Recorremos los riesgos para extraer las partes únicas
-  riesgosEmpresa.value.forEach(riesgo => {
-    if (riesgo.parteCuerpoAfectada) {
-      partesSet.add(riesgo.parteCuerpoAfectada);
-    }
-  });
-
-  // Convertimos el Set a un array y lo ordenamos alfabéticamente
-  return Array.from(partesSet).sort();
-});
-
 const opcionesDiasIncapacidad = [ "0–10", "11–30", "31–60", "61–90", "91–120", "121–150", "> 150" ];
 
 function cumpleRangoDiasIncapacidad(dias: number, rango: string): boolean {
@@ -324,120 +731,6 @@ function cumpleRangoDiasIncapacidad(dias: number, rango: string): boolean {
   const [inicio, fin] = rango.split("–").map(Number);
   return dias >= inicio && dias <= fin;
 }
-
-function filtrarPorBusqueda() {
-  const texto = busquedaTexto.value.trim().toLowerCase();
-
-  if (texto) {
-    riesgosEmpresa.value = riesgosOriginales.value.filter((riesgo) => {
-      // Caso 1: Buscar "Recaída"
-      if (/^r(ec(a(i(d(a)?)?)?)?)?$/.test(texto)) {
-        return riesgo.recaida === "Si";
-      }
-
-      // Caso 2: Buscar "Secuelas"
-      if (/^s(ec(u(e(l(a(s)?)?)?)?)?)?$/.test(texto)) {
-        return riesgo.secuelas === "Si";
-      }
-
-      // Caso 3: Buscar "IPP"
-      if (/^i(pp?)?$/.test(texto)) {
-        return riesgo.porcentajeIPP && parseInt(String(riesgo.porcentajeIPP)) > 0;
-      }
-
-      // Caso General: Filtrado por texto libre en cualquier campo
-      return (
-        (riesgo.nombreTrabajador && riesgo.nombreTrabajador.toLowerCase().includes(texto)) ||
-        (riesgo.sexoTrabajador && riesgo.sexoTrabajador.toLowerCase().includes(texto)) ||
-        (riesgo.puestoTrabajador && riesgo.puestoTrabajador.toLowerCase().includes(texto)) ||
-        (riesgo.naturalezaLesion && riesgo.naturalezaLesion.toLowerCase().includes(texto)) ||
-        (riesgo.parteCuerpoAfectada && riesgo.parteCuerpoAfectada.toLowerCase().includes(texto)) ||
-        (riesgo.tipoRiesgo && riesgo.tipoRiesgo.toLowerCase().includes(texto)) ||
-        (riesgo.manejo && riesgo.manejo.toLowerCase().includes(texto)) ||
-        (riesgo.alta && riesgo.alta.toLowerCase().includes(texto)) ||
-        (riesgo.secuelas && riesgo.secuelas.toLowerCase().includes(texto)) ||
-        (riesgo.recaida && riesgo.recaida.toLowerCase().includes(texto)) ||
-        (riesgo.notas && riesgo.notas.toLowerCase().includes(texto)) ||
-        (riesgo.NSS && riesgo.NSS.toLowerCase().includes(texto)) ||
-        (riesgo.fechaRiesgo && new Date(riesgo.fechaRiesgo).toLocaleDateString().includes(texto)) ||
-        (riesgo.fechaIngreso && new Date(riesgo.fechaIngreso).toLocaleDateString().includes(texto)) ||
-        (riesgo.fechaAlta && new Date(riesgo.fechaAlta).toLocaleDateString().includes(texto)) ||
-        (riesgo.diasIncapacidad && String(riesgo.diasIncapacidad).includes(texto)) ||
-        (riesgo.porcentajeIPP && String(riesgo.porcentajeIPP).includes(texto))
-      );
-    });
-  } else {
-    // Si el texto está vacío, restauramos los datos originales sin recargar desde el backend
-    riesgosEmpresa.value = [...riesgosOriginales.value];
-  }
-}
-
-watch(busquedaTexto, (newVal, oldVal) => {
-  if (inputBusqueda.value) {
-    inputBusqueda.value.focus();
-  }
-});
-
-/* =====================
-   Computed: Agrupación de Riesgos
-===================== */
-const riesgosAgrupados = computed(() => {
-  if (!datosCargados.value || !Array.isArray(riesgosEmpresa.value)) return [];
-
-  return centrosStore.centrosTrabajo
-    .filter(c => centroSeleccionado.value === 'todos' || c._id === centroSeleccionado.value)
-    .map(centro => {
-      const riesgos = riesgosEmpresa.value.filter(r => {
-        // Filtros básicos (Centro, Sexo, Puesto, Naturaleza, Antigüedad)
-        const cumpleFiltroBasico = 
-          r.idCentroTrabajo === centro._id &&
-          (sexoSeleccionado.value === 'todos' || r.sexoTrabajador === sexoSeleccionado.value) &&
-          (puestoSeleccionado.value === 'todos' || r.puestoTrabajador === puestoSeleccionado.value) &&
-          (naturalezaSeleccionada.value === 'todos' || r.naturalezaLesion === naturalezaSeleccionada.value) &&
-          (parteCuerpoSeleccionada.value === 'todos' || r.parteCuerpoAfectada === parteCuerpoSeleccionada.value) &&
-          (tipoRiesgoSeleccionado.value === 'todos' || r.tipoRiesgo === tipoRiesgoSeleccionado.value) &&
-          (manejoSeleccionado.value === 'todos' || r.manejo === manejoSeleccionado.value) &&
-          (altaSeleccionada.value === 'todos' || r.alta === altaSeleccionada.value) &&
-          (secuelasSeleccionadas.value === 'todos' || r.secuelas === secuelasSeleccionadas.value);
-
-        // Filtro por Recaída (Sí, No, o vacío)
-        const cumpleFiltroRecaida = 
-        recaidaSeleccionada.value === 'todos' ||
-        (recaidaSeleccionada.value === 'Si' && r.recaida === 'Si') ||
-        (recaidaSeleccionada.value === 'No' && (r.recaida === 'No' || r.recaida == null));
-
-        // Filtro por Periodo
-        const { inicio, fin } = rangoFechas.value;
-        const cumpleFiltroPeriodo = periodoSeleccionado.value === 'todos' || 
-          (!inicio || !fin) || 
-          (r.fechaRiesgo && new Date(r.fechaRiesgo) >= inicio && new Date(r.fechaRiesgo) <= fin);
-
-        // Filtro por Edad
-        const cumpleFiltroEdad = edadSeleccionada.value === 'todos' || 
-          (r.fechaNacimiento && calcularEdad(r.fechaNacimiento) >= obtenerEdadMinima(edadSeleccionada.value) && 
-          calcularEdad(r.fechaNacimiento) <= obtenerEdadMaxima(edadSeleccionada.value));
-        
-        // Filtro por Antigüedad
-        const cumpleFiltroAntiguedad = antiguedadSeleccionada.value === 'todos' || 
-          (r.fechaIngreso && calcularAntiguedadAnios(r.fechaIngreso) >= obtenerAntiguedadMinima(antiguedadSeleccionada.value) && 
-          calcularAntiguedadAnios(r.fechaIngreso) <= obtenerAntiguedadMaxima(antiguedadSeleccionada.value));
-
-        // Filtro por Días de Incapacidad
-        const cumpleFiltroDiasIncapacidad = 
-          diasIncapacidadSeleccionados.value === 'todos' ||
-          (r.diasIncapacidad && cumpleRangoDiasIncapacidad(r.diasIncapacidad, diasIncapacidadSeleccionados.value));
-
-        return cumpleFiltroBasico && cumpleFiltroRecaida && cumpleFiltroPeriodo && cumpleFiltroEdad && cumpleFiltroAntiguedad && cumpleFiltroDiasIncapacidad;
-      });
-
-      return {
-        centroId: centro._id,
-        centroNombre: centro.nombreCentro,
-        centroDireccion: centro.direccionCentro,
-        riesgos,
-      };
-    });
-});
 
 /* =====================
    Funciones útiles
@@ -472,7 +765,6 @@ function handleClickGraficaNaturalezaLesion(event) {
 function handleClickTablaNaturalezaLesion(naturaleza) {
   console.log('Clic en naturaleza (Tabla):', naturaleza);
 }
-
 
 </script>
 
@@ -510,7 +802,7 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
               <span class="lg:hidden">RTs</span>
               <span class="hidden lg:block">Riesgos de Trabajo</span>
             </div>
-            <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ totalRiesgosFiltrados }}</div>
+            <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ totalRiesgos }}</div>
             </div>
 
           <!-- Selector de centro de trabajo -->
@@ -530,9 +822,7 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
       <!-- =======================
         Toggle Filtros + Indicador
       ======================= -->
-      <div class="flex justify-between items-center gap-3 my-4">
-        <div class="w-32"></div> <!-- Spacer para alinear el toggle al centro -->
-        
+      <div class="flex justify-center items-center gap-3 my-4">        
         <div class="flex items-center gap-3">
           <button
             @click="mostrarFiltros = !mostrarFiltros"
@@ -548,18 +838,6 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
           </div>
         </div>
 
-        <div class="relative w-40 md:w-60 lg:w-80">
-          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <i class="fa-solid fa-magnifying-glass text-gray-500 focus:text-emerald-500"></i>
-          </span>
-          <input
-            v-model="busquedaTexto"
-            type="text"
-            @input="filtrarPorBusqueda"
-            placeholder="Buscar..."
-            class="w-full pl-10 pr-4 py-2 border border-gray-300 hover:shadow-md rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
-          />
-        </div>
       </div>
 
       <!-- =======================
@@ -950,7 +1228,7 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
                 <template v-if="vistaNaturalezaLesion === 'grafico'">
                   <GraficaBarras
                     :data="graficaNaturalezaLesionData"
-                    :options="graficaNaturalezaLesionOptions"
+                    :options="graficaBarrasHorizontalesOptions"
                   />
                 </template>
 
@@ -959,19 +1237,99 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
                     <thead class="bg-gray-100 text-gray-700">
                       <tr>
                         <th class="py-2 px-4 text-left text-lg">Naturaleza Lesión</th>
-                        <th class="py-2 px-4 text-center text-lg">Casos</th>
+                        <th class="py-2 px-4 text-center text-lg">Hombres</th>
+                        <th class="py-2 px-4 text-center text-lg">Mujeres</th>
+                      </tr>
+                    </thead>
+                    <TransitionGroup name="fade-table" tag="tbody">
+                      <tr
+                        v-for="item in tablaNaturalezaLesion"
+                        :key="item.naturaleza"
+                        class="border-t hover:bg-gray-200 transition cursor-pointer"
+                        @click="handleClickTablaNaturalezaLesion(item.naturaleza)"
+                      >
+                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.naturaleza }}</td>
+                        <td class="py-1 px-4 text-center text-blue-700 text-lg">
+                          {{ item.hombres }} 
+                          <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
+                        </td>
+                        <td class="py-1 px-4 text-center text-pink-700 text-lg">
+                          {{ item.mujeres }} 
+                          <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
+                        </td>
+                      </tr>
+                    </TransitionGroup>
+                  </table>
+
+                </template>
+              </Transition>
+            </div>
+          </div>
+
+          <!-- Parte de Cuerpo Afectada: 2 columnas -->
+          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                Parte del Cuerpo Afectada
+              </h3>
+              <div class="flex gap-2">
+                <button
+                  @click="vistaParteCuerpo = 'grafico'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaParteCuerpo === 'grafico'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Gráfico
+                </button>
+                <button
+                  @click="vistaParteCuerpo = 'tabla'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaParteCuerpo === 'tabla'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Tabla
+                </button>
+              </div>
+            </div>
+
+            <div class="flex-1 overflow-x-auto">
+              <Transition name="fade" mode="out-in">
+                <template v-if="vistaParteCuerpo === 'grafico'">
+                  <GraficaBarras
+                    :data="graficaParteCuerpoData"
+                    :options="graficaBarrasHorizontalesOptions" 
+                  />
+                </template>
+
+                <template v-else>
+                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                    <thead class="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th class="py-2 px-4 text-left text-lg">Parte del Cuerpo</th>
+                        <th class="py-2 px-4 text-center text-lg">Hombres</th>
+                        <th class="py-2 px-4 text-center text-lg">Mujeres</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr
-                        v-for="[naturaleza, cantidad, porcentaje] in tablaNaturalezaLesion"
-                        :key="naturaleza"
+                        v-for="item in tablaParteCuerpo"
+                        :key="item.parte"
                         class="border-t hover:bg-gray-200 transition cursor-pointer"
-                        @click="handleClickTablaNaturalezaLesion(naturaleza)"
                       >
-                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ naturaleza }}</td>
-                        <td class="py-1 px-4 text-center text-gray-800 text-lg">
-                          {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.parte }}</td>
+                        <td class="py-1 px-4 text-center text-blue-700 text-lg">
+                          {{ item.hombres }} 
+                          <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
+                        </td>
+                        <td class="py-1 px-4 text-center text-pink-700 text-lg">
+                          {{ item.mujeres }} 
+                          <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
                         </td>
                       </tr>
                     </tbody>
@@ -981,35 +1339,253 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
             </div>
           </div>
 
-          <!-- Parte de Cuerpo Afectada: 2 columnas -->
-          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-            <h3 class="text-xl font-semibold text-gray-800">Parte de Cuerpo Afectada</h3>
-          </div>
-
           <!-- Tipo de Riesgo, Estado Alta, Puestos de Trabajo -->
+            <!-- Tipos de Riesgo: 1 columna -->
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <h3 class="text-xl font-semibold text-gray-800">Tipo de Riesgo</h3>
+            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                Tipos de Riesgo
+                <span class="relative cursor-help">
+                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                  <span
+                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                  >
+                    Distribución de los diferentes tipos de riesgo por género.
+                  </span>
+                </span>
+              </h3>
+              <div class="flex gap-2">
+                <button
+                  @click="vistaTiposRiesgo = 'grafico'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaTiposRiesgo === 'grafico'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Gráfico
+                </button>
+                <button
+                  @click="vistaTiposRiesgo = 'tabla'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaTiposRiesgo === 'tabla'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Tabla
+                </button>
+              </div>
+            </div>
+
+            <div class="flex-1 overflow-x-auto">
+              <Transition name="fade" mode="out-in">
+                <template v-if="vistaTiposRiesgo === 'grafico'">
+                  <GraficaBarras
+                    :data="graficaTiposRiesgoData"
+                    :options="graficaTiposRiesgoOptions"
+                  />
+                </template>
+
+                <template v-else>
+                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                    <thead class="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th class="py-2 px-4 text-left text-lg">Tipo de Riesgo</th>
+                        <th class="py-2 px-4 text-center text-lg">Hombres</th>
+                        <th class="py-2 px-4 text-center text-lg">Mujeres</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="item in tablaTiposRiesgo"
+                        :key="item.tipo"
+                        class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      >
+                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.tipo }}</td>
+                        <td class="py-1 px-4 text-center text-blue-700 text-lg">
+                          {{ item.hombres }} 
+                          <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
+                        </td>
+                        <td class="py-1 px-4 text-center text-pink-700 text-lg">
+                          {{ item.mujeres }} 
+                          <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </template>
+              </Transition>
+            </div>
           </div>
 
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
             <h3 class="text-xl font-semibold text-gray-800">Estado Alta</h3>
           </div>
 
+          <!-- Puestos de Trabajo: 2 columnas -->
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-            <h3 class="text-xl font-semibold text-gray-800">Puestos de Trabajo</h3>
+            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                Puestos de Trabajo
+              </h3>
+              <div class="flex gap-2">
+                <button
+                  @click="vistaPuestosTrabajo = 'grafico'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaPuestosTrabajo === 'grafico'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Gráfico
+                </button>
+                <button
+                  @click="vistaPuestosTrabajo = 'tabla'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaPuestosTrabajo === 'tabla'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Tabla
+                </button>
+              </div>
+            </div>
+
+            <div class="flex-1 overflow-x-auto">
+              <Transition name="fade" mode="out-in">
+                <template v-if="vistaPuestosTrabajo === 'grafico'">
+                  <GraficaBarras
+                    :data="graficaPuestosTrabajoData"
+                    :options="graficaBarrasHorizontalesOptions"
+                  />
+                </template>
+
+                <template v-else>
+                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                    <thead class="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th class="py-2 px-4 text-left text-lg">Puesto</th>
+                        <th class="py-2 px-4 text-center text-lg">Hombres</th>
+                        <th class="py-2 px-4 text-center text-lg">Mujeres</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="item in tablaPuestosTrabajo"
+                        :key="item.puesto"
+                        class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      >
+                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.puesto }}</td>
+                        <td class="py-1 px-4 text-center text-blue-700 text-lg">
+                          {{ item.hombres }} 
+                          <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
+                        </td>
+                        <td class="py-1 px-4 text-center text-pink-700 text-lg">
+                          {{ item.mujeres }} 
+                          <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </template>
+              </Transition>
+            </div>
           </div>
 
-          <!-- Total Días, Distribución Días, Casos IPP -->
-          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <h3 class="text-xl font-semibold text-gray-800">Total de Días</h3>
-          </div>
-
+          <!-- Distribución Días, Casos IPP, Total Días -->
+            <!-- Distribución de Días de Incapacidad: 2 columnas -->
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-            <h3 class="text-xl font-semibold text-gray-800">Distribución de Días de Incapacidad</h3>
+            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                Distribución de Días de Incapacidad
+                <span class="relative cursor-help">
+                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                  <span
+                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-72 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                  >
+                    Muestra la distribución de días de incapacidad por sexo.
+                  </span>
+                </span>
+              </h3>
+              <div class="flex gap-2">
+                <button
+                  @click="vistaDiasIncapacidad = 'grafico'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaDiasIncapacidad === 'grafico'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Gráfico
+                </button>
+                <button
+                  @click="vistaDiasIncapacidad = 'tabla'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaDiasIncapacidad === 'tabla'
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Tabla
+                </button>
+              </div>
+            </div>
+
+            <div class="flex-1 overflow-x-auto">
+              <Transition name="fade" mode="out-in">
+                <template v-if="vistaDiasIncapacidad === 'grafico'">
+                  <GraficaBarras
+                    :data="graficaDiasIncapacidadData"
+                    :options="graficaDiasIncapacidadOptions"
+                  />
+                </template>
+
+                <template v-else>
+                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                    <thead class="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th class="py-2 px-4 text-left text-lg">Rango de Días</th>
+                        <th class="py-2 px-4 text-center text-lg">Hombres</th>
+                        <th class="py-2 px-4 text-center text-lg">Mujeres</th>
+                      </tr>
+                    </thead>
+                    <TransitionGroup name="fade-table" tag="tbody">
+                      <tr
+                        v-for="item in tablaDiasIncapacidad"
+                        :key="item.rango"
+                        class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      >
+                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.rango }}</td>
+                        <td class="py-1 px-4 text-center text-blue-700 text-lg">
+                          {{ item.hombres }} 
+                          <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
+                        </td>
+                        <td class="py-1 px-4 text-center text-pink-700 text-lg">
+                          {{ item.mujeres }} 
+                          <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
+                        </td>
+                      </tr>
+                    </TransitionGroup>
+                  </table>
+                </template>
+              </Transition>
+            </div>
           </div>
 
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
             <h3 class="text-xl font-semibold text-gray-800">Casos IPP</h3>
+          </div>
+
+          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+            <h3 class="text-xl font-semibold text-gray-800">Total de Días</h3>
           </div>
 
           <!-- Manejo y Recaídas -->
@@ -1033,3 +1609,17 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
     </div>
   </div>
 </template>
+
+<style scoped>
+.fade-table-enter-active, .fade-table-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fade-table-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.fade-table-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+</style>
