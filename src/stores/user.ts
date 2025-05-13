@@ -7,6 +7,7 @@ import { useRouter } from "vue-router";
 interface User {
     _id: string;
     username: string;
+    email: string;
     role: string;
     idProveedorSalud?: string;
 }

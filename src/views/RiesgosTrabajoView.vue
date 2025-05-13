@@ -445,7 +445,7 @@ onMounted(async () => {
   const riesgos = await trabajadoresStore.fetchRiesgosTrabajoPorEmpresa(empresaId);
   riesgosOriginales.value = [...riesgos]; // Guardamos una copia de los riesgos completos
   riesgosEmpresa.value = riesgosOriginales.value; // Mostramos los riesgos
-  console.log('Riesgos de trabajo:', riesgosEmpresa.value);
+  // console.log('Riesgos de trabajo:', riesgosEmpresa.value);
 
   datosCargados.value = true;
 

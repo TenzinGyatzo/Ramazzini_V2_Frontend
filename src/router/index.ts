@@ -3,7 +3,7 @@ import LayOut from "../views/LayOut.vue";
 import AuthAPI from "@/api/AuthAPI";
 import axios from "axios";
 import { useUserStore } from "@/stores/user";
-import { usePostHog } from "@/composables/usePostHog";
+import { usePostHog } from "../composables/usePostHog";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -138,7 +138,7 @@ const router = createRouter({
   ],
 });
 
-const { posthog } = usePostHog(); // Inicializamos PostHog
+const { posthog, identifyUser } = usePostHog(); // Inicializamos PostHog
 
 router.afterEach((to, from) => {
   posthog.capture('$pageview', {
@@ -154,35 +154,37 @@ router.beforeEach((to, from) => {
 })
 
 // Configuración del guardia global
-router.beforeEach(async (to, from, next) => {
-  // const requiresAuth = to.matched.some((url) => url.meta.requiresAuth);
-  const requiresAuth = to.meta.requiresAuth; // Verifica solo la ruta actual
-  const requiresAdmin = to.meta.requiresAdmin; // Verifica solo
-  const userStore = useUserStore();
+  router.beforeEach(async (to, from, next) => {
+    // const requiresAuth = to.matched.some((url) => url.meta.requiresAuth);
+    const requiresAuth = to.meta.requiresAuth; // Verifica solo la ruta actual
+    const requiresAdmin = to.meta.requiresAdmin; // Verifica solo
+    const userStore = useUserStore();
 
-  try {
-    if (requiresAuth) {
-      await userStore.fetchUser();
-      await AuthAPI.auth();
-    }
-    
-    const user = userStore.user;
+    try {
+      if (requiresAuth) {
+        await userStore.fetchUser();
+        await AuthAPI.auth();
+        identifyUser(); // ✅ Identificamos al usuario solo si está autenticado
+      }
+      
+      const user = userStore.user;
 
-    // Validar si requiere ser admin y no lo es
-    if (requiresAdmin && (!user || user.role !== "Administrador")) {
-      console.warn("Acceso denegado: no eres administrador");
-      return next({ name: "inicio" });
-    }
+      // Validar si requiere ser admin y no lo es
+      if (requiresAdmin && (!user || user.role !== "Administrador")) {
+        console.warn("Acceso denegado: no eres administrador");
+        return next({ name: "inicio" });
+      }
 
-    next();
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      console.log('No autorizado');
-    } else {
-      console.error("Error inesperado:", error);
+      next();
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.log('No autorizado');
+      } else {
+        console.error("Error inesperado:", error);
+      }
+      next("/login");
     }
-    next("/login");
-  }
+  });
 
 /*   if (requiresAuth) {
     try {
@@ -201,6 +203,5 @@ router.beforeEach(async (to, from, next) => {
   } else {
     next();
   } */
-});
 
 export default router;
