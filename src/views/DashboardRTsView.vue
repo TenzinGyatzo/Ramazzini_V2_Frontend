@@ -1630,7 +1630,7 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
             <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
               <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Incapacidad Activa
+                Incapacidades
                 <span class="relative cursor-help">
                   <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
                   <span
@@ -1860,7 +1860,7 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
             <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
               <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Casos con Secuelas
+                Secuelas
                 <span class="relative cursor-help">
                   <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
                   <span

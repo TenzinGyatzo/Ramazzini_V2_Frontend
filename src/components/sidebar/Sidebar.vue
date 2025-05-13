@@ -7,6 +7,7 @@ import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
 import { useRoute } from 'vue-router';
+import { useRiesgoTrabajoStore } from '@/stores/riesgosTrabajo';
 
 const route = useRoute();
 const sidebar = useSidebarStore();
@@ -14,6 +15,7 @@ const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
+const riesgosTrabajo = useRiesgoTrabajoStore();
 
 const isMounted = ref(false);
 
@@ -111,7 +113,7 @@ const documentTypeLabels = {
         <p class="text-xs">{{ empresas.currentEmpresa?.razonSocial || 'Nombre no disponible' }}</p>
       </SidebarLink>
     </Transition>
-
+    
     <Transition name="enter-left-exit-bounce">
       <SidebarLink v-if="centrosTrabajo.currentCentroTrabajoId && empresas.currentEmpresaId" :to="{
         name: 'trabajadores',
@@ -124,7 +126,7 @@ const documentTypeLabels = {
         <p class="text-xs">{{ centrosTrabajo.currentCentroTrabajo?.direccionCentro }}</p>
       </SidebarLink>
     </Transition>
-
+    
     <Transition name="enter-left-exit-bounce">
       <SidebarLink v-if="trabajadores.currentTrabajadorId && centrosTrabajo.currentCentroTrabajoId && empresas.currentEmpresaId" :to="{
         name: 'expediente-medico',
@@ -138,7 +140,7 @@ const documentTypeLabels = {
         <p class="text-xs">Expediente Médico</p>
       </SidebarLink>
     </Transition>
-
+    
     <Transition name="enter-left-exit-bounce">
       <SidebarLink v-if="documentos.currentTypeOfDocument && trabajadores.currentTrabajadorId && centrosTrabajo.currentCentroTrabajoId && empresas.currentEmpresaId" :to="{
         name: 'crear-documento',
@@ -153,6 +155,15 @@ const documentTypeLabels = {
         <p>{{ documentTypeLabels[documentos.currentTypeOfDocument] || 'Documento desconocido' }}</p>
         <p v-if="documentos.currentDocument" class="text-xs">Editando</p>
         <p v-else class="text-xs">Creando nuevo</p>
+      </SidebarLink>
+    </Transition>
+    
+    <Transition appear name="enter-left-exit-bounce">
+      <SidebarLink v-if="empresas.currentEmpresaId"
+        :to="{ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresaId } }" icon="fas fa-chart-line"
+        class="leading-5" @click.stop>
+        <p>Estadísticas</p>
+        <p class="text-xs">{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
       </SidebarLink>
     </Transition>
 
