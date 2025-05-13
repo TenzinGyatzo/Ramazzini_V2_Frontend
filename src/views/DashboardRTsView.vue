@@ -5,7 +5,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import type { RiesgoTrabajo } from '@/interfaces/riesgo-trabajo.interface';
-import { contarPorNaturalezaLesion, contarPorParteCuerpo, contarPorPuestosTrabajo, contarPorRangoDiasIncapacidad, rangosDiasIncapacidad, contarPorTipoRiesgo, tiposRiesgo, etiquetasTiposRiesgo } from '@/helpers/dashboardRiesgosProcessor';
+import { contarPorNaturalezaLesion, contarPorParteCuerpo, contarPorPuestosTrabajo, contarPorRangoDiasIncapacidad, rangosDiasIncapacidad, contarPorTipoRiesgo, tiposRiesgo, etiquetasTiposRiesgo, contarPorEstadoAlta, estadosAlta, contarCasosSecuelas, contarPorManejo, contarRecaidas, calcularTotalDiasIncapacidad } from '@/helpers/dashboardRiesgosProcessor';
 import GraficaBarras from '@/components/graficas/GraficaBarras.vue';
 import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
 import { calcularEdad } from '@/helpers/dates';
@@ -34,6 +34,11 @@ const vistaParteCuerpo = ref('grafico');
 const vistaTiposRiesgo = ref('grafico');
 const vistaPuestosTrabajo = ref('grafico');
 const vistaDiasIncapacidad = ref('grafico');
+const vistaEstadoAlta = ref('grafico');
+const vistaCasosSecuelas = ref('grafico');
+const vistaManejo = ref('grafico');
+
+const vistaRecaidas = ref('grafico');
 
 const puestosDisponiblesFijos = ref<string[]>([]);
 const naturalezasDisponiblesFijos = ref<string[]>([]);
@@ -171,7 +176,6 @@ const graficaNaturalezaLesionData = computed(() => {
   };
 });
 
-
 const tablaNaturalezaLesion = computed(() => {
   if (!riesgosFiltrados.value.length) return [];
   
@@ -228,8 +232,7 @@ const graficaBarrasHorizontalesOptions = {
         const totalHombres = context.chart.data.datasets[0]?.data.reduce((a, b) => a + b, 0) || 0;
         const totalMujeres = context.chart.data.datasets[1]?.data.reduce((a, b) => a + b, 0) || 0;
         const total = totalHombres + totalMujeres;
-        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
-        return `${value} (${porcentaje}%)`;
+        return `${value}`;
       },
       font: {
         weight: 'bold',
@@ -429,7 +432,77 @@ const graficaTiposRiesgoOptions = computed(() => ({
   }
 }));
 
+// Computed para tabla y gráfica de estado alta
+const graficaEstadoAltaData = computed(() => {
+  if (!riesgosFiltrados.value.length) return { labels: [], datasets: [], incapacidadActiva: 0, porcentaje: 0 };
 
+  const resultados = contarPorEstadoAlta(riesgosFiltrados.value);
+  const etiquetas = estadosAlta;
+  const valores = etiquetas.map((estado) => resultados[estado] || 0);
+
+  const total = valores.reduce((acc, val) => acc + val, 0);
+  const incapacidadActiva = resultados['Incapacidad Activa'] || 0;
+  const porcentaje = total > 0 ? Math.round((incapacidadActiva / total) * 100) : 0;
+
+  return {
+    labels: etiquetas,
+    datasets: [
+      {
+        data: valores,
+        backgroundColor: ['#4B5563', '#9CA3AF', '#D1D5DB'], // Colores personalizados para cada estado
+        hoverOffset: 8,
+      }
+    ],
+    incapacidadActiva,
+    porcentaje
+  };
+});
+
+const tablaEstadoAlta = computed(() => {
+  if (!riesgosFiltrados.value.length) return [];
+
+  const resultados = contarPorEstadoAlta(riesgosFiltrados.value);
+  const total = Object.values(resultados).reduce((acc, val) => acc + val, 0);
+
+  return estadosAlta.map((estado) => {
+    const cantidad = resultados[estado] || 0;
+    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+
+    return {
+      estado,
+      cantidad,
+      porcentaje
+    };
+  });
+});
+
+const opcionesGenericasAnillo = {
+  responsive: true,
+  cutout: '70%',
+  plugins: {
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          return `Casos: ${value}`;
+        }
+      }
+    },
+    datalabels: {
+      display: false
+    },
+    legend: {
+      display: false
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  }
+};
 
 // Computed para tabla y gráfica de puestos de trabajo
 const graficaPuestosTrabajoData = computed(() => {
@@ -485,12 +558,12 @@ const graficaDiasIncapacidadData = computed(() => {
   if (!riesgosFiltrados.value.length) return { labels: [], datasets: [] };
 
   const resultados = contarPorRangoDiasIncapacidad(riesgosFiltrados.value);
-  const etiquetas = rangosDiasIncapacidad;
-  const hombres = etiquetas.map((rango) => resultados[rango]?.hombres || 0);
-  const mujeres = etiquetas.map((rango) => resultados[rango]?.mujeres || 0);
+  const etiquetas = rangosDiasIncapacidad.map(rango => `${rango} días`);
+  const hombres = rangosDiasIncapacidad.map((rango) => resultados[rango]?.hombres || 0);
+  const mujeres = rangosDiasIncapacidad.map((rango) => resultados[rango]?.mujeres || 0);
 
   return {
-    labels: etiquetas,
+    labels: etiquetas, // ✅ Las etiquetas muestran "días"
     datasets: [
       {
         label: 'Hombres',
@@ -522,7 +595,7 @@ const tablaDiasIncapacidad = computed(() => {
     const porcentajeMujeres = totalMujeres > 0 ? Math.round((mujeres / totalMujeres) * 100) : 0;
 
     return {
-      rango,
+      rango: `${rango} días`, // ✅ Aquí las etiquetas también dicen "días"
       hombres,
       mujeres,
       porcentajeHombres,
@@ -553,7 +626,7 @@ const graficaDiasIncapacidadOptions = computed(() => ({
           const totalMujeres = context.chart.data.datasets[1]?.data.reduce((a, b) => a + b, 0) || 0;
           const total = totalHombres + totalMujeres;
           const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
-          return `${context.dataset.label}: ${value} (${porcentaje}%)`;
+          return `${context.dataset.label}: ${value} casos (${porcentaje}%)`;
         }
       }
     },
@@ -562,12 +635,8 @@ const graficaDiasIncapacidadOptions = computed(() => ({
       anchor: 'center',
       align: 'center',
       formatter: (value, context) => {
-        if (value === 0) return null; // ✅ No mostrar si el valor es 0
-        const totalHombres = context.chart.data.datasets[0]?.data.reduce((a, b) => a + b, 0) || 0;
-        const totalMujeres = context.chart.data.datasets[1]?.data.reduce((a, b) => a + b, 0) || 0;
-        const total = totalHombres + totalMujeres;
-        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
-        return `${value} (${porcentaje}%)`;
+        if (value === 0) return null;
+        return `${value}`;
       },
       font: {
         weight: 'bold',
@@ -582,7 +651,8 @@ const graficaDiasIncapacidadOptions = computed(() => ({
       grid: { display: false },
       ticks: {
         color: '#374151',
-        font: { size: 12 }
+        font: { size: 12 },
+        callback: (value, index) => `${graficaDiasIncapacidadData.value.labels[index]}`
       }
     },
     y: {
@@ -591,14 +661,149 @@ const graficaDiasIncapacidadOptions = computed(() => ({
       grid: { display: false },
       ticks: {
         color: '#374151',
-        font: { size: 12 }
+        font: { size: 12 },
+        callback: (value) => Number.isInteger(value) ? value : ''
       }
     }
   }
 }));
 
+// Computed para gráfica y tabla de Casos con secuelas
+const graficaCasosSecuelasData = computed(() => {
+  if (!riesgosFiltrados.value.length) return { labels: [], datasets: [], casosSecuelas: 0, porcentaje: 0 };
 
+  const totalCasos = riesgosFiltrados.value.length;
+  const casosSecuelas = contarCasosSecuelas(riesgosFiltrados.value);
+  const porcentaje = totalCasos > 0 ? Math.round((casosSecuelas / totalCasos) * 100) : 0;
 
+  return {
+    labels: ['Con secuelas', 'Sin secuelas'],
+    datasets: [
+      {
+        data: [casosSecuelas, totalCasos - casosSecuelas],
+        backgroundColor: ['#4B5563', '#9CA3AF'], // Gris oscuro y medio
+        hoverOffset: 8,
+      }
+    ],
+    casosSecuelas,
+    porcentaje
+  };
+});
+
+const tablaCasosSecuelas = computed(() => {
+  if (!riesgosFiltrados.value.length) return [];
+
+  const totalCasos = riesgosFiltrados.value.length;
+  const casosSecuelas = contarCasosSecuelas(riesgosFiltrados.value);
+  const casosSinSecuelas = totalCasos - casosSecuelas;
+  const porcentajeSecuelas = totalCasos > 0 ? Math.round((casosSecuelas / totalCasos) * 100) : 0;
+  const porcentajeSinSecuelas = totalCasos > 0 ? Math.round((casosSinSecuelas / totalCasos) * 100) : 0;
+
+  return [
+    { estado: 'Con secuelas', cantidad: casosSecuelas, porcentaje: porcentajeSecuelas },
+    { estado: 'Sin secuelas', cantidad: casosSinSecuelas, porcentaje: porcentajeSinSecuelas }
+  ];
+});
+
+// Computed para gráfica y tabla de manejo
+const graficaManejoData = computed(() => {
+  if (!riesgosFiltrados.value.length) return { labels: [], datasets: [], total: 0, porcentaje: 0 };
+
+  // Usamos la función contarPorManejo para obtener los datos
+  const resultados = contarPorManejo(riesgosFiltrados.value);
+  const etiquetas = Object.keys(resultados);
+  const valores = Object.values(resultados);
+  const total = valores.reduce((acc, val) => acc + val, 0);
+  const porcentaje = total > 0 ? Math.round((valores[0] / total) * 100) : 0; // Porcentaje del primer valor (IMSS)
+
+  return {
+    labels: etiquetas,
+    datasets: [
+      {
+        data: valores,
+        backgroundColor: ['#4B5563', '#9CA3AF'], // Colores para IMSS e Interno
+        hoverOffset: 8,
+      }
+    ],
+    total,
+    porcentaje
+  };
+});
+
+const tablaManejo = computed(() => {
+  if (!riesgosFiltrados.value.length) return [];
+
+  // Usamos la función contarPorManejo para obtener los datos
+  const resultados = contarPorManejo(riesgosFiltrados.value);
+  const total = Object.values(resultados).reduce((acc, val) => acc + val, 0);
+
+  return Object.entries(resultados).map(([manejo, cantidad]) => {
+    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+    return {
+      manejo,
+      cantidad,
+      porcentaje
+    };
+  });
+});
+
+// Computed para contador de días de incapacidad
+const totalDiasIncapacidadAcumulada = computed(() => {
+  if (!riesgosFiltrados.value.length) return 0;
+  return calcularTotalDiasIncapacidad(riesgosFiltrados.value);
+});
+
+// computed para gráfica y tabla para recaidas
+const graficaRecaidasData = computed(() => {
+  if (!riesgosFiltrados.value.length) return { labels: [], datasets: [], total: 0, porcentaje: 0 };
+
+  // Usamos la función contarRecaidas para obtener los datos
+  const resultados = contarRecaidas(riesgosFiltrados.value);
+  
+  // Mapeamos las etiquetas Si/No a Recaídas/No recaída
+  const etiquetasMapeadas = {
+    "Si": "Recaídas",
+    "No": "No son recaídas"
+  };
+  
+  const etiquetas = Object.keys(resultados).map(key => etiquetasMapeadas[key] || key);
+  const valores = Object.values(resultados);
+  const total = valores.reduce((acc, val) => acc + val, 0);
+
+  // Calculamos el porcentaje solo para "Si" (Recaídas)
+  const porcentaje = total > 0 ? Math.round((resultados["Si"] || 0) / total * 100) : 0;
+
+  return {
+    labels: etiquetas,
+    datasets: [
+      {
+        data: valores,
+        backgroundColor: ['#4B5563', '#9CA3AF'], // Colores para Recaídas y No recaída
+        hoverOffset: 8,
+      }
+    ],
+    total: resultados["Si"] || 0,
+    porcentaje
+  };
+});
+
+const tablaRecaidas = computed(() => {
+  if (!riesgosFiltrados.value.length) return [];
+
+  // Usamos la función contarRecaidas para obtener los datos
+  const resultados = contarRecaidas(riesgosFiltrados.value);
+  const total = Object.values(resultados).reduce((acc, val) => acc + val, 0);
+
+  // Creamos la tabla con el porcentaje calculado
+  return Object.entries(resultados).map(([recaida, cantidad]) => {
+    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+    return {
+      recaida,
+      cantidad,
+      porcentaje
+    };
+  });
+});
 
 /* =====================
    Filtros Reactivos
@@ -1316,7 +1521,7 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
                         <th class="py-2 px-4 text-center text-lg">Mujeres</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <TransitionGroup name="fade-table" tag="tbody">
                       <tr
                         v-for="item in tablaParteCuerpo"
                         :key="item.parte"
@@ -1332,7 +1537,7 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
                           <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
                         </td>
                       </tr>
-                    </tbody>
+                    </TransitionGroup>
                   </table>
                 </template>
               </Transition>
@@ -1398,7 +1603,7 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
                         <th class="py-2 px-4 text-center text-lg">Mujeres</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <TransitionGroup name="fade-table" tag="tbody">
                       <tr
                         v-for="item in tablaTiposRiesgo"
                         :key="item.tipo"
@@ -1414,15 +1619,86 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
                           <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
                         </td>
                       </tr>
-                    </tbody>
+                    </TransitionGroup>
                   </table>
                 </template>
               </Transition>
             </div>
           </div>
 
+          <!-- Estado Alta: 1 columna -->
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <h3 class="text-xl font-semibold text-gray-800">Estado Alta</h3>
+            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                Incapacidad Activa
+                <span class="relative cursor-help">
+                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                  <span
+                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                  >
+                    Distribución del estado de alta de los riesgos de trabajo.
+                  </span>
+                </span>
+              </h3>
+
+              <div class="flex gap-2 mt-2">
+                <button
+                  @click="vistaEstadoAlta = 'grafico'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaEstadoAlta === 'grafico' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Gráfico
+                </button>
+                <button
+                  @click="vistaEstadoAlta = 'tabla'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaEstadoAlta === 'tabla' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Tabla
+                </button>
+              </div>
+            </div>
+            
+            <div class="flex-1 overflow-x-auto mt-4">
+              <Transition name="fade" mode="out-in">
+                <template v-if="vistaEstadoAlta === 'grafico'">
+                  <GraficaAnillo
+                    :data="graficaEstadoAltaData"
+                    :options="opcionesGenericasAnillo"
+                    :cantidad="graficaEstadoAltaData.incapacidadActiva"
+                    :porcentaje="graficaEstadoAltaData.porcentaje"
+                  />
+                </template>
+
+                <template v-else>
+                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                    <thead class="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th class="py-2 px-4 text-left text-lg">Estado Alta</th>
+                        <th class="py-2 px-4 text-center text-lg">Casos</th>
+                      </tr>
+                    </thead>
+                    <TransitionGroup name="fade-table" tag="tbody">
+                      <tr
+                        v-for="item in tablaEstadoAlta"
+                        :key="item.estado"
+                        class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      >
+                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.estado }}</td>
+                        <td class="py-1 px-4 text-center text-gray-700 text-lg">{{ item.cantidad }}
+                          <span class="text-sm text-gray-500">({{ item.porcentaje }}%)</span>
+                        </td>
+
+                      </tr>
+                    </TransitionGroup>
+                  </table>
+                </template>
+              </Transition>
+            </div>
           </div>
 
           <!-- Puestos de Trabajo: 2 columnas -->
@@ -1475,7 +1751,7 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
                         <th class="py-2 px-4 text-center text-lg">Mujeres</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <TransitionGroup name="fade-table" tag="tbody">
                       <tr
                         v-for="item in tablaPuestosTrabajo"
                         :key="item.puesto"
@@ -1491,7 +1767,7 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
                           <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
                         </td>
                       </tr>
-                    </tbody>
+                    </TransitionGroup>
                   </table>
                 </template>
               </Transition>
@@ -1503,13 +1779,13 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
             <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
               <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Distribución de Días de Incapacidad
+                Distribución de Casos con Días de Incapacidad
                 <span class="relative cursor-help">
                   <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
                   <span
                     class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-72 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
                   >
-                    Muestra la distribución de días de incapacidad por sexo.
+                    Muestra el número de casos (RTs) que resultaron en días de incapacidad, distribuidos por rango.
                   </span>
                 </span>
               </h3>
@@ -1552,7 +1828,7 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
                   <table class="min-w-full text-sm border border-gray-300 rounded h-full">
                     <thead class="bg-gray-100 text-gray-700">
                       <tr>
-                        <th class="py-2 px-4 text-left text-lg">Rango de Días</th>
+                        <th class="py-2 px-4 text-left text-lg">Rango</th>
                         <th class="py-2 px-4 text-center text-lg">Hombres</th>
                         <th class="py-2 px-4 text-center text-lg">Mujeres</th>
                       </tr>
@@ -1580,23 +1856,268 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
             </div>
           </div>
 
+            <!-- Casos Secuelas: 1 columna -->
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <h3 class="text-xl font-semibold text-gray-800">Casos IPP</h3>
+            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                Casos con Secuelas
+                <span class="relative cursor-help">
+                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                  <span
+                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                  >
+                    Muestra el total de casos con IPP (Incapacidad Permanente Parcial).
+                  </span>
+                </span>
+              </h3>
+
+              <div class="flex gap-2 mt-2">
+                <button
+                  @click="vistaCasosSecuelas = 'grafico'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaCasosSecuelas === 'grafico' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Gráfico
+                </button>
+                <button
+                  @click="vistaCasosSecuelas = 'tabla'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaCasosSecuelas === 'tabla' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Tabla
+                </button>
+              </div>
+            </div>
+            
+            <div class="flex-1 overflow-x-auto mt-4">
+              <Transition name="fade" mode="out-in">
+                <template v-if="vistaCasosSecuelas === 'grafico'">
+                  <GraficaAnillo
+                    :data="graficaCasosSecuelasData"
+                    :options="opcionesGenericasAnillo"
+                    :cantidad="graficaCasosSecuelasData.casosSecuelas"
+                    :porcentaje="graficaCasosSecuelasData.porcentaje"
+                  />
+                </template>
+
+                <template v-else>
+                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                    <thead class="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th class="py-2 px-4 text-left text-lg">Secuelas</th>
+                        <th class="py-2 px-4 text-center text-lg">Casos</th>
+                      </tr>
+                    </thead>
+                    <TransitionGroup name="fade-table" tag="tbody">
+                      <tr
+                        v-for="item in tablaCasosSecuelas"
+                        :key="item.estado"
+                        class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      >
+                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.estado }}</td>
+                        <td class="py-1 px-4 text-center text-gray-700 text-lg">{{ item.cantidad }}
+                          <span class="text-sm text-gray-500">({{ item.porcentaje }}%)</span>
+                        </td>
+                      </tr>
+                    </TransitionGroup>
+                  </table>
+                </template>
+              </Transition>
+            </div>
           </div>
 
+          <!-- Total de Días de Incapacidad -->
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <h3 class="text-xl font-semibold text-gray-800">Total de Días</h3>
+            <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4">
+              <div class="flex flex-col gap-0.5">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                  Total de Días de Incapacidad
+                  <span class="relative cursor-help">
+                    <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                    <span
+                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                    >
+                      Suma total de <span class="font-semibold text-emerald-600">días de incapacidad</span> acumulados en todos los <span class="font-semibold text-emerald-600">riesgos de trabajo</span>.
+                    </span>
+                  </span>
+                </h3>
+              </div>
+            </div>
+
+            <!-- Número principal -->
+            <div 
+              :class="[
+                'flex-1 flex items-center justify-center text-center rounded-lg transition',
+                totalDiasIncapacidadAcumulada > 0 ? 'cursor-pointer hover:bg-emerald-50' : 'cursor-default'
+              ]"
+            >
+              <div class="text-center">
+                <div class="text-8xl font-medium text-emerald-600">
+                  {{ totalDiasIncapacidadAcumulada }}
+                </div>
+                <div class="text-sm text-gray-500 mt-1">Total de días acumulados</div>
+              </div>
+            </div>
+
+            <h4 class="text-xs text-gray-600 font-normal italic text-center">
+              Días acumulados en todos los riesgos de trabajo
+            </h4>
           </div>
 
           <!-- Manejo y Recaídas -->
+            <!-- Manejo: 1 columna -->
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <h3 class="text-xl font-semibold text-gray-800">Manejo</h3>
+            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                Casos IMSS
+                <span class="relative cursor-help">
+                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                  <span
+                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                  >
+                    Muestra la distribución de casos por tipo de manejo (IMSS, Interno).
+                  </span>
+                </span>
+              </h3>
+
+              <div class="flex gap-2 mt-2">
+                <button
+                  @click="vistaManejo = 'grafico'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaManejo === 'grafico' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Gráfico
+                </button>
+                <button
+                  @click="vistaManejo = 'tabla'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaManejo === 'tabla' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Tabla
+                </button>
+              </div>
+            </div>
+            
+            <div class="flex-1 overflow-x-auto mt-4">
+              <Transition name="fade" mode="out-in">
+                <template v-if="vistaManejo === 'grafico'">
+                  <GraficaAnillo
+                    :data="graficaManejoData"
+                    :options="opcionesGenericasAnillo"
+                    :cantidad="graficaManejoData.total"
+                    :porcentaje="graficaManejoData.porcentaje"
+                  />
+                </template>
+
+                <template v-else>
+                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                    <thead class="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th class="py-2 px-4 text-left text-lg">Manejo</th>
+                        <th class="py-2 px-4 text-center text-lg">Casos</th>
+                      </tr>
+                    </thead>
+                    <TransitionGroup name="fade-table" tag="tbody">
+                      <tr
+                        v-for="item in tablaManejo"
+                        :key="item.manejo"
+                        class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      >
+                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.manejo }}</td>
+                        <td class="py-1 px-4 text-center text-gray-700 text-lg">
+                          {{ item.cantidad }}
+                          <span class="text-sm text-gray-500">({{ item.porcentaje }}%)</span>
+                        </td>
+                      </tr>
+                    </TransitionGroup>
+                  </table>
+                </template>
+              </Transition>
+            </div>
           </div>
 
+            <!-- Recaídas: 1 columna -->
           <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <h3 class="text-xl font-semibold text-gray-800">Recaídas</h3>
-          </div>
+            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                Recaídas
+                <span class="relative cursor-help">
+                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                  <span
+                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                  >
+                    Muestra el total de casos con y sin recaídas.
+                  </span>
+                </span>
+              </h3>
 
+              <div class="flex gap-2 mt-2">
+                <button
+                  @click="vistaRecaidas = 'grafico'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaRecaidas === 'grafico' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Gráfico
+                </button>
+                <button
+                  @click="vistaRecaidas = 'tabla'"
+                  :class="[
+                    'px-3 py-1 rounded text-sm font-medium',
+                    vistaRecaidas === 'tabla' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  ]"
+                >
+                  Tabla
+                </button>
+              </div>
+            </div>
+            
+            <div class="flex-1 overflow-x-auto mt-4">
+              <Transition name="fade" mode="out-in">
+                <template v-if="vistaRecaidas === 'grafico'">
+                  <GraficaAnillo
+                    :data="graficaRecaidasData"
+                    :options="opcionesGenericasAnillo"
+                    :cantidad="graficaRecaidasData.total"
+                    :porcentaje="graficaRecaidasData.porcentaje"
+                  />
+                </template>
+
+                <template v-else>
+                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                    <thead class="bg-gray-100 text-gray-700">
+                      <tr>
+                        <th class="py-2 px-4 text-left text-lg">Recaída</th>
+                        <th class="py-2 px-4 text-center text-lg">Casos</th>
+                      </tr>
+                    </thead>
+                    <TransitionGroup name="fade-table" tag="tbody">
+                      <tr
+                        v-for="item in tablaRecaidas"
+                        :key="item.recaida"
+                        class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      >
+                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.recaida }}</td>
+                        <td class="py-1 px-4 text-center text-gray-700 text-lg">
+                          {{ item.cantidad }} 
+                          <span class="text-sm text-gray-500">({{ item.porcentaje }}%)</span>
+                        </td>
+                      </tr>
+                    </TransitionGroup>
+                  </table>
+                </template>
+              </Transition>
+            </div>
+          </div>
         </div>
       </div>
 

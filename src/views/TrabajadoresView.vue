@@ -97,7 +97,7 @@ const filtrosConfig = [
   { id: 'consultas', label: 'Consultas', opciones: ['Si', 'No']},
   { id: 'periodo', label: 'Periodo', opciones: [
     'Hoy', 'Esta semana', 'Este mes', 'Mes anterior', 
-    'Últimos 3 meses', 'Este año', 'Año anterior'
+    'Últimos 3 meses', 'Últimos 6 meses', 'Este año', 'Año anterior'
   ]},
   { id: 'estadoLaboral', label: 'Estado Laboral', opciones: ['Activo', 'Inactivo'] }
 ];

@@ -164,7 +164,7 @@ export function contarPorRangoDiasIncapacidad(data: { diasIncapacidad?: number, 
 }
 
 // CASOS IPP
-export function contarCasosIPP(data: { secuelas?: string }[]): number {
+export function contarCasosSecuelas(data: { secuelas?: string }[]): number {
   return data.filter((riesgo) => riesgo.secuelas === 'Si').length;
 }
 

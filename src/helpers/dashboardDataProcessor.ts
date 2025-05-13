@@ -259,7 +259,8 @@ export function calcularVistaCorregida(examenes: any[]) {
       datasets: [
         {
           data: [usan, requieren - usan],
-          backgroundColor: ['#10b981', '#D1D5DB'] // Esmeralda #059669 + gris claro 
+          backgroundColor: ['#10b981', '#D1D5DB'], // Esmeralda #059669 + gris claro 
+          hoverOffset: 8,
         }
       ]
     }
@@ -291,7 +292,8 @@ export function calcularDaltonismo(examenes: any[]) {
       datasets: [
         {
           data: [conDaltonismo, sinDaltonismo],
-          backgroundColor: ['#F97316', '#D1D5DB'] // Naranja cálido + gris claro
+          backgroundColor: ['#F97316', '#D1D5DB'], // Naranja cálido + gris claro
+          hoverOffset: 8,
         }
       ]
     }
@@ -365,7 +367,8 @@ export function calcularCircunferenciaCintura(data: any[]) {
         {
           data: [alto, aumentado, bajo],
           // backgroundColor: ['#F97316', '#FBBF24', '#D1D5DB'] // Naranja cálido, amarillo cálido y gris claro
-          backgroundColor: ['#e11d48', '#F97316', '#D1D5DB'] // Rojo, naranja cálido y gris claro
+          backgroundColor: ['#e11d48', '#F97316', '#D1D5DB'], // Rojo, naranja cálido y gris claro
+          hoverOffset: 8,
         }
       ]
     }

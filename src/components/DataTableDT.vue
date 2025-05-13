@@ -34,12 +34,31 @@ const emit = defineEmits<{
 onMounted(() => {
   if (!dataTableInstance) {
 
+    $.fn.dataTable.ext.type.order['date-dd-MM-yyyy-desc'] = function(a, b) {
+      const dateA = a.split('-').reverse().join('-');
+      const dateB = b.split('-').reverse().join('-');
+      return dateA < dateB ? 1 : dateA > dateB ? -1 : 0;
+    };
+
+    $.fn.dataTable.ext.type.order['date-dd-MM-yyyy-asc'] = function(a, b) {
+      const dateA = a.split('-').reverse().join('-');
+      const dateB = b.split('-').reverse().join('-');
+      return dateA < dateB ? -1 : dateA > dateB ? 1 : 0;
+    };
+
+
     dataTableInstance = new DataTablesCore('#customTable', {
       data: props.rows,
       columns: [
         { data: null, title: '#', render: (data, type, row, meta) => meta.row + 1 },
         { data: 'nombre', title: 'Nombre completo' },
-        { data: 'updatedAt', title: 'Última actualización', render: d => convertirFechaISOaDDMMYYYY(d) },
+        // { data: 'updatedAt', title: 'Última actualización', render: d => convertirFechaISOaDDMMYYYY(d) },
+        { 
+          data: 'updatedAt', 
+          title: 'Última actualización', 
+          render: d => convertirFechaISOaDDMMYYYY(d), 
+          type: 'date-dd-MM-yyyy' // Indica que la columna tiene fechas en formato personalizado
+        },
         { data: 'fechaNacimiento', title: 'Edad', render: d => calcularEdad(d) + ' años' },
         { data: 'sexo', title: 'Sexo' },
         { data: 'escolaridad', title: 'Escolaridad' },
@@ -257,6 +276,23 @@ onMounted(() => {
     dataTableInstance.on('init', function () {
       aplicarTodosLosFiltrosDesdeLocalStorage();
     });
+
+    let ordenAplicado = false;
+
+    dataTableInstance.on('draw', function () {
+      if (filtroPeriodoReferencia && !ordenAplicado) {
+        ordenAplicado = true; // Evita el bucle infinito
+        dataTableInstance.order([2, 'desc']).draw(false);
+      } else if (!filtroPeriodoReferencia && !ordenAplicado) {
+        ordenAplicado = true; // Evita el bucle infinito
+        dataTableInstance.order([0, 'desc']).draw(false);
+      }
+
+      // Restablecemos la variable después del primer cambio
+      setTimeout(() => {
+        ordenAplicado = false;
+      }, 10); // Un pequeño delay para garantizar que se libere la variable
+    });
   }
 });
 
@@ -321,13 +357,24 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
   if (valorPeriodo && valorPeriodo !== 'Todo el tiempo') {
     const hoy = new Date();
     let fechaInicio: Date | null = null;
+    let fechaFinMesAnterior: Date | null = null;
+    let fechaFinAnoAnterior: Date | null = null;
 
     switch (valorPeriodo) {
+      case 'Hoy':
+        fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 0, 0, 0);
+        break;
+      case 'Esta semana':
+        fechaInicio = new Date(hoy);
+        fechaInicio.setDate(hoy.getDate() - hoy.getDay() + 1); // Lunes de la semana actual
+        fechaInicio.setHours(0, 0, 0, 0);
+        break;
       case 'Este mes':
         fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
         break;
-      case 'Mes Anterior':
+      case 'Mes anterior':
         fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
+        fechaFinMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0); // Último día del mes anterior
         break;
       case 'Últimos 3 meses':
         fechaInicio = new Date(hoy);
@@ -337,23 +384,33 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
         fechaInicio = new Date(hoy);
         fechaInicio.setMonth(hoy.getMonth() - 6);
         break;
-      case 'Último año':
-        fechaInicio = new Date(hoy);
-        fechaInicio.setFullYear(hoy.getFullYear() - 1);
+      case 'Este año':
+        fechaInicio = new Date(hoy.getFullYear(), 0, 1);
+        break;
+      case 'Año anterior':
+        fechaInicio = new Date(hoy.getFullYear() - 1, 0, 1);
+        fechaFinAnoAnterior = new Date(hoy.getFullYear() - 1, 11, 31); // Último día del año anterior
         break;
     }
 
     if (fechaInicio) {
       const desde = fechaInicio.getTime();
+      const hasta = (fechaFinMesAnterior || fechaFinAnoAnterior) ? (fechaFinMesAnterior?.getTime() || fechaFinAnoAnterior?.getTime()) : null;
+
       filtroPeriodoReferencia = function (settings, data) {
-        const fechaTexto = data[2]; // columna "Fecha Registro"
+        const fechaTexto = data[2]; // columna "Fecha Registro" (Asegúrate que esté correctamente en formato dd-MM-yyyy)
         const partes = fechaTexto.split('-');
         if (partes.length !== 3) return true;
-        const fecha = new Date(+partes[2], +partes[1] - 1, +partes[0]);
+
+        const fecha = new Date(+partes[2], +partes[1] - 1, +partes[0]); // dd-MM-yyyy
+        if (hasta) {
+          return fecha.getTime() >= desde && fecha.getTime() <= hasta;
+        }
         return fecha.getTime() >= desde;
       };
       $.fn.dataTable.ext.search.push(filtroPeriodoReferencia);
     }
+
   }
 
   // 4. Redibujar tabla

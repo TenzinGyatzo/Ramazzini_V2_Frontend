@@ -267,11 +267,11 @@ const sugerenciasNatLesion = [ "Contusión", "Traumatismo", "Fractura", "Luxaci�
         <!-- Formulario para crear o editar RT -->
         <div v-if="modo === 'nuevo' || modo === 'editar'" class="space-y-4">
           <h2 class="text-lg font-semibold text-gray-800 mb-2">
-            {{ modo === 'editar' ? 'Editar Riesgo de Trabajo' : 'Registrar nuevo Riesgo de Trabajo' }}
+            {{ modo === 'editar' ? 'Editar Riesgo de Trabajo' : 'Registrar Nueva RT o Recaída' }}
           </h2>
           
           <!-- Primera fila -->
-          <div class="grid grid-cols-9 gap-4 items-start">
+          <div class="grid grid-cols-1 lg:grid-cols-9 gap-4 items-start">
             <!-- Columna 1: Fecha del Riesgo -->
             <div class="col-span-3">
               <label class="block text-sm font-medium text-gray-600">Fecha del Riesgo</label>
@@ -279,7 +279,7 @@ const sugerenciasNatLesion = [ "Contusión", "Traumatismo", "Fractura", "Luxaci�
             </div>
 
             <!-- Columna 2: Recaída (Etiqueta e Input separados) -->
-            <div class="col-span-2 flex flex-col items-start">
+            <div class="col-span-1 lg:col-span-2">
               <label class="block text-sm font-medium text-gray-600">Recaída</label>
               <select v-model="rtEnEdicion.recaida" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500">
                 <option disabled value="">Selecciona</option>
@@ -301,7 +301,7 @@ const sugerenciasNatLesion = [ "Contusión", "Traumatismo", "Fractura", "Luxaci�
           </div>
 
           <!-- Segunda fila -->
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-600">Naturaleza de la lesión</label>
               <input type="text" v-model="rtEnEdicion.naturalezaLesion" placeholder="Descripción de la lesión" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" list="nat-lesion-sugerencias" />
@@ -311,7 +311,7 @@ const sugerenciasNatLesion = [ "Contusión", "Traumatismo", "Fractura", "Luxaci�
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-600">Parte del cuerpo afectada</label>
+              <label class="block text-sm font-medium text-gray-600">Parte afectada</label>
               <input type="text" v-model="rtEnEdicion.parteCuerpoAfectada" placeholder="Zona afectada" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" list="parte-cuerpo-sugerencias" />
               <datalist id="parte-cuerpo-sugerencias">
                 <option v-for="sugerencia in sugerenciasParteCuerpo" :key="sugerencia" :value="sugerencia">{{ sugerencia }}</option>
@@ -359,7 +359,10 @@ const sugerenciasNatLesion = [ "Contusión", "Traumatismo", "Fractura", "Luxaci�
           <div class="grid grid-cols-3 gap-4 items-start">
             <!-- Días de Incapacidad -->
             <div class="col-span-1">
-              <label class="block text-sm font-medium text-gray-600">Días de Incapacidad</label>
+              <label class="block text-sm font-medium text-gray-600">
+                <span class="hidden md:inline">Días de Incapacidad</span>
+                <span class="md:hidden">Incapacidad</span>
+              </label>
               <input type="number" min="0" v-model="rtEnEdicion.diasIncapacidad" placeholder="0" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" />
             </div>
 
@@ -374,15 +377,18 @@ const sugerenciasNatLesion = [ "Contusión", "Traumatismo", "Fractura", "Luxaci�
             </div>
 
             <div class="col-span-1">
-              <label class="block text-sm font-medium text-gray-600">Porcentaje de IPP</label>
+              <label class="block text-sm font-medium text-gray-600">
+                <span class="hidden md:inline">Porcentaje IPP</span>
+                <span class="md:hidden">IPP</span>
+              </label>
               <input 
-                type="number" 
-                min="0" 
-                max="100" 
-                v-model="rtEnEdicion.porcentajeIPP" 
-                placeholder="0" 
-                :disabled="!rtEnEdicion.secuelas || rtEnEdicion.secuelas === 'No'" 
-                class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500 disabled:bg-gray-100 disabled:text-gray-400"
+              type="number" 
+              min="0" 
+              max="100" 
+              v-model="rtEnEdicion.porcentajeIPP" 
+              placeholder="0" 
+              :disabled="!rtEnEdicion.secuelas || rtEnEdicion.secuelas === 'No'" 
+              class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500 disabled:bg-gray-100 disabled:text-gray-400"
               />
             </div>
 

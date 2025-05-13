@@ -479,7 +479,8 @@ const graficaRequierenLentesData = computed(() => {
         {
           data: [requieren, noRequieren],
           // backgroundColor: ['#059669', '#D1D5DB'] // Verde + gris claro
-          backgroundColor: ['#4B5563', '#D1D5DB'] // Gris oscuro + gris claro
+          backgroundColor: ['#4B5563', '#D1D5DB'], // Gris oscuro + gris claro
+          hoverOffset: 8,
         }
       ]
     }
