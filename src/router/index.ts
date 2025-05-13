@@ -3,6 +3,7 @@ import LayOut from "../views/LayOut.vue";
 import AuthAPI from "@/api/AuthAPI";
 import axios from "axios";
 import { useUserStore } from "@/stores/user";
+import { usePostHog } from "@/composables/usePostHog";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -136,6 +137,21 @@ const router = createRouter({
     },
   ],
 });
+
+const { posthog } = usePostHog(); // Inicializamos PostHog
+
+router.afterEach((to, from) => {
+  posthog.capture('$pageview', {
+    path: to.fullPath,
+    name: to.name,
+  });
+});
+
+router.beforeEach((to, from) => {
+  if (from.path !== to.path) {
+    posthog.capture('$pageleave')
+  }
+})
 
 // Configuración del guardia global
 router.beforeEach(async (to, from, next) => {

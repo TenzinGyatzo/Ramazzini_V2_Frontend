@@ -32,6 +32,7 @@
     "jszip": "^3.10.1",
     "pdfmake": "^0.2.13",
     "pinia": "^2.1.7",
+    "posthog-js": "^1.242.0",
     "vue": "^3.4.29",
     "vue-chartjs": "^5.3.2",
     "vue-router": "^4.3.3",
