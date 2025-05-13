@@ -196,10 +196,12 @@ const sugerenciasNatLesion = [ "Contusión", "Traumatismo", "Fractura", "Luxaci�
               <!-- Naturaleza de la lesión y fecha -->
               <div class="flex justify-between items-center">
                 <p class="font-semibold text-gray-800">{{ rt.naturalezaLesion || 'Sin descripción de lesión' }} 
-                  <span v-if="rt.recaida" class="font-normal text-xs text-red-500">&nbsp;(Recaída)</span>
+                  <span v-if="rt.recaida == 'Si'" class="font-normal text-xs text-red-500">&nbsp;(Recaída)</span>
                   <span class="font-normal text-xs">&nbsp;—  &nbsp;{{ rt.parteCuerpoAfectada }}</span>
                 </p>
-                <span class="text-sm text-gray-500">{{ rt.fechaRiesgo ? new Date(rt.fechaRiesgo).toLocaleDateString() : 'Fecha no disponible' }}</span>
+                <span class="text-sm text-gray-500">
+                  {{ new Date(rt.fechaRiesgo).toLocaleDateString('es-MX', { timeZone: 'UTC' }) }}
+                </span>
               </div>
 
               <!-- Tipo de Riesgo y Manejo -->
@@ -221,7 +223,7 @@ const sugerenciasNatLesion = [ "Contusión", "Traumatismo", "Fractura", "Luxaci�
                   Incapacidad Activa
                 </span>
                 <span v-else-if="rt.alta">
-                  <strong>Alta:</strong> {{ rt.fechaAlta ? new Date(rt.fechaAlta).toLocaleDateString() : 'Fecha no disponible' }}
+                  <strong>Alta:</strong> {{ rt.fechaAlta ? new Date(rt.fechaAlta).toLocaleDateString('es-MX', { timeZone: 'UTC' }) : 'Fecha no disponible' }}
                 </span>
                 <div v-if="rt.diasIncapacidad" class="flex items-center gap-x-1">
                   <strong>Incapacidad:</strong>
