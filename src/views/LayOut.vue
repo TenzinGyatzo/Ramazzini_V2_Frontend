@@ -1,11 +1,12 @@
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch, computed, onBeforeUnmount } from "vue";
 import { useUserStore } from "@/stores/user";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
 import { useMedicoFirmanteStore } from "@/stores/medicoFirmante";
 import { useEmpresasStore } from "@/stores/empresas";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
+import TooltipInfo from "@/components/Tooltipinfo.vue";
 
 const user = useUserStore();
 const proveedorSaludStore = useProveedorSaludStore();
@@ -67,6 +68,79 @@ watch(
     }
   }
 );
+
+// Verificar si falta el logotipo de la empresa
+const logotipoPendiente = computed(() => {
+  const proveedor = proveedorSaludStore.proveedorSalud;
+  return !proveedor?.logotipoEmpresa?.data;
+});
+
+// Computed para verificar los campos pendientes en Proveedor de Salud
+const camposPendientesProveedor = computed(() => {
+  const proveedor = proveedorSaludStore.proveedorSalud;
+  const pendientes: string[] = [];
+
+  if (!proveedor?.nombre) pendientes.push("Razón Social");
+  if (!proveedor?.estado) pendientes.push("Estado");
+  if (!proveedor?.municipio) pendientes.push("Municipio");
+  if (!proveedor?.direccion) pendientes.push("Dirección");
+  if (!proveedor?.telefono) pendientes.push("Teléfono");
+
+  return pendientes;
+});
+
+// Computed para verificar los campos pendientes en Médico Firmante
+const camposPendientesMedico = computed(() => {
+  const medico = medicoFirmanteStore.medicoFirmante;
+  const pendientes: string[] = [];
+
+  if (!medico?.nombre) pendientes.push("Nombre");
+  if (!medico?.tituloProfesional) pendientes.push("Título Profesional");
+  if (!medico?.numeroCedulaProfesional) pendientes.push("Número de Cédula Profesional");
+
+  return pendientes;
+});
+
+// Computed para determinar si mostrar el ícono del tooltip
+const mostrarTooltipProveedor = computed(() => camposPendientesProveedor.value.length > 0);
+const mostrarTooltipMedico = computed(() => camposPendientesMedico.value.length > 0);
+
+// Controlar la aparición de las notificaciones con delay
+const mostrarNotificacionLogotipo = ref(false);
+const mostrarNotificacionCampos = ref(false);
+
+onMounted(() => {
+  setTimeout(() => {
+    if (logotipoPendiente.value) {
+      mostrarNotificacionLogotipo.value = true;
+    }
+    if (camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0) {
+      mostrarNotificacionCampos.value = true;
+    }
+  }, 1200); // Ajusta el delay en milisegundos (800ms en este caso)
+});
+
+// Control de animación
+const animacionNotificacion = ref("notificacion-animada");
+
+let intervaloAnimacion: number | null = null;
+
+onMounted(() => {
+  // Alternar entre las animaciones cada 3 segundos
+  intervaloAnimacion = setInterval(() => {
+    animacionNotificacion.value = 
+      animacionNotificacion.value === "notificacion-pulso" 
+      ? "notificacion-vibracion" 
+      : "notificacion-pulso";
+  }, 3000);
+});
+
+onBeforeUnmount(() => {
+  // Limpiar el intervalo para evitar fugas de memoria
+  if (intervaloAnimacion !== null) {
+    clearInterval(intervaloAnimacion);
+  }
+});
 
 </script>
 
@@ -144,6 +218,12 @@ watch(
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
+        
+        <!-- Notificación de Campos Pendientes -->
+        <div v-if="mostrarNotificacionCampos" :class="['absolute -top-1 -left-1 w-5 h-5 bg-yellow-500 rounded-full border border-white', animacionNotificacion]"></div>
+        
+        <!-- Notificación de Logotipo -->
+        <div v-if="mostrarNotificacionLogotipo" :class="['absolute -top-1 -left-1 w-5 h-5 bg-red-500 rounded-full border border-white', animacionNotificacion]"></div>
       </button>
     </Transition>
 
@@ -153,16 +233,44 @@ watch(
         v-if="isMenuOpen && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success'].includes(route.name as string)"
         ref="menuRef"
         class="fixed top-16 right-4 bg-white rounded-lg shadow-lg p-4 w-64 z-40">
+
         <div class="space-y-2">
+          
           <!-- Configuración -->
           <div v-if="user.user?.role !== 'Administrador'">
             <p class="text-sm font-medium text-gray-700 mb-2">Configuración</p>
-            <a v-if="user.user?.role === 'Principal'" @click="router.push({ name: 'perfil-proveedor' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
-              Mi Negocio 
+
+            <!-- Proveedor de Salud -->
+            <a v-if="user.user?.role === 'Principal'" @click="router.push({ name: 'perfil-proveedor' })" 
+              class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
+              <div class="flex items-center gap-2">
+                <TooltipInfo 
+                  v-if="logotipoPendiente"
+                  title="Se requiere un logotipo para el encabezado del informe"
+                  icon="fa-solid fa-triangle-exclamation text-red-500"
+                />
+                <TooltipInfo 
+                  v-if="mostrarTooltipProveedor"
+                  title="Para un mejor pie de página, se recomienda guardar:"
+                  :items="camposPendientesProveedor" 
+                />
+                <span>Mi Negocio</span>
+              </div>
             </a>
-            <a @click="router.push({ name: 'medico-firmante' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out cursor-pointer">
-              Médico Firmante
+
+            <!-- Médico Firmante -->
+            <a @click="router.push({ name: 'medico-firmante' })" 
+              class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out cursor-pointer">
+              <div class="flex items-center gap-2">
+                <TooltipInfo 
+                  v-if="mostrarTooltipMedico"
+                  title="Para un mejor pie de página, se recomienda guardar:"
+                  :items="camposPendientesMedico" 
+                />
+                <span>Médico Firmante</span>
+              </div>
             </a>
+
           </div>
 
           <!-- Gestión de Usuarios -->
@@ -201,6 +309,56 @@ watch(
 </template>
 
 <style>
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-2px);
+  }
+  40%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+.notificacion-animada {
+  animation: bounceIn 0.5s ease-out;
+}
+
+.notificacion-pulso {
+  animation: pulse 1s infinite;
+}
+
+.notificacion-vibracion {
+  animation: shake 0.5s infinite;
+}
+
 /* Transición slide-up mejorada */
 .slide-up-enter-active {
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);

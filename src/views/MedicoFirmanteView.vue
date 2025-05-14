@@ -1,5 +1,5 @@
 <script setup>
-import { ref, inject, watch, computed } from 'vue';
+import { ref, inject, watch, watchEffect, computed } from 'vue';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 import { useRouter } from 'vue-router';
 
@@ -9,33 +9,53 @@ const router = useRouter();
 const firmaPreview = ref(null);
 const firmaArchivo = ref(null);
 
-// Inicializa los valores del formulario desde el store al montar el componente
-const especialistaSaludTrabajo = ref("No");
-const numeroCedulaEspecialista = ref("");
-const nombreCredencialAdicional = ref("");
-const numeroCredencialAdicional = ref("");
+// Objeto reactivo para el formulario del médico firmante
+const formularioMedicoFirmante = ref({
+  nombre: "",
+  tituloProfesional: "",
+  numeroCedulaProfesional: "",
+  especialistaSaludTrabajo: "No",
+  numeroCedulaEspecialista: "",
+  nombreCredencialAdicional: "",
+  numeroCredencialAdicional: ""
+});
 
-// Observa los cambios en medicoFirmante.medicoFirmante y precarga los valores cuando estén disponibles
-watch(
-    () => medicoFirmante.medicoFirmante,
-    (nuevoMedicoFirmante) => {
-        if (nuevoMedicoFirmante) {
-            especialistaSaludTrabajo.value = nuevoMedicoFirmante.especialistaSaludTrabajo || "No";
-            numeroCedulaEspecialista.value = nuevoMedicoFirmante.numeroCedulaEspecialista || "";
-            nombreCredencialAdicional.value = nuevoMedicoFirmante.nombreCredencialAdicional || "";
-            numeroCredencialAdicional.value = nuevoMedicoFirmante.numeroCredencialAdicional || "";
-        }
-    },
-    { immediate: true } // Ejecutar inmediatamente al montar el componente
-);
+// Cargar los valores iniciales del médico firmante en el formulario
+watchEffect(() => {
+  if (medicoFirmante.medicoFirmante) {
+    Object.assign(formularioMedicoFirmante.value, {
+      nombre: medicoFirmante.medicoFirmante.nombre || "",
+      tituloProfesional: medicoFirmante.medicoFirmante.tituloProfesional || "",
+      numeroCedulaProfesional: medicoFirmante.medicoFirmante.numeroCedulaProfesional || "",
+      especialistaSaludTrabajo: medicoFirmante.medicoFirmante.especialistaSaludTrabajo || "No",
+      numeroCedulaEspecialista: medicoFirmante.medicoFirmante.numeroCedulaEspecialista || "",
+      nombreCredencialAdicional: medicoFirmante.medicoFirmante.nombreCredencialAdicional || "",
+      numeroCredencialAdicional: medicoFirmante.medicoFirmante.numeroCredencialAdicional || ""
+    });
+  }
+});
+
+// Computed Reactivo para el Pie de Página del Médico Firmante
+const piePaginaFirmante = computed(() => ({
+  nombre: formularioMedicoFirmante.value.nombre || "",
+  tituloProfesional: formularioMedicoFirmante.value.tituloProfesional || "",
+  numeroCedulaProfesional: formularioMedicoFirmante.value.numeroCedulaProfesional || "",
+  especialistaSaludTrabajo: formularioMedicoFirmante.value.especialistaSaludTrabajo === "Si" ? "Especialista en Medicina del Trabajo" : "",
+  numeroCedulaEspecialista: formularioMedicoFirmante.value.numeroCedulaEspecialista || "",
+  nombreCredencialAdicional: formularioMedicoFirmante.value.nombreCredencialAdicional || "",
+  numeroCredencialAdicional: formularioMedicoFirmante.value.numeroCredencialAdicional || ""
+}));
 
 const toast = inject('toast');
 
-watch(especialistaSaludTrabajo, (newValue) => {
-    if (newValue === 'No') {
-        numeroCedulaEspecialista.value = "";
+watch(
+  () => formularioMedicoFirmante.value.especialistaSaludTrabajo,
+  (newValue) => {
+    if (newValue === "No") {
+      formularioMedicoFirmante.value.numeroCedulaEspecialista = "";
     }
-});
+  }
+);
 
 const handleFileChange = (event) => {
     const file = event?.target?.files?.[0];
@@ -59,19 +79,6 @@ const user = ref(
 const handleSubmit = async (data) => {
 
     const formData = new FormData();
-
-    // Si el campo está vacío, que se agregue como cadena vacia
-    if (numeroCedulaEspecialista.value === "") {
-        formData.append('numeroCedulaEspecialista', "");
-    }
-
-    if (nombreCredencialAdicional.value === "") {
-        formData.append('nombreCredencialAdicional', "");
-    }
-
-    if (numeroCredencialAdicional.value === "") {
-        formData.append('numeroCredencialAdicional', "");
-    }
 
     // Agregar solo los campos con valores definidos
     Object.entries(data).forEach(([key, value]) => {
@@ -152,63 +159,91 @@ const firmaSrc = computed(() => {
                         <FormKit type="text" label="Nombre Completo" name="nombre"
                             placeholder="Ej. Juan Alfonso Perez Galeana" validation="required"
                             :validation-messages="{ required: 'Este campo es obligatorio' }"
-                            :value="medicoFirmante.medicoFirmante?.nombre" />
+                            v-model="formularioMedicoFirmante.nombre" />
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
 
                             <FormKit type="select" label="Título Profesional" name="tituloProfesional"
                                 placeholder='Selecciona "Dr." o "Dra."' :options="titulos"
-                                :value="medicoFirmante.medicoFirmante?.tituloProfesional" />
+                                v-model="formularioMedicoFirmante.tituloProfesional" />
 
                             <FormKit type="text" label="Número de Cédula Profesional" name="numeroCedulaProfesional"
-                                placeholder="Ej. 142988" validation="cedulaProfesionalValidation" :value="medicoFirmante.medicoFirmante?.numeroCedulaProfesional"
+                                placeholder="Ej. 142988" validation="cedulaProfesionalValidation" v-model="formularioMedicoFirmante.numeroCedulaProfesional"
                                 :validation-messages="{ cedulaProfesionalValidation: 'El número de cédula profesional debe tener entre 6 y 8 dígitos.' }" />
 
                             <FormKit type="select" label="Especialista en Medicina del Trabajo"
                                 name="especialistaSaludTrabajo" placeholder="¿Es especialista en Medicina del Trabajo"
-                                :options="siONo" v-model="especialistaSaludTrabajo" />
+                                :options="siONo" v-model="formularioMedicoFirmante.especialistaSaludTrabajo" />
 
                             <FormKit type="text" label="Cédula de Especialidad en Medicina del Trabajo"
                                 name="numeroCedulaEspecialista" placeholder="Ej. 3425572" validation="cedulaEspecialistaValidation"
-                                :disabled="especialistaSaludTrabajo !== 'Si'"
-                                v-model="numeroCedulaEspecialista"
+                                :disabled="formularioMedicoFirmante.especialistaSaludTrabajo !== 'Si'"
+                                v-model="formularioMedicoFirmante.numeroCedulaEspecialista"
                                 :validation-messages="{ cedulaEspecialistaValidation: 'El número de cédula de especialidad debe tener entre 7 y 8 dígitos.' }" />
 
                             <FormKit type="text" label="Credencial Adicional" name="nombreCredencialAdicional"
                                 placeholder="Ej. Certificado ante el Consejo Mexicano de Medicina del Trabajo"
-                                v-model="nombreCredencialAdicional" />
+                                v-model="formularioMedicoFirmante.nombreCredencialAdicional" />
 
                             <FormKit type="text" label="Número de Credencial Adicional" name="numeroCredencialAdicional"
                                 placeholder="Ej. 924"
-                                v-model="numeroCredencialAdicional" />
+                                v-model="formularioMedicoFirmante.numeroCredencialAdicional" />
                         </div>
 
                         <FormKit type="file" label="Firma (Asegura que sea .png sin fondo, cuadrada, de al menos 500 x 500px)" name="firma" accept=".png, .jpg, .jpeg, .svg"
                             multiple="false" @change="handleFileChange" />
 
-                        <!-- Mostrar la vista previa de la firma -->
-                        <div class="flex flex-row justify-center items-center gap-4">
-                            <div v-if="medicoFirmante.medicoFirmante?.firma?.data"
-                                class="w-1/2 flex flex-col items-center">
-                                <p class="font-medium text-lg text-gray-700">Firma actual:</p>
-                                <img
-                                    :src="firmaSrc"
-                                    :alt="'Firma de ' + medicoFirmante.medicoFirmante.nombre"
-                                    class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"
-                                />
+                        <!-- Mostrar la vista previa del pie de página y firma del médico -->
+                        <div class="flex flex-row justify-center items-center gap-4 mt-4">
+
+                            <!-- Pie de Página del Médico Firmante (Izquierda) -->
+                            <div v-if="piePaginaFirmante.nombre" class="w-1/2 flex flex-col items-start">
+                                <p class="font-medium text-lg text-gray-700">Pie de Página del Médico Firmante:</p>
+                                <div class="mt-6 p-4 border rounded-lg bg-gray-50 text-left">                  
+                                    <p class="text-sm text-gray-800 mt-2">
+                                        <span class="font-medium" v-if="piePaginaFirmante.nombre">
+                                            {{ piePaginaFirmante.tituloProfesional }} {{ piePaginaFirmante.nombre }}
+                                        </span><br v-if="piePaginaFirmante.nombre">
+                                        
+                                        <span v-if="piePaginaFirmante.numeroCedulaProfesional" class="font-light">
+                                            Cédula Profesional Médico Cirujano No. {{ piePaginaFirmante.numeroCedulaProfesional }}
+                                        </span><br v-if="piePaginaFirmante.numeroCedulaProfesional">
+                                        
+                                        <span v-if="piePaginaFirmante.especialistaSaludTrabajo && !piePaginaFirmante.numeroCedulaEspecialista" class="font-light">
+                                            Especialista en Medicina del Trabajo
+                                        </span>
+                                        <span v-else-if="piePaginaFirmante.numeroCedulaEspecialista" class="font-light">
+                                            Cédula Especialidad Med. del Trab. No. {{ piePaginaFirmante.numeroCedulaEspecialista }}
+                                        </span><br v-if="piePaginaFirmante.especialistaSaludTrabajo">
+                                        
+                                        <span v-if="piePaginaFirmante.nombreCredencialAdicional" 
+                                            class="font-light block truncate overflow-hidden text-ellipsis whitespace-nowrap max-w-[390px]">
+                                            {{ piePaginaFirmante.nombreCredencialAdicional }} No. {{ piePaginaFirmante.numeroCredencialAdicional }}
+                                        </span>
+                                    </p>
+                                </div>
                             </div>
 
-                            <Transition appear name="fade-slow">
-                                <div v-if="firmaPreview" class="w-1/2 flex flex-col items-center">
-                                    <p v-if="medicoFirmante.medicoFirmante?.firma?.data"
-                                        class="font-medium text-lg text-gray-700">
-                                        Firma Nueva:</p>
-                                    <p v-else class="font-medium text-lg text-gray-700">Firma:</p>
-                                    <img :src="firmaPreview" alt="Vista previa de la firma"
-                                        class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />
+                            <!-- Vista previa de las Firmas (Derecha) -->
+                            <div class="flex flex-row justify-center items-center gap-4">
+                                <div v-if="medicoFirmante.medicoFirmante?.firma?.data" class="w-full flex flex-col items-center">
+                                    <p class="font-medium text-lg text-gray-700">Firma actual:</p>
+                                    <img :src="firmaSrc" alt="'Firma de ' + medicoFirmante.medicoFirmante.nombre"
+                                        class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"/>
                                 </div>
-                            </Transition>
+
+                                <!-- Firma Nueva -->
+                                <Transition appear name="fade-slow">
+                                    <div v-if="firmaPreview" class="w-full flex flex-col items-center">
+                                        <p class="font-medium text-lg text-gray-700">Firma Nueva:</p>
+                                        <img :src="firmaPreview" alt="Vista previa de la firma"
+                                            class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />
+                                    </div>
+                                </Transition>
+                            </div>
+
                         </div>
+
                         <hr class="my-3">
                         <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                             <!-- Botón de Volver -->

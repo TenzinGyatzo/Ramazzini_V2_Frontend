@@ -13,12 +13,62 @@ const toast = inject("toast");
 const colorInforme = ref("#343A40");
 const semaforizacionActivada = ref(false);
 
+// Objeto reactivo para el formulario
+const formulario = ref({
+  nombre: "",
+  direccion: "",
+  municipio: "",
+  estado: "",
+  telefono: "",
+  sitioWeb: "",
+  RFC: "",
+  correoElectronico: "",
+  perfilProveedorSalud: "", 
+  codigoPostal: ""          
+});
+
+// Cargar los valores iniciales del proveedor en el formulario
 watchEffect(() => {
   if (proveedorSalud.proveedorSalud) {
+    Object.assign(formulario.value, {
+      nombre: proveedorSalud.proveedorSalud.nombre ?? "",
+      direccion: proveedorSalud.proveedorSalud.direccion ?? "",
+      municipio: proveedorSalud.proveedorSalud.municipio ?? "",
+      estado: proveedorSalud.proveedorSalud.estado ?? "",
+      telefono: proveedorSalud.proveedorSalud.telefono ?? "",
+      sitioWeb: proveedorSalud.proveedorSalud.sitioWeb ?? "",
+      RFC: proveedorSalud.proveedorSalud.RFC ?? "",
+      correoElectronico: proveedorSalud.proveedorSalud.correoElectronico ?? "",
+      perfilProveedorSalud: proveedorSalud.proveedorSalud.perfilProveedorSalud ?? "", 
+      codigoPostal: proveedorSalud.proveedorSalud.codigoPostal ?? ""                 
+    });
+
     colorInforme.value = proveedorSalud.proveedorSalud.colorInforme || "#343A40";
     semaforizacionActivada.value = proveedorSalud.proveedorSalud.semaforizacionActivada ?? false;
   }
 });
+
+
+// Computed Reactivo para el Pie de Página del Informe
+const piePaginaInforme = computed(() => ({
+  nombre: formulario.value.nombre || "",
+  direccion: formulario.value.direccion || "",
+  municipio: formulario.value.municipio || "",
+  estado: formulario.value.estado || "",
+  telefono: formatearTelefono(formulario.value.telefono),
+  sitioWeb: formulario.value.sitioWeb || "",
+  RFC: formulario.value.RFC || "",
+  correoElectronico: formulario.value.correoElectronico || ""
+}));
+
+
+// Función para formatear el teléfono
+function formatearTelefono(telefono) {
+  if (!telefono || telefono.length !== 10) {
+    return ''; 
+  }
+  return `(${telefono.slice(0, 3)}) ${telefono.slice(3, 6)} ${telefono.slice(6)}`;
+}
 
 // Lista de opciones de colores predefinidos
 const colorOptions = [
@@ -78,9 +128,9 @@ const handleSubmit = async (data) => {
   }
 
   // Depuramos el contenido de FormData
-  for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-  }
+  // for (let [key, value] of formData.entries()) {
+  //     console.log(`${key}:`, value);
+  // }
 
   try {
     let response;
@@ -166,6 +216,7 @@ const logoSrc = computed(() => {
   return `${baseURL}/assets/providers-logos/${proveedorSalud.proveedorSalud.logotipoEmpresa?.data}?t=${Date.now()}`;
 });
 // console.log('logoSrc:', logoSrc.value);
+
 </script>
 
 <template>
@@ -181,6 +232,15 @@ const logoSrc = computed(() => {
           <h1 class="text-3xl">Perfil de Proveedor de Servicios de Salud Ocupacional</h1>
           <hr class="mt-2 mb-3" />
 
+          <!-- <div class="bg-amber-100 text-amber-800 p-3 rounded-md mb-4 flex items-start gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M3 3l18 18M9 13h6m-3 0v6m0 0l3-3m-3 3l-3-3" />
+            </svg>
+            <p class="font-medium">
+              Los datos capturados en este formulario aparecerán automáticamente en el pie de página de sus informes.
+            </p>
+          </div> -->
+
           <FormKit type="form" :actions="false" incomplete-message="Por favor, valide que los datos sean correctos*"
             @submit="handleSubmit">
             
@@ -188,50 +248,50 @@ const logoSrc = computed(() => {
               <FormKit type="text" label="Razón Social, nombre o denominación*" name="nombre"
                 placeholder="¿Cual es tu nombre, denominación o razón social?" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
-                :value="proveedorSalud.proveedorSalud.nombre" />
+                v-model="formulario.nombre" />
 
               <FormKit type="text" label="RFC" name="RFC" placeholder="RFC del proveedor"
                 validation="required|rfcValidation" :validation-messages="{
                   required: 'Este campo es obligatorio',
                   rfcValidation: 'El RFC ingresado no es válido.',
-                }" :value="proveedorSalud.proveedorSalud?.RFC" />
+                }" v-model="formulario.RFC" />
 
               <FormKit type="select" label="Perfil de proveedor*" name="perfilProveedorSalud"
                 placeholder="Selecciona el que te describa mejor:" :options="perfiles" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
-                :value="proveedorSalud.proveedorSalud.perfilProveedorSalud" />
+                v-model="formulario.perfilProveedorSalud" />
 
               <FormKit type="select" label="Estado" name="estado" placeholder="Seleccione su estado"
-                :options="estadosDeMexico" :value="proveedorSalud.proveedorSalud?.estado || ''" />
+                :options="estadosDeMexico" v-model="formulario.estado" />
 
               <FormKit type="text" label="Municipio" name="municipio" placeholder="Municipio del proveedor"
-                :value="proveedorSalud.proveedorSalud?.municipio" />
+                v-model="formulario.municipio" />
 
               <FormKit type="text" label="Código Postal" name="codigoPostal" placeholder="Ej. 44100"
-                validation="postalCodeValidation" :value="proveedorSalud.proveedorSalud?.codigoPostal"
+                validation="postalCodeValidation" v-model="formulario.codigoPostal"
                 :validation-messages="{
                   postalCodeValidation:
                     'El código postal debe tener 5 dígitos.',
                 }" />
 
               <FormKit type="text" label="Dirección (Calle, número y colonia)" name="direccion"
-                placeholder="Ej. Calle Madero #123, Colonia Centro" :value="proveedorSalud.proveedorSalud?.direccion" />
+                placeholder="Ej. Calle Madero #123, Colonia Centro" v-model="formulario.direccion" />
 
               <FormKit type="text" label="Teléfono" name="telefono" placeholder="10 dígitos"
-                validation="phoneValidation" :value="proveedorSalud.proveedorSalud?.telefono" :validation-messages="{
+                validation="phoneValidation" v-model="formulario.telefono" :validation-messages="{
                   phoneValidation:
                     'El número de teléfono debe tener 10 dígitos.',
                 }" />
 
               <FormKit type="text" label="Correo Electrónico" name="correoElectronico"
                 placeholder="Correo electrónico del proveedor" validation="mailValidation"
-                :value="proveedorSalud.proveedorSalud?.correoElectronico" :validation-messages="{
+                v-model="formulario.correoElectronico" :validation-messages="{
                   mailValidation:
                     'El correo electrónico ingresado no es válido.',
                 }" />
 
               <FormKit type="text" label="Sitio Web" name="sitioWeb" placeholder="Sitio web del proveedor"
-                validation="urlValidation" :value="proveedorSalud.proveedorSalud?.sitioWeb" :validation-messages="{
+                validation="urlValidation" v-model="formulario.sitioWeb" :validation-messages="{
                   urlValidation: 'El sitio web ingresado no es válido.',
                 }" />
 
@@ -280,7 +340,7 @@ const logoSrc = computed(() => {
 
             <!-- Mostrar la vista previa del logotipo -->
             <div class="flex flex-row justify-center items-center gap-4">
-              <div v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data" class="w-1/2 flex flex-col items-center">
+              <div v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data" class="w-1/3 flex flex-col items-center">
                 <p class="font-medium text-lg text-gray-700">
                   Logotipo actual:
                 </p>
@@ -292,7 +352,7 @@ const logoSrc = computed(() => {
               </div>
 
               <Transition appear name="fade-slow">
-                <div v-if="logotipoPreview" class="w-1/2 flex flex-col items-center">
+                <div v-if="logotipoPreview" class="w-1/3 flex flex-col items-center">
                   <p v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data"
                     class="font-medium text-lg text-gray-700">
                     Logotipo nuevo:
@@ -303,8 +363,34 @@ const logoSrc = computed(() => {
                   <img :src="logotipoPreview" alt="Vista previa del logotipo"
                     class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />
                 </div>
+                
               </Transition>
+              
+              <!-- Vista previa del Pie de Página del Informe -->
+               <div v-if="piePaginaInforme.nombre" class="w-1/2 flex flex-col items-center">
+                 <p class="font-medium text-lg text-gray-700">
+                   Pie de Página en Informes:
+                 </p>
+                <div class="mt-6 p-4 border rounded-lg bg-gray-50 text-right">                  
+                  <p class="text-sm text-gray-800 mt-2 italic">
+                    <span v-if="piePaginaInforme.nombre" class="font-medium">{{ piePaginaInforme.nombre }}</span><br v-if="piePaginaInforme.nombre">
+                    
+                    <span v-if="piePaginaInforme.direccion" class="font-light">{{ piePaginaInforme.direccion }}</span><br v-if="piePaginaInforme.direccion">
+                    
+                    <span class="font-light" v-if="piePaginaInforme.municipio || piePaginaInforme.estado">
+                      <span v-if="piePaginaInforme.municipio">{{ piePaginaInforme.municipio }}</span>
+                      <span v-if="piePaginaInforme.municipio && piePaginaInforme.estado">, </span>
+                      <span v-if="piePaginaInforme.estado">{{ piePaginaInforme.estado }}, </span>
+                      <span v-if="piePaginaInforme.telefono">Tel. {{ piePaginaInforme.telefono }}</span>
+                    </span><br v-if="piePaginaInforme.municipio || piePaginaInforme.estado || piePaginaInforme.telefono">
+                    
+                    <span v-if="piePaginaInforme.sitioWeb" class="font-light text-blue-700">{{ piePaginaInforme.sitioWeb }}</span>
+                  </p>
+                </div>
+               </div>
+
             </div>
+
             <hr class="my-3" />
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
               <!-- Botón de Volver -->

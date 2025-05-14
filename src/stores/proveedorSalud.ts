@@ -9,7 +9,7 @@ interface AddOn {
 
 interface ProveedorSalud {
     _id: string;
-    nombreComercial: string;
+    nombre: string;
     razonSocial: string;
     RFC: string;
     logotipoEmpresa: {
