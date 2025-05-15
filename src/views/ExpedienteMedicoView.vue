@@ -16,6 +16,7 @@ import SlidingButtonPanel from '@/components/SlidingButtonPanel.vue';
 import { calcularEdad } from '@/helpers/dates';
 import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
+import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 
 const toast: any = inject('toast');
 
@@ -27,6 +28,7 @@ const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 const proveedorSaludStore = useProveedorSaludStore();
+const medicoFirmanteStore = useMedicoFirmanteStore();
 
 const showDocumentoExternoModal = ref(false);
 const showDocumentoExternoUpdateModal = ref(false);
@@ -232,6 +234,12 @@ const toggleRouteSelection = (route: string, isSelected: boolean) => {
     }
 };
 
+// Verificar si falta el logotipo de la empresa
+const logotipoPendiente = computed(() => {
+  const proveedor = proveedorSaludStore.proveedorSalud;
+  return !proveedor?.logotipoEmpresa?.data;
+});
+
 </script>
 
 <template>
@@ -262,7 +270,7 @@ const toggleRouteSelection = (route: string, isSelected: boolean) => {
   </Transition>
 
   <div class="p-5 grid gap-5">
-    <div class="flex flex-wrap flex-col md:flex-row justify-center gap-3 md:gap-6">
+    <div class="flex flex-wrap flex-col md:flex-row justify-center gap-2 md:gap-4">
       <GreenButton class="text-base sm:text-lg md:text-lg lg:text-lg xl:text-xl 2xl:text-xl" text="Historia Clínica"
         @click="navigateTo('crear-documento', {
           idEmpresa: empresas.currentEmpresaId,
@@ -306,9 +314,17 @@ const toggleRouteSelection = (route: string, isSelected: boolean) => {
       </div>
 
     </div>
+
+    <div v-if="logotipoPendiente" class="bg-amber-100 text-amber-800 border border-amber-400 p-3 rounded-md flex items-center gap-2">
+      <i class="fa-solid fa-circle-info text-xl mr-1"></i> 
+      <p>
+      <span class="font-semibold"> Aviso:</span> Puedes crear informes, pero como no has subido un logotipo, el encabezado podría verse incorrecto. <router-link :to="{ name: 'perfil-proveedor' }" class="font-semibold underline">Sube tu logotipo aquí</router-link> para mejor presentación.
+      </p>
+    </div>
+
     <Transition appear mode="out-in" name="slide-up">
       <div v-if="trabajadores.currentTrabajador"
-        class="w-full text-center flex flex-col items-center gap-2 mt-4 p-4 border border-gray-200 rounded-lg shadow-md bg-gray-50">
+        class="w-full text-center flex flex-col items-center gap-2 mt-0 p-4 border border-gray-200 rounded-lg shadow-md bg-gray-50">
         <h1 class="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-800">
           {{ trabajadores.currentTrabajador?.nombre }}
         </h1>

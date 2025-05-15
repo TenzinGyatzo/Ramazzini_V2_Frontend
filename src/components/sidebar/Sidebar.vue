@@ -109,8 +109,8 @@ const documentTypeLabels = {
       <SidebarLink v-if="empresas.currentEmpresaId"
         :to="{ name: 'centros-trabajo', params: { idEmpresa: empresas.currentEmpresaId } }" icon="fas fa-warehouse"
         class="leading-5" @click.stop>
-        <p>{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
-        <p class="text-xs">{{ empresas.currentEmpresa?.razonSocial || 'Nombre no disponible' }}</p>
+        <p class="overflow-hidden truncate text-ellipsis max-w-[155px]">{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
+        <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">{{ empresas.currentEmpresa?.razonSocial || 'Nombre no disponible' }}</p>
       </SidebarLink>
     </Transition>
     
@@ -122,7 +122,7 @@ const documentTypeLabels = {
           idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || ''
         }
       }" icon="fas fa-users" class="leading-5" @click.stop>
-        <p>{{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}</p>
+        <p class="overflow-hidden truncate text-ellipsis max-w-[155px]">{{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}</p>
         <p class="text-xs">{{ centrosTrabajo.currentCentroTrabajo?.direccionCentro }}</p>
       </SidebarLink>
     </Transition>
@@ -163,7 +163,7 @@ const documentTypeLabels = {
         :to="{ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresaId } }" icon="fas fa-chart-line"
         class="leading-5" @click.stop>
         <p>Estadísticas</p>
-        <p class="text-xs">{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
+        <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
       </SidebarLink>
     </Transition>
 
