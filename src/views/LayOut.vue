@@ -19,6 +19,8 @@ const isVisible = ref(false);
 const isMenuOpen = ref(false);
 const menuRef = ref<HTMLElement | null>(null); // Referencia para el menú desplegable
 
+const guiaURL = "https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace"
+
 // Función para cerrar el menú si se hace clic fuera
 const handleClickOutside = (event: MouseEvent) => {
   if (menuRef.value && !menuRef.value.contains(event.target as Node)) {
@@ -201,6 +203,19 @@ onBeforeUnmount(() => {
 
       <div v-else class="w-full max-w-screen-2xl">
         <RouterView />
+      </div>
+    </Transition>
+
+    <Transition name="slide-up">
+      <div v-if="logotipoPendiente || camposPendientesProveedor.length > 0 || camposPendientesMedico.length > 0" 
+          class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105">
+        <i class="fa-regular fa-lightbulb text-yellow-500 text-xl"></i>
+        <div>
+          <p class="text-sm font-medium">
+            Aún no has configurado el look de tus informes. <br>
+            <a :href="guiaURL" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">Haz click aquí para ver una guía de cómo hacerlo</a>.
+          </p>
+        </div>
       </div>
     </Transition>
 
