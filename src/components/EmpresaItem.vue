@@ -34,10 +34,10 @@ defineEmits<{
             <span class="text-xs text-center">Identifica más rápido a tu cliente agregando un logotipo</span>
         </div>
 
-        <p class="text-3xl font-bold leading-7 mb-2">{{ empresa.nombreComercial }}</p>
+        <p class="text-3xl font-bold leading-7 mb-2 truncate">{{ empresa.nombreComercial }}</p>
         
         <!-- Si no hay razón social, ocultar o mostrar un mensaje alternativo -->
-        <p v-if="empresa.razonSocial" class="text-base font-light leading-5">
+        <p v-if="empresa.razonSocial" class="text-base font-light leading-5 truncate">
             {{ empresa.razonSocial }}
         </p>
         <p v-else class="text-base font-light leading-5 italic text-gray-400">

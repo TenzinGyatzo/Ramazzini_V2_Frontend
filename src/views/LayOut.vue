@@ -6,7 +6,7 @@ import { useMedicoFirmanteStore } from "@/stores/medicoFirmante";
 import { useEmpresasStore } from "@/stores/empresas";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
-import TooltipInfo from "@/components/Tooltipinfo.vue";
+import TooltipInfo from "@/components/TooltipInfo.vue";
 
 const user = useUserStore();
 const proveedorSaludStore = useProveedorSaludStore();
@@ -110,6 +110,21 @@ const mostrarTooltipMedico = computed(() => camposPendientesMedico.value.length 
 // Controlar la aparición de las notificaciones con delay
 const mostrarNotificacionLogotipo = ref(false);
 const mostrarNotificacionCampos = ref(false);
+
+// Verificar y actualizar las notificaciones
+watch(
+  () => logotipoPendiente.value,
+  (newVal) => {
+    mostrarNotificacionLogotipo.value = newVal;
+  }
+);
+
+watch(
+  () => camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0,
+  (newVal) => {
+    mostrarNotificacionCampos.value = newVal;
+  }
+);
 
 onMounted(() => {
   setTimeout(() => {
