@@ -167,6 +167,19 @@ if (periodoDePruebaFinalizado && estadoSuscripcion === 'cancelled' && finDeSuscr
       </div>
     </div>
 
+    <!-- <Transition name="slide-up">
+      <div v-if="empresasFiltradas.length === 0" 
+          class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105">
+        <i class="fa-regular fa-lightbulb text-yellow-500 text-xl mr-1"></i>
+        <div>
+          <p class="text-sm font-medium">
+            Aún no tienes clientes registrados <br>
+            <a :href="guiaURL" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">Sigue esta guía para registrar a tu primer cliente.</a>.
+          </p>
+        </div>
+      </div>
+    </Transition> -->
+
     <Transition appear mode="out-in" name="slide-up">
       <div>
         <!-- Si el array está vacío, mostramos el mensaje -->

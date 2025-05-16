@@ -18,13 +18,22 @@ const router = useRouter();
 const isVisible = ref(false);
 const isMenuOpen = ref(false);
 const menuRef = ref<HTMLElement | null>(null); // Referencia para el menú desplegable
+const isGuideMenuOpen = ref(false);
+const guideMenuRef = ref<HTMLElement | null>(null);
 
-const guiaURL = "https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace"
+const guiaConfiguracionInicialURL = "https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace"
+const guiaRegistrarClientesURL = "https://scribehow.com/shared/Agregando_Clientes__32Haet8BQy6oFUDacWcbWg?referrer=workspace"
 
 // Función para cerrar el menú si se hace clic fuera
 const handleClickOutside = (event: MouseEvent) => {
+  // Cerrar menú principal si se hace clic fuera
   if (menuRef.value && !menuRef.value.contains(event.target as Node)) {
     isMenuOpen.value = false;
+  }
+
+  // Cerrar menú de guías si se hace clic fuera
+  if (guideMenuRef.value && !guideMenuRef.value.contains(event.target as Node)) {
+    isGuideMenuOpen.value = false;
   }
 };
 
@@ -59,6 +68,11 @@ onUnmounted(() => {
 const toggleMenu = () => {
   event?.stopPropagation();
     isMenuOpen.value = !isMenuOpen.value;
+};
+
+const toggleGuideMenu = (event: MouseEvent) => {
+  event.stopPropagation();
+  isGuideMenuOpen.value = !isGuideMenuOpen.value;
 };
 
 // Cerrar menu cuando se cambia de ruta
@@ -159,6 +173,31 @@ onBeforeUnmount(() => {
   }
 });
 
+// Verificar si se debe mostrar el mensaje de configuración pendiente
+const mostrarMensajePendiente = computed(() => {
+  return logotipoPendiente.value || camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0;
+});
+
+// Definir el mensaje adecuado según el estado
+const mensajeConfiguracion = computed(() => {
+  if (logotipoPendiente.value && (camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0)) {
+    return "Tus informes aún no están configurados correctamente.";
+  } else if (logotipoPendiente.value) {
+    return "Aún no has subido el logotipo.";
+  } else {
+    return "Algunos campos están incompletos en tu configuración.";
+  }
+});
+
+// Definir el texto del enlace dependiendo de la situación
+const textoEnlace = computed(() => {
+  if (logotipoPendiente.value && !(camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0)) {
+    return "Sigue esta guía para hacerlo";
+  } else {
+    return "Sigue esta guía para configurarlos";
+  }
+});
+
 </script>
 
 <template>
@@ -221,15 +260,28 @@ onBeforeUnmount(() => {
       </div>
     </Transition>
 
+    <!-- Mensaje de configuración pendiente -->
     <Transition name="slide-up">
-      <div v-if="logotipoPendiente || camposPendientesProveedor.length > 0 || camposPendientesMedico.length > 0" 
+      <div v-if="mostrarMensajePendiente" 
           class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105">
-        <i class="fa-regular fa-lightbulb text-yellow-500 text-xl"></i>
+        <i class="fa-regular fa-lightbulb text-yellow-500 text-xl mr-1"></i>
         <div>
           <p class="text-sm font-medium">
-            Aún no has configurado el look de tus informes. <br>
-            <a :href="guiaURL" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">Haz click aquí para ver una guía de cómo hacerlo</a>.
+            {{ mensajeConfiguracion }} <br>
+            <a :href="guiaConfiguracionInicialURL" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">{{ textoEnlace }}</a>.
           </p>
+        </div>
+      </div>
+      <div v-else>
+        <div v-if="empresas.empresas.length === 0" 
+            class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105">
+          <i class="fa-regular fa-lightbulb text-yellow-500 text-xl mr-1"></i>
+          <div>
+            <p class="text-sm font-medium">
+              Aún no tienes clientes registrados <br>
+              <a :href="guiaRegistrarClientesURL" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">Guía para registrar a tu primer cliente</a>.
+            </p>
+          </div>
         </div>
       </div>
     </Transition>
@@ -268,7 +320,7 @@ onBeforeUnmount(() => {
           
           <!-- Configuración -->
           <div v-if="user.user?.role !== 'Administrador'">
-            <p class="text-sm font-medium text-gray-700 mb-2">Configuración</p>
+            <p class="text-sm font-medium text-gray-700">Configuración</p>
 
             <!-- Proveedor de Salud -->
             <a v-if="user.user?.role === 'Principal'" @click="router.push({ name: 'perfil-proveedor' })" 
@@ -305,7 +357,7 @@ onBeforeUnmount(() => {
 
           <!-- Gestión de Usuarios -->
           <div v-if="user.user?.role === 'Principal'">
-            <p class="text-sm font-medium text-gray-700 mb-2">Gestión de Usuarios</p>
+            <p class="text-sm font-medium text-gray-700 mt-3">Gestión de Usuarios</p>
             <a @click="router.push({ name: 'add-user' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
               Agregar Usuario
             </a>
@@ -316,7 +368,7 @@ onBeforeUnmount(() => {
 
           <!-- Suscripción -->
           <div v-if="user.user?.role === 'Principal'">
-            <p class="text-sm font-medium text-gray-700 mb-2">Suscripción</p>
+            <p class="text-sm font-medium text-gray-700 mt-3">Suscripción</p>
             <a @click="router.push({ name: 'suscripcion-activa' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
               Mi Suscripción
             </a>
@@ -335,6 +387,45 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </Transition>
+
+    <!-- Icono de guía de uso (Desplegable) -->
+    <Transition name="delayed-appear">
+      <button 
+        v-if="isVisible && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success'].includes(route.name as string)"
+        @click="toggleGuideMenu($event)"
+        class="fixed top-20 right-4 w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full shadow-lg hover:shadow-xl transition-transform duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 z-30 flex items-center justify-center">
+        <i class="fa-solid fa-book text-lg"></i>
+      </button>
+    </Transition>
+
+    <!-- Menú desplegable de guías de uso -->
+    <Transition name="fade">
+      <div 
+        v-if="isGuideMenuOpen"
+        ref="guideMenuRef"
+        class="fixed top-32 right-4 bg-white rounded-xl shadow-xl p-4 w-60 z-20 border border-gray-200 transition-all duration-300 ease-in-out">
+        <h3 class="text-lg font-medium text-gray-700 mb-1">Guías de Uso</h3>
+        <ul class="space-y-0">
+          <li>
+            <a href="https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">Configuración de Informes</a>
+          </li>
+          <li>
+            <a href="https://scribehow.com/shared/Agregando_Clientes__32Haet8BQy6oFUDacWcbWg?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">Agregar Clientes</a>
+          </li>
+          <li>
+            <a href="https://scribehow.com/shared/Agregando_Centros_de_Trabajo__8dOr5yfLRaqqPt99dAyYlQ?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">Agregar Centros de Trabajo</a>
+          </li>
+          <li>
+            <a href="https://scribehow.com/shared/Agregando_Trabajadores__C2clnmBvTT2xGW7QE-YHQQ?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">Agregar Trabajadores</a>
+          </li>
+          <li>
+            <a href="https://scribehow.com/shared/Acceso_y_Navegacion_en_la_Pantalla_de_Expediente_Medico__Uz8eKzicTWSOV-JBxAdB3w?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">Navegación de Expediente</a>
+          </li>
+        </ul>
+      </div>
+    </Transition>
+
+
   </main>
 </template>
 
