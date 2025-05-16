@@ -14,6 +14,7 @@ const medicoFirmanteStore = useMedicoFirmanteStore();
 const empresas = useEmpresasStore();
 const route = useRoute();
 const router = useRouter();
+const empresasCargadas = ref(false); 
 
 const isVisible = ref(false);
 const isMenuOpen = ref(false);
@@ -58,6 +59,23 @@ onMounted( () => {
 
     // Agregar detector de eventos de clic en el documento
     document.addEventListener("click", handleClickOutside);
+
+});
+
+watch(
+  () => empresas.empresas.length,
+  () => {
+    empresasCargadas.value = true;
+  }
+);
+
+// Cargar empresas al montar el componente
+onMounted(() => {
+  if (user.user?.idProveedorSalud) {
+    empresas.fetchEmpresas(user.user.idProveedorSalud).then(() => {
+      empresasCargadas.value = true;
+    });
+  }
 });
 
 onUnmounted(() => {
@@ -174,9 +192,21 @@ onBeforeUnmount(() => {
 });
 
 // Verificar si se debe mostrar el mensaje de configuración pendiente
-const mostrarMensajePendiente = computed(() => {
-  return logotipoPendiente.value || camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0;
-});
+const mostrarMensajePendiente = ref(false);
+
+watch(
+  () => logotipoPendiente.value || camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0,
+  (newVal) => {
+    if (newVal) {
+      // Small delay to ensure all data is loaded
+      setTimeout(() => {
+        mostrarMensajePendiente.value = newVal;
+      }, 500);
+    } else {
+      mostrarMensajePendiente.value = false;
+    }
+  }
+);
 
 // Definir el mensaje adecuado según el estado
 const mensajeConfiguracion = computed(() => {
@@ -273,7 +303,7 @@ const textoEnlace = computed(() => {
         </div>
       </div>
       <div v-else>
-        <div v-if="empresas.empresas.length === 0" 
+        <div v-if="empresasCargadas && empresas.empresas.length === 0 && ['inicio', 'empresas'].includes(route.name as string)" 
             class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105">
           <i class="fa-regular fa-lightbulb text-yellow-500 text-xl mr-1"></i>
           <div>
@@ -439,7 +469,6 @@ const textoEnlace = computed(() => {
         </ul>
       </div>
     </Transition>
-
 
   </main>
 </template>
