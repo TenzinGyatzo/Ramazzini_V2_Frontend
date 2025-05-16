@@ -403,23 +403,38 @@ const textoEnlace = computed(() => {
       <div 
         v-if="isGuideMenuOpen"
         ref="guideMenuRef"
-        class="fixed top-32 right-4 bg-white rounded-xl shadow-xl p-4 w-60 z-20 border border-gray-200 transition-all duration-300 ease-in-out">
+        class="fixed top-32 right-4 bg-white rounded-xl shadow-xl p-4 w-66 z-20 border border-gray-200 transition-all duration-300 ease-in-out">
         <h3 class="text-lg font-medium text-gray-700 mb-1">Guías de Uso</h3>
         <ul class="space-y-0">
           <li>
-            <a href="https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">Configuración de Informes</a>
+            <a href="https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">1. Configuración de Informes</a>
           </li>
           <li>
-            <a href="https://scribehow.com/shared/Agregando_Clientes__32Haet8BQy6oFUDacWcbWg?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">Agregar Clientes</a>
+            <a href="" target="_blank" class="font-light text-gray-400">2. Agregar Clientes y Centros de Trabajo</a>
           </li>
           <li>
-            <a href="https://scribehow.com/shared/Agregando_Centros_de_Trabajo__8dOr5yfLRaqqPt99dAyYlQ?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">Agregar Centros de Trabajo</a>
+            <a href="" target="_blank" class="font-light text-gray-400">3. Registrar Trabajadores</a>
           </li>
           <li>
-            <a href="https://scribehow.com/shared/Agregando_Trabajadores__C2clnmBvTT2xGW7QE-YHQQ?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">Agregar Trabajadores</a>
+            <a href="" target="_blank" class="font-light text-gray-400">4. Gestión de Trabajadores</a>
           </li>
           <li>
-            <a href="https://scribehow.com/shared/Acceso_y_Navegacion_en_la_Pantalla_de_Expediente_Medico__Uz8eKzicTWSOV-JBxAdB3w?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">Navegación de Expediente</a>
+            <a href="" target="_blank" class="font-light text-gray-400">5. Navegación de Expedientes</a>
+          </li>
+          <li>
+            <a href="" target="_blank" class="font-light text-gray-400">6. Creación de Informes Médicos</a>
+          </li>
+          <li>
+            <a href="" target="_blank" class="font-light text-gray-400">7. Subir Documentos Externos</a>
+          </li>
+          <li>
+            <a href="" target="_blank" class="font-light text-gray-400">8. Resumen de Aptitud al Puesto</a>
+          </li>
+          <li>
+            <a href="" target="_blank" class="font-light text-gray-400">9. Estadísticas de Salud</a>
+          </li>
+          <li>
+            <a href="" target="_blank" class="font-light text-gray-400">10. Gestión de RTs</a>
           </li>
         </ul>
       </div>
