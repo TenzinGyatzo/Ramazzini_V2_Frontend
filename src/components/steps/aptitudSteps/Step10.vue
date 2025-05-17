@@ -59,8 +59,8 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 <template>
     <h1 class="font-bold mb-4 text-gray-800 leading-5">Aptitud al Puesto</h1>
     <div class="mb-4">
-        <h2 class="text-lg font-semibold mb-4 text-gray-800">Alteraciones de Salud</h2>
-        <p class="text-sm font-medium mb-1 text-gray-800 leading-4">Descripción de alteraciones encontradas:</p>
+        <h2 class="text-lg font-semibold mb-4 text-gray-800">Resultados</h2>
+        <p class="text-sm font-medium mb-1 text-gray-800 leading-4">Descripción de resultados:</p>
         <div class="font-light mb-4">
             <textarea
                 class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 h-64"

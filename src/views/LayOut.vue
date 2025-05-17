@@ -436,7 +436,7 @@ const textoEnlace = computed(() => {
       <div 
         v-if="isGuideMenuOpen"
         ref="guideMenuRef"
-        class="fixed top-32 right-4 bg-white rounded-xl shadow-xl p-4 w-66 z-20 border border-gray-200 transition-all duration-300 ease-in-out">
+        class="fixed top-32 right-4 bg-white rounded-xl shadow-xl p-4 w-80 z-20 border border-gray-200 transition-all duration-300 ease-in-out">
         <h3 class="text-lg font-medium text-gray-700 mb-1">Guías de Uso</h3>
         <ul class="space-y-0">
           <li>
@@ -452,22 +452,19 @@ const textoEnlace = computed(() => {
             <a href="https://scribehow.com/shared/Gestion_de_Trabajadores__bGNGxMbuRXiKD6G8JiDGIQ?referrer=documents" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">4. Gestión de Trabajadores</a>
           </li>
           <li>
-            <a href="" target="_blank" class="font-light text-gray-400">5. Navegación de Expedientes</a>
+            <a href="https://scribehow.com/shared/Creacion_de_Informes_Medicos__BffBrtm4Qze068R96fLL9w?referrer=documents" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">5. Creación de Informes Médicos</a>
           </li>
           <li>
-            <a href="https://scribehow.com/shared/Creacion_de_Informes_Medicos__BffBrtm4Qze068R96fLL9w?referrer=documents" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">6. Creación de Informes Médicos</a>
+            <a href="https://scribehow.com/shared/Subir_Documentos_Externos__p2VINQjBSYq8RKntzNZHSQ?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">6. Subir Documentos Externos</a>
           </li>
           <li>
-            <a href="" target="_blank" class="font-light text-gray-400">7. Subir Documentos Externos</a>
+            <a href="https://scribehow.com/shared/Resumen_de_Aptitud_al_Puesto__RZbuEGIpTTOiY1wSuxbqKQ?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">7. Resumen de Aptitud al Puesto</a>
           </li>
           <li>
-            <a href="" target="_blank" class="font-light text-gray-400">8. Resumen de Aptitud al Puesto</a>
+            <a href="" target="_blank" class="font-light text-gray-400">8. Estadísticas de Salud</a>
           </li>
           <li>
-            <a href="" target="_blank" class="font-light text-gray-400">9. Estadísticas de Salud</a>
-          </li>
-          <li>
-            <a href="" target="_blank" class="font-light text-gray-400">10. Gestión de RTs</a>
+            <a href="" target="_blank" class="font-light text-gray-400">9. Gestión de RTs</a>
           </li>
         </ul>
       </div>
