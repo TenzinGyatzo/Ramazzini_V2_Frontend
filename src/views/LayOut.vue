@@ -14,6 +14,7 @@ const medicoFirmanteStore = useMedicoFirmanteStore();
 const empresas = useEmpresasStore();
 const route = useRoute();
 const router = useRouter();
+const datosCargados = ref(false);
 const empresasCargadas = ref(false); 
 
 const isVisible = ref(false);
@@ -23,7 +24,7 @@ const isGuideMenuOpen = ref(false);
 const guideMenuRef = ref<HTMLElement | null>(null);
 
 const guiaConfiguracionInicialURL = "https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace"
-const guiaRegistrarClientesURL = "https://scribehow.com/shared/Agregando_Clientes__32Haet8BQy6oFUDacWcbWg?referrer=workspace"
+const guiaRegistrarClientesURL = "https://scribehow.com/shared/Agregar_Clientes_y_Centros_de_Trabajo__32Haet8BQy6oFUDacWcbWg?referrer=documents"
 
 // Función para cerrar el menú si se hace clic fuera
 const handleClickOutside = (event: MouseEvent) => {
@@ -40,17 +41,23 @@ const handleClickOutside = (event: MouseEvent) => {
 
 onMounted( () => {
     // Escucha los cambios en el usuario para cargar proveedor de salud
+    // Verificar y cargar Proveedor de Salud y Médico Firmante
     watch(
-        () => user.user,
-        (user) => {
-            if (user?.idProveedorSalud) {
-                proveedorSaludStore.loadProveedorSalud(user.idProveedorSalud);
-            }
-            if (user?._id){
-              medicoFirmanteStore.loadMedicoFirmante(user._id);
-            }
-        },
-        { immediate: true } // Ejecutar inmediatamente si ya hay datos cargados
+      () => user.user,
+      async (user) => {
+        datosCargados.value = false; // Comienza como false hasta que se cargue todo
+
+        if (user?.idProveedorSalud) {
+          await proveedorSaludStore.loadProveedorSalud(user.idProveedorSalud);
+        }
+
+        if (user?._id) {
+          await medicoFirmanteStore.loadMedicoFirmante(user._id);
+        }
+
+        datosCargados.value = true; // Solo se marca como cargado cuando ambas promesas terminan
+      },
+      { immediate: true }
     );
 
     setTimeout(() => {
@@ -192,21 +199,11 @@ onBeforeUnmount(() => {
 });
 
 // Verificar si se debe mostrar el mensaje de configuración pendiente
-const mostrarMensajePendiente = ref(false);
-
-watch(
-  () => logotipoPendiente.value || camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0,
-  (newVal) => {
-    if (newVal) {
-      // Small delay to ensure all data is loaded
-      setTimeout(() => {
-        mostrarMensajePendiente.value = newVal;
-      }, 500);
-    } else {
-      mostrarMensajePendiente.value = false;
-    }
-  }
-);
+const mostrarMensajePendiente = computed(() => {
+  return logotipoPendiente.value || 
+    camposPendientesProveedor.value.length > 0 || 
+    camposPendientesMedico.value.length > 0;
+});
 
 // Definir el mensaje adecuado según el estado
 const mensajeConfiguracion = computed(() => {
@@ -214,6 +211,12 @@ const mensajeConfiguracion = computed(() => {
     return "Tus informes aún no están configurados correctamente.";
   } else if (logotipoPendiente.value) {
     return "Aún no has subido el logotipo.";
+  } else if (camposPendientesProveedor.value.length > 0 && camposPendientesMedico.value.length > 0) {
+    return "Algunos campos están incompletos en tu configuración.";
+  } else if (camposPendientesProveedor.value.length > 0) {
+    return '"Hay campos pendientes en "Mi Negocio".';
+  } else if (camposPendientesMedico.value.length > 0) {
+    return '"Hay campos pendientes en "Médico Firmante".';
   } else {
     return "Algunos campos están incompletos en tu configuración.";
   }
@@ -292,7 +295,7 @@ const textoEnlace = computed(() => {
 
     <!-- Mensaje de configuración pendiente -->
     <Transition name="slide-up">
-      <div v-if="mostrarMensajePendiente" 
+      <div v-if="datosCargados && mostrarMensajePendiente" 
           class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105">
         <i class="fa-regular fa-lightbulb text-yellow-500 text-xl mr-1"></i>
         <div>
@@ -303,7 +306,7 @@ const textoEnlace = computed(() => {
         </div>
       </div>
       <div v-else>
-        <div v-if="empresasCargadas && empresas.empresas.length === 0 && ['inicio', 'empresas'].includes(route.name as string)" 
+        <div v-if="datosCargados && empresasCargadas && empresas.empresas.length === 0 && ['inicio', 'empresas'].includes(route.name as string)" 
             class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105">
           <i class="fa-regular fa-lightbulb text-yellow-500 text-xl mr-1"></i>
           <div>
@@ -440,19 +443,19 @@ const textoEnlace = computed(() => {
             <a href="https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">1. Configuración de Informes</a>
           </li>
           <li>
-            <a href="" target="_blank" class="font-light text-gray-400">2. Agregar Clientes y Centros de Trabajo</a>
+            <a href="https://scribehow.com/shared/Agregar_Clientes_y_Centros_de_Trabajo__32Haet8BQy6oFUDacWcbWg?referrer=documents" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">2. Agregar Clientes y Centros de Trabajo</a>
           </li>
           <li>
-            <a href="" target="_blank" class="font-light text-gray-400">3. Registrar Trabajadores</a>
+            <a href="https://scribehow.com/shared/Registrar_Trabajadores__C2clnmBvTT2xGW7QE-YHQQ?referrer=documents" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">3. Registrar Trabajadores</a>
           </li>
           <li>
-            <a href="" target="_blank" class="font-light text-gray-400">4. Gestión de Trabajadores</a>
+            <a href="https://scribehow.com/shared/Gestion_de_Trabajadores__bGNGxMbuRXiKD6G8JiDGIQ?referrer=documents" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">4. Gestión de Trabajadores</a>
           </li>
           <li>
             <a href="" target="_blank" class="font-light text-gray-400">5. Navegación de Expedientes</a>
           </li>
           <li>
-            <a href="" target="_blank" class="font-light text-gray-400">6. Creación de Informes Médicos</a>
+            <a href="https://scribehow.com/shared/Creacion_de_Informes_Medicos__BffBrtm4Qze068R96fLL9w?referrer=documents" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">6. Creación de Informes Médicos</a>
           </li>
           <li>
             <a href="" target="_blank" class="font-light text-gray-400">7. Subir Documentos Externos</a>
