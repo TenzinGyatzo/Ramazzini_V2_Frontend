@@ -48,182 +48,104 @@ export const useDocumentosStore = defineStore("documentos", () => {
       loading.value = true;
       documentsByYear.value = {};
 
-      // Fetch con manejo de errores y validación en cada llamada
-      try {
-        const antidopings = await DocumentosAPI.getAntidopings(trabajadorId);
-        if (Array.isArray(antidopings.data))
-          addAntidopingsByYear(antidopings.data);
-      } catch (error) {
-        console.error("Error al obtener antidopings", error);
-      }
-      try {
-        const aptitudes = await DocumentosAPI.getAptitudes(trabajadorId);
-        if (Array.isArray(aptitudes.data)) addAptitudesByYear(aptitudes.data);
-      } catch (error) {
-        console.error("Error al obtener aptitudes", error);
-      }
-      try {
-        const certificados = await DocumentosAPI.getCertificados(trabajadorId);
-        if (Array.isArray(certificados.data))
-          addCertificadosByYear(certificados.data);
-      } catch (error) {
-        console.error("Error al obtener certificados", error);
-      }
-      try {
-        const documentosExternos = await DocumentosAPI.getDocumentosExternos(
-          trabajadorId
-        );
-        if (Array.isArray(documentosExternos.data))
-          addDocumentosExternosByYear(documentosExternos.data);
-      } catch (error) {
-        console.error("Error al obtener documentosExternos", error);
-      }
-      try {
-        const examenesVista = await DocumentosAPI.getExamenesVista(
-          trabajadorId
-        );
-        if (Array.isArray(examenesVista.data))
-          addExamenesVistaByYear(examenesVista.data);
-      } catch (error) {
-        console.error("Error al obtener examenesVista", error);
-      }
-      try {
-        const exploracionesFisicas =
-          await DocumentosAPI.getExploracionesFisicas(trabajadorId);
-        if (Array.isArray(exploracionesFisicas.data))
-          addExploracionesFisicasByYear(exploracionesFisicas.data);
-      } catch (error) {
-        console.error("Error al obtener exploracionesFisicas", error);
-      }
-      try {
-        const historiasClinicas = await DocumentosAPI.getHistoriasClinicas(
-          trabajadorId
-        );
-        if (Array.isArray(historiasClinicas.data))
-          addHistoriasClinicasByYear(historiasClinicas.data);
-      } catch (error) {
-        console.error("Error al obtener historiasClinicas", error);
-      }
-      try {
-        const notasMedicas = await DocumentosAPI.getNotasMedicas(
-          trabajadorId
-        );
-        if (Array.isArray(notasMedicas.data))
-          addNotasMedicasByYear(notasMedicas.data);
-      } catch (error) {
-        console.error("Error al obtener notasMedicas", error);
-      }
+      // Realizar todas las solicitudes en paralelo
+      const [
+        antidopings,
+        aptitudes,
+        certificados,
+        documentosExternos,
+        examenesVista,
+        exploracionesFisicas,
+        historiasClinicas,
+        notasMedicas
+      ] = await Promise.all([
+        DocumentosAPI.getAntidopings(trabajadorId).catch(error => {
+          console.error("Error al obtener antidopings", error);
+          return { data: [] };
+        }),
+        DocumentosAPI.getAptitudes(trabajadorId).catch(error => {
+          console.error("Error al obtener aptitudes", error);
+          return { data: [] };
+        }),
+        DocumentosAPI.getCertificados(trabajadorId).catch(error => {
+          console.error("Error al obtener certificados", error);
+          return { data: [] };
+        }),
+        DocumentosAPI.getDocumentosExternos(trabajadorId).catch(error => {
+          console.error("Error al obtener documentosExternos", error);
+          return { data: [] };
+        }),
+        DocumentosAPI.getExamenesVista(trabajadorId).catch(error => {
+          console.error("Error al obtener examenesVista", error);
+          return { data: [] };
+        }),
+        DocumentosAPI.getExploracionesFisicas(trabajadorId).catch(error => {
+          console.error("Error al obtener exploracionesFisicas", error);
+          return { data: [] };
+        }),
+        DocumentosAPI.getHistoriasClinicas(trabajadorId).catch(error => {
+          console.error("Error al obtener historiasClinicas", error);
+          return { data: [] };
+        }),
+        DocumentosAPI.getNotasMedicas(trabajadorId).catch(error => {
+          console.error("Error al obtener notasMedicas", error);
+          return { data: [] };
+        })
+      ]);
 
-      // Funciones de agrupación por año
-      function addAntidopingsByYear(data: Antidoping[]) {
-        data.forEach((documento) => {
-          const year = new Date(documento.fechaAntidoping).getFullYear();
+      // Agrupar documentos por año (solo si es un array)
+      const documentosAgrupados = {
+        antidopings: Array.isArray(antidopings.data) ? antidopings.data : [],
+        aptitudes: Array.isArray(aptitudes.data) ? aptitudes.data : [],
+        certificados: Array.isArray(certificados.data) ? certificados.data : [],
+        documentosExternos: Array.isArray(documentosExternos.data) ? documentosExternos.data : [],
+        examenesVista: Array.isArray(examenesVista.data) ? examenesVista.data : [],
+        exploracionesFisicas: Array.isArray(exploracionesFisicas.data) ? exploracionesFisicas.data : [],
+        historiasClinicas: Array.isArray(historiasClinicas.data) ? historiasClinicas.data : [],
+        notasMedicas: Array.isArray(notasMedicas.data) ? notasMedicas.data : []
+      };
+
+      // Procesar documentos y agrupar por año
+      Object.entries(documentosAgrupados).forEach(([tipoDocumento, documentos]) => {
+        if (!Array.isArray(documentos)) return; // Verificación adicional
+
+        documentos.forEach((documento) => {
+          const fechaCampo = obtenerCampoFecha(tipoDocumento, documento);
+          if (!fechaCampo) return; // Evita errores si el campo de fecha es nulo
+
+          const year = new Date(fechaCampo).getFullYear();
+          
           if (!documentsByYear.value[year]) {
             documentsByYear.value[year] = {};
           }
-          if (!documentsByYear.value[year].antidopings) {
-            documentsByYear.value[year].antidopings = [];
+          if (!documentsByYear.value[year][tipoDocumento]) {
+            documentsByYear.value[year][tipoDocumento] = [];
           }
-          documentsByYear.value[year].antidopings.push(documento);
+          documentsByYear.value[year][tipoDocumento].push(documento);
         });
-      }
+      });
 
-      function addAptitudesByYear(data: Aptitud[]) {
-        data.forEach((documento) => {
-          const year = new Date(documento.fechaAptitudPuesto).getFullYear();
-          if (!documentsByYear.value[year]) {
-            documentsByYear.value[year] = {};
-          }
-          if (!documentsByYear.value[year].aptitudes) {
-            documentsByYear.value[year].aptitudes = [];
-          }
-          documentsByYear.value[year].aptitudes.push(documento);
-        });
-      }
-
-      function addCertificadosByYear(data: Certificado[]) {
-        data.forEach((documento) => {
-          const year = new Date(documento.fechaCertificado).getFullYear();
-          if (!documentsByYear.value[year]) {
-            documentsByYear.value[year] = {};
-          }
-          if (!documentsByYear.value[year].certificados) {
-            documentsByYear.value[year].certificados = [];
-          }
-          documentsByYear.value[year].certificados.push(documento);
-        });
-      }
-
-      function addDocumentosExternosByYear(data: DocumentoExterno[]) {
-        data.forEach((documento) => {
-          const year = new Date(documento.fechaDocumento).getFullYear();
-          if (!documentsByYear.value[year]) {
-            documentsByYear.value[year] = {};
-          }
-          if (!documentsByYear.value[year].documentosExternos) {
-            documentsByYear.value[year].documentosExternos = [];
-          }
-          documentsByYear.value[year].documentosExternos.push(documento);
-        });
-      }
-
-      function addExamenesVistaByYear(data: ExamenVista[]) {
-        data.forEach((documento) => {
-          const year = new Date(documento.fechaExamenVista).getFullYear();
-          if (!documentsByYear.value[year]) {
-            documentsByYear.value[year] = {};
-          }
-          if (!documentsByYear.value[year].examenesVista) {
-            documentsByYear.value[year].examenesVista = [];
-          }
-          documentsByYear.value[year].examenesVista.push(documento);
-        });
-      }
-
-      function addExploracionesFisicasByYear(data: ExploracionFisica[]) {
-        data.forEach((documento) => {
-          const year = new Date(documento.fechaExploracionFisica).getFullYear();
-          if (!documentsByYear.value[year]) {
-            documentsByYear.value[year] = {};
-          }
-          if (!documentsByYear.value[year].exploracionesFisicas) {
-            documentsByYear.value[year].exploracionesFisicas = [];
-          }
-          documentsByYear.value[year].exploracionesFisicas.push(documento);
-        });
-      }
-
-      function addHistoriasClinicasByYear(data: HistoriaClinica[]) {
-        data.forEach((documento) => {
-          const year = new Date(documento.fechaHistoriaClinica).getFullYear();
-          if (!documentsByYear.value[year]) {
-            documentsByYear.value[year] = {};
-          }
-          if (!documentsByYear.value[year].historiasClinicas) {
-            documentsByYear.value[year].historiasClinicas = [];
-          }
-          documentsByYear.value[year].historiasClinicas.push(documento);
-        });
-      }
-
-      function addNotasMedicasByYear(data: NotaMedica[]) {
-        data.forEach((documento) => {
-          const year = new Date(documento.fechaNotaMedica).getFullYear();
-          if (!documentsByYear.value[year]) {
-            documentsByYear.value[year] = {};
-          }
-          if (!documentsByYear.value[year].notasMedicas) {
-            documentsByYear.value[year].notasMedicas = [];
-          }
-          documentsByYear.value[year].notasMedicas.push(documento);
-        });
-      }
-      
     } catch (error) {
-      console.error("Error al obtener documentos", error);
+      console.error("Error general al obtener documentos", error);
     } finally {
       loading.value = false;
     }
+  }
+
+  // Función para obtener el campo de fecha correctamente
+  function obtenerCampoFecha(tipoDocumento: string, documento: any): string {
+    const fechaCampos = {
+      antidopings: "fechaAntidoping",
+      aptitudes: "fechaAptitudPuesto",
+      certificados: "fechaCertificado",
+      documentosExternos: "fechaDocumento",
+      examenesVista: "fechaExamenVista",
+      exploracionesFisicas: "fechaExploracionFisica",
+      historiasClinicas: "fechaHistoriaClinica",
+      notasMedicas: "fechaNotaMedica"
+    };
+
+    return documento?.[fechaCampos[tipoDocumento]] || "";
   }
 
   function setCurrentTypeOfDocument(type: string) {

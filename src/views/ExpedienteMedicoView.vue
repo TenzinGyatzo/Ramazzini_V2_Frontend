@@ -155,21 +155,31 @@ const documentTypeLabels = {
   notaMedica: "Nota Médica",
 };
 
-const fetchData = () => {
+const fetchData = async () => {
   const empresaId = String(route.params.idEmpresa);
   const centroTrabajoId = String(route.params.idCentroTrabajo);
   const trabajadorId = String(route.params.idTrabajador);
 
-  documentos.fetchAllDocuments(trabajadorId);
+  try {
+    await Promise.all([
+      documentos.fetchAllDocuments(trabajadorId),
+      empresas.fetchEmpresaById(empresaId),
+      centrosTrabajo.fetchCentroTrabajoById(empresaId, centroTrabajoId),
+      trabajadores.fetchTrabajadorById(empresaId, centroTrabajoId, trabajadorId)
+    ]);
 
-  empresas.currentEmpresaId = empresaId;
-  empresas.fetchEmpresaById(empresaId);
-  centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;
-  centrosTrabajo.fetchCentroTrabajoById(empresaId, centroTrabajoId);
-  trabajadores.currentTrabajadorId = trabajadorId;
-  trabajadores.fetchTrabajadorById(empresaId, centroTrabajoId, trabajadorId);
-  formData.resetFormData();
+    // Asignar IDs directamente después de las cargas
+    empresas.currentEmpresaId = empresaId;
+    centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;
+    trabajadores.currentTrabajadorId = trabajadorId;
+
+    // Resetear FormData al final
+    formData.resetFormData();
+  } catch (error) {
+    console.error("Error al cargar datos:", error);
+  } 
 };
+
 
 onMounted(fetchData);
 
