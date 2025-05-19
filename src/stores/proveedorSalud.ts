@@ -186,6 +186,32 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         }
     }
 
+    async function getCantidadHistoriasClinicasById(proveedorSaludId: string) {
+        try {
+            loading.value = true;
+            const { data } = await ProveedorSaludAPI.getTodasHistoriasClinicas(proveedorSaludId);
+            return data;
+        } catch (error) {
+            console.log(error);
+            return [];
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function getCantidadNotasMedicasById(proveedorSaludId: string) {
+        try {
+            loading.value = true;
+            const { data } = await ProveedorSaludAPI.getTodasNotasMedicas(proveedorSaludId);
+            return data;
+        } catch (error) {
+            console.log(error);
+            return [];
+        } finally {
+            loading.value = false;
+        }
+    }
+
     async function getAllProveedores() {
         try {
             loading.value = true;
@@ -213,6 +239,8 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         getHistoriasClinicasDelMes,
         getHistoriasClinicasDelMesById,
         getNotasMedicasDelMesById,
+        getCantidadHistoriasClinicasById,
+        getCantidadNotasMedicasById,
         getAllProveedores
     };
 });

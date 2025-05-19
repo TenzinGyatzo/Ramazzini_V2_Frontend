@@ -53,6 +53,7 @@ export const useEmpresasStore = defineStore("empresas", () => {
       } else {
         empresas.value = data; // Si hay empresas, las asignamos
       }
+      return data; // Retornamos los datos para su uso
     } catch (error) {
       console.log(error);
       empresas.value = [];

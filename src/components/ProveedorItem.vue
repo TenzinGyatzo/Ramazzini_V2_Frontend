@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { format, differenceInDays, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { ca, es } from 'date-fns/locale';
 
 const props = defineProps({
   id: String,
@@ -18,6 +18,10 @@ const props = defineProps({
   suscripcion: Object,
   historiasClinicasMes: Number,
   notasMedicasMes: Number,
+  todasLasHistoriasClinicas: Number,
+  todasLasNotasMedicas: Number,
+  empresas: Array,
+  users: Object,
 });
 
 const historiasDelMes = ref(0);
@@ -91,18 +95,24 @@ const formatCurrency = (amount) => {
 </script>
 
 <template>
-    <div class="grid grid-cols-1 md:grid-cols-4 w-full max-w-3xl mx-auto bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out h-102">
+    <div class="text-sm grid grid-cols-1 md:grid-cols-4 w-full max-w-3xl mx-auto bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out h-102">
         <div class="col-span-3">
-            <p class="text-gray-600"><strong>👤 Nombre:</strong> {{ nombre || 'No disponible' }}</p>
+            <p class="text-gray-600"><strong>🏢 Negocio:</strong> {{ nombre || 'No disponible' }}</p>
+            <p class="text-gray-600"><strong>👤 Usuario Principal:</strong> {{ users.data[0].username }}</p>
+            <p class="text-gray-600"><strong>📧 Correo:</strong> {{ users.data[0].email }}</p>
+            <p class="text-gray-600"><strong>📞 Teléfono:</strong> {{ users.data[0].phone }}</p>
             <!-- <p class="text-gray-600"><strong>🆔 RFC:</strong> {{ RFC || 'No disponible' }}</p> -->
             <!-- <p class="text-gray-600"><strong>📧 Correo:</strong> {{ correoElectronico || 'No disponible' }}</p> -->
             <p class="text-gray-600"><strong>🎨 Color Informe:</strong> {{ nombreColorInforme }}</p>
             <p class="text-gray-600"><strong>🚦 Semaforización:</strong> {{ semaforizacionActivada ? 'Activada' : 'Desactivada' }}</p>
+            <p class="text-gray-600"><strong>📊 Clientes registrados:</strong> {{ empresas.length }}</p>
             <p class="text-gray-600">
-                <strong>👥 H. Clínicas Usadas en {{ mesActual }}:</strong>
+                <strong>👥 H. C. Usadas en {{ mesActual }}:</strong>
                 {{ `${historiasClinicasMes} de ${maxHistoriasPermitidasAlMes} permitidas` }}
             </p>
             <p class="text-gray-600"><strong>📝 Notas Médicas Usadas en {{ mesActual }}:</strong> {{ `${notasMedicasMes} ${notasMedicasMes === 1 ? 'nota' : 'notas'}` }}</p>
+            <p class="text-gray-600"><strong>👥 Total de H. Clínicas:</strong> {{ `${todasLasHistoriasClinicas}` }} historias</p>
+            <p class="text-gray-600"><strong>📝 Total de Notas Médicas:</strong> {{ `${todasLasNotasMedicas} ${todasLasNotasMedicas === 1 ? 'nota' : 'notas'}` }}</p>
             <p class="text-gray-600"><strong>⏳ Periodo Gratuito:</strong> {{ periodoGratuito }}</p>
             <p class="text-gray-600">
                 <strong>📍 Estado: </strong>

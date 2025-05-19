@@ -37,6 +37,14 @@ export default {
         return proveedor.get(`/notas-medicas-del-mes/${proveedorId}`);
     },
 
+    getTodasHistoriasClinicas(proveedorId: string) {
+        return proveedor.get(`/cantidad-historias-clinicas/${proveedorId}`);
+    },
+
+    getTodasNotasMedicas(proveedorId: string) {
+        return proveedor.get(`/cantidad-notas-medicas/${proveedorId}`);
+    },
+
     getAllProveedores() {
         return proveedor.get("/obtener-proveedores-salud");
     }
