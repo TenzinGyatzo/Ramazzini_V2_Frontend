@@ -108,7 +108,7 @@ const handleSubmit = async (data) => {
 
   // Agregar solo los campos con valores definidos
   Object.entries(data).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
+    if (value !== undefined && value !== null) {
       formData.append(key, value);
     }
   });
