@@ -63,7 +63,7 @@ const copiarTexto = (texto) => {
             <p class="font-medium mb-1 text-gray-800 leading-5">Para cada una de las alteraciones encontradas debe de
                 haber una medida preventiva recomendada. </p>
 
-            <p class="font-medium mb-1 text-gray-800 leading-5 mt-4">1. Puedes iniciar con los siguientes enunciados:</p>
+<!--             <p class="font-medium mb-1 text-gray-800 leading-5 mt-4">1. Puedes iniciar con los siguientes enunciados:</p>
             <ul class="list-disc list-inside">
                 <li class="text-gray-700 hover:text-emerald-700 cursor-pointer leading-4">
                     <p class="italic text-sm font-light inline"
@@ -107,12 +107,12 @@ const copiarTexto = (texto) => {
                         Se recomienda...
                     </p>
                 </li>
-            </ul>
+            </ul> -->
 
-            <p class="font-medium mb-1 text-gray-800 leading-5 mt-4">2. Separar cada recomendacion con punto y seguido.</p>
+            <!-- <p class="font-medium mb-1 text-gray-800 leading-5 mt-4">1. Separa cada recomendacion con punto y seguido.</p> -->
             
             <!-- Ejemplos -->
-            <p class="font-medium mb-1 text-gray-800 leading-5 mt-4">3. Ejemplos de recomendaciones:<span v-if="mensajeCopiado" class="font-medium mb-1 leading-5 ml-2 text-emerald-600 text-sm">¡Copiado!</span></p>
+            <p class="font-medium mb-1 text-gray-800 leading-5 mt-4">Ejemplos de recomendaciones:<span v-if="mensajeCopiado" class="font-medium mb-1 leading-5 ml-2 text-emerald-600 text-sm">¡Copiado!</span></p>
             <div class="space-y-2">
                 <!-- Botón principal -->
                 <button

@@ -85,7 +85,7 @@ const modalContent = computed(() => {
     return {
       title: 'Tu prueba gratuita ha finalizado',
       message: 'No te detengas aquí, sigue optimizando tu práctica.',
-      price: 'A partir de $399/mes, desbloquea el potencial completo de nuestro software y obtén acceso a todas las herramientas que necesitas.',
+      price: 'A partir de $699/mes, desbloquea el potencial completo de nuestro software y obtén acceso a todas las herramientas que necesitas.',
       benefits: [
         'Registra y gestiona a tus clientes y sus trabajadores.',
         'Genera informes y documentos personalizados de forma automática.',

@@ -13,5 +13,5 @@ defineProps({
 </script>
 
 <template>
-  <Bar :data="data" :options="options" :height="150" />
+  <Bar :data="data" :options="options" :height="147" />
 </template>
