@@ -52,7 +52,7 @@ const handleSubmit = async () => {
     if (!trabajadorId) return;
 
     const payload = limpiarCamposOpcionales(rtEnEdicion.value);
-    console.log('payload', payload);
+    // console.log('payload', payload);
 
     if (modo.value === 'editar') {
       await riesgosTrabajoStore.updateRiesgoTrabajo(
