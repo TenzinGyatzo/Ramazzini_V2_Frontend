@@ -24,6 +24,7 @@ const proveedorSalud = ref(
 const suscripcionActual = ref({});
 const loading = ref(false);
 const router = useRouter();
+const mostrarModalPago = ref(false);
 
 // Planes disponibles
 const plans = [
@@ -609,7 +610,7 @@ const porcentajeHistorias = computed(() => {
           <p v-if="suggestion" class="text-yellow-600 mt-2">{{ suggestion }}</p>
         </div>
         <button 
-          @click="requestSubscription" 
+          @click="mostrarModalPago = true"
           :disabled="loading" 
           class="bg-gradient-to-r from-sky-500 to-sky-700 text-white px-6 py-2 rounded-lg disabled:opacity-50 hover:scale-105 transition-all duration-300 ease-in-out active:scale-95">
           {{ loading ? 'Procesando...' : subscriptionButtonText }}
@@ -618,6 +619,92 @@ const porcentajeHistorias = computed(() => {
     </div>
   </div>
   </Transition>
+
+  <!-- Modal de recomendaciones -->
+  <Teleport to="body">
+    <transition name="fade">
+      <div v-if="mostrarModalPago" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 ease-in-out" @click.self="mostrarModalPago = false">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg lg:max-w-xl w-full m-4 transform transition-all duration-300 ease-in-out scale-95 opacity-0 animate-fadeInScale">
+          <div class="absolute top-4 right-4">
+            <button @click="mostrarModalPago = false" class="text-gray-400 hover:text-gray-600 transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+
+          <div class="p-6 sm:p-8 space-y-5">
+            <div class="text-center">
+              <span class="text-4xl lg:text-5xl mb-2">💳</span> <h2 class="text-2xl lg:text-3xl font-bold text-gray-800">¡Prepara tu Pago Exitoso!</h2>
+            </div>
+
+            <p class="text-gray-600 text-sm lg:text-base text-center">
+              Para asegurar que tu suscripción se active sin problemas, sigue estos simples consejos:
+            </p>
+
+            <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 space-y-3">
+              <p class="text-sm lg:text-base text-sky-700">
+                <strong class="font-semibold">🔒 Tu seguridad es clave.</strong> Mercado Pago utiliza sistemas avanzados para prevenir fraudes. Esto es excelente para proteger tus datos, aunque en ocasiones puede rechazar pagos legítimos si detecta algo inusual.
+              </p>
+              <p class="font-semibold text-gray-700 text-base lg:text-lg">✅ Para facilitar la aprobación:</p>
+              <ul class="list-none space-y-2 text-gray-600 text-sm lg:text-base">
+                <li class="flex items-start">
+                  <svg class="w-5 h-5 text-sky-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                  <span>Usa una tarjeta <strong class="font-medium">que uses con frecuencia</strong> para compras online.</span>
+                </li>
+                <li class="flex items-start">
+                  <svg class="w-5 h-5 text-sky-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                  <span>Paga desde tu <strong class="font-medium">dispositivo y red habitual</strong> (Wi-Fi o datos).</span>
+                </li>
+                <li class="flex items-start">
+                  <svg class="w-5 h-5 text-sky-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                  <span>Verifica que todos <strong class="font-medium">tus datos sean correctos</strong> al ingresarlos.</span>
+                </li>
+                <li class="flex items-start">
+                  <svg class="w-5 h-5 text-sky-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                  <span>Si tienes cuenta de Mercado Pago, <strong class="font-medium">inicia sesión y paga desde allí</strong> para mayor seguridad.</span>
+                </li>
+              </ul>
+            </div>
+
+            <p class="text-xs lg:text-sm text-gray-500 text-center">
+                Si tu pago es rechazado, ¡no te preocupes! Intenta con otro método o <a href="https://wa.link/yzc8p1" target="_blank" rel="noopener noreferrer" class="text-sky-600 hover:underline font-medium">contáctanos</a>. Estamos para ayudarte.
+            </p>
+
+            <div class="flex flex-col sm:flex-row justify-end gap-3 pt-3">
+              <button 
+                @click="!loading && (mostrarModalPago = false)"
+                :disabled="loading"
+                class="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-gray-200 transition-all text-sm lg:text-base font-medium w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cerrar
+              </button>
+              <button
+                @click="() => { loading = true; requestSubscription(); }"
+                :disabled="loading"
+                class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg focus:ring-2 focus:ring-sky-300 focus:ring-offset-1 transition-all text-sm lg:text-base font-semibold w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ loading ? 'Procesando...' : 'Entendido, ir al Pago' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+  </Teleport>
+
 </template>
 
-
+<style>
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .animate-fadeInScale {
+    animation: fadeInScale 0.3s ease-out forwards;
+  }
+</style>
