@@ -610,7 +610,7 @@ const porcentajeHistorias = computed(() => {
           <p v-if="suggestion" class="text-yellow-600 mt-2">{{ suggestion }}</p>
         </div>
         <button 
-          @click="mostrarModalPago = true"
+          @click="proveedorSalud?.suscripcionActiva ? requestSubscription() : mostrarModalPago = true"
           :disabled="loading" 
           class="bg-gradient-to-r from-sky-500 to-sky-700 text-white px-6 py-2 rounded-lg disabled:opacity-50 hover:scale-105 transition-all duration-300 ease-in-out active:scale-95">
           {{ loading ? 'Procesando...' : subscriptionButtonText }}
