@@ -122,7 +122,7 @@ function obtenerInterpretacion(valor) {
       <div class="flex space-x-4 mt-1 mb-4">
         <div class="flex flex-col space-y-1">
           <input type="number"
-            class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+            class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
             value="20" step="5" min="10" max="200" readonly />
         </div>
         <p class="text-3xl">/</p>
@@ -137,7 +137,7 @@ function obtenerInterpretacion(valor) {
       <div class="flex space-x-4 mt-1 mb-4">
         <div class="flex flex-col space-y-1">
           <input type="number"
-            class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+            class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
             value="20" step="5" min="10" max="200" readonly />
         </div>
         <p class="text-3xl">/</p>
@@ -150,7 +150,7 @@ function obtenerInterpretacion(valor) {
 
       <label for="">Interpretación</label>
       <input type="text"
-        class="w-full p-3 mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+        class="w-full p-3 mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
         v-model="conCorreccionCercanaInterpretacion" readonly>
     </div>
   </div>

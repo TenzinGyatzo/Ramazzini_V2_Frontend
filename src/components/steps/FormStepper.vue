@@ -457,7 +457,7 @@ export default {
         </button>
   
         <button :class="{ invisible: stepsStore.currentStep > stepsStore.steps.length }" @click="stepsStore.nextStep"
-          class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-all duration-300">
+          class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
           Siguiente &gt;
         </button>
       </div>
@@ -483,7 +483,7 @@ export default {
               &lt; Anterior
             </button>
             <button @click="handleSubmit"
-              class="px-4 py-2 text-xs md:text-base rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-transform duration-200 ease-in-out hover:scale-110 glow-animation">
+              class="px-4 py-2 text-xs md:text-base rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-transform duration-200 ease-in-out hover:scale-110 glow-animation focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
               Crear PDF
             </button>
           </div>

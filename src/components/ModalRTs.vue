@@ -275,13 +275,13 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
             <!-- Columna 1: Fecha del Riesgo -->
             <div class="col-span-3">
               <label class="block text-sm font-medium text-gray-600">Fecha del Riesgo</label>
-              <input type="date" v-model="rtEnEdicion.fechaRiesgo" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" />
+              <input type="date" v-model="rtEnEdicion.fechaRiesgo" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
             </div>
 
             <!-- Columna 2: Reca√≠da (Etiqueta e Input separados) -->
             <div class="col-span-1 lg:col-span-2">
               <label class="block text-sm font-medium text-gray-600">Reca√≠da</label>
-              <select v-model="rtEnEdicion.recaida" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500">
+              <select v-model="rtEnEdicion.recaida" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
                 <option disabled value="">Selecciona</option>
                 <option>Si</option>
                 <option>No</option>
@@ -291,7 +291,7 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
             <!-- Columna 3: Tipo de Riesgo -->
             <div class="col-span-4">
               <label class="block text-sm font-medium text-gray-600">Tipo de Riesgo</label>
-              <select v-model="rtEnEdicion.tipoRiesgo" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500">
+              <select v-model="rtEnEdicion.tipoRiesgo" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
                 <option disabled value="">Selecciona un tipo</option>
                 <option>Accidente de Trabajo</option>
                 <option>Accidente de Trayecto</option>
@@ -304,7 +304,7 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
           <div class="grid md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-600">Naturaleza de la lesi√≥n</label>
-              <input type="text" v-model="rtEnEdicion.naturalezaLesion" placeholder="Descripci√≥n de la lesi√≥n" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" list="nat-lesion-sugerencias" />
+              <input type="text" v-model="rtEnEdicion.naturalezaLesion" placeholder="Descripci√≥n de la lesi√≥n" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" list="nat-lesion-sugerencias" />
               <datalist id="nat-lesion-sugerencias">
                 <option v-for="sugerencia in sugerenciasNatLesion" :key="sugerencia" :value="sugerencia">{{ sugerencia }}</option>
               </datalist>
@@ -312,7 +312,7 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
 
             <div>
               <label class="block text-sm font-medium text-gray-600">Parte afectada</label>
-              <input type="text" v-model="rtEnEdicion.parteCuerpoAfectada" placeholder="Zona afectada" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" list="parte-cuerpo-sugerencias" />
+              <input type="text" v-model="rtEnEdicion.parteCuerpoAfectada" placeholder="Zona afectada" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" list="parte-cuerpo-sugerencias" />
               <datalist id="parte-cuerpo-sugerencias">
                 <option v-for="sugerencia in sugerenciasParteCuerpo" :key="sugerencia" :value="sugerencia">{{ sugerencia }}</option>
               </datalist>
@@ -323,7 +323,7 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-600">Manejo</label>
-              <select v-model="rtEnEdicion.manejo" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500">
+              <select v-model="rtEnEdicion.manejo" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
                 <option disabled value="">Selecciona un manejo</option>
                 <option>IMSS</option>
                 <option>Interno</option>
@@ -332,7 +332,7 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
 
             <div>
               <label class="block text-sm font-medium text-gray-600">NSS</label>
-              <input type="text" v-model="rtEnEdicion.NSS" placeholder="N√∫mero de Seguridad Social" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" />
+              <input type="text" v-model="rtEnEdicion.NSS" placeholder="N√∫mero de Seguridad Social" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
               <p v-if="nssError" class="text-red-500 text-sm mt-1">{{ nssError }}</p>
             </div>
           </div>
@@ -341,7 +341,7 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-600">Estatus de Alta</label>
-              <select v-model="rtEnEdicion.alta" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500">
+              <select v-model="rtEnEdicion.alta" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
                 <option disabled value="">Selecciona un estatus</option>
                 <option>Incapacidad Activa</option>
                 <option>Alta ST2</option>
@@ -351,7 +351,7 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
 
             <div>
               <label class="block text-sm font-medium text-gray-600">Fecha de Alta</label>
-              <input type="date" v-model="rtEnEdicion.fechaAlta" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" />
+              <input type="date" v-model="rtEnEdicion.fechaAlta" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
             </div>
           </div>
 
@@ -363,13 +363,13 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
                 <span class="hidden md:inline">D√≠as de Incapacidad</span>
                 <span class="md:hidden">Incapacidad</span>
               </label>
-              <input type="number" min="0" v-model="rtEnEdicion.diasIncapacidad" placeholder="0" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500" />
+              <input type="number" min="0" v-model="rtEnEdicion.diasIncapacidad" placeholder="0" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
             </div>
 
             <!-- Secuelas y Porcentaje de IPP -->
             <div class="col-span-1 flex flex-col items-start">
               <label class="block text-sm font-medium text-gray-600">Secuelas</label>
-              <select v-model="rtEnEdicion.secuelas" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500">
+              <select v-model="rtEnEdicion.secuelas" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
                 <option disabled value="">Selecciona</option>
                 <option>Si</option>
                 <option>No</option>
@@ -388,7 +388,7 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
               v-model="rtEnEdicion.porcentajeIPP" 
               placeholder="0" 
               :disabled="!rtEnEdicion.secuelas || rtEnEdicion.secuelas === 'No'" 
-              class="w-full p-3 border rounded-lg focus:outline-none focus:ring-emerald-500 disabled:bg-gray-100 disabled:text-gray-400"
+              class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-100 disabled:text-gray-400"
               />
             </div>
 
@@ -412,7 +412,7 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
             <button @click="modo = 'listado'; rtEnEdicion = null" class="w-1/2 py-2 bg-white border text-gray-700 font-medium rounded-lg hover:bg-gray-100">
               Cancelar
             </button>
-            <button @click="handleSubmit" class="w-1/2 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-all">
+            <button @click="handleSubmit" class="w-1/2 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
               Guardar
             </button>
           </div>
