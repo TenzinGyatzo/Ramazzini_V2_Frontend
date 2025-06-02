@@ -116,16 +116,31 @@ const antidopingResumen = computed(() => {
     return 'No hay antidopings disponibles';
   }
 
-  // Evaluar si todos los parámetros son 'Negativo'
-  const todosNegativos = 
-    nearestAntidoping.value.marihuana === 'Negativo' &&
-    nearestAntidoping.value.cocaina === 'Negativo' &&
-    nearestAntidoping.value.anfetaminas === 'Negativo' &&
-    nearestAntidoping.value.metanfetaminas === 'Negativo' &&
-    nearestAntidoping.value.opiaceos === 'Negativo';
+  // Contar cuántos parámetros están presentes
+  const evaluados = [
+    'marihuana',
+    'cocaina',
+    'anfetaminas',
+    'metanfetaminas',
+    'opiaceos',
+    'benzodiacepinas',
+    'fenciclidina',
+    'metadona',
+    'barbituricos',
+    'antidepresivosTriciclicos'
+  ].filter(param => nearestAntidoping.value[param] !== undefined);
+
+  // Evaluar si todos los evaluados son 'Negativo'
+  const todosNegativos = evaluados.every(param => nearestAntidoping.value[param] === 'Negativo');
 
   if (todosNegativos) {
-    return 'Negativo a cinco parámetros';
+    const cantidadEnLetras = {
+      5: 'cinco',
+      6: 'seis',
+      10: 'diez'
+    }[evaluados.length] || evaluados.length;
+
+    return `Negativo a ${cantidadEnLetras} parámetros`;
   }
 
   // Si hay algún positivo, construir el mensaje con las sustancias correspondientes
@@ -135,11 +150,16 @@ const antidopingResumen = computed(() => {
     nearestAntidoping.value.anfetaminas !== 'Negativo' ? 'Anfetaminas' : null,
     nearestAntidoping.value.metanfetaminas !== 'Negativo' ? 'Metanfetaminas' : null,
     nearestAntidoping.value.opiaceos !== 'Negativo' ? 'Opiáceos' : null,
-  ].filter(Boolean) // Filtrar valores nulos o `undefined`
-    .join(', '); // Unir los nombres en una cadena separada por comas
+    nearestAntidoping.value.benzodiacepinas !== 'Negativo' ? 'Benzodiazepinas' : null,
+    nearestAntidoping.value.fenciclidina !== 'Negativo' ? 'Fenciclidina' : null,
+    nearestAntidoping.value.metadona !== 'Negativo' ? 'Metadona' : null,
+    nearestAntidoping.value.barbituricos !== 'Negativo' ? 'Barbitúricos' : null,
+    nearestAntidoping.value.antidepresivosTriciclicos !== 'Negativo' ? 'Antidepresivos Tricíclicos' : null
+  ].filter(Boolean).join(', '); // Filtrar valores nulos o `undefined` y unirlos en una cadena separada por comas
 
   return `Positivo a: ${sustanciasPositivas}`;
 });
+
 </script>
 
 <template>
