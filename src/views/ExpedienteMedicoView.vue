@@ -168,6 +168,8 @@ const fetchData = async () => {
       trabajadores.fetchTrabajadorById(empresaId, centroTrabajoId, trabajadorId)
     ]);
 
+    console.log("Documents loaded:", documentos.documentsByYear); // Quitar console.log
+
     // Asignar IDs directamente después de las cargas
     empresas.currentEmpresaId = empresaId;
     centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;

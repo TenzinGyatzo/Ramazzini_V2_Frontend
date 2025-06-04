@@ -10,6 +10,7 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento } from '@/helpers/rutas.ts';
+import ModalPdfEliminado from './ModalPdfEliminado.vue';
 
 const router = useRouter();
 const empresas = useEmpresasStore();
@@ -21,6 +22,10 @@ const proveedorSaludStore = useProveedorSaludStore();
 const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado;
 const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
 const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
+
+const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
+
+const mostrarModalPdfEliminado = ref(false);
 
 const emit = defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate', 'openSubscriptionModal']);
 
@@ -212,8 +217,12 @@ const abrirPdf = async (ruta, nombrePDF) => {
             alert('El archivo PDF no existe o no es válido.');
         }
     } catch (error) {
-        console.error('Error al intentar cargar el archivo PDF:', error.message);
-        alert('Ocurrió un error al intentar cargar el archivo PDF.');
+        if (error.response && error.response.status === 404) {
+            mostrarModalPdfEliminado.value = true;
+        } else {
+            console.error('Error al intentar cargar el archivo PDF:', error.message);
+            alert('Ocurrió un error al intentar cargar el archivo PDF.');
+        }
     }
 };
 
@@ -398,9 +407,44 @@ const mensajeNegativo = computed(() => {
   return null
 })
 ///////////////////////////////////////////
+
+const abrirDocumentoCorrespondiente = () => {
+  const tipoSinEspacios = props.documentoTipo.toLowerCase().replace(/\s+/g, '');
+  const doc = {
+    'antidoping': props.antidoping,
+    'aptitud': props.aptitud,
+    'certificado': props.certificado,
+    'documentoexterno': props.documentoExterno,
+    'examenvista': props.examenVista,
+    'exploracionfisica': props.exploracionFisica,
+    'historiaclinica': props.historiaClinica,
+    'notamedica': props.notaMedica,
+  }[tipoSinEspacios];
+
+  const fecha = doc?.fechaAntidoping || doc?.fechaDocumento || doc?.fechaCertificado;
+  const nombreArchivo = fecha
+    ? `${props.documentoTipo} ${convertirFechaISOaDDMMYYYY(fecha)}.pdf`
+    : `${props.documentoTipo}.pdf`;
+
+  abrirPdf(`${doc.rutaPDF}`, nombreArchivo);
+};
+
 </script>
 
 <template>
+    <transition name="fade">
+        <ModalPdfEliminado
+            v-if="mostrarModalPdfEliminado"
+            :tipo="documentoTipo.toLowerCase().replace(/\s+/g, '')"
+            :empresaId="empresas.currentEmpresaId"
+            :trabajadorId="trabajadores.currentTrabajadorId"
+            :documentoId="documentoId"
+            :userId="user._id"
+            :onClose="() => (mostrarModalPdfEliminado = false)"
+            :onAbrirPdf="abrirDocumentoCorrespondiente"
+        />
+    </transition>
+
     <div
         class="ring-1 ring-gray-200 border-t-0 bg-white hover:bg-gray-50 shadow-lg flex justify-between items-center md:p-2 transition-transform duration-300 ease-in-out cursor-pointer">
         <div class="flex items-center">

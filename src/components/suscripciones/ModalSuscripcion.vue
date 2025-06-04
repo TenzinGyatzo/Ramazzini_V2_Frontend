@@ -154,7 +154,7 @@ const modalContent = computed(() => {
 </script>
 
 <template>
-  <div v-if="modalContent.show !== false" class="modal fixed top-0 left-0 z-20 p-8 h-screen w-full grid place-items-center">
+  <div v-if="modalContent.show !== false" class="modal fixed top-0 left-0 z-50 p-8 h-screen w-full grid place-items-center">
     <div class="absolute top-0 left-0 w-full h-full bg-gray-800 bg-opacity-60 backdrop-blur-sm" @click="closeModal"></div>
 
     <Transition appear name="fade">
