@@ -409,41 +409,43 @@ const mensajeNegativo = computed(() => {
 })
 ///////////////////////////////////////////
 
+const construirRutaYNombrePDF = () => {
+  const tipoSinEspacios = props.documentoTipo.toLowerCase().replace(/\s+/g, '');
+  const doc = {
+    'antidoping': props.antidoping,
+    'aptitud': props.aptitud, 
+    'certificado': props.certificado,
+    'examenvista': props.examenVista,
+    'exploracionfisica': props.exploracionFisica,
+    'historiaclinica': props.historiaClinica,
+    'notamedica': props.notaMedica,
+  }[tipoSinEspacios];
+
+  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaCertificado || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica;
+
+  const tiposDocumentos = {
+    'antidoping': 'Antidoping',
+    'aptitud': 'Aptitud',
+    'certificado': 'Certificado',
+    'examenvista': 'Examen Vista', 
+    'exploracionfisica': 'Exploracion Fisica',
+    'historiaclinica': 'Historia Clinica',
+    'notamedica': 'Nota Medica'
+  };
+
+  const tipoDocumentoFormateado = tiposDocumentos[tipoSinEspacios];
+  const fechaFormateada = fecha ? convertirFechaISOaDDMMYYYY(fecha).replace(/\//g, '-') : '';
+  const nombreArchivo = fecha ? `${tipoDocumentoFormateado} ${fechaFormateada}.pdf` : `${tipoDocumentoFormateado}.pdf`;
+
+  return {
+      ruta: doc.rutaPDF,        // solo la carpeta
+      nombre: nombreArchivo     // solo el nombre del archivo
+  };
+};
+
 const abrirDocumentoCorrespondiente = () => {
-    const tipoSinEspacios = props.documentoTipo.toLowerCase().replace(/\s+/g, '');
-    const doc = {
-        'antidoping': props.antidoping,
-        'aptitud': props.aptitud, 
-        'certificado': props.certificado,
-        'examenvista': props.examenVista,
-        'exploracionfisica': props.exploracionFisica,
-        'historiaclinica': props.historiaClinica,
-        'notamedica': props.notaMedica,
-    }[tipoSinEspacios];
-
-    const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaCertificado || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica;
-
-    // Mapeo de tipos de documentos con el formato correcto
-    const tiposDocumentos = {
-        'antidoping': 'Antidoping',
-        'aptitud': 'Aptitud',
-        'certificado': 'Certificado',
-        'examenvista': 'Examen Vista', 
-        'exploracionfisica': 'Exploracion Fisica',
-        'historiaclinica': 'Historia Clinica',
-        'notamedica': 'Nota Medica'
-    };
-
-    const tipoDocumentoFormateado = tiposDocumentos[tipoSinEspacios];
-
-    // Formatear fecha como dd-mm-aaaa
-    const fechaFormateada = fecha ? convertirFechaISOaDDMMYYYY(fecha).replace(/\//g, '-') : '';
-
-    const nombreArchivo = fecha
-        ? `${tipoDocumentoFormateado} ${fechaFormateada}.pdf`
-        : `${tipoDocumentoFormateado}.pdf`;
-
-    abrirPdf(`${doc.rutaPDF}`, nombreArchivo);
+  const { ruta, nombre } = construirRutaYNombrePDF();
+  abrirPdf(ruta, nombre); 
 };
 
 </script>
@@ -459,6 +461,7 @@ const abrirDocumentoCorrespondiente = () => {
             :userId="user._id"
             :onClose="() => (mostrarModalPdfEliminado = false)"
             :onAbrirPdf="abrirDocumentoCorrespondiente"
+            :onAbrirPdfMetadata="construirRutaYNombrePDF"
         />
     </transition>
 
