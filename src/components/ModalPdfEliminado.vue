@@ -61,14 +61,16 @@ const regenerar = async () => {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" @click="props.onClose">
     <div class="bg-white rounded-xl p-6 shadow-xl max-w-md w-full">
       <template v-if="!isLoading">
-        <h2 class="text-xl font-semibold mb-4 text-gray-800">
-          PDF eliminado automáticamente
+        <h2 class="text-xl font-semibold mb-4 text-emerald-700 flex items-center gap-2">
+          <i class="fa-solid fa-circle-info"></i>
+          Documento no disponible
         </h2>
         <p class="text-gray-700 mb-6">
-          Este PDF ha sido eliminado automáticamente después de 14 meses. Puedes regenerarlo haciendo clic en el botón de abajo.
+          El documento fue <strong>eliminado automáticamente</strong> tras <strong>14 meses</strong> como parte de nuestro sistema de limpieza y optimización.   
+          Si necesitas consultarlo nuevamente, puedes <strong>regenerarlo</strong> haciendo clic en el botón de abajo.
         </p>
         <div class="flex justify-end gap-3">
           <button
@@ -78,10 +80,10 @@ const regenerar = async () => {
             Cerrar
           </button>
           <button
-            class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg focus:ring-2 focus:ring-emerald-300 focus:ring-offset-1 transition-all text-sm lg:text-base font-semibold w-full sm:w-auto"
+            class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg focus:ring-2 focus:ring-emerald-300 focus:ring-offset-1 transition-all text-sm lg:text-base font-medium w-full sm:w-auto"
             @click="regenerar"
           >
-            Generar PDF
+            Regenerar Documento
           </button>
         </div>
       </template>

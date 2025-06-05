@@ -257,12 +257,11 @@ const logotipoPendiente = computed(() => {
     <ModalSuscripcion v-if="showSubscriptionModal" 
       @closeModal="showSubscriptionModal = false"/>
   </Transition>
-   <div class="relative flex justify-center md:justify-start">
-    <Transition appear name="slide-down">
-      <SlidingButtonPanel v-if="selectedRoutes.length >= 1" 
-        :selectedRoutes="selectedRoutes"/>
-    </Transition>
-   </div>
+
+  <div class="relative flex justify-center md:justify-start">
+    <SlidingButtonPanel :selectedRoutes="selectedRoutes" />
+  </div>
+
   <Transition appear name="fade">
     <ModalCargaDocumentoExterno v-if="showDocumentoExternoModal"
       @closeDocumentoExternoModal="toggleDocumentoExternoModal" @updateData="fetchData" />

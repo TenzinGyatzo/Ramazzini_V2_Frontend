@@ -1,9 +1,12 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import axios from "axios";
 import { useTrabajadoresStore } from "@/stores/trabajadores";
+import ModalFaltanPdfs from "./ModalFaltanPdfs.vue";
 
 const trabajadores = useTrabajadoresStore();
+
+const mostrarModalFaltanPdfs = ref(false);
 
 const today = new Date();
 
@@ -38,6 +41,19 @@ const props = defineProps({
 });
 
 const isVisible = ref(true);
+
+// Watch para ocultar el panel cuando se limpian las rutas seleccionadas
+watch(
+  () => props.selectedRoutes.length,
+  (newLength) => {
+    if (newLength === 0) {
+      isVisible.value = false;
+    } else {
+      isVisible.value = true;
+    }
+  },
+  { immediate: true }
+);
 
 const handleClick = async () => {
   // Ordenar las rutas seleccionadas
@@ -78,39 +94,54 @@ const handleClick = async () => {
     // console.log('PDF descargado exitosamente');
   } catch (error) {
     console.error('Error al enviar las rutas al backend:', error);
-    alert('Hubo un error al fusionar los documentos. Intente nuevamente.');
+    mostrarModalFaltanPdfs.value = true; // Mostrar modal si hay un error
+    // alert('Hubo un error al fusionar los documentos. Intente nuevamente.');
   }
 };
 </script>
 
 <template>
-  <div
-    v-if="isVisible"
-    class="fixed -top-3 transform h-[13.5vh] md:h-[12vh] w-[64vw] sm:w-[60vw] md:w-[40vw] lg:w-[30vw] xl:w-[30vw] 2xl:w-[20vw] bg-gradient-to-r from-green-500 via-emerald-600 to-emerald-500 flex justify-center items-center rounded-xl shadow-xl transition-transform duration-300 z-10"
+  <transition name="fade">
+    <ModalFaltanPdfs
+      v-if="mostrarModalFaltanPdfs"
+      @close="mostrarModalFaltanPdfs = false"
+    />
+  </transition>
+
+  <Transition
+    name="slide-down"
+    appear
+    mode="out-in"
   >
-    <button
-      @click="handleClick"
-      class="px-6 py-3 sm:px-6 sm:py-3 md:px-6 md:py-3 bg-gradient-to-r from-white to-gray-100 font-bold text-gray-700 rounded-full shadow-md hover:from-gray-200 hover:to-gray-300 hover:text-gray-900 transition duration-300 ease-in-out"
+    <div
+      v-if="isVisible"
+      class="fixed -top-3 transform h-[13.5vh] md:h-[12vh] w-[64vw] sm:w-[60vw] md:w-[40vw] lg:w-[30vw] xl:w-[30vw] 2xl:w-[20vw] bg-gradient-to-r from-green-500 via-emerald-600 to-emerald-500 flex justify-center items-center rounded-xl shadow-xl z-10"
     >
-      <span class="flex items-center space-x-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M16 17l-4 4m0 0l-4-4m4 4V3"
-          />
-        </svg>
-        <span class="text-sm sm:text-base md:text-lg lg:text-lg"
-          >Combinar y descargar</span
-        >
-      </span>
-    </button>
-  </div>
+      <button
+        @click="handleClick"
+        class="px-6 py-3 sm:px-6 sm:py-3 md:px-6 md:py-3 bg-gradient-to-r from-white to-gray-100 font-bold text-gray-700 rounded-full shadow-md hover:from-gray-200 hover:to-gray-300 hover:text-gray-900 transition duration-300 ease-in-out"
+      >
+        <span class="flex items-center space-x-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 17l-4 4m0 0l-4-4m4 4V3"
+            />
+          </svg>
+          <span class="text-sm sm:text-base md:text-lg lg:text-lg">
+            Combinar y descargar
+          </span>
+        </span>
+      </button>
+    </div>
+  </Transition>
 </template>
+
