@@ -1,7 +1,7 @@
 <script setup>
 import axios from 'axios';
 import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, normalizeStyle } from 'vue';
 import { VPdfViewer, Locales, useLicense } from '@vue-pdf-viewer/viewer';
 import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
@@ -203,6 +203,7 @@ const abrirPdf = async (ruta, nombrePDF) => {
 
     // Generar la URL de forma explícita usando `new URL`
     const fullPath = new URL(`${sanitizedRuta}/${sanitizedNombrePDF}`, import.meta.env.VITE_API_URL);
+    // console.log('Ruta completa del PDF:', fullPath.href);
 
     try {
         const response = await axios.get(fullPath.href, { responseType: 'blob' }); // Solicitud GET
@@ -409,24 +410,40 @@ const mensajeNegativo = computed(() => {
 ///////////////////////////////////////////
 
 const abrirDocumentoCorrespondiente = () => {
-  const tipoSinEspacios = props.documentoTipo.toLowerCase().replace(/\s+/g, '');
-  const doc = {
-    'antidoping': props.antidoping,
-    'aptitud': props.aptitud,
-    'certificado': props.certificado,
-    'documentoexterno': props.documentoExterno,
-    'examenvista': props.examenVista,
-    'exploracionfisica': props.exploracionFisica,
-    'historiaclinica': props.historiaClinica,
-    'notamedica': props.notaMedica,
-  }[tipoSinEspacios];
+    const tipoSinEspacios = props.documentoTipo.toLowerCase().replace(/\s+/g, '');
+    const doc = {
+        'antidoping': props.antidoping,
+        'aptitud': props.aptitud, 
+        'certificado': props.certificado,
+        'examenvista': props.examenVista,
+        'exploracionfisica': props.exploracionFisica,
+        'historiaclinica': props.historiaClinica,
+        'notamedica': props.notaMedica,
+    }[tipoSinEspacios];
 
-  const fecha = doc?.fechaAntidoping || doc?.fechaDocumento || doc?.fechaCertificado;
-  const nombreArchivo = fecha
-    ? `${props.documentoTipo} ${convertirFechaISOaDDMMYYYY(fecha)}.pdf`
-    : `${props.documentoTipo}.pdf`;
+    const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaCertificado || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica;
 
-  abrirPdf(`${doc.rutaPDF}`, nombreArchivo);
+    // Mapeo de tipos de documentos con el formato correcto
+    const tiposDocumentos = {
+        'antidoping': 'Antidoping',
+        'aptitud': 'Aptitud',
+        'certificado': 'Certificado',
+        'examenvista': 'Examen Vista', 
+        'exploracionfisica': 'Exploracion Fisica',
+        'historiaclinica': 'Historia Clinica',
+        'notamedica': 'Nota Medica'
+    };
+
+    const tipoDocumentoFormateado = tiposDocumentos[tipoSinEspacios];
+
+    // Formatear fecha como dd-mm-aaaa
+    const fechaFormateada = fecha ? convertirFechaISOaDDMMYYYY(fecha).replace(/\//g, '-') : '';
+
+    const nombreArchivo = fecha
+        ? `${tipoDocumentoFormateado} ${fechaFormateada}.pdf`
+        : `${tipoDocumentoFormateado}.pdf`;
+
+    abrirPdf(`${doc.rutaPDF}`, nombreArchivo);
 };
 
 </script>

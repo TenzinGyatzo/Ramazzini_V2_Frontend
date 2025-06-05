@@ -18,7 +18,7 @@ const regenerar = async () => {
   try {
     const apiEndpoint = `${import.meta.env.VITE_API_URL}/informes/${props.tipo}/${props.empresaId}/${props.trabajadorId}/${props.documentoId}/${props.userId}`;
     const response = await axios.get(apiEndpoint);
-    console.log('PDF regenerado:', response.data);
+    // console.log('PDF regenerado:', response.data);
 
     props.onClose(); // cerrar el modal inmediatamente
 
@@ -30,7 +30,7 @@ const regenerar = async () => {
     }, 1200);
   } catch (error) {
     console.error('Error al regenerar el PDF:', error);
-    toast.open({ message: 'No se pudo regenerar el PDF.' });
+    toast.open({ message: 'No se pudo regenerar el PDF.', type: 'error' });
   }
 };
 
