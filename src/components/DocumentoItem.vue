@@ -268,10 +268,27 @@ const showImageViewer = ref(false);
 const imageUrl = ref('');
 
 // Función para abrir el visor de imágenes
-const abrirImagen = (rutaCompleta) => {
-    imageUrl.value = `${rutaCompleta}`;
-    showImageViewer.value = true;
+const abrirImagen = async (rutaCompleta) => {
+    try {
+        const response = await axios.head(rutaCompleta);
+
+        if (response.status === 200 && response.headers['content-type'].startsWith('image/')) {
+            imageUrl.value = rutaCompleta;
+            showImageViewer.value = true;
+        } else {
+            console.warn('El archivo no es una imagen válida.');
+            mostrarModalPdfEliminado.value = true;
+        }
+    } catch (error) {
+        if (error.response && error.response.status === 404) {
+            mostrarModalPdfEliminado.value = true;
+        } else {
+            console.error('Error al cargar la imagen:', error);
+            alert('Ocurrió un error al intentar cargar la imagen.');
+        }
+    }
 };
+
 
 // Función para cerrar el visor de imágenes
 const cerrarImagen = () => {

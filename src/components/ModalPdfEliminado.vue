@@ -11,7 +11,6 @@ const props = defineProps<{
     documentoId: string
     userId: string
     onClose: () => void;
-    onAbrirPdf: () => void;
     onAbrirPdfMetadata: () => { ruta: string; nombre: string };
 }>();
 
@@ -65,7 +64,7 @@ const regenerar = async () => {
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" @click="props.onClose">
     <div class="bg-white rounded-xl p-6 shadow-xl max-w-md w-full">
-      <template v-if="!isLoading">
+      <template v-if="!isLoading && props.tipo != 'documentoexterno'">
         <h2 class="text-xl font-semibold mb-4 text-emerald-700 flex items-center gap-2">
           <i class="fa-solid fa-circle-info"></i>
           Documento no disponible
@@ -87,6 +86,24 @@ const regenerar = async () => {
           >
             Regenerar Documento
           </button>
+        </div>
+      </template>
+
+      <template v-else-if="!isLoading && props.tipo == 'documentoexterno'">
+        <h2 class="text-xl font-semibold mb-4 text-rose-600 flex items-center gap-2">
+          <i class="fa-solid fa-circle-info"></i>
+          Documento externo no disponible
+        </h2>
+        <p class="text-gray-700 mb-6">
+          El documento no está disponible, <strong>debes eliminar este registro</strong> y subirlo de nuevo.
+        </p>
+        <div class="flex justify-end gap-3">
+        <button
+          class="w-full bg-rose-500 hover:bg-rose-400 text-white font-medium py-2.5 px-5 rounded-lg transition"
+          @click="props.onClose"
+        >
+          Entendido
+        </button>
         </div>
       </template>
 
