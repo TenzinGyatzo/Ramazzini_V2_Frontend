@@ -15,6 +15,8 @@ const props = defineProps<{
     onAbrirPdfMetadata: () => { ruta: string; nombre: string };
 }>();
 
+const emit = defineEmits(['regenerado']);
+
 const isLoading = ref(false);
 
 const esperarQuePDFEsteDisponible = async (url: string, maxIntentos = 10, intervalo = 300) => {
@@ -48,8 +50,8 @@ const regenerar = async () => {
 
     toast.open({ message: "El PDF ha sido regenerado correctamente." });
 
-    props.onAbrirPdf();  // Abrir visor
-    props.onClose();     // Cerrar modal
+    emit('regenerado');  // Le dice al padre: PDF listo, actúa tú
+
   } catch (error) {
     console.error('Error al regenerar el PDF:', error);
     toast.open({ message: 'No se pudo regenerar el PDF.', type: 'error' });

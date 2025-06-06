@@ -122,7 +122,7 @@ onMounted(() => {
               <!-- RTs -->
                 <button
                   type="button"
-                  class="btn-rt group absolute left-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-violet-200 hover:bg-violet-300 text-violet-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-violet-200 hover:border-violet-100 whitespace-nowrap flex items-center overflow-hidden text-sm"
+                  class="btn-rt group absolute right-24 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-violet-200 hover:bg-violet-300 text-violet-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-violet-200 hover:border-violet-100 whitespace-nowrap flex items-center overflow-hidden text-sm"
                   data-id="${row._id}"
                 >
                   RT
@@ -146,7 +146,7 @@ onMounted(() => {
               <!-- Editar -->
                 <button
                   type="button"
-                  class="btn-editar group absolute left-24 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-sky-100 whitespace-nowrap flex items-center overflow-hidden"
+                  class="btn-editar group absolute left-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-sky-100 whitespace-nowrap flex items-center overflow-hidden"
                   data-id="${row._id}"
                 >
                   <i class="fa-regular fa-pen-to-square"></i>

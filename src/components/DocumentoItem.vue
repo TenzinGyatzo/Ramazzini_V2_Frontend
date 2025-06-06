@@ -1,7 +1,7 @@
 <script setup>
 import axios from 'axios';
 import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
-import { ref, computed, onMounted, onUnmounted, normalizeStyle } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { VPdfViewer, Locales, useLicense } from '@vue-pdf-viewer/viewer';
 import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
@@ -448,6 +448,12 @@ const abrirDocumentoCorrespondiente = () => {
   abrirPdf(ruta, nombre); 
 };
 
+const manejarRegeneracionDesdePadre = async () => {
+  await abrirDocumentoCorrespondiente();      // Abre visor
+  await nextTick();                           // Espera a que DOM actualice
+  mostrarModalPdfEliminado.value = false;     // Cierra el modal
+};
+
 </script>
 
 <template>
@@ -459,8 +465,8 @@ const abrirDocumentoCorrespondiente = () => {
             :trabajadorId="trabajadores.currentTrabajadorId"
             :documentoId="documentoId"
             :userId="user._id"
+            @regenerado="manejarRegeneracionDesdePadre"
             :onClose="() => (mostrarModalPdfEliminado = false)"
-            :onAbrirPdf="abrirDocumentoCorrespondiente"
             :onAbrirPdfMetadata="construirRutaYNombrePDF"
         />
     </transition>
