@@ -462,10 +462,12 @@ const construirRutaYNombrePDF = () => {
 
 const abrirDocumentoCorrespondiente = () => {
   const { ruta, nombre } = construirRutaYNombrePDF();
+  console.log('Abriendo documento desde evento regenerado:', { ruta, nombre });
   abrirPdf(ruta, nombre); 
 };
 
 const manejarRegeneracionDesdePadre = async () => {
+  console.log('✔️ Evento "regenerado" recibido desde el padre');
   await abrirDocumentoCorrespondiente();      // Abre visor
   await nextTick();                           // Espera a que DOM actualice
   mostrarModalPdfEliminado.value = false;     // Cierra el modal
@@ -482,9 +484,9 @@ const manejarRegeneracionDesdePadre = async () => {
             :trabajadorId="trabajadores.currentTrabajadorId"
             :documentoId="documentoId"
             :userId="user._id"
+            :getPdfMetadata="construirRutaYNombrePDF"
             @regenerado="manejarRegeneracionDesdePadre"
-            :onClose="() => (mostrarModalPdfEliminado = false)"
-            :onAbrirPdfMetadata="construirRutaYNombrePDF"
+            @close="mostrarModalPdfEliminado = false"
         />
     </transition>
 

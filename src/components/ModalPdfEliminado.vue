@@ -5,16 +5,15 @@ import { inject, ref } from 'vue';
 const toast: any = inject('toast');
 
 const props = defineProps<{
-    tipo: string
-    empresaId: string
-    trabajadorId: string
-    documentoId: string
-    userId: string
-    onClose: () => void;
-    onAbrirPdfMetadata: () => { ruta: string; nombre: string };
+  tipo: string
+  empresaId: string
+  trabajadorId: string
+  documentoId: string
+  userId: string
+  getPdfMetadata: () => { ruta: string; nombre: string };
 }>();
 
-const emit = defineEmits(['regenerado']);
+const emit = defineEmits(['regenerado', 'close']);
 
 const isLoading = ref(false);
 
@@ -40,8 +39,7 @@ const regenerar = async () => {
     const apiEndpoint = `${import.meta.env.VITE_API_URL}/informes/${props.tipo}/${props.empresaId}/${props.trabajadorId}/${props.documentoId}/${props.userId}`;
     await axios.get(apiEndpoint); // Generar PDF
 
-    // Obtener la ruta del PDF recién regenerado
-    const { ruta, nombre } = props.onAbrirPdfMetadata();
+    const { ruta, nombre } = props.getPdfMetadata();
     const rutaCompleta = `${ruta}/${nombre}`.replace(/\/+/g, '/');
     const urlCompleta = new URL(rutaCompleta, import.meta.env.VITE_API_URL).href;
     const disponible = await esperarQuePDFEsteDisponible(urlCompleta);
@@ -49,12 +47,13 @@ const regenerar = async () => {
 
     toast.open({ message: "El PDF ha sido regenerado correctamente." });
 
-    emit('regenerado');  // Le dice al padre: PDF listo, actúa tú
+    console.log('✔️ Emitiendo evento regenerado');
+    emit('regenerado'); 
 
+    isLoading.value = false;
   } catch (error) {
     console.error('Error al regenerar el PDF:', error);
     toast.open({ message: 'No se pudo regenerar el PDF.', type: 'error' });
-  } finally {
     isLoading.value = false;
   }
 };
@@ -62,8 +61,8 @@ const regenerar = async () => {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" @click="props.onClose">
-    <div class="bg-white rounded-xl p-6 shadow-xl max-w-md w-full">
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" @click="emit('close');">
+    <div class="bg-white rounded-xl p-6 shadow-xl max-w-md w-full" @click.stop>
       <template v-if="!isLoading && props.tipo != 'documentoexterno'">
         <h2 class="text-xl font-semibold mb-4 text-emerald-700 flex items-center gap-2">
           <i class="fa-solid fa-circle-info"></i>
@@ -76,7 +75,7 @@ const regenerar = async () => {
         <div class="flex justify-end gap-3">
           <button
             class="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-gray-200 transition-all text-sm lg:text-base font-medium w-full sm:w-auto"
-            @click="props.onClose"
+            @click="emit('close');"
           >
             Cerrar
           </button>
@@ -100,7 +99,7 @@ const regenerar = async () => {
         <div class="flex justify-end gap-3">
         <button
           class="w-full bg-rose-500 hover:bg-rose-400 text-white font-medium py-2.5 px-5 rounded-lg transition"
-          @click="props.onClose"
+          @click="emit('close');"
         >
           Entendido
         </button>
