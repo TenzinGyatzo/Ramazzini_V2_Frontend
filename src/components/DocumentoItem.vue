@@ -289,7 +289,6 @@ const abrirImagen = async (rutaCompleta) => {
     }
 };
 
-
 // Función para cerrar el visor de imágenes
 const cerrarImagen = () => {
     showImageViewer.value = false;

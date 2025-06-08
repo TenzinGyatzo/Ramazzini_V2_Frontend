@@ -1043,6 +1043,11 @@ onMounted(async () => {
             </button>
           </div>
 
+          <!-- <div class="flex justify-end gap-2 mt-1">
+            <button class="text-blue-600 hover:underline text-xs">Editar</button>
+            <button class="text-red-600 hover:underline text-xs">Eliminar</button>
+          </div> -->
+
         </div>
       </div>
       </Transition>
