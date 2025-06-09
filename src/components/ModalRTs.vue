@@ -8,13 +8,15 @@ import { useRiesgoTrabajoStore } from '@/stores/riesgosTrabajo';
 import { calcularAntiguedad } from '@/helpers/dates';
 
 const toast = inject('toast');
-const emit = defineEmits(['closeModal']);
+const emit = defineEmits(['closeModal', 'riesgoCreado','riesgoActualizado']);
 
 const userStore = useUserStore();
 const empresasStore = useEmpresasStore();
 const centrosTrabajoStore = useCentrosTrabajoStore();
 const trabajadoresStore = useTrabajadoresStore();
 const riesgosTrabajoStore = useRiesgoTrabajoStore();
+
+const riesgosTrabajo = computed(() => trabajadoresStore.currentTrabajador?.riesgosTrabajo || []);
 
 const modo = ref('listado');
 const rtEnEdicion = ref(null); // será un objeto con los datos del RT si se edita
@@ -52,7 +54,8 @@ const handleSubmit = async () => {
     if (!trabajadorId) return;
 
     const payload = limpiarCamposOpcionales(rtEnEdicion.value);
-    // console.log('payload', payload);
+
+    let riesgoFinal = null;
 
     if (modo.value === 'editar') {
       await riesgosTrabajoStore.updateRiesgoTrabajo(
@@ -61,19 +64,53 @@ const handleSubmit = async () => {
         payload
       );
       toast.open({ message: 'Riesgo de Trabajo actualizado', type: 'success' });
+
+      const riesgosActualizados = await trabajadoresStore.fetchRiesgosTrabajoPorEmpresa(empresasStore.currentEmpresaId);
+      const riesgoFinal = riesgosActualizados.find(r => r._id === rtEnEdicion.value._id);
+
+      if (riesgoFinal) {
+        emit('riesgoActualizado', riesgoFinal);
+      }
+
+      if (riesgoFinal && trabajadoresStore.currentTrabajador?.riesgosTrabajo) {
+        const index = trabajadoresStore.currentTrabajador.riesgosTrabajo.findIndex(
+          (r) => r._id === riesgoFinal._id
+        );
+        if (index !== -1) {
+          trabajadoresStore.currentTrabajador.riesgosTrabajo.splice(index, 1, riesgoFinal);
+        }
+      }
+
+      // ✅ Actualizar los riesgos que ve ModalRTs.vue
+      await trabajadoresStore.fetchTrabajadorById(
+        empresasStore.currentEmpresaId,
+        centrosTrabajoStore.currentCentroTrabajoId,
+        trabajadorId
+      );
     } else if (modo.value === 'nuevo') {
-      await riesgosTrabajoStore.createRiesgoTrabajo(
+      const nuevaRT = await riesgosTrabajoStore.createRiesgoTrabajo(
         trabajadorId,
         { ...payload, idTrabajador: trabajadorId }
       );
       toast.open({ message: 'Riesgo de Trabajo registrado', type: 'success' });
-    }
 
-    await trabajadoresStore.fetchTrabajadorById(empresasStore.currentEmpresaId, centrosTrabajoStore.currentCentroTrabajoId, trabajadorId);
+      // ✅ Agrega manualmente al array reactivo del trabajador
+      if (nuevaRT && trabajadoresStore.currentTrabajador) {
+        // 🛠️ Inyectar campos que la vista necesita para agrupar y mostrar
+        nuevaRT.idCentroTrabajo = trabajadoresStore.currentTrabajador.idCentroTrabajo;
+        nuevaRT.sexoTrabajador = trabajadoresStore.currentTrabajador.sexo;
+        nuevaRT.puestoTrabajador = trabajadoresStore.currentTrabajador.puesto;
+
+        // ✅ Agregar al array local del trabajador
+        trabajadoresStore.currentTrabajador.riesgosTrabajo?.push(nuevaRT);
+
+        // ✅ Emitir con los datos completos para que RiesgosTrabajoView lo vea
+        emit('riesgoCreado', nuevaRT);
+      }
+    }
 
     modo.value = 'listado';
     rtEnEdicion.value = null;
-    // emit('closeModal');
   } catch (error) {
     console.error(error);
     toast.open({ message: 'Error al guardar el Riesgo de Trabajo.', type: 'error' });
@@ -189,7 +226,7 @@ const sugerenciasNatLesion = [ "Contusión", "Traumatismo", "Fractura", "Luxaci�
 
             <div
               v-else
-              v-for="rt in trabajadoresStore.currentTrabajador?.riesgosTrabajo"
+              v-for="rt in riesgosTrabajo"
               :key="rt._id"
               class="p-3 border rounded-lg shadow-sm bg-gray-50 flex flex-col gap-0 text-gray-700"
             >

@@ -83,12 +83,12 @@ export const useRiesgoTrabajoStore = defineStore("riesgos-trabajo", () => {
   ) {
     try {
       loading.value = true;
-      await RiesgosTrabajoAPI.createRiesgoTrabajo(
+      const response = await RiesgosTrabajoAPI.createRiesgoTrabajo(
         trabajadorId,
         riesgoTrabajoData
       );
+      return response.data; // ✅ esto devuelve la nueva RT creada
     } catch (error) {
-      // console.log(error);
       throw error;
     } finally {
       loading.value = false;

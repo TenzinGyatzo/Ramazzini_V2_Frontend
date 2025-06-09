@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick, watch } from 'vue';
+import { ref, onMounted, computed, nextTick, watch, inject, provide } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { useRiesgoTrabajoStore } from '@/stores/riesgosTrabajo';
 import type { RiesgoTrabajo } from '@/interfaces/riesgo-trabajo.interface';
 import { calcularEdad, calcularAntiguedad } from '@/helpers/dates';
 import type { ComponentPublicInstance } from 'vue';
 import { startOfMonth, endOfMonth, subMonths, subDays, startOfYear, endOfYear, subYears } from 'date-fns';
 import GreenButton from '@/components/GreenButton.vue';
 import { exportarRiesgosTrabajoDesdeFrontend } from '@/helpers/exportarExcel';
+import ModalRTs from '@/components/ModalRTs.vue';
+import ModalEliminar from '@/components/ModalEliminar.vue';
 
 /* =====================
    Variables y Stores
@@ -19,11 +22,17 @@ const router = useRouter();
 const empresasStore = useEmpresasStore();
 const centrosStore = useCentrosTrabajoStore();
 const trabajadoresStore = useTrabajadoresStore();
+const riesgosTrabajoStore = useRiesgoTrabajoStore();
 
 const empresaId = String(route.params.idEmpresa);
 const datosCargados = ref(false);
 const riesgosEmpresa = ref<RiesgoTrabajo[]>([]);
 const centrosAbiertos = ref<Record<string, boolean>>({});
+
+const showRTsModal = ref(false);
+const showDeleteModal = ref(false);
+
+const toast = inject('toast') as any; // Inyectamos el servicio de toast para notificaciones
 
 /* =====================
    Filtros Reactivos
@@ -435,6 +444,11 @@ function generarNombreArchivoExcel(): string {
   return partes.join('_') + '.xlsx';
 }
 
+function ordenarRiesgosPorFecha() {
+  riesgosEmpresa.value.sort((a, b) => new Date(b.fechaRiesgo || 0).getTime() - new Date(a.fechaRiesgo || 0).getTime());
+  riesgosOriginales.value.sort((a, b) => new Date(b.fechaRiesgo || 0).getTime() - new Date(a.fechaRiesgo || 0).getTime());
+}
+
 /* =====================
    Inicialización: Fetch de Datos
 ===================== */
@@ -447,6 +461,7 @@ onMounted(async () => {
   riesgosEmpresa.value = riesgosOriginales.value; // Mostramos los riesgos
   // console.log('Riesgos de trabajo:', riesgosEmpresa.value);
 
+  ordenarRiesgosPorFecha();
   datosCargados.value = true;
 
   await nextTick();
@@ -458,9 +473,149 @@ onMounted(async () => {
     }
   }, 0);
 });
+
+/* =====================
+   Funciones: Edición y Eliminación de RTs
+===================== */
+const openRTsModal = async (empresaId: string, centroId: string, trabajadorId: string) => {
+  showRTsModal.value = false;
+  try {
+    await trabajadoresStore.fetchTrabajadorById(empresaId, centroId, trabajadorId);
+    showRTsModal.value = true;
+  } catch (error) {
+    console.error('Error al cargar el trabajador:', error);
+  }
+};
+
+function agregarRiesgoLocalmente(nuevaRT: RiesgoTrabajo) {
+  const trabajador = trabajadoresStore.currentTrabajador;
+
+  // Agregar campos del trabajador si están disponibles
+  if (trabajador) {
+    nuevaRT.nombreTrabajador = trabajador.nombre;
+    nuevaRT.sexoTrabajador = trabajador.sexo;
+    nuevaRT.fechaNacimiento = trabajador.fechaNacimiento;
+    nuevaRT.fechaIngreso = trabajador.fechaIngreso;
+    nuevaRT.puestoTrabajador = trabajador.puesto;
+  }
+
+  // Evitar duplicados y forzar reactividad
+  if (!riesgosEmpresa.value.some(r => r._id === nuevaRT._id)) {
+    riesgosEmpresa.value = [...riesgosEmpresa.value, nuevaRT];
+  }
+
+  if (!riesgosOriginales.value.some(r => r._id === nuevaRT._id)) {
+    riesgosOriginales.value = [...riesgosOriginales.value, nuevaRT];
+  }
+
+  ordenarRiesgosPorFecha();
+
+  nextTick(() => verificarOverflow(nuevaRT._id));
+}
+
+function actualizarRiesgoLocalmente(riesgoActualizado: RiesgoTrabajo) {
+  const index = riesgosEmpresa.value.findIndex(r => r._id === riesgoActualizado._id);
+  if (index !== -1) {
+    riesgosEmpresa.value.splice(index, 1, riesgoActualizado);
+  }
+
+  const indexOriginal = riesgosOriginales.value.findIndex(r => r._id === riesgoActualizado._id);
+  if (indexOriginal !== -1) {
+    riesgosOriginales.value.splice(indexOriginal, 1, riesgoActualizado);
+  }
+
+  // ✅ Fuerza la reactividad de los computeds
+  riesgosEmpresa.value = [...riesgosEmpresa.value];
+  riesgosOriginales.value = [...riesgosOriginales.value];
+
+  ordenarRiesgosPorFecha();
+
+  nextTick(() => verificarOverflow(riesgoActualizado._id));
+}
+
+const deleteConfig = ref<{
+  tipo: string;
+  id: string | null;
+  descripcion: string;
+  onConfirm: ((id: string) => Promise<void>) | null;
+}>({
+  tipo: '',
+  id: null,
+  descripcion: '',
+  onConfirm: null
+});
+
+const solicitarEliminacion = (tipo: string, id: string, descripcion: string, onConfirm: (id: string) => Promise<void>) => {
+  deleteConfig.value = { tipo, id, descripcion, onConfirm };
+  showDeleteModal.value = true;
+};
+
+function eliminarRiesgoLocalmente(id: string) {
+  riesgosEmpresa.value = riesgosEmpresa.value.filter(r => r._id !== id);
+  riesgosOriginales.value = riesgosOriginales.value.filter(r => r._id !== id);
+}
+
+const confirmarEliminacion = async () => {
+  try {
+    const idEliminado = deleteConfig.value.id;
+    if (typeof deleteConfig.value.onConfirm === 'function' && idEliminado) {
+      await deleteConfig.value.onConfirm(idEliminado);
+
+      // ✅ Actualiza lista de RTs global
+      eliminarRiesgoLocalmente(idEliminado);
+
+      // ✅ Actualiza el trabajador actual manualmente
+      if (trabajadoresStore.currentTrabajador?.riesgosTrabajo) {
+        trabajadoresStore.currentTrabajador.riesgosTrabajo =
+          trabajadoresStore.currentTrabajador.riesgosTrabajo.filter(rt => rt._id !== idEliminado);
+      }
+    }
+
+  } catch (err) {
+    toast.open({ message: `Error al eliminar ${deleteConfig.value.tipo}`, type: 'error' });
+  } finally {
+    showDeleteModal.value = false;
+    deleteConfig.value = { tipo: '', id: null, descripcion: '', onConfirm: null };
+  }
+};
+
+provide('solicitarEliminacion', solicitarEliminacion);
+
+async function eliminarRTDesdeVista(trabajadorId: string, riesgoTrabajoId: string) {
+  try {
+    await riesgosTrabajoStore.deleteRiesgoTrabajo(trabajadorId, riesgoTrabajoId); 
+    eliminarRiesgoLocalmente(riesgoTrabajoId); // Actualiza riesgosEmpresa y riesgosOriginales
+    toast.open({ message: 'Riesgo de Trabajo eliminado', type: 'success' });
+  } catch (error) {
+    console.error(error);
+    toast.open({ message: 'Error al eliminar el Riesgo de Trabajo.', type: 'error' });
+  }
+}
+
 </script>
 
 <template>
+
+  <Transition appear name="fade">
+    <ModalRTs
+      v-if="showRTsModal"
+      @closeModal="showRTsModal = false"
+      @riesgoActualizado="actualizarRiesgoLocalmente"
+      @riesgoCreado="agregarRiesgoLocalmente"
+    />
+  </Transition>
+
+  <Transition appear name="fade">
+    <ModalEliminar
+      v-if="showDeleteModal"
+      :id-registro="deleteConfig.id || ''"
+      :identificacion="deleteConfig.descripcion"
+      :tipo-registro="deleteConfig.tipo"
+      @closeModal="showDeleteModal = false"
+      @confirmDelete="confirmarEliminacion"
+    />
+  </Transition>
+  
   <!-- =======================
        Indicador de Carga
   ======================= -->
@@ -932,7 +1087,7 @@ onMounted(async () => {
               {{ riesgo.nombreTrabajador }} <span class="text-sm" :class="riesgo.sexoTrabajador === 'Masculino' ? 'text-blue-600' : 'text-pink-600'">{{ riesgo.sexoTrabajador === 'Masculino' ? '(M)' : '(F)' }}</span> <span class="italic text-sm text-gray-600"> — {{ riesgo.puestoTrabajador }}</span>
             </h3>
             <span class="text-sm text-gray-500">
-              {{ riesgo.fechaRiesgo ? new Date(riesgo.fechaRiesgo).toLocaleDateString() : 'Fecha no disponible' }}
+              {{ riesgo.fechaRiesgo ? new Date(riesgo.fechaRiesgo).toLocaleDateString('es-MX', { timeZone: 'UTC' }) : 'Fecha no disponible' }}
             </span>
           </div>
 
@@ -1043,10 +1198,22 @@ onMounted(async () => {
             </button>
           </div>
 
-          <!-- <div class="flex justify-end gap-2 mt-1">
-            <button class="text-blue-600 hover:underline text-xs">Editar</button>
-            <button class="text-red-600 hover:underline text-xs">Eliminar</button>
-          </div> -->
+          <div class="flex justify-end gap-2 mt-1">
+            <button @click="openRTsModal(empresaId, riesgo.idCentroTrabajo, riesgo.idTrabajador)" class="text-blue-600 hover:underline text-xs">Editar</button>
+          <button
+            class="text-red-600 hover:underline text-xs"
+            @click="solicitarEliminacion(
+              'Riesgo de Trabajo',
+              riesgo._id,
+              riesgo.naturalezaLesion || 'Sin descripción',
+              () => eliminarRTDesdeVista(riesgo.idTrabajador, riesgo._id)
+            )"
+          >
+            Eliminar
+          </button>
+
+
+          </div>
 
         </div>
       </div>
@@ -1054,7 +1221,7 @@ onMounted(async () => {
 
     </div>
 
-          <div class="flex justify-center gap-4 mt-10">
+      <div class="flex justify-center gap-4 mt-10">
         <button
           type="button"
           @click="router.push({ name: 'dashboard-rt', params: { idEmpresa: empresasStore.currentEmpresaId } })"
