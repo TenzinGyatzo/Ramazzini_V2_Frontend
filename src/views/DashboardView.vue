@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, inject } from 'vue';
+import { ref, watch, computed, inject, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
@@ -9,6 +9,7 @@ import GraficaBarras from '@/components/graficas/GraficaBarras.vue';
 import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
 import { subDays, format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import DescargarInformeDashboard from '@/components/DescargarInformeDashboard.vue';
 
 const toast = inject('toast');
 const router = useRouter()
@@ -34,6 +35,16 @@ const vistaAptitud = ref('grafico');
 const vistaAptitudKey = computed(() => `vista-${vistaAptitud.value}`);
 const vistaAgentes = ref('grafico');
 const vistaAgentesKey = computed(() => `vista-${vistaAgentes.value}`);
+
+// Refs para cada gráfica
+const refIMC = ref();
+const refAptitud = ref();
+const refLentes = ref();
+const refCorregida = ref();
+const refDaltonismo = ref();
+const refAgentes = ref();
+const refGruposEtarios = ref();
+const refCircunferencia = ref();
 
 const cargarDatos = async (empresaId) => {
   if (!empresaId) return;
@@ -972,6 +983,34 @@ function handleClickGraficaCintura(evt, elements) {
   manejarRedireccionFiltroChart(label, 'cintura');
 }
 
+const obtenerBase64Logo = async (ruta) => {
+  const res = await fetch(ruta);
+  const blob = await res.blob();
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
+const logoBase64 = ref();
+
+watch(
+  () => empresasStore.currentEmpresa,
+  async (nuevaEmpresa) => {
+    if (nuevaEmpresa?.logotipoEmpresa?.data) {
+      const rutaLogo = `/uploads/logos/${nuevaEmpresa.logotipoEmpresa.data}`;
+      logoBase64.value = await obtenerBase64Logo(rutaLogo);
+    }
+  },
+  { immediate: true }
+);
+
+
+
+
 </script>
 
 <template>
@@ -997,6 +1036,24 @@ function handleClickGraficaCintura(evt, elements) {
         <div class="hidden sm:block">
             <h1 class="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-800">{{ empresasStore.currentEmpresa.nombreComercial }}</h1>
             <h2 class="text-sm md:text-base lg:text-lg xl:text-xl text-gray-600 mt-1">{{ empresasStore.currentEmpresa.razonSocial }}</h2>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <DescargarInformeDashboard
+            v-if="refIMC && refAptitud && refLentes && refCorregida && refDaltonismo && refAgentes && refGruposEtarios && refCircunferencia"
+            :refs-graficas="{
+              imc: refIMC,
+              aptitud: refAptitud,
+              lentes: refLentes,
+              corregida: refCorregida,
+              daltonismo: refDaltonismo,
+              agentes: refAgentes,
+              grupos: refGruposEtarios,
+              cintura: refCircunferencia
+            }"
+            :nombre-empresa="empresasStore.currentEmpresa?.nombreComercial"
+            :logo-base64="logoBase64"
+          />
         </div>
 
         <!-- Ajustado a nivel del encabezado -->
@@ -1066,6 +1123,7 @@ function handleClickGraficaCintura(evt, elements) {
             <Transition name="fade" mode="out-in">
               <template v-if="vistaIMC === 'grafico'">
                 <GraficaBarras 
+                  ref="refIMC"
                   :key="vistaIMCKey" 
                   :data="graficaIMCData" 
                   :options="{ ...graficaIMCOptions, onClick: handleClickGraficaIMC }" />
@@ -1149,6 +1207,7 @@ function handleClickGraficaCintura(evt, elements) {
             <Transition name="fade" mode="out-in">
               <template v-if="vistaAptitud === 'grafico'">
                 <GraficaBarras 
+                  ref="refAptitud"
                   :key="vistaAptitudKey" 
                   :data="graficaAptitudData" 
                   :options="{ ...graficaAptitudOptions, onClick: handleClickGraficaAptitud }" />
@@ -1214,6 +1273,7 @@ function handleClickGraficaCintura(evt, elements) {
           <!-- Gráfica -->
           <GraficaAnillo
             v-if="graficaRequierenLentesData.chart?.labels?.length"
+            ref="refLentes"
             :data="graficaRequierenLentesData.chart"
             :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaRequierenLentes }"
             :cantidad="graficaRequierenLentesData.requiere"
@@ -1247,6 +1307,7 @@ function handleClickGraficaCintura(evt, elements) {
 
           <GraficaAnillo
             v-if="graficaVistaCorregidaData.chart?.labels?.length"
+            ref="refCorregida"
             :data="graficaVistaCorregidaData.chart"
             :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaVistaCorregida }"
             :cantidad="graficaVistaCorregidaData.usan"
@@ -1276,6 +1337,7 @@ function handleClickGraficaCintura(evt, elements) {
 
           <GraficaAnillo
             v-if="graficaDaltonismoData.chart?.labels?.length"
+            ref="refDaltonismo"
             :data="graficaDaltonismoData.chart"
             :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaDaltonismo }"
             :cantidad="graficaDaltonismoData.conDaltonismo"
@@ -1504,6 +1566,7 @@ function handleClickGraficaCintura(evt, elements) {
             <Transition name="fade" mode="out-in">
               <template v-if="vistaAgentes === 'grafico'">
                 <GraficaBarras
+                  ref="refAgentes"
                   :key="vistaAgentesKey"
                   :data="graficaAgentesRiesgoData"
                   :options="{ ...graficaAgentesRiesgoOptions, onClick: handleClickGraficaAgentesRiesgo }"
@@ -1583,7 +1646,7 @@ function handleClickGraficaCintura(evt, elements) {
           <div class="flex-1 overflow-x-auto">
             <Transition name="fade" mode="out-in">
               <template v-if="vistaGruposEtarios === 'grafico'">
-                <GraficaBarras :key="vistaGruposEtariosKey" :data="graficaGruposEtariosData" :options="graficaGruposEtariosOptions" />
+                <GraficaBarras ref="refGruposEtarios" :key="vistaGruposEtariosKey" :data="graficaGruposEtariosData" :options="graficaGruposEtariosOptions" />
               </template>
 
               <template v-else>
@@ -1673,6 +1736,7 @@ function handleClickGraficaCintura(evt, elements) {
           
           <GraficaAnillo
             v-if="graficaCircunferenciaData.chart?.labels?.length"
+            ref="refCircunferencia"
             :data="graficaCircunferenciaData.chart"
             :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaCintura }"
             :cantidad="graficaCircunferenciaData.alto"
