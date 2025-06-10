@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { formatDateDDMMYYYY } from '@/helpers/dates';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -15,6 +15,8 @@ const formData = useFormDataStore();
 const steps = useStepsStore();
 const medicoFirmanteStore = useMedicoFirmanteStore();
 
+const exploracionesFisicas = ref([]);
+const nearestExploracionFisica = ref(null);
 
 const examenesVista = ref([]);
 const nearestExamenVista = ref(null);
@@ -42,8 +44,10 @@ onMounted(() => {
 
 onMounted(async () => {
   try {
-    const response = await DocumentosAPI.getExamenesVista(trabajadores.currentTrabajadorId);
-    examenesVista.value = response.data;
+    const examenVistaResponse = await DocumentosAPI.getExamenesVista(trabajadores.currentTrabajadorId);
+    examenesVista.value = examenVistaResponse.data;
+    const exploracionFisicaResponse = await DocumentosAPI.getExploracionesFisicas(trabajadores.currentTrabajadorId);
+    exploracionesFisicas.value = exploracionFisicaResponse.data;
   } catch (error) {
     console.error('Error al obtener los exámenes:', error);
   }
@@ -54,10 +58,27 @@ onMounted(async () => {
     if (isNaN(referenceDate.getTime())) {
       console.error('Fecha del certificado no válida:', formData.formDataCertificado.fechaCertificado);
       nearestExamenVista.value = null;
+      nearestExploracionFisica.value = null;
       return;
     }
 
     // Procesar solo si las fechas son válidas
+    nearestExploracionFisica.value = exploracionesFisicas.value.reduce((closest, current) => {
+      const currentDate = current.fechaExploracionFisica ? new Date(current.fechaExploracionFisica) : null;
+
+      if (!currentDate || isNaN(currentDate.getTime())) {
+        console.error('Fecha de exploración física no válida:', current.fechaExploracionFisica);
+        return closest; // Ignorar exploraciones con fechas inválidas
+      }
+
+      const currentDiff = Math.abs(currentDate - referenceDate);
+      const closestDiff = closest
+        ? Math.abs(new Date(closest.fechaExploracionFisica) - referenceDate)
+        : Infinity;
+
+      return currentDiff < closestDiff ? current : closest;
+    }, null);
+
     nearestExamenVista.value = examenesVista.value.reduce((closest, current) => {
       const currentDate = current.fechaExamenVista ? new Date(current.fechaExamenVista) : null;
 
@@ -73,6 +94,9 @@ onMounted(async () => {
 
       return currentDiff < closestDiff ? current : closest;
     }, null);
+
+    console.log('Exploración física más cercana:', nearestExploracionFisica.value);
+    console.log('Examen de vista más cercano:', nearestExamenVista.value);
     
   }
 });
@@ -81,6 +105,7 @@ watch(
   () => formData.formDataCertificado.fechaCertificado,
   (newFechaCertificado) => {
     if (!newFechaCertificado || !examenesVista.value.length) {
+      nearestExploracionFisica.value = null;
       nearestExamenVista.value = null;
       return;
     }
@@ -89,11 +114,28 @@ watch(
 
     if (isNaN(referenceDate.getTime())) {
       console.error('Fecha del certificado no válida:', newFechaCertificado);
+      nearestExploracionFisica.value = null;
       nearestExamenVista.value = null;
       return;
     }
 
     // Procesar solo si las fechas son válidas
+    nearestExploracionFisica.value = exploracionesFisicas.value.reduce((closest, current) => {
+      const currentDate = current.fechaExploracionFisica ? new Date(current.fechaExploracionFisica) : null;
+
+      if (!currentDate || isNaN(currentDate.getTime())) {
+        console.error('Fecha de exploración física no válida:', current.fechaExploracionFisica);
+        return closest; // Ignorar exploraciones con fechas inválidas
+      }
+
+      const currentDiff = Math.abs(currentDate - referenceDate);
+      const closestDiff = closest
+        ? Math.abs(new Date(closest.fechaExploracionFisica) - referenceDate)
+        : Infinity;
+
+      return currentDiff < closestDiff ? current : closest;
+    }, null);
+
     nearestExamenVista.value = examenesVista.value.reduce((closest, current) => {
       const currentDate = current.fechaExamenVista ? new Date(current.fechaExamenVista) : null;
 
@@ -110,13 +152,53 @@ watch(
       return currentDiff < closestDiff ? current : closest;
     }, null);
     
+    console.log('Exploración física más cercana:', nearestExploracionFisica.value);
+    console.log('Examen de vista más cercano:', nearestExamenVista.value);
   },
   { immediate: true }
+
+
 );
 
 const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
 };
+
+const camposExploracion = [
+  'abdomen', 'boca', 'cadera', 'cicatrices', 'codos', 'coordinacion',
+  'craneoCara', 'cuello', 'equilibrio', 'hombros', 'inspeccionColumna',
+  'lesionesPiel', 'manos', 'marcha', 'movimientosColumna', 'nariz',
+  'neurologicoEInferiores', 'neurologicoESuperiores', 'nevos', 'oidos',
+  'ojos', 'rodillas', 'sensibilidad', 'tobillosPies', 'torax'
+];
+
+const hallazgos = computed(() => {
+  if (!nearestExploracionFisica.value) return [];
+
+  return camposExploracion
+    .map(campo => ({
+      campo,
+      valor: nearestExploracionFisica.value[campo]
+    }))
+    .filter(entry => entry.valor && entry.valor !== 'Sin hallazgos');
+});
+
+const textoExploracion = computed(() => {
+  if (hallazgos.value.length === 0) {
+    return 'Exploración física sin alteraciones significativas. Se observó integridad funcional del aparato locomotor y del sistema nervioso, con marcha, coordinación, fuerza y reflejos dentro de parámetros normales.';
+  } else {
+    return 'Hallazgos relevantes en la exploración física: ' +
+      hallazgos.value
+        .map(h => `${formatearCampo(h.campo)}: ${h.valor}`)
+        .join('; ') + '.';
+  }
+});
+
+// Utilidad opcional para mejorar formato
+function formatearCampo(campo) {
+  const palabras = campo.replace(/([A-Z])/g, ' $1').split(' ');
+  return palabras.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+}
 
 </script>
 
@@ -178,10 +260,53 @@ const goToStep = (stepNumber) => {
         <h1 class="text-center text-4xl tracking-[.25em]">CERTIFICA</h1>
      </div>
 
-     <div class="w-full mb-4">
+     <div v-if="formData.formDataCertificado.fechaCertificado" class="w-full mb-4">
         <p class="text-justify">
-            Que, habiendo practicado reconocimiento médico en esta fecha, al C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad, <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'lo encontré íntegro' : 'la encontré íntegra' }}</span> físicamente, sin defectos ni anomalías del aparato locomotor, con agudeza visual{{ nearestExamenVista ? ` OI: 20/${nearestExamenVista?.ojoIzquierdoLejanaSinCorreccion} y OD: 20/${nearestExamenVista?.ojoDerechoLejanaSinCorreccion},` : ',' }} campo visual, profundidad de campo, estereopsis y percepción cromática sin alteraciones; agudeza auditiva, aparato respiratorio y aparato locomotor íntegros, el examen neurológico reveló buena coordinación y reflejos.
+          Que, habiendo practicado reconocimiento médico en esta fecha, al C. 
+          <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> 
+          de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad.
+
+          <template v-if="nearestExploracionFisica">
+            Presenta IMC: {{ nearestExploracionFisica.indiceMasaCorporal }} ({{ nearestExploracionFisica.categoriaIMC }}). 
+            Frecuencia cardiaca de {{ nearestExploracionFisica.frecuenciaCardiaca }} lpm ({{ nearestExploracionFisica.categoriaFrecuenciaCardiaca }}). 
+            Saturación de oxígeno del {{ nearestExploracionFisica.saturacionOxigeno }}% ({{ nearestExploracionFisica.categoriaSaturacionOxigeno }}).
+            Tensión arterial {{ nearestExploracionFisica.tensionArterialSistolica }}/{{ nearestExploracionFisica.tensionArterialDiastolica }} mmHg ({{ nearestExploracionFisica.categoriaTensionArterial || 'no especificada' }}).
+          </template>
+
+          <template v-if="nearestExamenVista">
+            Examen visual con agudeza lejana sin corrección: 
+            OI 20/{{ nearestExamenVista.ojoIzquierdoLejanaSinCorreccion || 'N/D' }} y 
+            OD 20/{{ nearestExamenVista.ojoDerechoLejanaSinCorreccion || 'N/D' }} 
+            ({{ nearestExamenVista.sinCorreccionLejanaInterpretacion || 'categoría no disponible' }}). 
+            <template v-if="nearestExamenVista.interpretacionIshihara === 'Daltonismo'">
+              Se detecta alteración en la percepción cromática (Daltonismo).
+            </template>
+            <template v-else-if="nearestExamenVista.interpretacionIshihara === 'Normal'">
+              No se detectan alteraciones en la percepción cromática.
+            </template>
+            <template v-else>
+              No se cuenta con resultado de prueba de percepción cromática.
+            </template>
+          </template>
+
+          {{ textoExploracion }}
+
+          <template v-if="nearestExploracionFisica?.resumenExploracionFisica === 'Se encuentra clínicamente sano' || nearestExploracionFisica?.resumenExploracionFisica === 'Se encuentra clínicamente sana'">
+            {{ nearestExploracionFisica.resumenExploracionFisica }}.
+          </template>
         </p>
+
+     </div>
+
+     <div v-else class="w-full mb-4">
+        <p class="text-justify">
+          Que, habiendo practicado reconocimiento médico en esta fecha, al C. 
+          <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> 
+          de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad.
+
+          &nbsp; <span :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }">[DESCRIPCIÓN DE LA EXPLORACIÓN DE LA FECHA MÁS CERCANA]</span>
+        </p>
+
      </div>
 
      <div class="w-full mb-4">
