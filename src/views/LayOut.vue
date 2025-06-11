@@ -296,7 +296,7 @@ const textoEnlace = computed(() => {
     <!-- Mensaje de configuración pendiente -->
     <Transition name="slide-up">
       <div v-if="datosCargados && mostrarMensajePendiente" 
-          class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105">
+          class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105 z-20">
         <i class="fa-regular fa-lightbulb text-yellow-500 text-xl mr-1"></i>
         <div>
           <p class="text-sm font-medium">
