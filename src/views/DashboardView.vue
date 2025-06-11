@@ -22,6 +22,8 @@ const centrosTrabajo = ref([]);
 const centroSeleccionado = ref('Todos')
 const tablaGruposEtarios = ref([]);
 const dashboardData = ref({});
+const fechaInicio = ref(null)
+const fechaFin = ref(null)
 
 const vistaGruposEtarios = ref('grafico');
 const vistaGruposEtariosKey = computed(() => `vista-${vistaGruposEtarios.value}`);
@@ -46,7 +48,7 @@ const refAgentes = ref();
 const refGruposEtarios = ref();
 const refCircunferencia = ref();
 
-const cargarDatos = async (empresaId) => {
+const cargarDatos = async (empresaId, inicio, fin) => {
   if (!empresaId) return;
 
   // 1. Empresa y Centros de Trabajo en paralelo
@@ -63,7 +65,7 @@ const cargarDatos = async (empresaId) => {
   if (centros.length > 0) {
     dashboardData.value = await Promise.all(
       centros.map((centro) =>
-        trabajadoresStore.fetchDashboardData(empresaId, centro._id)
+        trabajadoresStore.fetchDashboardData(empresaId, centro._id, inicio, fin)
       )
     );
   } else {
@@ -77,7 +79,13 @@ const cargarDatos = async (empresaId) => {
 };
 
 // Llama la función al montar y si cambia el ID
-watch(() => route.params.idEmpresa, cargarDatos, { immediate: true });
+watch(
+  [() => route.params.idEmpresa, fechaInicio, fechaFin],
+  ([idEmpresa, inicio, fin]) => {
+    cargarDatos(idEmpresa, inicio, fin);
+  },
+  { immediate: true }
+);
 
 const centrosTrabajoOptions = computed(() => [
   'Todos',
@@ -1062,6 +1070,27 @@ watch(
           <div class="bg-white border border-gray-200 shadow-md rounded-xl px-6 py-2 text-center self-center">
             <div class="text-xs text-gray-500"><i class="fas fa-users mr-1 text-gray-400"></i><span class="hidden md:block">Trabajadores evaluados</span></div>
             <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ totalTrabajadores }}</div>
+          </div>
+
+          <!-- Selector de periodo -->
+          <div class="flex flex-col text-xs md:text-sm font-medium text-gray-700">
+            <label for="fechaInicio">Inicio</label>
+            <input
+              id="fechaInicio"
+              type="date"
+              v-model="fechaInicio"
+              class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-xs md:text-sm text-gray-700 bg-white transition duration-150 ease-in-out"
+            />
+          </div>
+
+          <div class="flex flex-col text-xs md:text-sm font-medium text-gray-700">
+            <label for="fechaFin">Final</label>
+            <input
+              id="fechaFin"
+              type="date"
+              v-model="fechaFin"
+              class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-xs md:text-sm text-gray-700 bg-white transition duration-150 ease-in-out"
+            />
           </div>
 
           <!-- Selector de centro de trabajo -->
