@@ -144,12 +144,14 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
     }
   }  
 
-  async function fetchDashboardData(empresaId: string, centroTrabajoId: string) {
+  async function fetchDashboardData(empresaId: string, centroTrabajoId: string, inicio?: string, fin?: string) {
     try {
       loading.value = true;
       const { data } = await TrabajadoresAPI.getDashboardData(
         empresaId,
-        centroTrabajoId
+        centroTrabajoId,
+        inicio,
+        fin
       );
       return data;
     }

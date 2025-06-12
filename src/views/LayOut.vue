@@ -179,7 +179,7 @@ onMounted(() => {
 // Control de animación
 const animacionNotificacion = ref("notificacion-animada");
 
-let intervaloAnimacion: number | null = null;
+let intervaloAnimacion: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
   // Alternar entre las animaciones cada 3 segundos

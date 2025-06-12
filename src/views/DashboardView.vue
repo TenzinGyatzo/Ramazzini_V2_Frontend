@@ -82,10 +82,24 @@ const cargarDatos = async (empresaId, inicio, fin) => {
 watch(
   [() => route.params.idEmpresa, fechaInicio, fechaFin],
   ([idEmpresa, inicio, fin]) => {
+    if (inicio && fin && new Date(inicio) > new Date(fin)) return;
     cargarDatos(idEmpresa, inicio, fin);
   },
   { immediate: true }
 );
+
+watch([fechaInicio, fechaFin], ([inicio, fin]) => {
+  if (inicio && fin && new Date(inicio) > new Date(fin)) {
+    toast.open({
+      message: 'La fecha de inicio no puede ser mayor que la fecha final.',
+      type: 'error'
+    });
+  }
+});
+
+const rangoInvalido = computed(() => {
+  return fechaInicio.value && fechaFin.value && new Date(fechaInicio.value) > new Date(fechaFin.value);
+});
 
 const centrosTrabajoOptions = computed(() => [
   'Todos',
@@ -97,11 +111,11 @@ const totalTrabajadores = computed(() => {
   if (!dashboardData.value.length) return 0;
 
   if (centroSeleccionado.value === 'Todos') {
-    return dashboardData.value.reduce((total, centro) => total + (centro.grupoEtario[0]?.length || 0), 0);
+    return dashboardData.value.reduce((total, centro) => total + (centro.trabajadoresEvaluados?.length || 0), 0);
   }
 
   const index = centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value);
-  return dashboardData.value[index]?.grupoEtario[0]?.length || 0;
+  return dashboardData.value[index]?.trabajadoresEvaluados?.length || 0;
 });
 
 // Computed para tabla y grafica de categorías de IMC
@@ -1016,8 +1030,10 @@ watch(
   { immediate: true }
 );
 
-
-
+function limpiarFechas() {
+  fechaInicio.value = null;
+  fechaFin.value = null;
+}
 
 </script>
 
@@ -1046,6 +1062,14 @@ watch(
             <h2 class="text-sm md:text-base lg:text-lg xl:text-xl text-gray-600 mt-1">{{ empresasStore.currentEmpresa.razonSocial }}</h2>
         </div>
 
+        <button
+          type="button"
+          class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow transition duration-300"
+        >
+          <i class="fas fa-chart-line"></i>
+          Informes
+        </button>
+
         <div class="mt-6 flex justify-end">
           <DescargarInformeDashboard
             v-if="refIMC && refAptitud && refLentes && refCorregida && refDaltonismo && refAgentes && refGruposEtarios && refCircunferencia"
@@ -1072,25 +1096,63 @@ watch(
             <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ totalTrabajadores }}</div>
           </div>
 
-          <!-- Selector de periodo -->
-          <div class="flex flex-col text-xs md:text-sm font-medium text-gray-700">
-            <label for="fechaInicio">Inicio</label>
-            <input
-              id="fechaInicio"
-              type="date"
-              v-model="fechaInicio"
-              class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-xs md:text-sm text-gray-700 bg-white transition duration-150 ease-in-out"
-            />
-          </div>
+          <!-- Filtro de periodo -->
+          <div class="flex flex-col justify-end text-xs">
+            <label class="block text-xs font-medium text-gray-700 mb-1">Periodo</label>
 
-          <div class="flex flex-col text-xs md:text-sm font-medium text-gray-700">
-            <label for="fechaFin">Final</label>
-            <input
-              id="fechaFin"
-              type="date"
-              v-model="fechaFin"
-              class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-xs md:text-sm text-gray-700 bg-white transition duration-150 ease-in-out"
-            />
+            <div class="flex items-end gap-2">
+              <!-- Fecha inicio -->
+              <div class="flex flex-col">
+                <label for="fechaInicio" class="text-[11px] text-gray-500 mb-0.5">Inicio</label>
+                <input
+                  id="fechaInicio"
+                  type="date"
+                  v-model="fechaInicio"
+                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition"
+                />
+              </div>
+
+              <!-- Fecha fin -->
+              <div class="flex flex-col">
+                <label for="fechaFin" class="text-[11px] text-gray-500 mb-0.5">Final</label>
+                <input
+                  id="fechaFin"
+                  type="date"
+                  v-model="fechaFin"
+                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition"
+                />
+              </div>
+
+              <!-- Botón limpiar -->
+              <button
+                @click="limpiarFechas"
+                class="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-3 rounded-lg border-2 border-red-200 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out flex items-center justify-center gap-2 h-fit mt-4"
+              >
+                <i class="fa-solid fa-calendar-xmark"></i>
+                Limpiar
+              </button>
+            </div>
+
+            <!-- Testigo de filtro -->
+            <div v-if="fechaInicio && fechaFin" class="flex items-center gap-1 mt-2">
+              <i
+                :class="[
+                  'fas',
+                  'text-xs',
+                  rangoInvalido ? 'fa-circle-exclamation text-rose-500' : 'fa-filter text-emerald-500'
+                ]"
+              ></i>
+              <span
+                :class="[
+                  'text-xs',
+                  rangoInvalido ? 'text-rose-600' : 'text-emerald-600'
+                ]"
+              >
+                {{ rangoInvalido
+                  ? 'Filtro no aplicado: corrige el orden de las fechas'
+                  : `Filtro aplicado: ${new Date(fechaInicio).toLocaleDateString()} - ${new Date(fechaFin).toLocaleDateString()}` }}
+              </span>
+            </div>
           </div>
 
           <!-- Selector de centro de trabajo -->
