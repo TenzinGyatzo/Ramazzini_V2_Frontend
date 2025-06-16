@@ -69,7 +69,7 @@ const regenerar = async () => {
           Documento no disponible
         </h2>
         <p class="text-gray-700 mb-6">
-          El documento fue <strong>eliminado automáticamente</strong> tras <strong>14 meses</strong> como parte de nuestro sistema de limpieza y optimización.   
+          El documento fue <strong>eliminado automáticamente</strong> tras <strong>3 meses</strong> como parte de nuestro sistema de limpieza y optimización.   
           Si necesitas consultarlo nuevamente, puedes <strong>regenerarlo</strong> haciendo clic en el botón de abajo.
         </p>
         <div class="flex justify-end gap-3">
