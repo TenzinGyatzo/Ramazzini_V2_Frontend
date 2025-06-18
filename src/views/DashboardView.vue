@@ -1045,7 +1045,7 @@ function limpiarFechas() {
 
     <div v-else>
       <!-- Header con logo a la izquierda y datos a la derecha -->
-      <div class="flex items-center gap-6 mb-6">
+      <div class="flex items-center gap-6 mb-2">
         <img
           v-if="empresasStore.currentEmpresa.logotipoEmpresa?.data"
           :src="'/uploads/logos/' + empresasStore.currentEmpresa.logotipoEmpresa.data + '?t=' + empresasStore.currentEmpresa.updatedAt"
@@ -1062,112 +1062,112 @@ function limpiarFechas() {
             <h2 class="text-sm md:text-base lg:text-lg xl:text-xl text-gray-600 mt-1">{{ empresasStore.currentEmpresa.razonSocial }}</h2>
         </div>
 
-        <button
-          type="button"
-          class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow transition duration-300"
-        >
-          <i class="fas fa-chart-line"></i>
-          Informes
-        </button>
-
-        <div class="mt-6 flex justify-end">
-          <DescargarInformeDashboard
-            v-if="refIMC && refAptitud && refLentes && refCorregida && refDaltonismo && refAgentes && refGruposEtarios && refCircunferencia"
-            :refs-graficas="{
-              imc: refIMC,
-              aptitud: refAptitud,
-              lentes: refLentes,
-              corregida: refCorregida,
-              daltonismo: refDaltonismo,
-              agentes: refAgentes,
-              grupos: refGruposEtarios,
-              cintura: refCircunferencia
-            }"
-            :nombre-empresa="empresasStore.currentEmpresa?.nombreComercial"
-            :logo-base64="logoBase64"
-          />
-        </div>
-
-        <!-- Ajustado a nivel del encabezado -->
-        <div class="mb-4 ml-auto flex items-end gap-6">
+        <div class="mb-4 ml-auto flex items-center gap-6">
           <!-- Indicador de total de trabajadores -->
           <div class="bg-white border border-gray-200 shadow-md rounded-xl px-6 py-2 text-center self-center">
             <div class="text-xs text-gray-500"><i class="fas fa-users mr-1 text-gray-400"></i><span class="hidden md:block">Trabajadores evaluados</span></div>
             <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ totalTrabajadores }}</div>
           </div>
-
-          <!-- Filtro de periodo -->
-          <div class="flex flex-col justify-end text-xs">
-            <label class="block text-xs font-medium text-gray-700 mb-1">Periodo</label>
-
-            <div class="flex items-end gap-2">
-              <!-- Fecha inicio -->
-              <div class="flex flex-col">
-                <label for="fechaInicio" class="text-[11px] text-gray-500 mb-0.5">Inicio</label>
-                <input
-                  id="fechaInicio"
-                  type="date"
-                  v-model="fechaInicio"
-                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition"
-                />
-              </div>
-
-              <!-- Fecha fin -->
-              <div class="flex flex-col">
-                <label for="fechaFin" class="text-[11px] text-gray-500 mb-0.5">Final</label>
-                <input
-                  id="fechaFin"
-                  type="date"
-                  v-model="fechaFin"
-                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition"
-                />
-              </div>
-
-              <!-- Botón limpiar -->
-              <button
-                @click="limpiarFechas"
-                class="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 px-3 rounded-lg border-2 border-red-200 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out flex items-center justify-center gap-2 h-fit mt-4"
-              >
-                <i class="fa-solid fa-calendar-xmark"></i>
-                Limpiar
-              </button>
-            </div>
-
-            <!-- Testigo de filtro -->
-            <div v-if="fechaInicio && fechaFin" class="flex items-center gap-1 mt-2">
-              <i
-                :class="[
-                  'fas',
-                  'text-xs',
-                  rangoInvalido ? 'fa-circle-exclamation text-rose-500' : 'fa-filter text-emerald-500'
-                ]"
-              ></i>
-              <span
-                :class="[
-                  'text-xs',
-                  rangoInvalido ? 'text-rose-600' : 'text-emerald-600'
-                ]"
-              >
-                {{ rangoInvalido
-                  ? 'Filtro no aplicado: corrige el orden de las fechas'
-                  : `Filtro aplicado: ${new Date(fechaInicio).toLocaleDateString()} - ${new Date(fechaFin).toLocaleDateString()}` }}
-              </span>
-            </div>
-          </div>
-
+          
           <!-- Selector de centro de trabajo -->
           <div class="self-end">
             <label class="block text-xs md:text-sm font-medium text-gray-700">Centro de trabajo</label>
             <select
-              v-model="centroSeleccionado"
-              class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-xs md:text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out mt-1"
+            v-model="centroSeleccionado"
+            class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs md:text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out mt-1"
             >
               <option v-for="nombre in centrosTrabajoOptions" :key="nombre" :value="nombre">{{ nombre }}</option>
             </select>
           </div>
         </div>
+    </div>
+    
+    <!-- Ajustado a nivel del encabezado -->
+    <div class="mb-2 flex items-end gap-6">
+      <button
+        type="button"
+        class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow transition duration-300 self-center"
+      >
+        <i class="fas fa-chart-line"></i>
+        Gestión de Informes
+      </button>
+      
+      <!-- Filtro de periodo -->
+      <div class="flex flex-col justify-end text-xs ml-auto self-center">
+        <div class="flex items-center gap-2">
+          <label class="block text-xs font-medium text-gray-700 mb-1">Periodo</label>
+          <transition name="fade">
+            <button 
+              v-if="fechaInicio || fechaFin"
+              @click="limpiarFechas"
+              class="block text-xs font-medium mb-1 text-red-600 hover:text-red-500"
+            >
+              &nbsp;
+              <i class="fa-solid fa-calendar-xmark"></i>
+              &nbsp;Limpiar
+            </button>
+          </transition>
+        </div>
+
+        <div class="flex items-end gap-2">
+          <!-- Fecha inicio -->
+          <div class="flex flex-col">
+            <label for="fechaInicio" class="text-[11px] text-gray-500 mb-0.5">Inicio</label>
+            <input
+              id="fechaInicio"
+              type="date"
+              v-model="fechaInicio"
+              class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition duration-150 ease-in-out mt-1"
+            />
+          </div>
+
+          <!-- Fecha fin -->
+          <div class="flex flex-col">
+            <label for="fechaFin" class="text-[11px] text-gray-500 mb-0.5">Final</label>
+            <input
+              id="fechaFin"
+              type="date"
+              v-model="fechaFin"
+              class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition duration-150 ease-in-out mt-1"
+            />
+          </div>
+        </div>
+
+        <!-- Testigo de filtro -->
+<!-- Este div externo SIEMPRE existe y tiene una altura mínima -->
+<div class="min-h-[1.5rem]">
+  <!-- Aquí va el elemento que aparece/desaparece -->
+  <transition name="fade">
+    <div
+      v-if="fechaInicio && fechaFin"
+      class="flex items-center gap-1 mt-2"
+    >
+      <!-- Contenido del testigo -->
+      <i
+        :class="[
+          'fas',
+          'text-xs',
+          rangoInvalido ? 'fa-circle-exclamation text-rose-500' : 'fa-filter text-emerald-500'
+        ]"
+      ></i>
+      <span
+        :class="[
+          'text-xs',
+          rangoInvalido ? 'text-rose-600' : 'text-emerald-600'
+        ]"
+      >
+        {{ rangoInvalido
+          ? 'Filtro no aplicado: corrige el orden de las fechas'
+          : `Filtro aplicado: ${new Date(fechaInicio).toLocaleDateString('es-MX', { timeZone: 'UTC' })} - ${new Date(fechaFin).toLocaleDateString('es-MX', { timeZone: 'UTC' })}` }}
+      </span>
+    </div>
+  </transition>
+</div>
+
+
 
       </div>
+    </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-8 auto-rows-[370px] sm:auto-rows-[400px] md:auto-rows-[425px] lg:auto-rows-[450px]">
 
