@@ -83,6 +83,11 @@ const router = createRouter({
           component: () => import("../views/DashboardRTsView.vue"),
         },
         {
+          path: "/informes-salud-ocupacional/:idEmpresa",
+          name: "informes-salud-ocupacional",
+          component: () => import("../views/InformesSOView.vue"),
+        },
+        {
           path: "empresas",
           name: "empresas",
           component: () => import("../views/EmpresasView.vue"),

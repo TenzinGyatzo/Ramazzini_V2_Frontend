@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, inject, onMounted } from 'vue';
+import { ref, watch, computed, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
@@ -1080,12 +1080,13 @@ function limpiarFechas() {
             </select>
           </div>
         </div>
-    </div>
+      </div>
     
     <!-- Ajustado a nivel del encabezado -->
     <div class="mb-2 flex items-end gap-6">
       <button
         type="button"
+        @click="router.push({ name: 'informes-salud-ocupacional', params: { idEmpresa: empresasStore.currentEmpresaId } })" 
         class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow transition duration-300 self-center"
       >
         <i class="fas fa-chart-line"></i>
