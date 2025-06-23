@@ -925,11 +925,19 @@ const graficaGruposEtariosOptions = {
   scales: {
     x: {
       stacked: true,
-      grid: { display: false }
+      grid: { display: false },
+      ticks: {
+      color: '#374151',
+      font: { size: 12 },
+    }
     },
     y: {
       stacked: true,
-      grid: { display: false }
+      grid: { display: false },
+      ticks: {
+      color: '#374151',
+      font: { size: 12 },
+    }
     }
   }
 }
@@ -1203,7 +1211,7 @@ function limpiarFechas() {
             corregida: refCorregida,
             daltonismo: refDaltonismo,
             agentes: refAgentes,
-            grupos: refGruposEtarios,
+            grupos: { ref: refGruposEtarios, config: { type: 'bar', data: graficaGruposEtariosData, options: graficaGruposEtariosOptions } },
             cintura: refCircunferencia
           }"
           :nombre-empresa="empresasStore.currentEmpresa?.nombreComercial"

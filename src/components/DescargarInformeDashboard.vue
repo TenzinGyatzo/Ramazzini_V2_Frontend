@@ -1,6 +1,7 @@
 <script setup lang="ts">
 declare const pdfMake: typeof import('pdfmake/build/pdfmake');
-import type { Content, TDocumentDefinitions } from 'pdfmake/interfaces'; 
+import type { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
+import { exportarGraficaAltaResolucion } from '@/helpers/exportChartImage';
 
 const props = defineProps<{
   refsGraficas: Record<string, any>;
@@ -15,15 +16,30 @@ const props = defineProps<{
   nombreMedicoFirmante?: string;
 }>();
 
-const obtenerBase64 = (refEl: any): string | undefined => {
-  const el = refEl?.$el || refEl;
-
-  // Si el elemento ES un canvas directamente
+const obtenerBase64 = (graficaObj: any, customWidth?: number, customHeight?: number): string | undefined => {
+  // Si es un objeto con ref y config (para alta resolución)
+  if (graficaObj && typeof graficaObj === 'object' && ('ref' in graficaObj || 'config' in graficaObj)) {
+    if (graficaObj.config) {
+      // Usa exportación en alta resolución con escalado proporcional
+      return exportarGraficaAltaResolucion(
+        graficaObj.config,
+        customWidth || 1200,
+        customHeight || 900
+      );
+    }
+    const el = graficaObj.ref?.$el || graficaObj.ref;
+    if (el instanceof HTMLCanvasElement) {
+      return el.toDataURL();
+    }
+    const canvas = el?.querySelector?.('canvas');
+    return canvas?.toDataURL?.();
+  }
+  
+  // Si es solo un ref (método anterior)
+  const el = graficaObj?.$el || graficaObj;
   if (el instanceof HTMLCanvasElement) {
     return el.toDataURL();
   }
-
-  // Si es un contenedor que tiene un canvas adentro
   const canvas = el?.querySelector?.('canvas');
   return canvas?.toDataURL?.();
 };
@@ -126,9 +142,15 @@ const generarDocDefinition = (): TDocumentDefinitions => {
         corregida: obtenerBase64(props.refsGraficas.corregida),
         daltonismo: obtenerBase64(props.refsGraficas.daltonismo),
         agentes: obtenerBase64(props.refsGraficas.agentes),
-        grupos: obtenerBase64(props.refsGraficas.grupos),
+        grupos: obtenerBase64(props.refsGraficas.grupos, 3000, 2000),
         cintura: obtenerBase64(props.refsGraficas.cintura),
     };
+
+    // Debug: verificar que la imagen de grupos se genere correctamente
+    console.log('Imagen grupos generada:', imagenes.grupos ? 'SÍ' : 'NO');
+    if (imagenes.grupos) {
+        console.log('Tamaño imagen grupos:', imagenes.grupos.length, 'caracteres');
+    }
 
     const contenido: Content[] = [];
 
@@ -144,6 +166,7 @@ const generarDocDefinition = (): TDocumentDefinitions => {
 
     // Sección 1: Composición Demográfica
     if (imagenes.grupos) {
+        console.log('Agregando imagen de grupos etarios al PDF con ancho 450px');
         contenido.push(
             { text: '1. COMPOSICIÓN DEMOGRÁFICA', style: 'tituloSeccion' },
             {
@@ -153,7 +176,7 @@ const generarDocDefinition = (): TDocumentDefinitions => {
             },
             { 
                 image: imagenes.grupos, 
-                width: 450, 
+                width: 400, 
                 alignment: 'center',
                 margin: [0, 10, 0, 20] 
             }
