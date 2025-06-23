@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
-import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 import { clasificarPorEdadYSexo, ordenarPorGrupoEtario, contarPorCategoriaIMC, etiquetasEnfermedades, contarEnfermedadesCronicas, etiquetasAntecedentesReferidos, contarAntecedentesReferidos, etiquetasVisionSinCorreccion, calcularRequierenLentes, contarVisionSinCorreccion, calcularVistaCorregida, calcularDaltonismo, etiquetasAptitudPuesto, etiquetasAptitudPuestoTabla, contarPorAptitudPuesto, calcularCircunferenciaCintura, contarConsultasUltimos30Dias, etiquetasAgentesRiesgo, contarAgentesRiesgo } from '@/helpers/dashboardDataProcessor';
 import GraficaBarras from '@/components/graficas/GraficaBarras.vue';
 import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
@@ -18,7 +17,6 @@ const route = useRoute();
 const empresasStore = useEmpresasStore();
 const centrosTrabajoStore = useCentrosTrabajoStore();
 const trabajadoresStore = useTrabajadoresStore();
-const medicoFirmanteStore = useMedicoFirmanteStore();
 
 const centrosTrabajo = ref([]);
 const centroSeleccionado = ref('Todos')
@@ -131,27 +129,15 @@ const refCircunferencia = ref();
 const cargarDatos = async (empresaId, inicio, fin) => {
   if (!empresaId) return;
 
-  // 1. Empresa, Centros de Trabajo y Médico Firmante en paralelo
+  // 1. Empresa y Centros de Trabajo en paralelo
   const [empresa, centros] = await Promise.all([
     empresasStore.fetchEmpresaById(empresaId),
     centrosTrabajoStore.fetchCentrosTrabajo(empresaId)
   ]);
 
-  // Cargar médico firmante usando el ID del usuario logueado
-  const user = JSON.parse(localStorage.getItem('user')) || null;
-  if (user?._id) {
-    await medicoFirmanteStore.loadMedicoFirmante(user._id);
-  }
-
   empresasStore.currentEmpresa = empresa;
   centrosTrabajo.value = centros;
   centroSeleccionado.value = centros.length > 0 ? centros[0].nombreCentro : 'Todos';
-
-  // Debug: verificar médico firmante
-  console.log('Usuario logueado:', user);
-  console.log('Médico firmante cargado:', medicoFirmanteStore.medicoFirmante);
-  console.log('Título profesional:', medicoFirmanteStore.medicoFirmante?.tituloProfesional);
-  console.log('Nombre:', medicoFirmanteStore.medicoFirmante?.nombre);
 
   // 2. Info para el dashboard (en paralelo)
   if (centros.length > 0) {
@@ -168,7 +154,6 @@ const cargarDatos = async (empresaId, inicio, fin) => {
   // console.log('Empresa data fetched:', empresasStore.currentEmpresa);
   // console.log('Centros de trabajo data fetched:', centrosTrabajo.value);
   // console.log('Dashboard data fetched:', dashboardData.value);
-  // console.log('Médico firmante:', medicoFirmanteStore.medicoFirmante);
 };
 
 // Llama la función al montar y si cambia el ID
@@ -755,16 +740,6 @@ const rangoPeriodo = computed(() => {
   return `Total de consultas en el periodo\n${inicio} - ${fin}`;
 })
 
-const periodoReporte = computed(() => {
-  if (!fechaInicio.value || !fechaFin.value || rangoInvalido.value) {
-    return 'Todos los registros históricos';
-  }
-  
-  const inicio = new Date(fechaInicio.value).toLocaleDateString('es-MX', { timeZone: 'UTC' });
-  const fin = new Date(fechaFin.value).toLocaleDateString('es-MX', { timeZone: 'UTC' });
-  return `Periodo del ${inicio} al ${fin}`;
-});
-
 // Computed para tabla y grafica de exposición a agentes de riesgo
 const tablaAgentesRiesgo = computed(() => {
   if (!dashboardData.value.length) return [];
@@ -1193,42 +1168,13 @@ function limpiarFechas() {
     
     <!-- Ajustado a nivel del encabezado -->
     <div class="mb-2 flex items-end gap-6">
-      <div class="flex items-center gap-4 self-center">
-        <DescargarInformeDashboard
-          v-if="refIMC && refAptitud && refLentes && refCorregida && refDaltonismo && refAgentes && refGruposEtarios && refCircunferencia"
-          :refs-graficas="{
-            imc: refIMC,
-            aptitud: refAptitud,
-            lentes: refLentes,
-            corregida: refCorregida,
-            daltonismo: refDaltonismo,
-            agentes: refAgentes,
-            grupos: refGruposEtarios,
-            cintura: refCircunferencia
-          }"
-          :nombre-empresa="empresasStore.currentEmpresa?.nombreComercial"
-          :razon-social="empresasStore.currentEmpresa?.razonSocial"
-          :titulo-medico-firmante="medicoFirmanteStore.medicoFirmante?.tituloProfesional"
-          :nombre-medico-firmante="medicoFirmanteStore.medicoFirmante?.nombre"
-          :logo-base64="logoBase64"
-          :periodo="periodoReporte"
-          :total-trabajadores="totalTrabajadores"
-          :centro-trabajo="centroSeleccionado"
-          :tablas-datos="{
-            imc: tablaIMC,
-            aptitud: tablaAptitud,
-            enfermedades: tablaEnfermedades,
-            antecedentes: tablaAntecedentes,
-            agentesRiesgo: tablaAgentesRiesgo,
-            vision: tablaVisionSinCorreccion,
-            gruposEtarios: tablaGruposEtariosFiltrada,
-            lentes: graficaRequierenLentesData,
-            vistaCorregida: graficaVistaCorregidaData,
-            daltonismo: graficaDaltonismoData,
-            cintura: graficaCircunferenciaData
-          }"
-        />
-      </div>
+      <button
+        type="button"
+        class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow transition duration-300 self-center"
+      >
+        <i class="fas fa-chart-line"></i>
+        Gestión de Informes
+      </button>
       
       <!-- Filtro de periodo -->
       <div class="flex flex-col justify-end text-xs ml-auto">
