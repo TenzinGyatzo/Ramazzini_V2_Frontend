@@ -118,14 +118,14 @@ export interface ExploracionFisica {
     hombros?: string;
     codos?: string;
     manos?: string;
-    neurologicoESuperiores?: string;
+    reflejosOsteoTendinososSuperiores?: string;
     vascularESuperiores?: string;
     torax?: string;
     abdomen?: string;
     cadera?: string;
     rodillas?: string;
     tobillosPies?: string;
-    neurologicoEInferiores?: string;
+    reflejosOsteoTendinososInferiores?: string;
     vascularEInferiores?: string;
     inspeccionColumna?: string;
     movimientosColumna?: string;

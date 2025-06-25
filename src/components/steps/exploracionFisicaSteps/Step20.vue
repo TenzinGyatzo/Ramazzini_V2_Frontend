@@ -7,40 +7,40 @@ const { formDataExploracionFisica } = useFormDataStore();
 const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
-const neurologicoEInferioresPregunta = ref('No');
-const neurologicoEInferiores = ref ('');
+const reflejosOsteoTendinososInferioresPregunta = ref('No');
+const reflejosOsteoTendinososInferiores = ref ('');
 
 onMounted(() => {
-    if (documentos.currentDocument && documentos.currentDocument.neurologicoEInferiores === '') {
-        neurologicoEInferiores.value = documentos.currentDocument.neurologicoEInferiores;
-        neurologicoEInferioresPregunta.value = 'Si';
+    if (documentos.currentDocument && documentos.currentDocument.reflejosOsteoTendinososInferiores === '') {
+        reflejosOsteoTendinososInferiores.value = documentos.currentDocument.reflejosOsteoTendinososInferiores;
+        reflejosOsteoTendinososInferioresPregunta.value = 'Si';
     }
 
-    if (formDataExploracionFisica.neurologicoEInferiores) {
-        neurologicoEInferiores.value = formDataExploracionFisica.neurologicoEInferiores;
-        neurologicoEInferioresPregunta.value = 'Si';
+    if (formDataExploracionFisica.reflejosOsteoTendinososInferiores) {
+        reflejosOsteoTendinososInferiores.value = formDataExploracionFisica.reflejosOsteoTendinososInferiores;
+        reflejosOsteoTendinososInferioresPregunta.value = 'Si';
     }
 });
 
 onUnmounted(() => {
-    // Asegurar que formData tenga un valor inicial para neurologicoEInferiores
-    if (!formDataExploracionFisica.neurologicoEInferiores) {
-        formDataExploracionFisica.neurologicoEInferiores = 'Sin hallazgos';
+    // Asegurar que formData tenga un valor inicial para reflejosOsteoTendinososInferiores
+    if (!formDataExploracionFisica.reflejosOsteoTendinososInferiores) {
+        formDataExploracionFisica.reflejosOsteoTendinososInferiores = 'Sin hallazgos';
     }
 });
 
 // Sincronizar valores con formData
-watch(neurologicoEInferiores, (newValue) => {
-    formDataExploracionFisica.neurologicoEInferiores = newValue;
+watch(reflejosOsteoTendinososInferiores, (newValue) => {
+    formDataExploracionFisica.reflejosOsteoTendinososInferiores = newValue;
 });
 
-// Watch para establecer 'Default' cuando neurologicoEInferiores sea 'No'
-watch(neurologicoEInferioresPregunta, (newValue) => {
+// Watch para establecer 'Default' cuando reflejosOsteoTendinososInferiores sea 'No'
+watch(reflejosOsteoTendinososInferioresPregunta, (newValue) => {
     if (newValue === 'No') {
-        formDataExploracionFisica.neurologicoEInferiores = 'Sin hallazgos';
+        formDataExploracionFisica.reflejosOsteoTendinososInferiores = 'Sin hallazgos';
     }
     if (newValue === 'Si') {
-        formDataExploracionFisica.neurologicoEInferiores = neurologicoEInferiores.value;
+        formDataExploracionFisica.reflejosOsteoTendinososInferiores = reflejosOsteoTendinososInferiores.value;
     }
 });
 </script>
@@ -55,23 +55,23 @@ watch(neurologicoEInferioresPregunta, (newValue) => {
             </p>
             <div class="flex items-center space-x-6 font-light">
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="No" v-model="neurologicoEInferioresPregunta" class="form-radio accent-emerald-600" />
+                    <input type="radio" value="No" v-model="reflejosOsteoTendinososInferioresPregunta" class="form-radio accent-emerald-600" />
                     <span>No</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="Si" v-model="neurologicoEInferioresPregunta" class="form-radio accent-emerald-600" />
+                    <input type="radio" value="Si" v-model="reflejosOsteoTendinososInferioresPregunta" class="form-radio accent-emerald-600" />
                     <span>Si</span>
                 </label>
             </div>
         </div>
 
         <!-- Opciones adicionales, solo visibles si el resultado es "Sí" -->
-        <div v-if="neurologicoEInferioresPregunta === 'Si'" class="mt-4">
+        <div v-if="reflejosOsteoTendinososInferioresPregunta === 'Si'" class="mt-4">
             <p class="font-medium mb-2 text-gray-800">Hallazgos:</p>
             <div class="font-light">
                 <textarea
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                    v-model="formDataExploracionFisica.neurologicoEInferiores"
+                    v-model="formDataExploracionFisica.reflejosOsteoTendinososInferiores"
                     required
                 >
                 </textarea>

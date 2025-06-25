@@ -174,14 +174,14 @@ const marcarSinHallazgos = () => {
   formData.formDataExploracionFisica.hombros = 'Sin hallazgos';
   formData.formDataExploracionFisica.codos = 'Sin hallazgos';
   formData.formDataExploracionFisica.manos = 'Sin hallazgos';
-  formData.formDataExploracionFisica.neurologicoESuperiores = 'Sin hallazgos';
+  formData.formDataExploracionFisica.reflejosOsteoTendinososSuperiores = 'Sin hallazgos';
   formData.formDataExploracionFisica.vascularESuperiores = 'Sin hallazgos';
   formData.formDataExploracionFisica.torax = 'Sin hallazgos';
   formData.formDataExploracionFisica.abdomen = 'Sin hallazgos';
   formData.formDataExploracionFisica.cadera = 'Sin hallazgos';
   formData.formDataExploracionFisica.rodillas = 'Sin hallazgos';
   formData.formDataExploracionFisica.tobillosPies = 'Sin hallazgos';
-  formData.formDataExploracionFisica.neurologicoEInferiores = 'Sin hallazgos';
+  formData.formDataExploracionFisica.reflejosOsteoTendinososInferiores = 'Sin hallazgos';
   formData.formDataExploracionFisica.vascularEInferiores = 'Sin hallazgos';
   formData.formDataExploracionFisica.inspeccionColumna = 'Sin hallazgos';
   formData.formDataExploracionFisica.movimientosColumna = 'Sin hallazgos';

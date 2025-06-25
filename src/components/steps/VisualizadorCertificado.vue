@@ -168,7 +168,7 @@ const camposExploracion = [
   'abdomen', 'boca', 'cadera', 'cicatrices', 'codos', 'coordinacion',
   'craneoCara', 'cuello', 'equilibrio', 'hombros', 'inspeccionColumna',
   'lesionesPiel', 'manos', 'marcha', 'movimientosColumna', 'nariz',
-  'neurologicoEInferiores', 'neurologicoESuperiores', 'nevos', 'oidos',
+  'reflejosOsteoTendinososInferiores', 'reflejosOsteoTendinososSuperiores', 'nevos', 'oidos',
   'ojos', 'rodillas', 'sensibilidad', 'tobillosPies', 'torax'
 ];
 
