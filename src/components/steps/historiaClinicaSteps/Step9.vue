@@ -7,40 +7,40 @@ const { formDataHistoriaClinica } = useFormDataStore();
 const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
-const leuticos = ref('No');
+const autoinmunes = ref('No');
 
 onMounted(() => {
     if (documentos.currentDocument) {
         // Si se está editando un documento, usa los valores existentes
-        leuticos.value = documentos.currentDocument.leuticos || 'No';
+        autoinmunes.value = documentos.currentDocument.autoinmunes || 'No';
 
     } else {
         // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
-        leuticos.value = formDataHistoriaClinica.leuticos || 'No';
+        autoinmunes.value = formDataHistoriaClinica.autoinmunes || 'No';
     }
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para leuticos
-if (!formDataHistoriaClinica.leuticos) {
-    formDataHistoriaClinica.leuticos = leuticos.value;
+  // Asegurar que formData tenga un valor inicial para autoinmunes
+if (!formDataHistoriaClinica.autoinmunes) {
+    formDataHistoriaClinica.autoinmunes = autoinmunes.value;
 }
 
-if (!formDataHistoriaClinica.leuticosEspecificar) {
-    formDataHistoriaClinica.leuticosEspecificar = 'Negado';
+if (!formDataHistoriaClinica.autoinmunesEspecificar) {
+    formDataHistoriaClinica.autoinmunesEspecificar = 'Negado';
 }  
 })
 
 
-// Sincronizar leuticos con formData
-watch(leuticos, (newValue) => {
-    formDataHistoriaClinica.leuticos = newValue;
+// Sincronizar autoinmunes con formData
+watch(autoinmunes, (newValue) => {
+    formDataHistoriaClinica.autoinmunes = newValue;
 });
 
-// Watch para establecer 'Negado' cuando leuticos sea 'No'
-watch(leuticos, (newValue) => {
+// Watch para establecer 'Negado' cuando autoinmunes sea 'No'
+watch(autoinmunes, (newValue) => {
     if (newValue === 'No') {
-        formDataHistoriaClinica.leuticosEspecificar = 'Negado';
+        formDataHistoriaClinica.autoinmunesEspecificar = 'Negado';
     }
 });
 </script>
@@ -54,23 +54,23 @@ watch(leuticos, (newValue) => {
             <p class="font-medium mb-1 text-gray-800 leading-5">¿Antecedentes de enfermedades autoinmunes en la familia?</p>
             <div class="flex items-center space-x-6 font-light">
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="No" v-model="leuticos" class="form-radio accent-emerald-600" />
+                    <input type="radio" value="No" v-model="autoinmunes" class="form-radio accent-emerald-600" />
                     <span>No</span>
                 </label>
                 <label class="flex items-center space-x-2">
-                    <input type="radio" value="Si" v-model="leuticos" class="form-radio accent-emerald-600" />
+                    <input type="radio" value="Si" v-model="autoinmunes" class="form-radio accent-emerald-600" />
                     <span>Si</span>
                 </label>
             </div>
         </div>
 
         <!-- Opciones adicionales, solo visibles si el resultado es "Sí" -->
-        <div v-if="leuticos === 'Si'" class="mt-4">
+        <div v-if="autoinmunes === 'Si'" class="mt-4">
             <p class="font-medium mb-2 text-gray-800">Especifique:</p>
             <div class="font-light">
                 <input type="text"
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                    v-model="formDataHistoriaClinica.leuticosEspecificar"
+                    v-model="formDataHistoriaClinica.autoinmunesEspecificar"
                     placeholder="Madre, Padre, Abuelo Materno, etc" required>
             </div>
         </div>

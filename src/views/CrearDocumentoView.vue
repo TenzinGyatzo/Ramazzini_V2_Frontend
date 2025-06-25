@@ -118,10 +118,10 @@ const heredoFamiliaresNegados = () => {
   formData.formDataHistoriaClinica.psiquiatricosEspecificar = 'Negado';
   formData.formDataHistoriaClinica.epilepticos = 'No';
   formData.formDataHistoriaClinica.epilepticosEspecificar = 'Negado';
-  formData.formDataHistoriaClinica.leuticos = 'No';
-  formData.formDataHistoriaClinica.leuticosEspecificar = 'Negado';
-  formData.formDataHistoriaClinica.fimicos = 'No';
-  formData.formDataHistoriaClinica.fimicosEspecificar = 'Negado';
+  formData.formDataHistoriaClinica.autoinmunes = 'No';
+  formData.formDataHistoriaClinica.autoinmunesEspecificar = 'Negado';
+  formData.formDataHistoriaClinica.tuberculosis = 'No';
+  formData.formDataHistoriaClinica.tuberculosisEspecificar = 'Negado';
   formData.formDataHistoriaClinica.hepatopatias = 'No';
   formData.formDataHistoriaClinica.hepatopatiasEspecificar = 'Negado';
 };
@@ -137,8 +137,8 @@ const personalesPatologicosNegados = () => {
   formData.formDataHistoriaClinica.alergicosEspecificar = 'Negado';
   formData.formDataHistoriaClinica.hipertensivosPP = 'No';
   formData.formDataHistoriaClinica.hipertensivosPPEspecificar = 'Negado';
-  formData.formDataHistoriaClinica.obesidad = 'No';
-  formData.formDataHistoriaClinica.obesidadEspecificar = 'Negado';
+  formData.formDataHistoriaClinica.respiratorios = 'No';
+  formData.formDataHistoriaClinica.respiratoriosEspecificar = 'Negado';
   formData.formDataHistoriaClinica.epilepticosPP = 'No';
   formData.formDataHistoriaClinica.epilepticosPPEspecificar = 'Negado';
   formData.formDataHistoriaClinica.accidentes = 'No';

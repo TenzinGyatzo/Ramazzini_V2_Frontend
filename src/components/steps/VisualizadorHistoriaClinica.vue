@@ -23,8 +23,8 @@ const antecedentesHeredoFamiliares = ref([
   { name: 'NEOPLÁSICOS', step: 6, key: 'neoplasicos', specifyKey: 'neoplasicosEspecificar' },
   { name: 'PSIQUÁTRICOS', step: 7, key: 'psiquiatricos', specifyKey: 'psiquiatricosEspecificar' },
   { name: 'EPILÉPTICOS', step: 8, key: 'epilepticos', specifyKey: 'epilepticosEspecificar' },
-  { name: 'AUTOINMUNES', step: 9, key: 'leuticos', specifyKey: 'leuticosEspecificar' },
-  { name: 'TUBERCULOSIS', step: 10, key: 'fimicos', specifyKey: 'fimicosEspecificar' },
+  { name: 'AUTOINMUNES', step: 9, key: 'autoinmunes', specifyKey: 'autoinmunesEspecificar' },
+  { name: 'TUBERCULOSIS', step: 10, key: 'tuberculosis', specifyKey: 'tuberculosisEspecificar' },
   { name: 'HEPATOPATÍAS', step: 11, key: 'hepatopatias', specifyKey: 'hepatopatiasEspecificar' },
 ]);
 
@@ -34,7 +34,7 @@ const antecedentesPersonalesPatologicos = ref([
   { name: 'CARDIOPÁTICOS', step: 14, key: 'cardiopaticosPP', specifyKey: 'cardiopaticosPPEspecificar' },
   { name: 'ALÉRGICOS', step: 15, key: 'alergicos', specifyKey: 'alergicosEspecificar' },
   { name: 'HIPERTENSIVOS', step: 16, key: 'hipertensivosPP', specifyKey: 'hipertensivosPPEspecificar' },
-  { name: 'RESPIRATORIOS', step: 17, key: 'obesidad', specifyKey: 'obesidadEspecificar' },
+  { name: 'RESPIRATORIOS', step: 17, key: 'respiratorios', specifyKey: 'respiratoriosEspecificar' },
   { name: 'EPILÉPTICOS', step: 18, key: 'epilepticosPP', specifyKey: 'epilepticosPPEspecificar' },
   { name: 'ACCIDENTES', step: 19, key: 'accidentes', specifyKey: 'accidentesEspecificar' },
   { name: 'QUIRÚRGICOS', step: 20, key: 'quirurgicos', specifyKey: 'quirurgicosEspecificar' },

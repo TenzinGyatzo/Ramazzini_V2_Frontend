@@ -161,10 +161,10 @@ export interface HistoriaClinica {
     psiquiatricosEspecificar?: string;
     epilepticos?: string;
     epilepticosEspecificar?: string;
-    leuticos?: string;
-    leuticosEspecificar?: string;
-    fimicos?: string;
-    fimicosEspecificar?: string;
+    autoinmunes?: string;
+    autoinmunesEspecificar?: string;
+    tuberculosis?: string;
+    tuberculosisEspecificar?: string;
     hepatopatias?: string;
     hepatopatiasEspecificar?: string;
     lumbalgias?: string;
@@ -177,8 +177,8 @@ export interface HistoriaClinica {
     alergicosEspecificar?: string;
     hipertensivosPP?: string;
     hipertensivosPPEspecificar?: string;
-    obesidad?: string;
-    obesidadEspecificar?: string;
+    respiratorios?: string;
+    respiratoriosEspecificar?: string;
     epilepticosPP?: string;
     epilepticosPPEspecificar?: string;
     accidentes?: string;
