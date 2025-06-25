@@ -48,10 +48,10 @@ watch(obesidad, (newValue) => {
 <template>
     <div>
         <h1 class="font-bold mb-4 text-gray-800 leading-5">Antecedentes Personales Patológicos</h1>
-        <h2>OBESIDAD</h2>
+        <h2>RESPIRATORIOS</h2>
         <!-- Pregunta principal -->
         <div class="mb-4">
-            <p class="font-medium mb-1 text-gray-800 leading-5">¿Historial de obesidad en el trabajador?</p>
+            <p class="font-medium mb-1 text-gray-800 leading-5">¿Historial de enfermedades respiratorias en el trabajador?</p>
             <div class="flex items-center space-x-6 font-light">
                 <label class="flex items-center space-x-2">
                     <input type="radio" value="No" v-model="obesidad" class="form-radio accent-emerald-600" />

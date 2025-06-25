@@ -23,8 +23,8 @@ const antecedentesHeredoFamiliares = ref([
   { name: 'NEOPLÁSICOS', step: 6, key: 'neoplasicos', specifyKey: 'neoplasicosEspecificar' },
   { name: 'PSIQUÁTRICOS', step: 7, key: 'psiquiatricos', specifyKey: 'psiquiatricosEspecificar' },
   { name: 'EPILÉPTICOS', step: 8, key: 'epilepticos', specifyKey: 'epilepticosEspecificar' },
-  { name: 'LEUTICOS', step: 9, key: 'leuticos', specifyKey: 'leuticosEspecificar' },
-  { name: 'FÍMICOS', step: 10, key: 'fimicos', specifyKey: 'fimicosEspecificar' },
+  { name: 'AUTOINMUNES', step: 9, key: 'leuticos', specifyKey: 'leuticosEspecificar' },
+  { name: 'TUBERCULOSIS', step: 10, key: 'fimicos', specifyKey: 'fimicosEspecificar' },
   { name: 'HEPATOPATÍAS', step: 11, key: 'hepatopatias', specifyKey: 'hepatopatiasEspecificar' },
 ]);
 
@@ -34,7 +34,7 @@ const antecedentesPersonalesPatologicos = ref([
   { name: 'CARDIOPÁTICOS', step: 14, key: 'cardiopaticosPP', specifyKey: 'cardiopaticosPPEspecificar' },
   { name: 'ALÉRGICOS', step: 15, key: 'alergicos', specifyKey: 'alergicosEspecificar' },
   { name: 'HIPERTENSIVOS', step: 16, key: 'hipertensivosPP', specifyKey: 'hipertensivosPPEspecificar' },
-  { name: 'OBESIDAD', step: 17, key: 'obesidad', specifyKey: 'obesidadEspecificar' },
+  { name: 'RESPIRATORIOS', step: 17, key: 'obesidad', specifyKey: 'obesidadEspecificar' },
   { name: 'EPILÉPTICOS', step: 18, key: 'epilepticosPP', specifyKey: 'epilepticosPPEspecificar' },
   { name: 'ACCIDENTES', step: 19, key: 'accidentes', specifyKey: 'accidentesEspecificar' },
   { name: 'QUIRÚRGICOS', step: 20, key: 'quirurgicos', specifyKey: 'quirurgicosEspecificar' },
@@ -408,18 +408,18 @@ const antecedentesLaborales = ref([
           </tr>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 39 }" @click="goToStep(39)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              PLANIFICACIÓN FAMILIAR
-            </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
-              {{ formData.formDataHistoriaClinica.planificacionFamiliar }}
-            </td>
-          </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 40 }" @click="goToStep(40)">
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               VIDA SEXUAL ACTIVA
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
               {{ formData.formDataHistoriaClinica.vidaSexualActiva }}
+            </td>
+          </tr>
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 40 }" @click="goToStep(40)">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
+              PLANIFICACIÓN FAMILIAR
+            </td>
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
+              {{ formData.formDataHistoriaClinica.planificacionFamiliar }}
             </td>
           </tr>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 41 }" @click="goToStep(41)">

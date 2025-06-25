@@ -284,7 +284,7 @@ const goToStep = (stepNumber) => {
             class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(13)" 
             :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 13 }" 
             style="height: 1.57rem;">
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">NEUROLÓGICO</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">REFLEJOS O.T.</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ formData.formDataExploracionFisica.neurologicoESuperiores }}</td>
           </tr>
@@ -377,7 +377,7 @@ const goToStep = (stepNumber) => {
           </tr>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(20)"
           :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 20 }">
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">NEUROLÓGICO</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">REFLEJOS O.T.</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ formData.formDataExploracionFisica.neurologicoEInferiores }}</td>
           </tr>

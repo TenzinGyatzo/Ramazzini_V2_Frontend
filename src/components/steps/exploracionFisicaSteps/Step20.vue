@@ -48,7 +48,7 @@ watch(neurologicoEInferioresPregunta, (newValue) => {
 <template>
     <div>
         <h1 class="font-bold mb-4 text-gray-800 leading-5">Extremidades Inferiores</h1>
-        <h2>NEUROLÓGICO</h2>
+        <h2>REFLEJOS OSTEO-TENDINOSOS</h2>
         <!-- Pregunta principal -->
         <div class="mb-4">
             <p class="font-medium mb-1 text-gray-800 leading-5">¿Presencia de hallazgos significativos?
