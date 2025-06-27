@@ -206,12 +206,12 @@ export interface HistoriaClinica {
     partos?: string;
     abortos?: string;
     fechaUltimaRegla?: string;
-    cantidadDeSangre?: string;
     dolorMenstrual?: string;
     embarazoActual?: string;
     planificacionFamiliar?: string;
     vidaSexualActiva?: string;
     fechaUltimoPpanicolaou?: string;
+    fechaUltimaMastografia?: string;
     empresaAnterior1?: string;
     puestoAnterior1?: string;
     antiguedadAnterior1?: string;
