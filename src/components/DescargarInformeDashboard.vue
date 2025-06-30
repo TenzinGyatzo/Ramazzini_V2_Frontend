@@ -209,7 +209,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     contenido.push(
         { text: 'RESUMEN EJECUTIVO', style: 'tituloSeccion' },
         {
-            text: 'Este informe presenta un análisis integral del estado de salud de los trabajadores, incluyendo indicadores clave como distribución por IMC, aptitud laboral, salud visual, antecedentes médicos y exposición a factores de riesgo ocupacional.',
+            text: 'Este informe presenta un análisis integral del estado de salud de los trabajadores, con base en los datos recopilados en el periodo de evaluación. Estos documento busca proporcionar a la dirección herramientas objetivas para la toma de decisiones estratégicas en materia de salud ocupacional.',
             style: 'textoNormal',
             margin: [0, 0, 0, 20]
         }
@@ -217,11 +217,10 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
 
     // Sección 1: Composición Demográfica
     if (imagenes.grupos) {
-        console.log('Agregando imagen de grupos etarios al PDF con ancho 450px');
         contenido.push(
             { text: '1. COMPOSICIÓN DEMOGRÁFICA', style: 'tituloSeccion' },
             {
-                text: 'Distribución de trabajadores por grupos de edad y género, permitiendo identificar la estructura demográfica de la plantilla laboral.',
+                text: 'Distribución de trabajadores activos por grupos de edad y género, permitiendo identificar la estructura demográfica de la plantilla laboral.',
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             },
@@ -296,7 +295,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         contenido.push(
             { text: '2.2 Riesgo por Circunferencia de Cintura', style: 'subtituloSeccion' },
             {
-                text: 'Indicador de grasa abdominal y riesgo metabólico asociado a enfermedades cardiovasculares.',
+                text: 'La circunferencia de cintura elevada se asocia con mayor riesgo de enfermedades como diabetes, hipertensión y trastornos metabólicos.',
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             }
@@ -367,7 +366,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         contenido.push(
             { text: '3.1 Necesidad de Corrección Visual', style: 'subtituloSeccion' },
             {
-                text: 'Proporción de trabajadores que requieren lentes para desempeñar sus actividades de manera segura.',
+                text: 'Proporción de trabajadores que requieren lentes para desempeñar sus actividades de manera segura y efectiva.',
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             }
@@ -503,7 +502,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         contenido.push(
             { text: '3.3 Alteraciones en la Percepción de Colores', style: 'subtituloSeccion' },
             {
-                text: 'Detección de daltonismo y otras alteraciones en la percepción de colores.',
+                text: 'Informa cuántos trabajadores presentan alteraciones en la percepción de colores.',
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             }
@@ -586,7 +585,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     // Sección 4: Antecedentes Médicos
     contenido.push({ text: '4. ANTECEDENTES MÉDICOS', style: 'tituloSeccion' });
     contenido.push({
-        text: 'Esta sección incluye información sobre antecedentes de enfermedades crónicas y problemas localizados referidos por los trabajadores durante su evaluación médica.',
+        text: 'Esta sección presenta un resumen de los antecedentes médicos referidos por los trabajadores durante su evaluación, enfocándose en la presencia de enfermedades crónicas y problemas localizados que podrían tener impacto en su salud y desempeño laboral.',
         style: 'textoNormal',
         margin: [0, 0, 0, 20]
     });
@@ -628,7 +627,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         contenido.push(
             { text: '5. FACTORES DE RIESGO OCUPACIONAL', style: 'tituloSeccion' },
             {
-                text: 'Evaluación de la exposición a agentes de riesgo en el entorno laboral que pueden afectar la salud de los trabajadores.',
+                text: 'Distribución de trabajadores según los agentes de riesgo presentes en su entorno laboral, permitiendo identificar los tipos de exposición más frecuentes dentro de la plantilla.',
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             },
@@ -662,7 +661,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         contenido.push(
             { text: '6. APTITUD AL PUESTO DE TRABAJO', style: 'tituloSeccion' },
             {
-                text: 'Evaluación de la capacidad de los trabajadores para desempeñar sus funciones de manera segura y efectiva.',
+                text: 'Clasificación de los trabajadores según su capacidad para desempeñar sus funciones laborales de manera segura, considerando si requieren restricciones, precauciones, o si no presentan limitaciones para el puesto.',
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             },

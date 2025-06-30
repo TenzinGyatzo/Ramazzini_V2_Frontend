@@ -21,8 +21,6 @@ const formDataProveedorSalud = reactive({
   perfilProveedorSalud: "",
   referenciaPlan: "BÁSICO",
   estado: "pending",
-  maxUsuariosPermitidos: 1,
-  maxEmpresasPermitidas: 10,
   estadoSuscripcion: "pending",
   fechaInicioTrial: new Date(),
   periodoDePruebaFinalizado: false,
