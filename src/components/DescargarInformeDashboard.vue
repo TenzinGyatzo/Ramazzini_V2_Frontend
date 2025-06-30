@@ -16,6 +16,14 @@ const props = defineProps<{
   nombreMedicoFirmante?: string;
 }>();
 
+// Debug: verificar props al cargar el componente
+console.log('DescargarInformeDashboard - Props recibidos:', {
+  tituloMedicoFirmante: props.tituloMedicoFirmante,
+  nombreMedicoFirmante: props.nombreMedicoFirmante,
+  nombreEmpresa: props.nombreEmpresa,
+  totalTrabajadores: props.totalTrabajadores
+});
+
 const obtenerBase64 = (graficaObj: any, customWidth?: number, customHeight?: number): string | undefined => {
   // Si es un objeto con ref y config (para alta resolución)
   if (graficaObj && typeof graficaObj === 'object' && ('ref' in graficaObj || 'config' in graficaObj)) {
@@ -35,7 +43,7 @@ const obtenerBase64 = (graficaObj: any, customWidth?: number, customHeight?: num
     return canvas?.toDataURL?.();
   }
   
-  // Si es solo un ref (método anterior)
+  // Si es solo un ref (método anterior), convertirlo a formato de alta resolución
   const el = graficaObj?.$el || graficaObj;
   if (el instanceof HTMLCanvasElement) {
     return el.toDataURL();
@@ -44,11 +52,28 @@ const obtenerBase64 = (graficaObj: any, customWidth?: number, customHeight?: num
   return canvas?.toDataURL?.();
 };
 
-const generarDocDefinition = (): TDocumentDefinitions => {
+const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinitions => {
     // Debug: verificar si llegan los datos del médico firmante
     console.log('Props médico firmante:', {
         titulo: props.tituloMedicoFirmante,
         nombre: props.nombreMedicoFirmante
+    });
+
+    // Debug adicional: verificar todos los props importantes
+    console.log('DescargarInformeDashboard - Props al generar PDF:', {
+        tituloMedicoFirmante: props.tituloMedicoFirmante,
+        nombreMedicoFirmante: props.nombreMedicoFirmante,
+        nombreEmpresa: props.nombreEmpresa,
+        totalTrabajadores: props.totalTrabajadores,
+        centroTrabajo: props.centroTrabajo,
+        periodo: props.periodo
+    });
+
+    // Debug: verificar la condición
+    console.log('Condición para mostrar responsable:', {
+        tituloExiste: !!props.tituloMedicoFirmante,
+        nombreExiste: !!props.nombreMedicoFirmante,
+        condicion: !!(props.tituloMedicoFirmante || props.nombreMedicoFirmante)
     });
 
     const encabezado: Content[] = [];
@@ -78,14 +103,17 @@ const generarDocDefinition = (): TDocumentDefinitions => {
                                 margin: [0, 0, 0, 8]
                             }] : []),
                             ...(props.centroTrabajo ? [{
-                                text: `Centro de trabajo: ${props.centroTrabajo}`,
-                                style: 'centroTrabajo',
-                                margin: [0, 0, 0, 5],
-                                decorationColor: '#2563EB'
+                                text: [
+                                    { text: 'Centro de trabajo: ', style: 'centroTrabajoLabel' },
+                                    { text: props.centroTrabajo, style: 'centroTrabajoNombre' }
+                                ],
+                                margin: [0, 0, 0, 5]
                             }] : []),
                             {
-                                text: `Total de trabajadores evaluados: ${props.totalTrabajadores || 0}`,
-                                style: 'totalTrabajadores',
+                                text: [
+                                    { text: 'Total de trabajadores evaluados: ', style: 'totalTrabajadoresLabel' },
+                                    { text: `${props.totalTrabajadores || 0}`, style: 'totalTrabajadoresNumero' }
+                                ],
                                 margin: [0, 0, 0, 5]
                             },
                             ...(props.periodo ? [{
@@ -104,10 +132,10 @@ const generarDocDefinition = (): TDocumentDefinitions => {
                                 style: 'fecha',
                                 margin: [0, 0, 0, 0]
                             },
-                            ...(props.tituloMedicoFirmante ? [{
-                                text: `Responsable del informe: ${props.tituloMedicoFirmante} ${props.nombreMedicoFirmante || ''}`,
-                                style: 'medicoResponsable',
-                                margin: [0, 8, 0, 0]
+                            ...((props.tituloMedicoFirmante || props.nombreMedicoFirmante) ? [{
+                                text: `Generado por: ${props.tituloMedicoFirmante || ''} ${props.nombreMedicoFirmante || ''}`,
+                                style: 'fecha',
+                                margin: [0, 5, 0, 0]
                             }] : [])
                         ]
                     },
@@ -135,22 +163,45 @@ const generarDocDefinition = (): TDocumentDefinitions => {
         margin: [0, 0, 0, 20]
     });
 
-    const imagenes = {
-        imc: obtenerBase64(props.refsGraficas.imc),
-        aptitud: obtenerBase64(props.refsGraficas.aptitud),
-        lentes: obtenerBase64(props.refsGraficas.lentes),
-        corregida: obtenerBase64(props.refsGraficas.corregida),
-        daltonismo: obtenerBase64(props.refsGraficas.daltonismo),
-        agentes: obtenerBase64(props.refsGraficas.agentes),
-        grupos: obtenerBase64(props.refsGraficas.grupos, 3000, 2000),
-        cintura: obtenerBase64(props.refsGraficas.cintura),
+    // Generación de imágenes con calidad ajustable
+    // Si altaCalidad es true, usa dimensiones altas para mejor calidad
+    // Si es false, usa dimensiones normales para mayor velocidad
+    const dimensiones = altaCalidad ? {
+        imc: [3000, 2000],
+        aptitud: [3000, 2000],
+        lentes: [3000, 2000],
+        corregida: [3000, 2000],
+        daltonismo: [3000, 2000],
+        agentes: [3000, 2000],
+        grupos: [3600, 2000],
+        cintura: [3000, 2000]
+    } : {
+        imc: [800, 600],
+        aptitud: [800, 600],
+        lentes: [600, 600],
+        corregida: [600, 600],
+        daltonismo: [600, 600],
+        agentes: [800, 600],
+        grupos: [1000, 600],
+        cintura: [600, 600]
     };
 
-    // Debug: verificar que la imagen de grupos se genere correctamente
-    console.log('Imagen grupos generada:', imagenes.grupos ? 'SÍ' : 'NO');
-    if (imagenes.grupos) {
-        console.log('Tamaño imagen grupos:', imagenes.grupos.length, 'caracteres');
-    }
+    const imagenes = {
+        imc: obtenerBase64(props.refsGraficas.imc, dimensiones.imc[0], dimensiones.imc[1]),
+        aptitud: obtenerBase64(props.refsGraficas.aptitud, dimensiones.aptitud[0], dimensiones.aptitud[1]),
+        lentes: obtenerBase64(props.refsGraficas.lentes, dimensiones.lentes[0], dimensiones.lentes[1]),
+        corregida: obtenerBase64(props.refsGraficas.corregida, dimensiones.corregida[0], dimensiones.corregida[1]),
+        daltonismo: obtenerBase64(props.refsGraficas.daltonismo, dimensiones.daltonismo[0], dimensiones.daltonismo[1]),
+        agentes: obtenerBase64(props.refsGraficas.agentes, dimensiones.agentes[0], dimensiones.agentes[1]),
+        grupos: obtenerBase64(props.refsGraficas.grupos, dimensiones.grupos[0], dimensiones.grupos[1]),
+        cintura: obtenerBase64(props.refsGraficas.cintura, dimensiones.cintura[0], dimensiones.cintura[1]),
+    };
+
+    // Debug: verificar que todas las imágenes se generen correctamente
+    console.log(`Generación de imágenes en ${altaCalidad ? 'alta' : 'normal'} calidad:`);
+    Object.entries(imagenes).forEach(([key, value]) => {
+        console.log(`${key}: ${value ? 'SÍ' : 'NO'} (${value ? value.length : 0} caracteres)`);
+    });
 
     const contenido: Content[] = [];
 
@@ -176,7 +227,7 @@ const generarDocDefinition = (): TDocumentDefinitions => {
             },
             { 
                 image: imagenes.grupos, 
-                width: 400, 
+                width: 460, 
                 alignment: 'center',
                 margin: [0, 10, 0, 20] 
             }
@@ -218,7 +269,7 @@ const generarDocDefinition = (): TDocumentDefinitions => {
             },
             { 
                 image: imagenes.imc, 
-                width: 450, 
+                width: 500, 
                 alignment: 'center',
                 margin: [0, 10, 0, 20] 
             }
@@ -338,7 +389,7 @@ const generarDocDefinition = (): TDocumentDefinitions => {
                         // Columna izquierda: Gráfica
                         {
                             image: imagenes.lentes,
-                            width: 120,
+                            width: 150,
                             alignment: 'center'
                         },
                         // Columna derecha: Tabla de datos
@@ -406,7 +457,7 @@ const generarDocDefinition = (): TDocumentDefinitions => {
                         // Columna izquierda: Gráfica
                         {
                             image: imagenes.corregida,
-                            width: 120,
+                            width: 150,
                             alignment: 'center'
                         },
                         // Columna derecha: Tabla de datos
@@ -474,7 +525,7 @@ const generarDocDefinition = (): TDocumentDefinitions => {
                         // Columna izquierda: Gráfica
                         {
                             image: imagenes.daltonismo,
-                            width: 120,
+                            width: 150,
                             alignment: 'center'
                         },
                         // Columna derecha: Tabla de datos
@@ -583,7 +634,7 @@ const generarDocDefinition = (): TDocumentDefinitions => {
             },
             { 
                 image: imagenes.agentes, 
-                width: 450, 
+                width: 500, 
                 alignment: 'center',
                 margin: [0, 10, 0, 20] 
             }
@@ -617,7 +668,7 @@ const generarDocDefinition = (): TDocumentDefinitions => {
             },
             { 
                 image: imagenes.aptitud, 
-                width: 450, 
+                width: 500, 
                 alignment: 'center',
                 margin: [0, 10, 0, 20] 
             }
@@ -659,7 +710,7 @@ const generarDocDefinition = (): TDocumentDefinitions => {
             tituloEmpresa: { 
                 fontSize: 24, 
                 bold: true, 
-                color: '#047857', // Verde oscuro
+                color: '#374151', // Gris oscuro
                 alignment: 'left',
                 margin: [0, 0, 0, 2]
             },
@@ -685,6 +736,18 @@ const generarDocDefinition = (): TDocumentDefinitions => {
                 alignment: 'left',
                 margin: [0, 0, 0, 5]
             },
+            totalTrabajadoresLabel: { 
+                fontSize: 14, 
+                bold: true, 
+                color: '#059669',
+                alignment: 'left'
+            },
+            totalTrabajadoresNumero: { 
+                fontSize: 14, 
+                bold: true, 
+                color: '#059669',
+                decorationColor: '#059669'
+            },
             centroTrabajo: { 
                 fontSize: 13, 
                 bold: true, 
@@ -693,6 +756,20 @@ const generarDocDefinition = (): TDocumentDefinitions => {
                 decoration: 'underline',
                 decorationColor: '#2563EB',
                 margin: [0, 0, 0, 5]
+            },
+            centroTrabajoLabel: { 
+                fontSize: 13, 
+                bold: true, 
+                color: '#2563EB',
+                alignment: 'left'
+            },
+            centroTrabajoNombre: { 
+                fontSize: 13, 
+                bold: true, 
+                color: '#2563EB',
+                alignment: 'left',
+                decoration: 'underline',
+                decorationColor: '#2563EB'
             },
             periodo: { 
                 fontSize: 12, 
@@ -875,12 +952,12 @@ const generarDocDefinition = (): TDocumentDefinitions => {
 };
 
 const generarPDF = () => {
-  const docDefinition = generarDocDefinition();
+  const docDefinition = generarDocDefinition(false); // Calidad normal
   pdfMake.createPdf(docDefinition).open();
 };
 
 const descargarPDF = () => {
-  const docDefinition = generarDocDefinition();
+  const docDefinition = generarDocDefinition(true); // Alta calidad
   pdfMake.createPdf(docDefinition).download(`InformeSaludLaboral_${props.nombreEmpresa?.replace(/\s+/g, '_') || 'Empresa'}_${new Date().toISOString().split('T')[0]}.pdf`);
 };
 
@@ -979,7 +1056,7 @@ const crearTablaPDF = (datos: any[], columnas: string[], titulo: string, tipoTab
         class="gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg shadow transition duration-300 flex items-center"
     >
         <i class="fas fa-download mr-1"></i>
-        Descargar PDF
+        Descargar PDF en alta calidad
     </button>
     </div>
 </template>

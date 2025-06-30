@@ -291,6 +291,7 @@ const graficaIMCOptions = {
       grid: { display: false },
       ticks: {
         stepSize: 1,
+        maxTicksLimit: 10,
         color: '#374151',
         font: { size: 12 }
       }
@@ -386,13 +387,11 @@ const graficaAptitudOptions = {
     tooltip: {
       enabled: true,
       callbacks: {
-        // ✅ Este corrige el título del tooltip (primera línea en el hover)
         title: (context) => {
           const index = context[0].dataIndex;
           const raw = context[0].label;
           return etiquetasAptitudPuestoTabla[raw] || raw;
         },
-        // ✅ Este es el contenido (segunda línea)
         label: (context) => {
           const index = context.dataIndex;
           const [categoria, cantidad, porcentaje] = tablaAptitud.value[index];
@@ -418,6 +417,7 @@ const graficaAptitudOptions = {
       grid: { display: false },
       ticks: {
         stepSize: 1,
+        maxTicksLimit: 10,
         color: '#374151',
         font: { size: 12 }
       }
@@ -835,6 +835,7 @@ const graficaAgentesRiesgoOptions = {
       grid: { display: false },
       ticks: {
         stepSize: 1,
+        maxTicksLimit: 10,
         color: '#374151',
         font: { size: 12 }
       }
@@ -1205,14 +1206,14 @@ function limpiarFechas() {
         <DescargarInformeDashboard
           v-if="refIMC && refAptitud && refLentes && refCorregida && refDaltonismo && refAgentes && refGruposEtarios && refCircunferencia"
           :refs-graficas="{
-            imc: refIMC,
-            aptitud: refAptitud,
-            lentes: refLentes,
-            corregida: refCorregida,
-            daltonismo: refDaltonismo,
-            agentes: refAgentes,
+            imc: { ref: refIMC, config: { type: 'bar', data: graficaIMCData, options: graficaIMCOptions } },
+            aptitud: { ref: refAptitud, config: { type: 'bar', data: graficaAptitudData, options: graficaAptitudOptions } },
+            lentes: { ref: refLentes, config: { type: 'doughnut', data: graficaRequierenLentesData.chart, options: opcionesGenericasAnillo } },
+            corregida: { ref: refCorregida, config: { type: 'doughnut', data: graficaVistaCorregidaData.chart, options: opcionesGenericasAnillo } },
+            daltonismo: { ref: refDaltonismo, config: { type: 'doughnut', data: graficaDaltonismoData.chart, options: opcionesGenericasAnillo } },
+            agentes: { ref: refAgentes, config: { type: 'bar', data: graficaAgentesRiesgoData, options: graficaAgentesRiesgoOptions } },
             grupos: { ref: refGruposEtarios, config: { type: 'bar', data: graficaGruposEtariosData, options: graficaGruposEtariosOptions } },
-            cintura: refCircunferencia
+            cintura: { ref: refCircunferencia, config: { type: 'doughnut', data: graficaCircunferenciaData.chart, options: opcionesGenericasAnillo } }
           }"
           :nombre-empresa="empresasStore.currentEmpresa?.nombreComercial"
           :razon-social="empresasStore.currentEmpresa?.razonSocial"
