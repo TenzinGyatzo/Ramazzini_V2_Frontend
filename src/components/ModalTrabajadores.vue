@@ -56,7 +56,7 @@ const handleSubmit = async (data) => {
     fechaIngreso: data.fechaIngreso,
     telefono: data.telefono,
     estadoCivil: data.estadoCivil,
-    hijos: Number(data.hijos),
+    numeroEmpleado: data.numeroEmpleado,
     idCentroTrabajo: data.idCentroTrabajo,
     createdBy: data.createdBy, // TODO: Obtener el ID del usuario actual
     updatedBy: data.updatedBy // TODO: Obtener el ID del usuario actual
@@ -82,7 +82,17 @@ const handleSubmit = async (data) => {
     trabajadores.fetchTrabajadoresConHistoria(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId);
   } catch (error) {
     console.error('Error al crear o actualizar al trabajador:', error);
-    toast.open({ message: 'Hubo un error al crear o actualizar al trabajador, por favor intente nuevamente.', type: 'error' });
+    
+    // Extraer el mensaje de error específico del backend
+    let errorMessage = 'Hubo un error al crear o actualizar al trabajador, por favor intente nuevamente.';
+    
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    toast.open({ message: errorMessage, type: 'error' });
   }
 };
 
@@ -144,16 +154,16 @@ const closeModal = () => {
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                 :value="convertirFechaISOaYYYYMMDD(trabajadores.currentTrabajador?.fechaIngreso) || ''" />
               <FormKit type="text" label="Teléfono" name="telefono" placeholder="10 dígitos"
-                validation="optional|length:10" :validation-messages="{ length: 'El teléfono debe tener 10 dígitos' }"
-                :value="trabajadores.currentTrabajador?.telefono || ''" />
+                validation="optional|length:10|matches:/^[0-9]*$/" :validation-messages="{ length: 'El teléfono debe tener 10 dígitos', matches: 'Solo se permiten números' }"
+                maxlength="10" :value="trabajadores.currentTrabajador?.telefono || ''" />
               <FormKit type="select" label="Estado Cívil*" name="estadoCivil" placeholder="Seleccione un estado civil"
                 :options="estadosCiviles" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                 :value="trabajadores.currentTrabajador?.estadoCivil || ''" />
-              <FormKit type="number" label="Número de Hijos*" name="hijos" placeholder="0"
-                validation="required|between:0,10"
-                :validation-messages="{ required: 'Este campo es obligatorio', between: 'El número de hijos debe estar entre 0 y 10' }"
-                min="0" max="10" step="1" :value="trabajadores.currentTrabajador?.hijos || 0" />
+              <FormKit type="text" label="Número de Empleado" name="numeroEmpleado" placeholder="(Opcional) Sólo números"
+                validation="optional|length:1,7|matches:/^[0-9]*$/"
+                :validation-messages="{ length: 'El número debe tener entre 1 y 7 dígitos', matches: 'Solo se permiten números' }"
+                maxlength="7" :value="trabajadores.currentTrabajador?.numeroEmpleado || ''" />
             </div>
 
             <!-- Campos ocultos y botón de enviar -->

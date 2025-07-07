@@ -1,30 +1,46 @@
 import * as xlsx from 'xlsx';
 
 export function exportarTrabajadoresDesdeFrontend(trabajadoresFiltrados: any[], nombreArchivo = 'trabajadores.xlsx') {
-  const trabajadoresData = trabajadoresFiltrados.map(trabajador => ({
-    Nombre: trabajador.nombre,
-    Edad: trabajador.edad,
-    Sexo: trabajador.sexo,
-    Escolaridad: trabajador.escolaridad,
-    Puesto: trabajador.puesto,
-    Antigüedad: trabajador.antiguedad,
-    Teléfono: trabajador.telefono,
-    EstadoCivil: trabajador.estadoCivil,
-    Hijos: trabajador.hijos,
-    IMC: trabajador.imc,
-    CircunferenciaCintura: trabajador.cintura,
-    Aptitud: trabajador.aptitud,
-    'Requiere Lentes': trabajador.requiereLentes,
-    'Vista Corregida': trabajador.correccionVisual,
-    'Agudeza Visual': trabajador.agudeza,
-    Daltonismo: trabajador.daltonismo,
-    Diabético: trabajador.diabetico,
-    Hipertensivo: trabajador.hipertensivo,
-    'Accidente Laboral': trabajador.accidente,
-    'Agentes de Riesgo': trabajador.agentesRiesgo,
-    Consultas: trabajador.consultas,
-    'Estado Laboral': trabajador.estadoLaboral,
-  }));  
+  // Verificar si hay números de empleado válidos (solo números, máximo 7 dígitos)
+  const tieneNumerosEmpleadoValidos = trabajadoresFiltrados.some(trabajador => {
+    const numeroEmpleado = trabajador.numeroEmpleado;
+    return numeroEmpleado && 
+           numeroEmpleado !== '-' && 
+           numeroEmpleado !== '' && 
+           /^\d{1,7}$/.test(numeroEmpleado);
+  });
+
+  const trabajadoresData = trabajadoresFiltrados.map(trabajador => {
+    const baseData: any = {};
+
+    // Si hay números de empleado válidos, ponerlo como primera columna
+    if (tieneNumerosEmpleadoValidos) {
+      baseData['Num. Trab.'] = trabajador.numeroEmpleado;
+    }
+    baseData.Nombre = trabajador.nombre;
+    baseData.Edad = trabajador.edad;
+    baseData.Sexo = trabajador.sexo;
+    baseData.Escolaridad = trabajador.escolaridad;
+    baseData.Puesto = trabajador.puesto;
+    baseData.Antigüedad = trabajador.antiguedad;
+    baseData.Teléfono = trabajador.telefono;
+    baseData['Estado Civil'] = trabajador.estadoCivil;
+    baseData.IMC = trabajador.imc;
+    baseData['Circunferencia Cintura'] = trabajador.cintura;
+    baseData.Aptitud = trabajador.aptitud;
+    baseData['Requiere Lentes'] = trabajador.requiereLentes;
+    baseData['Vista Corregida'] = trabajador.correccionVisual ? 'Corregida' : 'Sin corregir';
+    baseData['Agudeza Visual'] = trabajador.agudeza;
+    baseData.Daltonismo = trabajador.daltonismo;
+    baseData.Diabético = trabajador.diabetico;
+    baseData.Hipertensivo = trabajador.hipertensivo;
+    baseData['Accidente Laboral'] = trabajador.accidente;
+    baseData['Agentes de Riesgo'] = trabajador.agentesRiesgo;
+    baseData.Consultas = trabajador.consultas;
+    baseData['Estado Laboral'] = trabajador.estadoLaboral;
+
+    return baseData;
+  });
 
   const worksheet = xlsx.utils.json_to_sheet([]);
 

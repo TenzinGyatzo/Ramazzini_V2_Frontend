@@ -51,6 +51,7 @@ onMounted(() => {
       data: props.rows,
       columns: [
         { data: null, title: '#', render: (data, type, row, meta) => meta.row + 1 },
+        { data: 'numeroEmpleado', title: 'Num. Trab.', defaultContent: '-' },
         { data: 'nombre', title: 'Nombre completo' },
         // { data: 'updatedAt', title: 'Última actualización', render: d => convertirFechaISOaDDMMYYYY(d) },
         { 
@@ -66,7 +67,6 @@ onMounted(() => {
         { data: 'fechaIngreso', title: 'Antigüedad', render: d => calcularAntiguedad(d) },
         { data: 'telefono', title: 'Teléfono', defaultContent: '-' },
         { data: 'estadoCivil', title: 'Estado Civil' },
-        { data: 'hijos', title: 'Hijos' },
         { data: 'exploracionFisicaResumen.categoriaIMC', title: 'IMC', defaultContent: '-' },
         { data: 'exploracionFisicaResumen.categoriaCircunferenciaCintura', title: 'Cintura', defaultContent: '-' },
         { data: 'aptitudResumen.aptitudPuesto', title: 'Aptitud', defaultContent: '-' },
@@ -275,6 +275,17 @@ onMounted(() => {
 
     dataTableInstance.on('init', function () {
       aplicarTodosLosFiltrosDesdeLocalStorage();
+      
+      // Ocultar columna de número de empleado si no hay datos
+      const tieneNumeroEmpleado = props.rows.some(row => 
+        row.numeroEmpleado && 
+        row.numeroEmpleado !== '-' && 
+        row.numeroEmpleado.trim() !== ''
+      );
+      
+      if (!tieneNumeroEmpleado) {
+        dataTableInstance.column(1).visible(false);
+      }
     });
 
     let ordenAplicado = false;

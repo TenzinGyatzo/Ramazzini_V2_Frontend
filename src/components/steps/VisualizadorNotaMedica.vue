@@ -60,10 +60,16 @@ const goToStep = (stepNumber) => {
     <!-- Datos del Trabajador  -->
     <div class="w-full mb-1">
       <p class="text-justify font-light">
-        Se trata de <span class="font-medium">{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'un trabajador' : 'una trabajadora' }}</span> de <span class="font-medium">{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }} años</span> de edad, que labora en la empresa <span class="font-medium">{{ empresas.currentEmpresa.nombreComercial }}</span>, ocupando el puesto de <span class="font-medium">{{
-          trabajadores.currentTrabajador.puesto }}</span>, con escolaridad <span class="font-medium">{{ trabajadores.currentTrabajador.escolaridad }}</span> y una antigüedad de <span class="font-medium">{{
-          calcularAntiguedad(trabajadores.currentTrabajador.fechaIngreso) }}</span>. Estado civil: <span class="font-medium">{{ trabajadores.currentTrabajador.estadoCivil }}</span>, con <span class="font-medium">{{ trabajadores.currentTrabajador.hijos }} {{ trabajadores.currentTrabajador.hijos === 1 ? 'hijo' : 'hijos' }}</span>.
+        Se trata de <span class="font-medium">{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'un trabajador' : 'una trabajadora' }}</span> de 
+        <span class="font-medium">{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }} años</span> de edad, que labora en la empresa 
+        <span class="font-medium">{{ empresas.currentEmpresa.nombreComercial }}</span>, ocupando el puesto de 
+        <span class="font-medium">{{ trabajadores.currentTrabajador.puesto }}</span>, con escolaridad 
+        <span class="font-medium">{{ trabajadores.currentTrabajador.escolaridad }}</span> y una antigüedad de 
+        <span class="font-medium">{{ calcularAntiguedad(trabajadores.currentTrabajador.fechaIngreso) }}</span>. Estado civil: 
+        <span class="font-medium">{{ trabajadores.currentTrabajador.estadoCivil }}</span>.
+        <span v-if="trabajadores.currentTrabajador.numeroEmpleado"> Número de empleado: <span class="font-medium">{{ trabajadores.currentTrabajador.numeroEmpleado }}</span></span>.
       </p>
+
     </div>
 
     <!-- Motivo de consulta -->

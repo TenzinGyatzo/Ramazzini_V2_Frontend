@@ -371,6 +371,7 @@ const exportarFiltrados = () => {
   const rowData = table.rows({ search: 'applied' }).data().toArray(); // ✅ todas las filas filtradas
 
   const trabajadoresFiltrados: any[] = rowData.map((row: any) => ({
+    numeroEmpleado: row.numeroEmpleado,
     nombre: row.nombre,
     edad: calcularEdad(row.fechaNacimiento),
     sexo: row.sexo,
@@ -379,7 +380,6 @@ const exportarFiltrados = () => {
     antiguedad: calcularAntiguedad(row.fechaIngreso),
     telefono: row.telefono,
     estadoCivil: row.estadoCivil,
-    hijos: row.hijos,
     imc: row.exploracionFisicaResumen?.categoriaIMC || '-',
     cintura: row.exploracionFisicaResumen?.categoriaCircunferenciaCintura || '-',
     aptitud: row.aptitudResumen?.aptitudPuesto || '-',

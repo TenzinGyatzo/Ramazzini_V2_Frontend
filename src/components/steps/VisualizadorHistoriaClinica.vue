@@ -158,10 +158,10 @@ const antecedentesLaborales = ref([
               {{ trabajadores.currentTrabajador.estadoCivil }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              HIJOS
+              NUM. EMPLEADO
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
-              {{ trabajadores.currentTrabajador.hijos }}
+              {{ trabajadores.currentTrabajador.numeroEmpleado || 'No asignado' }}
             </td>
           </tr>
         </tbody>

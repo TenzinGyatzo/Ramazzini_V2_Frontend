@@ -8,7 +8,7 @@ export interface Trabajador {
   fechaIngreso: string;
   telefono: string;
   estadoCivil: string;
-  hijos: number;
+  numeroEmpleado: string;
   estadoLaboral: string;
   idCentroTrabajo: string;
   createdBy: string;
