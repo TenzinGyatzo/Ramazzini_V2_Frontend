@@ -59,7 +59,13 @@ function calcularAntiguedad(dateString: string): string {
     fechaIngreso.getMonth();
   const years = Math.floor(totalMonths / 12);
   const months = totalMonths % 12;
-  return `${years} años, ${months} meses`;
+  const mesText = months === 1 ? "mes" : "meses";
+  
+  /* if (years < 1) {
+    return `${months} ${mesText}`;
+  } */
+  
+  return `${years} años, ${months} ${mesText}`;
 }
 
   function formatDateDDMMYYYY(date) {

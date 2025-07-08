@@ -6,6 +6,7 @@ export interface RiesgoTrabajo {
   puestoTrabajador: string;
   fechaNacimiento: string;
   fechaIngreso: string;
+  numeroEmpleado?: string;
   recaida?: string;
   NSS?: string;
   idCentroTrabajo: string;

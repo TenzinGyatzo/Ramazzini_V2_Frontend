@@ -5,7 +5,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useRiesgoTrabajoStore } from '@/stores/riesgosTrabajo';
-import { calcularAntiguedad } from '@/helpers/dates';
+import { calcularAntiguedad, calcularEdad } from '@/helpers/dates';
 
 const toast = inject('toast');
 const emit = defineEmits(['closeModal', 'riesgoCreado','riesgoActualizado']);
@@ -201,12 +201,22 @@ const sugerenciasNatLesion = [ "Contusión", "Traumatismo", "Fractura", "Luxaci�
               <p class="text-lg font-semibold text-gray-800">{{ trabajadoresStore.currentTrabajador?.nombre }}</p>
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-600">Puesto</p>
-              <p class="text-lg font-semibold text-gray-800">{{ trabajadoresStore.currentTrabajador?.puesto }}</p>
+              <p class="text-sm font-medium text-gray-600">Número de Empleado</p>
+              <p class="text-lg font-semibold text-gray-800">
+                {{ trabajadoresStore.currentTrabajador?.numeroEmpleado || '-' }}
+              </p>
             </div>
             <div>
               <p class="text-sm font-medium text-gray-600">Empresa</p>
               <p class="text-lg font-semibold text-gray-800">{{ empresasStore.currentEmpresa?.nombreComercial }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600">Puesto</p>
+              <p class="text-lg font-semibold text-gray-800">{{ trabajadoresStore.currentTrabajador?.puesto }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600">Edad</p>
+              <p class="text-lg font-semibold text-gray-800">{{ calcularEdad(trabajadoresStore.currentTrabajador?.fechaNacimiento) }} años</p>
             </div>
             <div>
               <p class="text-sm font-medium text-gray-600">Antigüedad</p>

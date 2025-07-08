@@ -95,8 +95,8 @@ onMounted(async () => {
       return currentDiff < closestDiff ? current : closest;
     }, null);
 
-    console.log('Exploración física más cercana:', nearestExploracionFisica.value);
-    console.log('Examen de vista más cercano:', nearestExamenVista.value);
+    //console.log('Exploración física más cercana:', nearestExploracionFisica.value);
+    //console.log('Examen de vista más cercano:', nearestExamenVista.value);
     
   }
 });

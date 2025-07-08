@@ -1093,12 +1093,15 @@ async function eliminarRTDesdeVista(trabajadorId: string, riesgoTrabajoId: strin
 
           <!-- Edad, Antigüedad y NSS-->
           <div class="text-sm text-gray-600">
+            <span v-if="riesgo.numeroEmpleado && riesgo.numeroEmpleado !== '-'">No. Empleado: </span>
+            <span v-if="riesgo.numeroEmpleado && riesgo.numeroEmpleado !== '-'" class="font-semibold">{{ riesgo.numeroEmpleado }}</span>
+            <span v-if="riesgo.numeroEmpleado && riesgo.numeroEmpleado !== '-'"> | </span>
             <span>Edad: </span>
             <span class="font-semibold">{{ riesgo.fechaNacimiento ? calcularEdad(riesgo.fechaNacimiento) + ' años' : 'Edad desconocida' }} &nbsp;</span>
             <span>| Antigüedad: </span>
             <span class="font-semibold">{{ riesgo.fechaIngreso ? calcularAntiguedad(riesgo.fechaIngreso) : 'Antigüedad desconocida' }} &nbsp;</span>
             <span v-if="riesgo.NSS">| NSS: </span>
-            <span class="font-semibold">{{ riesgo.NSS }}</span>
+            <span v-if="riesgo.NSS" class="font-semibold">{{ riesgo.NSS }}</span>
           </div>
           
           <!-- Naturaleza y parte afectada -->
