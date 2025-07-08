@@ -28,9 +28,9 @@ const mostrarModalPago = ref(false);
 
 // Planes disponibles
 const plans = [
-  { id: 1, name: "Básico", price: 699, histories: 50, maxHistories: 100, nextPlanPrice: 1399 },
-  { id: 2, name: "Profesional", price: 1399, histories: 150, maxHistories: 150, nextPlanPrice: 2499 },
-  { id: 3, name: "Empresarial", price: 2499, histories: 300, maxHistories: 5000 },
+  { id: 1, name: "Básico", price: 999, histories: 50, maxHistories: 100, nextPlanPrice: 2397 },
+  { id: 2, name: "Profesional", price: 2397, histories: 150, maxHistories: 150, nextPlanPrice: 4395 },
+  { id: 3, name: "Empresarial", price: 4395, histories: 300, maxHistories: 9000 },
 ];
 // const plans = [
 //   { id: 1, name: "Básico", price: 399, users: 1, companies: 10, workers: 100, maxUsers: 4, maxCompanies: 40, maxWorkers: 400, nextPlanPrice: 1749 },
@@ -116,7 +116,7 @@ const formatCurrency = (amount) => {
 // Cálculo del precio total incluyendo add-ons
 const totalPrice = computed(() => {
   if (!selectedPlan.value) return 0;
-  const extraHistoriesCost = extraHistories.value * 8;
+  const extraHistoriesCost = extraHistories.value * 14.4; // $360 por cada 25 historias clínicas
   return selectedPlan.value.price + extraHistoriesCost;
 });
 // const totalPrice = computed(() => {
@@ -518,7 +518,7 @@ const porcentajeHistorias = computed(() => {
         <h2 class="text-2xl font-semibold mb-4 text-gray-700">Extras para tu Plan</h2>
         <div class="flex flex-col gap-6 text-base">
           <div>
-            <label class="text-sm md:text-base block mb-2 text-gray-600">Aumenta tus recursos ($200 por cada 25 historias clínicas)</label>
+            <label class="text-sm md:text-base block mb-2 text-gray-600">Aumenta tus recursos ($360 por cada 25 historias clínicas)</label>
             <div class="flex items-center gap-2">
               <button @click="extraHistories > 0 ? extraHistories -= 25 : null" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 flex items-center justify-center rounded transition-all duration-200">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
