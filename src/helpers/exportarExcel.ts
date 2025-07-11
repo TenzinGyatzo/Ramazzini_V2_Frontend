@@ -27,6 +27,7 @@ export function exportarTrabajadoresDesdeFrontend(trabajadoresFiltrados: any[], 
     baseData['Estado Civil'] = trabajador.estadoCivil;
     baseData.IMC = trabajador.imc;
     baseData['Circunferencia Cintura'] = trabajador.cintura;
+    baseData['Tensión Arterial'] = trabajador.categoriaTensionArterial;
     baseData.Aptitud = trabajador.aptitud;
     baseData['Requiere Lentes'] = trabajador.requiereLentes;
     baseData['Vista Corregida'] = trabajador.correccionVisual ? 'Corregida' : 'Sin corregir';
@@ -34,6 +35,8 @@ export function exportarTrabajadoresDesdeFrontend(trabajadoresFiltrados: any[], 
     baseData.Daltonismo = trabajador.daltonismo;
     baseData.Diabético = trabajador.diabetico;
     baseData.Hipertensivo = trabajador.hipertensivo;
+    baseData['Alcoholismo'] = trabajador.alcoholismo;
+    baseData['Tabaquismo'] = trabajador.tabaquismo;
     baseData['Accidente Laboral'] = trabajador.accidente;
     baseData['Agentes de Riesgo'] = trabajador.agentesRiesgo;
     baseData.Consultas = trabajador.consultas;

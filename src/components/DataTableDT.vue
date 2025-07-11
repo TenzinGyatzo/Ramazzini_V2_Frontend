@@ -187,6 +187,9 @@ onMounted(() => {
             `;
           }
         },
+        { data: 'exploracionFisicaResumen.categoriaTensionArterial', title: 'TA'},
+        { data: 'historiaClinicaResumen.alcoholismo', title: 'Alcohol'},
+        { data: 'historiaClinicaResumen.tabaquismo', title: 'Tabaco'},
 
       ],
       deferRender: true,
@@ -209,7 +212,7 @@ onMounted(() => {
         }
       },
       columnDefs: [
-        { targets: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29], visible: false }, // Oculta las columnas 
+        { targets: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 32, 33, 34], visible: false }, // Oculta las columnas 
         { targets: 31, width: '210px' } // Acciones 200 para agregar otro botón
       ]
     });

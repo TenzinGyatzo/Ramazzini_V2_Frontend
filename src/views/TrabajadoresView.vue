@@ -382,6 +382,7 @@ const exportarFiltrados = () => {
     estadoCivil: row.estadoCivil,
     imc: row.exploracionFisicaResumen?.categoriaIMC || '-',
     cintura: row.exploracionFisicaResumen?.categoriaCircunferenciaCintura || '-',
+    categoriaTensionArterial: row.exploracionFisicaResumen?.categoriaTensionArterial || '-',
     aptitud: row.aptitudResumen?.aptitudPuesto || '-',
     requiereLentes: row.examenVistaResumen?.requiereLentesUsoGeneral || '-',
     correccionVisual: determinarVistaCorregida(
@@ -400,6 +401,8 @@ const exportarFiltrados = () => {
     accidente: row.historiaClinicaResumen?.accidentes || '-',
     quirurgico: row.historiaClinicaResumen?.quirurgicos || '-',
     traumatico: row.historiaClinicaResumen?.traumaticos || '-',
+    alcoholismo: row.historiaClinicaResumen?.alcoholismo || '',
+    tabaquismo: row.historiaClinicaResumen?.tabaquismo || '',
     agentesRiesgo: Array.isArray(row.agentesRiesgoActuales) && row.agentesRiesgoActuales.length
       ? row.agentesRiesgoActuales.join(', ')
       : '-',
