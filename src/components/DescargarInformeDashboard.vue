@@ -277,12 +277,16 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         // Tabla de IMC
         if (props.tablasDatos?.imc) {
             const datosIMC = props.tablasDatos.imc
-                .filter(item => item && Array.isArray(item) && item.length >= 3);
+                .filter(item => item && Array.isArray(item) && item.length >= 3)
+                .map(item => [
+                    item[0] || '-',
+                    `${item[1] || 0} (${item[2] || 0}%)`
+                ]);
             
             if (datosIMC.length > 0) {
                 const tablaIMC = crearTablaPDF(
                     datosIMC,
-                    ['Categoría', 'Cantidad', 'Porcentaje'],
+                    ['Categoría', 'Cantidad (Porcentaje)'],
                     'Detalle de Distribución por IMC',
                     'imc'
                 );
@@ -331,11 +335,11 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                                         { text: 'Cantidad', style: 'tableHeaderMedium' }
                                     ],
                                     [
-                                        { text: 'Alto riesgo', style: 'tableCellLeftMedium' },
+                                        { text: 'Alto riesgo', style: 'tableCellMedium' },
                                         { text: `${altoRiesgo} (${porcentajeAltoRiesgo}%)`, style: 'tableCellMedium' }
                                     ],
                                     [
-                                        { text: 'Bajo riesgo', style: 'tableCellLeftMedium' },
+                                        { text: 'Bajo riesgo', style: 'tableCellMedium' },
                                         { text: `${bajoRiesgo} (${totalCintura > 0 ? Math.round((bajoRiesgo / totalCintura) * 100) : 0}%)`, style: 'tableCellMedium' }
                                     ]
                                 ]
@@ -402,11 +406,11 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                                         { text: 'Cantidad', style: 'tableHeaderMedium' }
                                     ],
                                     [
-                                        { text: 'Requieren lentes', style: 'tableCellLeftMedium' },
+                                        { text: 'Requieren lentes', style: 'tableCellMedium' },
                                         { text: `${requierenLentes} (${porcentajeRequieren}%)`, style: 'tableCellMedium' }
                                     ],
                                     [
-                                        { text: 'No requieren', style: 'tableCellLeftMedium' },
+                                        { text: 'No requieren', style: 'tableCellMedium' },
                                         { text: `${noRequierenLentes} (${totalLentes > 0 ? Math.round((noRequierenLentes / totalLentes) * 100) : 0}%)`, style: 'tableCellMedium' }
                                     ]
                                 ]
@@ -470,11 +474,11 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                                         { text: 'Cantidad', style: 'tableHeaderMedium' }
                                     ],
                                     [
-                                        { text: 'Usan lentes', style: 'tableCellLeftMedium' },
+                                        { text: 'Usan lentes', style: 'tableCellMedium' },
                                         { text: `${usanLentes} (${porcentajeUsan}%)`, style: 'tableCellMedium' }
                                     ],
                                     [
-                                        { text: 'No usan lentes', style: 'tableCellLeftMedium' },
+                                        { text: 'No usan lentes', style: 'tableCellMedium' },
                                         { text: `${noUsanLentes} (${totalVistaCorregida > 0 ? Math.round((noUsanLentes / totalVistaCorregida) * 100) : 0}%)`, style: 'tableCellMedium' }
                                     ]
                                 ]
@@ -538,11 +542,11 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                                         { text: 'Cantidad', style: 'tableHeaderMedium' }
                                     ],
                                     [
-                                        { text: 'Con daltonismo', style: 'tableCellLeftMedium' },
+                                        { text: 'Con daltonismo', style: 'tableCellMedium' },
                                         { text: `${conDaltonismo} (${porcentajeDaltonismo}%)`, style: 'tableCellMedium' }
                                     ],
                                     [
-                                        { text: 'Sin daltonismo', style: 'tableCellLeftMedium' },
+                                        { text: 'Sin daltonismo', style: 'tableCellMedium' },
                                         { text: `${sinDaltonismo} (${totalDaltonismo > 0 ? Math.round((sinDaltonismo / totalDaltonismo) * 100) : 0}%)`, style: 'tableCellMedium' }
                                     ]
                                 ]
@@ -569,12 +573,16 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     // Tabla de agudeza visual sin corrección
     if (props.tablasDatos?.vision) {
         const datosVision = props.tablasDatos.vision
-            .filter(item => item && Array.isArray(item) && item.length >= 3);
+            .filter(item => item && Array.isArray(item) && item.length >= 3)
+            .map(item => [
+                item[0] || '-',
+                `${item[1] || 0} (${item[2] || 0}%)`
+            ]);
         
         if (datosVision.length > 0) {
             const tablaVision = crearTablaPDF(
                 datosVision,
-                ['Categoría', 'Trabajadores', 'Porcentaje'],
+                ['Categoría', 'Trabajadores (Porcentaje)'],
                 'Agudeza Visual Sin Corrección',
                 'vision'
             );
@@ -593,12 +601,16 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     // Tabla de enfermedades crónicas
     if (props.tablasDatos?.enfermedades) {
         const datosEnfermedades = props.tablasDatos.enfermedades
-            .filter(item => item && Array.isArray(item) && item.length >= 3);
+            .filter(item => item && Array.isArray(item) && item.length >= 3)
+            .map(item => [
+                item[0] || '-',
+                `${item[1] || 0} (${item[2] || 0}%)`
+            ]);
         
         if (datosEnfermedades.length > 0) {
             const tablaEnfermedades = crearTablaPDF(
                 datosEnfermedades,
-                ['Antecedente', 'Casos', 'Porcentaje'],
+                ['Antecedente', 'Casos (Porcentaje)'],
                 'Enfermedades Crónicas Referidas',
                 'enfermedades'
             );
@@ -609,12 +621,16 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     // Tabla de antecedentes localizados
     if (props.tablasDatos?.antecedentes) {
         const datosAntecedentes = props.tablasDatos.antecedentes
-            .filter(item => item && Array.isArray(item) && item.length >= 3);
+            .filter(item => item && Array.isArray(item) && item.length >= 3)
+            .map(item => [
+                item[0] || '-',
+                `${item[1] || 0} (${item[2] || 0}%)`
+            ]);
         
         if (datosAntecedentes.length > 0) {
             const tablaAntecedentes = crearTablaPDF(
                 datosAntecedentes,
-                ['Antecedente', 'Casos', 'Porcentaje'],
+                ['Antecedente', 'Casos (Porcentaje)'],
                 'Problemas Localizados Referidos',
                 'antecedentes'
             );
@@ -642,12 +658,16 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         // Tabla de agentes de riesgo
         if (props.tablasDatos?.agentesRiesgo) {
             const datosAgentes = props.tablasDatos.agentesRiesgo
-                .filter(item => item && Array.isArray(item) && item.length >= 3);
+                .filter(item => item && Array.isArray(item) && item.length >= 3)
+                .map(item => [
+                    item[0] || '-',
+                    `${item[1] || 0} (${item[2] || 0}%)`
+                ]);
             
             if (datosAgentes.length > 0) {
                 const tablaAgentes = crearTablaPDF(
                     datosAgentes,
-                    ['Agente de Riesgo', 'Expuestos', 'Porcentaje'],
+                    ['Agente de Riesgo', 'Expuestos (Porcentaje)'],
                     'Detalle de Exposición a Agentes de Riesgo',
                     'agentesRiesgo'
                 );
@@ -676,12 +696,16 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         // Tabla de aptitud
         if (props.tablasDatos?.aptitud) {
             const datosAptitud = props.tablasDatos.aptitud
-                .filter(item => item && Array.isArray(item) && item.length >= 3);
+                .filter(item => item && Array.isArray(item) && item.length >= 3)
+                .map(item => [
+                    item[0] || '-',
+                    `${item[1] || 0} (${item[2] || 0}%)`
+                ]);
             
             if (datosAptitud.length > 0) {
                 const tablaAptitud = crearTablaPDF(
                     datosAptitud,
-                    ['Resultado', 'Trabajadores', 'Porcentaje'],
+                    ['Resultado', 'Trabajadores (Porcentaje)'],
                     'Detalle de Aptitud al Puesto',
                     'aptitud'
                 );
@@ -973,10 +997,12 @@ const crearTablaPDF = (datos: any[], columnas: string[], titulo: string, tipoTab
 
   // Función para determinar el estilo de celda según el tipo de tabla y valores
   const getCellStyle = (valor: string, columnaIndex: number, filaIndex: number) => {
-    const cantidad = parseInt(valor) || 0;
+    // Extraer solo el número de la cantidad (antes del paréntesis)
+    const cantidadMatch = valor.match(/^(\d+)/);
+    const cantidad = cantidadMatch ? parseInt(cantidadMatch[1]) : 0;
     
-    // Primera columna siempre alineada a la izquierda
-    if (columnaIndex === 0) return 'tableCellLeft';
+    // Primera columna siempre sin colores (solo centrada)
+    if (columnaIndex === 0) return 'tableCell';
     
     // Lógica específica por tipo de tabla
     switch (tipoTabla) {

@@ -54,6 +54,8 @@ const dataTableRef = ref();
 const mostrarFiltros = ref(false);
 const filtrosAplicados = reactive(new Set<string>());
 const mostrarTabla = ref(false);
+const mostrarColumnasOcultas = ref(false);
+const actualizandoTabla = ref(false);
 
 // 4. Filtros
 const filtrosConfig = [
@@ -401,6 +403,7 @@ const exportarFiltrados = () => {
     accidente: row.historiaClinicaResumen?.accidentes || '-',
     quirurgico: row.historiaClinicaResumen?.quirurgicos || '-',
     traumatico: row.historiaClinicaResumen?.traumaticos || '-',
+    respiratorios: row.historiaClinicaResumen?.respiratorios || '-',
     alcoholismo: row.historiaClinicaResumen?.alcoholismo || '',
     tabaquismo: row.historiaClinicaResumen?.tabaquismo || '',
     agentesRiesgo: Array.isArray(row.agentesRiesgoActuales) && row.agentesRiesgoActuales.length
@@ -465,6 +468,16 @@ const puestosUnicos = computed(() => {
   return [...new Set(puestos)].sort();
 });
 
+const toggleColumnasOcultas = () => {
+  // Activar estado de actualización inmediatamente
+  actualizandoTabla.value = true;
+  
+  // Cambiar el valor después de un pequeño delay para que la UI se actualice
+  setTimeout(() => {
+    mostrarColumnasOcultas.value = !mostrarColumnasOcultas.value;
+  }, 10);
+};
+
 </script>
 
 <template>
@@ -516,6 +529,21 @@ const puestosUnicos = computed(() => {
     >
       <i :class="mostrarFiltros ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
       {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
+    </button>
+
+    <button
+      @click="toggleColumnasOcultas"
+      :disabled="actualizandoTabla"
+      :class="[
+        'text-sm px-3 py-1.5 rounded-md transition duration-200 flex items-center gap-2',
+        actualizandoTabla 
+          ? 'text-gray-400 bg-gray-100 border border-gray-200 cursor-not-allowed' 
+          : 'text-blue-600 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 border border-blue-300'
+      ]"
+    >
+      <i v-if="actualizandoTabla" class="fa-solid fa-spinner fa-spin"></i>
+      <i v-else :class="mostrarColumnasOcultas ? 'fa-solid fa-table-columns' : 'fa-solid fa-table'"></i>
+      {{ actualizandoTabla ? 'Actualizando tabla...' : (mostrarColumnasOcultas ? 'Ocultar columnas' : 'Mostrar todas las columnas') }}
     </button>
 
     <div v-if="hayFiltrosActivos" class="flex items-center gap-1 text-xs text-emerald-600 font-medium">
@@ -575,6 +603,7 @@ const puestosUnicos = computed(() => {
       <DataTableDT
         ref="dataTableRef"
         :rows="trabajadores.trabajadores || []"
+        :mostrarColumnasOcultas="mostrarColumnasOcultas"
         v-if="mostrarTabla"
         class="table-auto z-1"
         @riesgo-trabajo="openRTsModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, $event)"
@@ -582,6 +611,7 @@ const puestosUnicos = computed(() => {
         @editar="openModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo, $event)"
         @toggle-estado-laboral="toggleEstadoLaboral($event)"
         @eliminar="solicitarEliminacion('Trabajador', $event.id, $event.nombre, eliminarTrabajador)"
+        @actualizando-tabla="actualizandoTabla = $event"
       />
 
       <h1 v-else class="text-xl sm:text-2xl md:text-3xl px-3 py-5 sm:px-6 sm:py-10 text-center font-medium text-gray-700 mt-10">

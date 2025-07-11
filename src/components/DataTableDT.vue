@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from 'vue';
+import { onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import DataTablesCore from 'datatables.net-dt';
 import 'datatables.net-select-dt';
 import 'datatables.net-buttons-dt';
@@ -10,7 +10,10 @@ import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 
-const props = defineProps<{ rows: any[] }>();
+const props = defineProps<{ 
+  rows: any[];
+  mostrarColumnasOcultas?: boolean;
+}>();
 
 const tablaRef = ref<HTMLElement | null>(null);
 let dataTableInstance: any = null;
@@ -29,6 +32,7 @@ const emit = defineEmits<{
   (e: 'editar', trabajador: any): void;
   (e: 'toggle-estado-laboral', trabajador: any): void;
   (e: 'eliminar', payload: { id: string; nombre: string }): void;
+  (e: 'actualizando-tabla', actualizando: boolean): void;
 }>();
 
 onMounted(() => {
@@ -46,46 +50,53 @@ onMounted(() => {
       return dateA < dateB ? -1 : dateA > dateB ? 1 : 0;
     };
 
+    // Definir las columnas que se ocultan por defecto
+    const columnasOcultas = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34];
 
     dataTableInstance = new DataTablesCore('#customTable', {
       data: props.rows,
       columns: [
-        { data: null, title: '#', render: (data, type, row, meta) => meta.row + 1 },
-        { data: 'numeroEmpleado', title: 'Num. Trab.', defaultContent: '-' },
-        { data: 'nombre', title: 'Nombre completo' },
+        { data: null, title: '#', render: (data, type, row, meta) => meta.row + 1 }, // 0
+        { data: 'numeroEmpleado', title: 'Num. Trab.', defaultContent: '-' }, // 1
+        { data: 'nombre', title: 'Nombre completo' }, // 2
         // { data: 'updatedAt', title: 'Última actualización', render: d => convertirFechaISOaDDMMYYYY(d) },
         { 
           data: 'updatedAt', 
           title: 'Última actualización', 
           render: d => convertirFechaISOaDDMMYYYY(d), 
           type: 'date-dd-MM-yyyy' // Indica que la columna tiene fechas en formato personalizado
-        },
-        { data: 'fechaNacimiento', title: 'Edad', render: d => calcularEdad(d) + ' años' },
-        { data: 'sexo', title: 'Sexo' },
-        { data: 'escolaridad', title: 'Escolaridad' },
-        { data: 'puesto', title: 'Puesto' },
-        { data: 'fechaIngreso', title: 'Antigüedad', render: d => calcularAntiguedad(d) },
-        { data: 'telefono', title: 'Teléfono', defaultContent: '-' },
-        { data: 'estadoCivil', title: 'Estado Civil' },
-        { data: 'exploracionFisicaResumen.categoriaIMC', title: 'IMC', defaultContent: '-' },
-        { data: 'exploracionFisicaResumen.categoriaCircunferenciaCintura', title: 'Cintura', defaultContent: '-' },
-        { data: 'aptitudResumen.aptitudPuesto', title: 'Aptitud', defaultContent: '-' },
-        { data: 'examenVistaResumen.requiereLentesUsoGeneral', title: 'Req. Lentes', render: d => d === 'Si' ? 'Requiere lentes' : 'No requiere' },
-        { data: null, title: 'Corrección', render: d => determinarVistaCorregida(d.examenVistaResumen?.requiereLentesUsoGeneral, Number(d.examenVistaResumen?.ojoIzquierdoLejanaConCorreccion), Number(d.examenVistaResumen?.ojoDerechoLejanaConCorreccion)) },
-        { data: 'examenVistaResumen.sinCorreccionLejanaInterpretacion', title: 'Agudeza', defaultContent: '-' },
-        { data: 'examenVistaResumen.interpretacionIshihara', title: 'Daltonismo', defaultContent: '-' },
-        { data: 'historiaClinicaResumen.diabeticosPP', title: 'Dbt.', render: d => d === 'Si' ? 'Si' : 'No' },
-        { data: 'historiaClinicaResumen.hipertensivosPP', title: 'Hta.', render: d => d === 'Si' ? 'Si' : 'No' },
-        { data: 'historiaClinicaResumen.cardiopaticosPP', title: 'Card.', render: d => d === 'Si' ? 'Si' : 'No' },
-        { data: 'historiaClinicaResumen.epilepticosPP', title: 'Epil.', render: d => d === 'Si' ? 'Si' : 'No' },
-        { data: 'historiaClinicaResumen.alergicos', title: 'Aler.', render: d => d === 'Si' ? 'Si' : 'No' },
-        { data: 'historiaClinicaResumen.lumbalgias', title: 'Lumb.', render: d => d === 'Si' ? 'Si' : 'No' },
-        { data: 'historiaClinicaResumen.accidentes', title: 'Acc.', render: d => d === 'Si' ? 'Si' : 'No' },
-        { data: 'historiaClinicaResumen.quirurgicos', title: 'Ciru.', render: d => d === 'Si' ? 'Si' : 'No' },
-        { data: 'historiaClinicaResumen.traumaticos', title: 'Traum.', render: d => d === 'Si' ? 'Si' : 'No' },
-        { data: 'agentesRiesgoActuales', title: 'Agentes Riesgo', render: d => Array.isArray(d) ? d.join(', ') : '-' },
-        { data: 'consultaResumen.fechaNotaMedica', title: 'Consultas', render: d => d ? 'Si' : 'No' },
-        { data: 'estadoLaboral', title: 'Estado Laboral' },
+        }, // 3
+        { data: 'fechaNacimiento', title: 'Edad', render: d => calcularEdad(d) + ' años' }, // 4
+        { data: 'sexo', title: 'Sexo' }, // 5
+        { data: 'escolaridad', title: 'Escolaridad' }, // 6
+        { data: 'puesto', title: 'Puesto' }, // 7
+        { data: 'fechaIngreso', title: 'Antigüedad', render: d => calcularAntiguedad(d) }, // 8
+        { data: 'telefono', title: 'Teléfono', defaultContent: '-' }, // 9
+        { data: 'estadoCivil', title: 'Estado Civil' }, // 10
+        { data: 'exploracionFisicaResumen.categoriaIMC', title: 'IMC', defaultContent: '-' }, // 11
+        { data: 'exploracionFisicaResumen.categoriaCircunferenciaCintura', title: 'Cintura', defaultContent: '-' }, // 12
+        { data: 'exploracionFisicaResumen.categoriaTensionArterial', title: 'TA'}, // 13
+        { data: 'examenVistaResumen.requiereLentesUsoGeneral', title: 'Req. Lentes', render: d => d === 'Si' ? 'Requiere lentes' : 'No requiere' }, // 14
+        { data: null, title: 'Corrección', render: d => determinarVistaCorregida(d.examenVistaResumen?.requiereLentesUsoGeneral, Number(d.examenVistaResumen?.ojoIzquierdoLejanaConCorreccion), Number(d.examenVistaResumen?.ojoDerechoLejanaConCorreccion)) }, // 15
+        { data: 'examenVistaResumen.sinCorreccionLejanaInterpretacion', title: 'Agudeza', defaultContent: '-' }, // 16
+        { data: 'examenVistaResumen.interpretacionIshihara', title: 'Daltonismo', defaultContent: '-' }, // 17
+        { data: 'historiaClinicaResumen.lumbalgias', title: 'Lumb.', render: d => d === 'Si' ? 'Si' : 'No' }, // 18
+        { data: 'historiaClinicaResumen.diabeticosPP', title: 'Dbt.', render: d => d === 'Si' ? 'Si' : 'No' }, // 19
+        { data: 'historiaClinicaResumen.cardiopaticosPP', title: 'Card.', render: d => d === 'Si' ? 'Si' : 'No' }, // 20
+        { data: 'historiaClinicaResumen.alergicos', title: 'Aler.', render: d => d === 'Si' ? 'Si' : 'No' }, // 21
+        { data: 'historiaClinicaResumen.hipertensivosPP', title: 'Hta.', render: d => d === 'Si' ? 'Si' : 'No' }, // 22
+        { data: 'historiaClinicaResumen.respiratorios', title: 'Resp.', render: d => d === 'Si' ? 'Si' : 'No' }, // 23
+        { data: 'historiaClinicaResumen.epilepticosPP', title: 'Epil.', render: d => d === 'Si' ? 'Si' : 'No' }, // 24
+        { data: 'historiaClinicaResumen.accidentes', title: 'Acc.', render: d => d === 'Si' ? 'Si' : 'No' }, // 25
+        { data: 'historiaClinicaResumen.quirurgicos', title: 'Ciru.', render: d => d === 'Si' ? 'Si' : 'No' }, // 26
+        { data: 'historiaClinicaResumen.traumaticos', title: 'Traum.', render: d => d === 'Si' ? 'Si' : 'No' }, // 27
+        { data: 'historiaClinicaResumen.alcoholismo', title: 'Alcohol'}, // 28
+        { data: 'historiaClinicaResumen.tabaquismo', title: 'Tabaco'}, // 29
+        { data: 'historiaClinicaResumen.accidenteLaboral', title: 'Acc. Lab.'}, // 30
+        { data: 'aptitudResumen.aptitudPuesto', title: 'Aptitud', defaultContent: '-' }, // 31
+        { data: 'agentesRiesgoActuales', title: 'Agentes Riesgo', render: d => Array.isArray(d) ? d.join(', ') : '-' }, // 32
+        { data: 'consultaResumen.fechaNotaMedica', title: 'Consultas', render: d => d ? 'Si' : 'No' }, // 33
+        { data: 'estadoLaboral', title: 'Estado Laboral' }, // 34
         {
           data: null,
           title: 'Expediente',
@@ -109,7 +120,7 @@ onMounted(() => {
               </a>
             `;
           }
-        },
+        }, // 35
         {
           data: null,
           title: 'Acciones',
@@ -186,11 +197,7 @@ onMounted(() => {
               </div>
             `;
           }
-        },
-        { data: 'exploracionFisicaResumen.categoriaTensionArterial', title: 'TA'},
-        { data: 'historiaClinicaResumen.alcoholismo', title: 'Alcohol'},
-        { data: 'historiaClinicaResumen.tabaquismo', title: 'Tabaco'},
-
+        }, // 36
       ],
       deferRender: true,
       scrollX: true,
@@ -212,8 +219,8 @@ onMounted(() => {
         }
       },
       columnDefs: [
-        { targets: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 32, 33, 34], visible: false }, // Oculta las columnas 
-        { targets: 31, width: '210px' } // Acciones 200 para agregar otro botón
+        { targets: props.mostrarColumnasOcultas ? [] : columnasOcultas, visible: props.mostrarColumnasOcultas ? true : false }, // Oculta las columnas según la prop
+        { targets: 36, width: '210px' } // Acciones 200 para agregar otro botón
       ]
     });
 
@@ -322,27 +329,27 @@ let filtroPeriodoReferencia: ((settings: any, data: any[]) => boolean) | null = 
 
 function aplicarTodosLosFiltrosDesdeLocalStorage() {
   const filtros = [
-    { id: 'sexo', columna: 4 },
-    { id: 'puesto', columna: 6 },
+    { id: 'sexo', columna: 5 },
+    { id: 'puesto', columna: 7 },
     { id: 'imc', columna: 11 },
     { id: 'cintura', columna: 12 },
-    { id: 'aptitud', columna: 13 },
     { id: 'lentes', columna: 14 },
     { id: 'correccionVisual', columna: 15 },
     { id: 'agudeza', columna: 16 },
     { id: 'daltonismo', columna: 17 },
-    { id: 'diabetico', columna: 18 },
-    { id: 'hipertensivo', columna: 19 },
+    { id: 'lumbalgia', columna: 18 },
+    { id: 'diabetico', columna: 19 },
     { id: 'cardiopatico', columna: 20 },
-    { id: 'epilepsia', columna: 21 },
-    { id: 'alergia', columna: 22 },
-    { id: 'lumbalgia', columna: 23 },
-    { id: 'accidente', columna: 24 },
-    { id: 'quirurgico', columna: 25 },
-    { id: 'traumatico', columna: 26 },
-    { id: 'exposicion', columna: 27 }, // <-- este tiene lógica especial
-    { id: 'consultas', columna: 28 },
-    { id: 'estadoLaboral', columna: 29 }
+    { id: 'alergia', columna: 21 },
+    { id: 'hipertensivo', columna: 22 },
+    { id: 'epilepsia', columna: 24 },
+    { id: 'accidente', columna: 25 },
+    { id: 'quirurgico', columna: 26 },
+    { id: 'traumatico', columna: 27 },
+    { id: 'aptitud', columna: 31 },
+    { id: 'exposicion', columna: 32 }, // <-- este tiene lógica especial
+    { id: 'consultas', columna: 33 },
+    { id: 'estadoLaboral', columna: 34 }
   ];
 
   // 1. Limpiar filtros anteriores
@@ -431,8 +438,31 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
   dataTableInstance.draw();
 }
 
+
+
 defineExpose({
   aplicarTodosLosFiltrosDesdeLocalStorage
+});
+
+// Agregar watcher para la prop mostrarColumnasOcultas
+watch(() => props.mostrarColumnasOcultas, (nuevoValor) => {
+  if (dataTableInstance) {
+    const columnasOcultas = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34];
+    
+    // Cambiar la visibilidad de las columnas
+    columnasOcultas.forEach((columnaIndex) => {
+      dataTableInstance.column(columnaIndex).visible(nuevoValor);
+    });
+    
+    // Usar requestAnimationFrame para detectar cuando el DOM realmente se actualiza
+    // Esto es más preciso que un timeout fijo
+    requestAnimationFrame(() => {
+      // Un segundo requestAnimationFrame para asegurar que la tabla terminó de renderizar
+      requestAnimationFrame(() => {
+        emit('actualizando-tabla', false);
+      });
+    });
+  }
 });
 
 </script>
