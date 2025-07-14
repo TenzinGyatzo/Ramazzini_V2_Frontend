@@ -5,7 +5,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
-import { clasificarPorEdadYSexo, ordenarPorGrupoEtario, contarPorCategoriaIMC, etiquetasEnfermedades, contarEnfermedadesCronicas, etiquetasAntecedentesReferidos, contarAntecedentesReferidos, etiquetasVisionSinCorreccion, calcularRequierenLentes, contarVisionSinCorreccion, calcularVistaCorregida, calcularDaltonismo, etiquetasAptitudPuesto, etiquetasAptitudPuestoTabla, contarPorAptitudPuesto, calcularCircunferenciaCintura, contarConsultasUltimos30Dias, etiquetasAgentesRiesgo, contarAgentesRiesgo } from '@/helpers/dashboardDataProcessor';
+import { clasificarPorEdadYSexo, ordenarPorGrupoEtario, contarPorCategoriaIMC, etiquetasEnfermedades, contarEnfermedadesCronicas, etiquetasAntecedentesReferidos, contarAntecedentesReferidos, etiquetasVisionSinCorreccion, calcularRequierenLentes, contarVisionSinCorreccion, calcularVistaCorregida, calcularDaltonismo, etiquetasAptitudPuesto, etiquetasAptitudPuestoTabla, contarPorAptitudPuesto, calcularCircunferenciaCintura, contarConsultasUltimos30Dias, etiquetasAgentesRiesgo, contarAgentesRiesgo, contarPorSexo, categoriasTensionArterialOrdenadas, contarPorCategoriaTensionArterial } from '@/helpers/dashboardDataProcessor';
 import GraficaBarras from '@/components/graficas/GraficaBarras.vue';
 import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
 import { subDays, format } from 'date-fns'
@@ -117,6 +117,12 @@ const vistaAptitud = ref('grafico');
 const vistaAptitudKey = computed(() => `vista-${vistaAptitud.value}`);
 const vistaAgentes = ref('grafico');
 const vistaAgentesKey = computed(() => `vista-${vistaAgentes.value}`);
+const vistaTensionArterial = ref('grafico');
+const vistaTensionArterialKey = computed(() => `vista-${vistaTensionArterial.value}`);
+const vistaSexo = ref('grafico');
+const vistaSexoKey = computed(() => `vista-${vistaSexo.value}`);
+const vistaCintura = ref('grafico');
+const vistaCinturaKey = computed(() => `vista-${vistaCintura.value}`);
 
 // Refs para cada gráfica
 const refIMC = ref();
@@ -127,6 +133,8 @@ const refDaltonismo = ref();
 const refAgentes = ref();
 const refGruposEtarios = ref();
 const refCircunferencia = ref();
+const refSexo = ref();
+const refTensionArterial = ref();
 
 const cargarDatos = async (empresaId, inicio, fin) => {
   if (!empresaId) return;
@@ -210,6 +218,234 @@ const totalTrabajadores = computed(() => {
   const index = centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value);
   return dashboardData.value[index]?.trabajadoresEvaluados?.length || 0;
 });
+
+// Computed para tabla y gráfica de distribución por sexo
+const graficaSexoData = computed(() => {
+  if (!dashboardData.value.length) return { chart: { labels: [], datasets: [] }, masculino: 0, femenino: 0, porcentaje: 0 };
+
+  const trabajadores = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.grupoEtario[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.grupoEtario[0] || [];
+
+  const { Masculino, Femenino } = contarPorSexo(trabajadores);
+  const total = Masculino + Femenino;
+  const porcentaje = total > 0 ? Math.round((Masculino / total) * 100) : 0;
+
+  return {
+    masculino: Masculino,
+    femenino: Femenino,
+    porcentaje,
+    chart: {
+      labels: ['Distribución por Sexo'],
+      datasets: [
+        {
+          label: 'Hombres',
+          data: [Masculino],
+          backgroundColor: '#4B5563', // Gris oscuro
+          stack: 'Stack 0'
+        },
+        {
+          label: 'Mujeres',
+          data: [Femenino],
+          backgroundColor: '#9CA3AF', // Gris medio
+          stack: 'Stack 0'
+        }
+      ]
+    }
+  };
+});
+
+// Computed para tabla y gráfica de tensión arterial
+const tablaTensionArterial = computed(() => {
+  if (!dashboardData.value.length) return [];
+
+  const data = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.tensionArterial?.[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.tensionArterial?.[0] || [];
+
+  return contarPorCategoriaTensionArterial(data);
+});
+
+const tablaSexo = computed(() => {
+  if (!dashboardData.value.length) return [];
+
+  const trabajadores = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.grupoEtario[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.grupoEtario[0] || [];
+
+  const { Masculino, Femenino } = contarPorSexo(trabajadores);
+  const total = Masculino + Femenino;
+  
+  return [
+    ['Masculino', Masculino, total > 0 ? Math.round((Masculino / total) * 100) : 0],
+    ['Femenino', Femenino, total > 0 ? Math.round((Femenino / total) * 100) : 0]
+  ];
+});
+
+const graficaTensionArterialData = computed(() => {
+  const conteo = tablaTensionArterial.value;
+
+  const coloresPorCategoria = {
+    'Óptima': '#10B981',           // Verde
+    'Normal': '#34D399',           // Verde claro
+    'Alta': '#F59E0B',             // Amarillo
+    'Hipertensión ligera': '#F97316', // Naranja
+    'Hipertensión moderada': '#DC2626', // Rojo
+    'Hipertensión severa': '#7F1D1D'    // Rojo oscuro
+  };
+
+  return {
+    labels: conteo.map(([categoria]) => categoria),
+    datasets: [
+      {
+        label: 'Trabajadores',
+        data: conteo.map(([, cantidad]) => cantidad),
+        backgroundColor: conteo.map(([categoria]) => coloresPorCategoria[categoria] || '#6B7280')
+      }
+    ]
+  };
+});
+
+const graficaTensionArterialOptions = {
+  indexAxis: 'y',
+  responsive: true,
+  layout: {
+    padding: {
+      right: 60
+    }
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          const total = graficaTensionArterialData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `Trabajadores: ${value} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      color: '#374151',
+      anchor: 'end',
+      align: 'end',
+      formatter: (value, context) => {
+        const total = graficaTensionArterialData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return `${value} (${porcentaje}%)`;
+      },
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        stepSize: 1,
+        maxTicksLimit: 10,
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  }
+};
+
+const graficaSexoOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  layout: {
+    padding: {
+      top: 0,
+      bottom: 0
+    }
+  },
+  plugins: {
+    legend: {
+      display: false
+    },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          const total = graficaSexoData.value.masculino + graficaSexoData.value.femenino;
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `${context.dataset.label}: ${value} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      color: '#FFFFFF',
+      anchor: 'center',
+      align: 'center',
+      formatter: (value, context) => {
+        if (value === 0) return '';
+        const total = graficaSexoData.value.masculino + graficaSexoData.value.femenino;
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return `${value} (${porcentaje}%)`;
+      },
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      stacked: true,
+      beginAtZero: true,
+      grid: { display: false },
+      categoryPercentage: 1.0,
+      barPercentage: 0.7,
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      stacked: true,
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  }
+};
 
 // Computed para tabla y grafica de categorías de IMC
 const graficaIMCData = computed(() => {
@@ -641,22 +877,6 @@ const opcionesGenericasAnillo = {
   }
 };
 
-/* const graficaRequierenLentesOptions = {
-  responsive: true,
-  cutout: '70%',
-  plugins: {
-    tooltip: {
-      enabled: true
-    },
-    datalabels: {
-      display: false
-    },
-    legend: {
-      display: false
-    }
-  }
-} */
-
 const tablaVisionSinCorreccion = computed(() => {
   if (!dashboardData.value.length) return [];
 
@@ -706,29 +926,76 @@ const graficaCircunferenciaData = computed(() => {
   return calcularCircunferenciaCintura(datos);
 });
 
-/* const graficaCircunferenciaOptions = {
+const graficaCircunferenciaOptions = {
   responsive: true,
-  cutout: '70%',
+  maintainAspectRatio: false,
+  layout: {
+    padding: {
+      top: 0,
+      bottom: 0
+    }
+  },
   plugins: {
+    legend: {
+      display: false
+    },
     tooltip: {
       enabled: true,
       callbacks: {
         label: (context) => {
           const value = context.raw;
-          return `Casos: ${value}`;
+          const total = graficaCircunferenciaData.value.chart.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `Casos: ${value} (${porcentaje}%)`;
         }
       }
     },
     datalabels: {
-      display: false
+      color: '#FFFFFF',
+      anchor: 'center',
+      align: 'center',
+      formatter: (value, context) => {
+        if (value === 0) return '';
+        const total = graficaCircunferenciaData.value.chart.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return `  ${value}\n(${porcentaje}%)`;
+      },
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      categoryPercentage: 1.0,
+      barPercentage: 0.7,
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
     },
-    legend: {
-      display: false
+    y: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
     }
   }
-} */
+};
 
-// Computed para tabla y grafica de consultas en los últimos 30 días
+// Computed para tabla y grafica de consultas
 const totalConsultas = computed(() => {
   if (!dashboardData.value.length) return 0;
 
@@ -743,6 +1010,7 @@ const totalConsultas = computed(() => {
   return fechas.length; // Cambiado: ahora retorna todas las consultas, no solo las de los últimos 30 días
 });
 
+// Computed para rango de periodo
 const rangoPeriodo = computed(() => {
   // Si no hay fechas seleccionadas o el rango es inválido, mostrar texto general
   if (!fechaInicio.value || !fechaFin.value || rangoInvalido.value) {
@@ -1122,6 +1390,62 @@ function handleClickGraficaCintura(evt, elements) {
   manejarRedireccionFiltroChart(label, 'cintura');
 }
 
+function handleClickGraficaSexo(evt, elements) {
+  if (!elements.length) return;
+  const datasetIndex = elements[0].datasetIndex;
+  const label = graficaSexoData.value.chart.datasets[datasetIndex].label; // 'Hombres' o 'Mujeres'
+  manejarRedireccionFiltroChart(label, 'sexo', {
+    'Hombres': 'Masculino',
+    'Mujeres': 'Femenino'
+  });
+}
+
+function handleClickGraficaTensionArterial(evt, elements) {
+  if (!elements.length) return;
+  const index = elements[0].index;
+  const label = graficaTensionArterialData.value.labels[index];
+  manejarRedireccionFiltroChart(label, 'tensionArterial');
+}
+
+function handleClickTablaTensionArterial(categoria) {
+  if (centroSeleccionado.value === 'Todos') {
+    toast.open({
+      message: 'Selecciona un centro de trabajo para ver los trabajadores con esa categoría de tensión arterial.',
+      type: 'info'
+    });
+    return;
+  }
+
+  manejarRedireccionFiltroChart(categoria, 'tensionArterial');
+}
+
+function handleClickTablaSexo(sexo) {
+  if (centroSeleccionado.value === 'Todos') {
+    toast.open({
+      message: 'Selecciona un centro de trabajo para ver los trabajadores por sexo.',
+      type: 'info'
+    });
+    return;
+  }
+
+  manejarRedireccionFiltroChart(sexo, 'sexo', {
+    'Masculino': 'Masculino',
+    'Femenino': 'Femenino'
+  });
+}
+
+function handleClickTablaCintura(categoria) {
+  if (centroSeleccionado.value === 'Todos') {
+    toast.open({
+      message: 'Selecciona un centro de trabajo para ver los trabajadores con esa categoría de riesgo por cintura.',
+      type: 'info'
+    });
+    return;
+  }
+
+  manejarRedireccionFiltroChart(categoria, 'cintura');
+}
+
 const obtenerBase64Logo = async (ruta) => {
   const res = await fetch(ruta);
   const blob = await res.blob();
@@ -1152,6 +1476,25 @@ function limpiarFechas() {
   fechaFin.value = null;
   periodoPredefinido.value = '';
 }
+
+const tablaCintura = computed(() => {
+  if (!dashboardData.value.length) return [];
+
+  const datos = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.circunferenciaCintura[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.circunferenciaCintura[0] || [];
+
+  const resultado = calcularCircunferenciaCintura(datos);
+  const total = resultado.chart.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+  
+  return resultado.chart.labels.map((label, index) => {
+    const cantidad = resultado.chart.datasets[0].data[index];
+    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+    return [label, cantidad, porcentaje];
+  });
+});
 
 </script>
 
@@ -1204,7 +1547,7 @@ function limpiarFechas() {
     <div class="mb-2 flex items-end gap-6">
       <div class="flex items-center gap-4 self-center">
         <DescargarInformeDashboard
-          v-if="refIMC && refAptitud && refLentes && refCorregida && refDaltonismo && refAgentes && refGruposEtarios && refCircunferencia"
+          v-if="dashboardData.length > 0"
           :refs-graficas="{
             imc: { ref: refIMC, config: { type: 'bar', data: graficaIMCData, options: graficaIMCOptions } },
             aptitud: { ref: refAptitud, config: { type: 'bar', data: graficaAptitudData, options: graficaAptitudOptions } },
@@ -1213,7 +1556,9 @@ function limpiarFechas() {
             daltonismo: { ref: refDaltonismo, config: { type: 'doughnut', data: graficaDaltonismoData.chart, options: opcionesGenericasAnillo } },
             agentes: { ref: refAgentes, config: { type: 'bar', data: graficaAgentesRiesgoData, options: graficaAgentesRiesgoOptions } },
             grupos: { ref: refGruposEtarios, config: { type: 'bar', data: graficaGruposEtariosData, options: graficaGruposEtariosOptions } },
-            cintura: { ref: refCircunferencia, config: { type: 'doughnut', data: graficaCircunferenciaData.chart, options: opcionesGenericasAnillo } }
+            cintura: { ref: refCircunferencia, config: { type: 'bar', data: graficaCircunferenciaData.chart, options: graficaCircunferenciaOptions } },
+            sexo: { ref: refSexo, config: { type: 'bar', data: graficaSexoData.chart, options: graficaSexoOptions } },
+            tensionArterial: { ref: refTensionArterial, config: { type: 'bar', data: graficaTensionArterialData, options: graficaTensionArterialOptions } }
           }"
           :nombre-empresa="empresasStore.currentEmpresa?.nombreComercial"
           :razon-social="empresasStore.currentEmpresa?.razonSocial"
@@ -1234,7 +1579,9 @@ function limpiarFechas() {
             lentes: graficaRequierenLentesData,
             vistaCorregida: graficaVistaCorregidaData,
             daltonismo: graficaDaltonismoData,
-            cintura: graficaCircunferenciaData
+            cintura: graficaCircunferenciaData,
+            sexo: graficaSexoData,
+            tensionArterial: tablaTensionArterial
           }"
         />
       </div>
@@ -1328,6 +1675,346 @@ function limpiarFechas() {
 
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-8 auto-rows-[370px] sm:auto-rows-[400px] md:auto-rows-[425px] lg:auto-rows-[450px]">
 
+        <!-- Distribución por Sexo -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+          <!-- Header con tooltip -->
+          <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              Distribución sexos
+              <span class="relative cursor-help">
+                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                <span
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                >
+                  Proporción de trabajadores según su sexo <span class="font-semibold text-rose-600">masculino o femenino</span>, con el objetivo de analizar la distribución y características de la población evaluada.
+                </span>
+              </span>
+            </h3>
+            <div class="flex gap-2">
+              <button
+                @click="vistaSexo = 'grafico'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaSexo === 'grafico'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Gráfico
+              </button>
+              <button
+                @click="vistaSexo = 'tabla'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaSexo === 'tabla'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Tabla
+              </button>
+            </div>
+          </div>
+
+          <!-- Gráfica -->
+          <div class="flex-1">
+            <Transition name="fade" mode="out-in">
+              <template v-if="vistaSexo === 'grafico'">
+                <GraficaBarras
+                  v-if="graficaSexoData.chart?.labels?.length"
+                  ref="refSexo"
+                  :key="vistaSexoKey"
+                  :data="graficaSexoData.chart"
+                  :options="{ ...graficaSexoOptions, onClick: handleClickGraficaSexo }"
+                />
+              </template>
+
+              <template v-else>
+                <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                  <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th class="py-2 px-4 text-left text-lg lg:text-xl">Sexo</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Trabajadores</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="[sexo, cantidad, porcentaje] in tablaSexo"
+                      :key="sexo"
+                      class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      @click="handleClickTablaSexo(sexo)"
+                    >
+                      <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ sexo }}</td>
+                      <td class="py-1 px-4 text-center text-lg lg:text-xl">
+                        <span
+                          :class="[
+                            sexo === 'Masculino' ? 'text-blue-700' : (sexo === 'Femenino' ? 'text-pink-700' : 'text-gray-700')
+                          ]"
+                        >
+                          {{ cantidad }}
+                        </span>
+                        <span class="text-sm text-gray-500"> ({{ porcentaje }}%)</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </template>
+            </Transition>
+          </div>
+        </div>
+
+        <!-- Grupos Etarios: 2 columnas -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              Distribución por Grupos Etarios
+              <span class="relative cursor-help">
+                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                <span
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                >
+                  Muestra la cantidad de trabajadores activos agrupados por rangos de edad y sexo, permitiendo identificar la <span class="font-semibold text-emerald-600">composición demográfica</span> de la plantilla laboral.
+                </span>
+              </span>
+            </h3>
+            <div class="flex gap-2">
+              <button
+                @click="vistaGruposEtarios = 'grafico'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaGruposEtarios === 'grafico'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Gráfico
+              </button>
+              <button
+                @click="vistaGruposEtarios = 'tabla'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaGruposEtarios === 'tabla'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Tabla
+              </button>
+            </div>
+          </div>
+
+          <div class="flex-1 overflow-x-auto">
+            <Transition name="fade" mode="out-in">
+              <template v-if="vistaGruposEtarios === 'grafico'">
+                <GraficaBarras ref="refGruposEtarios" :key="vistaGruposEtariosKey" :data="graficaGruposEtariosData" :options="graficaGruposEtariosOptions" />
+              </template>
+
+              <template v-else>
+                <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                  <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th class="py-2 px-4 text-left text-lg lg:text-xl">Grupo Etario</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Hombres</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Mujeres</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="[grupo, datos] in tablaGruposEtariosFiltrada"
+                      :key="grupo"
+                      class="border-t hover:bg-gray-50 transition"
+                    >
+                      <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ grupo }}</td>
+                      <td class="py-1 px-4 text-center text-blue-700 text-lg lg:text-xl">{{ datos.Masculino }}</td>
+                      <td class="py-1 px-4 text-center text-pink-700 text-lg lg:text-xl">{{ datos.Femenino }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </template>
+            </Transition>
+          </div>
+        </div>
+
+        <!-- Cintura -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+          <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4">
+            <!-- Título + descripción -->
+            <div class="flex flex-col gap-0.5">
+              <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                Riesgo por Cintura
+                <span class="relative cursor-help">
+                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                  <span
+                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                  >
+                    La circunferencia de cintura elevada se asocia con <span class="font-semibold text-rose-600">mayor riesgo de enfermedades</span> como diabetes, hipertensión y trastornos metabólicos.
+                  </span>
+                </span>
+              </h3>
+            </div>
+            <div class="flex gap-2">
+              <button
+                @click="vistaCintura = 'grafico'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaCintura === 'grafico'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Gráfico
+              </button>
+              <button
+                @click="vistaCintura = 'tabla'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaCintura === 'tabla'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Tabla
+              </button>
+            </div>
+          </div>
+          
+          <div class="flex-1">
+            <Transition name="fade" mode="out-in">
+              <template v-if="vistaCintura === 'grafico'">
+                <GraficaBarras
+                  v-if="graficaCircunferenciaData.chart?.labels?.length"
+                  ref="refCircunferencia"
+                  :key="vistaCinturaKey"
+                  :data="graficaCircunferenciaData.chart"
+                  :options="{ ...graficaCircunferenciaOptions, onClick: handleClickGraficaCintura }"
+                />
+              </template>
+
+              <template v-else>
+                <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                  <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th class="py-2 px-4 text-left text-lg lg:text-xl">Categoría</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Trabajadores</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="[categoria, cantidad, porcentaje] in tablaCintura"
+                      :key="categoria"
+                      class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      @click="handleClickTablaCintura(categoria)"
+                    >
+                      <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ categoria }}</td>
+                      <td
+                        :class="[
+                          'py-1 px-4 text-center text-lg lg:text-xl',
+                          categoria === 'Bajo Riesgo'
+                            ? 'text-emerald-700'
+                            : categoria === 'Alto Riesgo'
+                              ? 'text-rose-600'
+                              : 'text-amber-600'
+                        ]"
+                      >
+                        {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </template>
+            </Transition>
+          </div>
+        </div>
+
+        <!-- Alteraciones en la presión arterial -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              Alteraciones en la presión arterial
+              <span class="relative cursor-help">
+                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                <span
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-72 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                >
+                  Distribución de trabajadores según las <span class="font-semibold text-rose-600">categorías de presión arterial</span>, con el propósito de identificar posibles alteraciones y niveles de riesgo cardiovascular en la población evaluada.
+                </span>
+              </span>
+            </h3>
+            <div class="flex gap-2">
+              <button
+                @click="vistaTensionArterial = 'grafico'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaTensionArterial === 'grafico'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Gráfico
+              </button>
+              <button
+                @click="vistaTensionArterial = 'tabla'"
+                :class="[
+                  'px-3 py-1 rounded text-sm font-medium',
+                  vistaTensionArterial === 'tabla'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                ]"
+              >
+                Tabla
+              </button>
+            </div>
+          </div>
+          <div class="flex-1 overflow-x-auto">
+            <Transition name="fade" mode="out-in">
+              <template v-if="vistaTensionArterial === 'grafico'">
+                <GraficaBarras 
+                  ref="refTensionArterial"
+                  :key="vistaTensionArterialKey" 
+                  :data="graficaTensionArterialData" 
+                  :options="{ ...graficaTensionArterialOptions, onClick: handleClickGraficaTensionArterial }" />
+              </template>
+
+              <template v-else>
+                <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                  <thead class="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th class="py-2 px-4 text-left text-lg lg:text-xl">Categoría</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Trabajadores</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="[categoria, cantidad, porcentaje] in tablaTensionArterial"
+                      :key="categoria"
+                      class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      @click="handleClickTablaTensionArterial(categoria)"
+                    >
+                      <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ categoria }}</td>
+                      <td
+                        :class="[
+                          'py-1 px-4 text-center text-lg lg:text-xl',
+                          categoria === 'Óptima'
+                            ? 'text-emerald-700'
+                            : categoria === 'Normal'
+                              ? 'text-green-600'
+                              : categoria === 'Alta'
+                                ? 'text-amber-600'
+                                : categoria === 'Hipertensión ligera'
+                                  ? 'text-orange-600'
+                                  : 'text-rose-600'
+                        ]"
+                      >
+                        {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </template>
+            </Transition>
+          </div>
+        </div>
+
         <!-- IMC: 2 columnas -->
         <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
           <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
@@ -1413,24 +2100,27 @@ function limpiarFechas() {
           </div>
         </div>
 
-        <!-- Aptitud al Puesto: 2 columnas -->
+        <!-- Riesgos: 2 columnas --> 
         <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
           <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
             <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              Aptitud al Puesto
+              Exposición a factores de riesgo
               <span class="relative cursor-help">
                 <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                <span class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none">
-                  Resume si el trabajador está <span class="font-semibold text-emerald-600">apto</span> para desempeñar su función, considerando su estado de salud y los riesgos del puesto evaluado. <span class="text-amber-600">Incluye tanto trabajadores activos como inactivos.</span>
+                <span
+                  class="absolute top-1/2 right-full mr-2 -translate-y-1/2 md:left-full md:right-auto md:ml-2 md:mr-0 md:translate-y-0 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                >
+                  Muestra cuántos trabajadores <span class="font-semibold text-amber-600">están expuestos</span> a elementos del entorno laboral que podrían afectar su salud, ayudando a detectar áreas con mayor riesgo ocupacional.
                 </span>
               </span>
             </h3>
+
             <div class="flex gap-2">
               <button
-                @click="vistaAptitud = 'grafico'"
+                @click="vistaAgentes = 'grafico'"
                 :class="[
                   'px-3 py-1 rounded text-sm font-medium',
-                  vistaAptitud === 'grafico'
+                  vistaAgentes === 'grafico'
                     ? 'bg-emerald-500 text-white'
                     : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                 ]"
@@ -1438,10 +2128,10 @@ function limpiarFechas() {
                 Gráfico
               </button>
               <button
-                @click="vistaAptitud = 'tabla'"
+                @click="vistaAgentes = 'tabla'"
                 :class="[
                   'px-3 py-1 rounded text-sm font-medium',
-                  vistaAptitud === 'tabla'
+                  vistaAgentes === 'tabla'
                     ? 'bg-emerald-500 text-white'
                     : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                 ]"
@@ -1453,200 +2143,42 @@ function limpiarFechas() {
 
           <div class="flex-1 overflow-x-auto">
             <Transition name="fade" mode="out-in">
-              <template v-if="vistaAptitud === 'grafico'">
-                <GraficaBarras 
-                  ref="refAptitud"
-                  :key="vistaAptitudKey" 
-                  :data="graficaAptitudData" 
-                  :options="{ ...graficaAptitudOptions, onClick: handleClickGraficaAptitud }" />
+              <template v-if="vistaAgentes === 'grafico'">
+                <GraficaBarras
+                  ref="refAgentes"
+                  :key="vistaAgentesKey"
+                  :data="graficaAgentesRiesgoData"
+                  :options="{ ...graficaAgentesRiesgoOptions, onClick: handleClickGraficaAgentesRiesgo }"
+                />
               </template>
 
               <template v-else>
-                <!-- Aquí va la tabla que ya preparamos -->
                 <table class="min-w-full text-sm border border-gray-300 rounded h-full">
                   <thead class="bg-gray-100 text-gray-700">
                     <tr>
-                      <th class="py-2 px-4 text-left text-lg lg:text-xl">Resultado</th>
-                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Trabajadores</th>
+                      <th class="py-2 px-4 text-left text-lg lg:text-xl">Agente de Riesgo</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Expuestos</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr
-                      v-for="[categoria, cantidad, porcentaje] in tablaAptitud"
-                      :key="categoria"
-                      class="border-t hover:bg-gray-200 transition cursor-pointer"
-                      @click="handleClickTablaAptitud(categoria)"
+                      v-for="[agente, cantidad, porcentaje] in tablaAgentesRiesgo"
+                      :key="agente"
+                      class="border-t hover:bg-gray-50 transition"
                     >
-                    <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
-                      {{ etiquetasAptitudPuestoTabla[categoria] || categoria }}
-                    </td>
-                      <td
-                        :class="[
-                          'py-1 px-4 text-center text-lg lg:text-xl',
-                          categoria === 'Apto Sin Restricciones' ? 'text-emerald-700' :
-                          categoria === 'Apto Con Precaución' ? 'text-amber-600' :
-                          categoria === 'Apto Con Restricciones' ? 'text-orange-600' :
-                          categoria === 'No Apto' ? 'text-rose-600' :
-                          'text-gray-500'
-                        ]"
-                      >
-                        {{ cantidad }}
-                        <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                      <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
+                        {{ etiquetasAgentesRiesgo[agente] || agente }}
                       </td>
+                      <td class="py-1 px-4 text-center text-lg lg:text-xl"
+                          :class="cantidad === 0 ? 'text-emerald-700' : 'text-rose-600'"
+                      >
+                        {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                       </td>
                     </tr>
                   </tbody>
                 </table>
               </template>
             </Transition>
-          </div>
-        </div>
-
-        <!-- Requieren Lentes -->
-        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-          <!-- Header con tooltip -->
-          <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4">
-            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              Requieren Lentes
-              <span class="relative cursor-help">
-                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                <span
-                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                >
-                  Proporción de trabajadores cuya visión indica la <span class="font-semibold text-rose-600">necesidad de usar lentes</span> para desempeñar sus actividades de manera segura y efectiva.
-                </span>
-              </span>
-            </h3>
-          </div>
-
-          <!-- Gráfica -->
-          <GraficaAnillo
-            v-if="graficaRequierenLentesData.chart?.labels?.length"
-            ref="refLentes"
-            :data="graficaRequierenLentesData.chart"
-            :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaRequierenLentes }"
-            :cantidad="graficaRequierenLentesData.requiere"
-            :porcentaje="graficaRequierenLentesData.porcentaje"
-          />
-
-          <!-- Descripción -->
-          <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
-            Trabajadores que necesitan lentes.
-          </h4>
-        </div>
-
-        <!-- Vista corregida -->
-        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              Vista Corregida
-              <span class="relative cursor-help">
-                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                <span
-                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                >
-                  Proporción de trabajadores que 
-                  <span class="font-semibold text-emerald-600">requieren lentes</span> 
-                  y ya cuentan con 
-                  <span class="font-semibold text-emerald-600">corrección visual</span>.
-                </span>
-              </span>
-            </h3>
-          </div>
-
-          <GraficaAnillo
-            v-if="graficaVistaCorregidaData.chart?.labels?.length"
-            ref="refCorregida"
-            :data="graficaVistaCorregidaData.chart"
-            :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaVistaCorregida }"
-            :cantidad="graficaVistaCorregidaData.usan"
-            :porcentaje="graficaVistaCorregidaData.porcentaje"
-          />
-
-          <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
-            Trabajadores que ya corrigen su visión con lentes.
-          </h4>
-        </div>
-
-        <!-- Daltonismo -->
-        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              Daltonismo
-              <span class="relative cursor-help">
-                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                <span
-                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                >
-                Informa cuántos trabajadores presentan alteraciones en la <span class="font-semibold text-amber-600">percepción de colores</span>.
-                </span>
-              </span>
-            </h3>
-          </div>
-
-          <GraficaAnillo
-            v-if="graficaDaltonismoData.chart?.labels?.length"
-            ref="refDaltonismo"
-            :data="graficaDaltonismoData.chart"
-            :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaDaltonismo }"
-            :cantidad="graficaDaltonismoData.conDaltonismo"
-            :porcentaje="graficaDaltonismoData.porcentaje"
-          />
-
-          <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
-            Alteración en la percepción del color.
-          </h4>
-        </div>
-
-        <!-- Agudeza Visual -->
-        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              Agudeza Visual
-              <span class="relative cursor-help">
-                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                <span
-                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                >
-                  Categoriza el nivel de visión <span class="font-semibold text-emerald-600">sin el uso de lentes</span>, lo que permite detectar posibles dificultades visuales que puedan requerir corrección óptica.
-                </span>
-              </span>
-            </h3>
-          </div>
-
-          <div class="flex-1 overflow-x-auto">
-            <table class="min-w-full text-sm border border-gray-300 rounded h-full overflow-x-auto">
-              <thead class="bg-gray-100 text-gray-700">
-                <tr>
-                  <th class="py-2 px-4 text-left text-lg whitespace-nowrap">Categoría</th>
-                  <th class="py-2 px-4 text-center text-lg whitespace-nowrap">Trab.</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="[categoria, cantidad, porcentaje] in tablaVisionSinCorreccion"
-                  :key="categoria"
-                  class="border-t hover:bg-gray-200 transition cursor-pointer"
-                  @click="handleClickTablaAgudeza(categoria)"
-                >
-                  <td class="py-1 px-4 font-medium text-gray-700 text-base whitespace-nowrap">
-                    {{ etiquetasVisionSinCorreccion[categoria] || categoria }}
-                  </td>
-                  <td
-                    :class="[ 
-                    'py-1 px-4 text-center text-lg whitespace-nowrap',
-                    cantidad === 0 ? 'text-emerald-700' :
-                    categoria === 'Visión ligeramente reducida'
-                      ? 'text-amber-600'
-                      : ['Visión excepcional', 'Visión normal'].includes(categoria)
-                      ? 'text-emerald-700'
-                      : 'text-rose-600'
-                    ]"
-                  >
-                    {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
           </div>
         </div>
 
@@ -1769,108 +2301,173 @@ function limpiarFechas() {
           </div>
         </div>
 
-        <!-- Riesgos: 2 columnas --> 
-        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+        <!-- Agudeza Visual -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
           <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
             <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              Exposición a factores de riesgo
-              <span class="relative cursor-help">
-                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                <span
-                  class="absolute top-1/2 right-full mr-2 -translate-y-1/2 md:left-full md:right-auto md:ml-2 md:mr-0 md:translate-y-0 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                >
-                  Muestra cuántos trabajadores <span class="font-semibold text-amber-600">están expuestos</span> a elementos del entorno laboral que podrían afectar su salud, ayudando a detectar áreas con mayor riesgo ocupacional.
-                </span>
-              </span>
-            </h3>
-
-            <div class="flex gap-2">
-              <button
-                @click="vistaAgentes = 'grafico'"
-                :class="[
-                  'px-3 py-1 rounded text-sm font-medium',
-                  vistaAgentes === 'grafico'
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                ]"
-              >
-                Gráfico
-              </button>
-              <button
-                @click="vistaAgentes = 'tabla'"
-                :class="[
-                  'px-3 py-1 rounded text-sm font-medium',
-                  vistaAgentes === 'tabla'
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                ]"
-              >
-                Tabla
-              </button>
-            </div>
-          </div>
-
-          <div class="flex-1 overflow-x-auto">
-            <Transition name="fade" mode="out-in">
-              <template v-if="vistaAgentes === 'grafico'">
-                <GraficaBarras
-                  ref="refAgentes"
-                  :key="vistaAgentesKey"
-                  :data="graficaAgentesRiesgoData"
-                  :options="{ ...graficaAgentesRiesgoOptions, onClick: handleClickGraficaAgentesRiesgo }"
-                />
-              </template>
-
-              <template v-else>
-                <table class="min-w-full text-sm border border-gray-300 rounded h-full">
-                  <thead class="bg-gray-100 text-gray-700">
-                    <tr>
-                      <th class="py-2 px-4 text-left text-lg lg:text-xl">Agente de Riesgo</th>
-                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Expuestos</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="[agente, cantidad, porcentaje] in tablaAgentesRiesgo"
-                      :key="agente"
-                      class="border-t hover:bg-gray-50 transition"
-                    >
-                      <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
-                        {{ etiquetasAgentesRiesgo[agente] || agente }}
-                      </td>
-                      <td class="py-1 px-4 text-center text-lg lg:text-xl"
-                          :class="cantidad === 0 ? 'text-emerald-700' : 'text-rose-600'"
-                      >
-                        {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
-                       </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </template>
-            </Transition>
-          </div>
-        </div>
-
-        <!-- Grupos Etarios: 2 columnas -->
-        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              Distribución por Grupos Etarios
+              Agudeza Visual
               <span class="relative cursor-help">
                 <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
                 <span
                   class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
                 >
-                  Muestra la cantidad de trabajadores activos agrupados por rangos de edad y sexo, permitiendo identificar la <span class="font-semibold text-emerald-600">composición demográfica</span> de la plantilla laboral.
+                  Categoriza el nivel de visión <span class="font-semibold text-emerald-600">sin el uso de lentes</span>, lo que permite detectar posibles dificultades visuales que puedan requerir corrección óptica.
+                </span>
+              </span>
+            </h3>
+          </div>
+
+          <div class="flex-1 overflow-x-auto">
+            <table class="min-w-full text-sm border border-gray-300 rounded h-full overflow-x-auto">
+              <thead class="bg-gray-100 text-gray-700">
+                <tr>
+                  <th class="py-2 px-4 text-left text-lg whitespace-nowrap">Categoría</th>
+                  <th class="py-2 px-4 text-center text-lg whitespace-nowrap">Trab.</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="[categoria, cantidad, porcentaje] in tablaVisionSinCorreccion"
+                  :key="categoria"
+                  class="border-t hover:bg-gray-200 transition cursor-pointer"
+                  @click="handleClickTablaAgudeza(categoria)"
+                >
+                  <td class="py-1 px-4 font-medium text-gray-700 text-base whitespace-nowrap">
+                    {{ etiquetasVisionSinCorreccion[categoria] || categoria }}
+                  </td>
+                  <td
+                    :class="[ 
+                    'py-1 px-4 text-center text-lg whitespace-nowrap',
+                    cantidad === 0 ? 'text-emerald-700' :
+                    categoria === 'Visión ligeramente reducida'
+                      ? 'text-amber-600'
+                      : ['Visión excepcional', 'Visión normal'].includes(categoria)
+                      ? 'text-emerald-700'
+                      : 'text-rose-600'
+                    ]"
+                  >
+                    {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Requieren Lentes -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+          <!-- Header con tooltip -->
+          <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              Requieren Lentes
+              <span class="relative cursor-help">
+                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                <span
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                >
+                  Proporción de trabajadores cuya visión indica la <span class="font-semibold text-rose-600">necesidad de usar lentes</span> para desempeñar sus actividades de manera segura y efectiva.
+                </span>
+              </span>
+            </h3>
+          </div>
+
+          <!-- Gráfica -->
+          <GraficaAnillo
+            v-if="graficaRequierenLentesData.chart?.labels?.length"
+            ref="refLentes"
+            :data="graficaRequierenLentesData.chart"
+            :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaRequierenLentes }"
+            :cantidad="graficaRequierenLentesData.requiere"
+            :porcentaje="graficaRequierenLentesData.porcentaje"
+          />
+
+          <!-- Descripción -->
+          <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
+            Trabajadores que necesitan lentes.
+          </h4>
+        </div>
+
+        <!-- Vista corregida -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              Vista Corregida
+              <span class="relative cursor-help">
+                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                <span
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                >
+                  Proporción de trabajadores que 
+                  <span class="font-semibold text-emerald-600">requieren lentes</span> 
+                  y ya cuentan con 
+                  <span class="font-semibold text-emerald-600">corrección visual</span>.
+                </span>
+              </span>
+            </h3>
+          </div>
+
+          <GraficaAnillo
+            v-if="graficaVistaCorregidaData.chart?.labels?.length"
+            ref="refCorregida"
+            :data="graficaVistaCorregidaData.chart"
+            :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaVistaCorregida }"
+            :cantidad="graficaVistaCorregidaData.usan"
+            :porcentaje="graficaVistaCorregidaData.porcentaje"
+          />
+
+          <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
+            Trabajadores que ya corrigen su visión con lentes.
+          </h4>
+        </div>
+
+        <!-- Daltonismo -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              Daltonismo
+              <span class="relative cursor-help">
+                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                <span
+                  class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                >
+                Informa cuántos trabajadores presentan alteraciones en la <span class="font-semibold text-amber-600">percepción de colores</span>.
+                </span>
+              </span>
+            </h3>
+          </div>
+
+          <GraficaAnillo
+            v-if="graficaDaltonismoData.chart?.labels?.length"
+            ref="refDaltonismo"
+            :data="graficaDaltonismoData.chart"
+            :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaDaltonismo }"
+            :cantidad="graficaDaltonismoData.conDaltonismo"
+            :porcentaje="graficaDaltonismoData.porcentaje"
+          />
+
+          <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
+            Alteración en la percepción del color.
+          </h4>
+        </div>
+
+        <!-- Aptitud al Puesto: 2 columnas -->
+        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+          <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+              Aptitud al Puesto
+              <span class="relative cursor-help">
+                <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                <span class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                  Resume si el trabajador está <span class="font-semibold text-emerald-600">apto</span> para desempeñar su función, considerando su estado de salud y los riesgos del puesto evaluado. <span class="text-amber-600">Incluye tanto trabajadores activos como inactivos.</span>
                 </span>
               </span>
             </h3>
             <div class="flex gap-2">
               <button
-                @click="vistaGruposEtarios = 'grafico'"
+                @click="vistaAptitud = 'grafico'"
                 :class="[
                   'px-3 py-1 rounded text-sm font-medium',
-                  vistaGruposEtarios === 'grafico'
+                  vistaAptitud === 'grafico'
                     ? 'bg-emerald-500 text-white'
                     : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                 ]"
@@ -1878,10 +2475,10 @@ function limpiarFechas() {
                 Gráfico
               </button>
               <button
-                @click="vistaGruposEtarios = 'tabla'"
+                @click="vistaAptitud = 'tabla'"
                 :class="[
                   'px-3 py-1 rounded text-sm font-medium',
-                  vistaGruposEtarios === 'tabla'
+                  vistaAptitud === 'tabla'
                     ? 'bg-emerald-500 text-white'
                     : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                 ]"
@@ -1893,28 +2490,46 @@ function limpiarFechas() {
 
           <div class="flex-1 overflow-x-auto">
             <Transition name="fade" mode="out-in">
-              <template v-if="vistaGruposEtarios === 'grafico'">
-                <GraficaBarras ref="refGruposEtarios" :key="vistaGruposEtariosKey" :data="graficaGruposEtariosData" :options="graficaGruposEtariosOptions" />
+              <template v-if="vistaAptitud === 'grafico'">
+                <GraficaBarras 
+                  ref="refAptitud"
+                  :key="vistaAptitudKey" 
+                  :data="graficaAptitudData" 
+                  :options="{ ...graficaAptitudOptions, onClick: handleClickGraficaAptitud }" />
               </template>
 
               <template v-else>
+                <!-- Aquí va la tabla que ya preparamos -->
                 <table class="min-w-full text-sm border border-gray-300 rounded h-full">
                   <thead class="bg-gray-100 text-gray-700">
                     <tr>
-                      <th class="py-2 px-4 text-left text-lg lg:text-xl">Grupo Etario</th>
-                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Hombres</th>
-                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Mujeres</th>
+                      <th class="py-2 px-4 text-left text-lg lg:text-xl">Resultado</th>
+                      <th class="py-2 px-4 text-center text-lg lg:text-xl">Trabajadores</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr
-                      v-for="[grupo, datos] in tablaGruposEtariosFiltrada"
-                      :key="grupo"
-                      class="border-t hover:bg-gray-50 transition"
+                      v-for="[categoria, cantidad, porcentaje] in tablaAptitud"
+                      :key="categoria"
+                      class="border-t hover:bg-gray-200 transition cursor-pointer"
+                      @click="handleClickTablaAptitud(categoria)"
                     >
-                      <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ grupo }}</td>
-                      <td class="py-1 px-4 text-center text-blue-700 text-lg lg:text-xl">{{ datos.Masculino }}</td>
-                      <td class="py-1 px-4 text-center text-pink-700 text-lg lg:text-xl">{{ datos.Femenino }}</td>
+                    <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
+                      {{ etiquetasAptitudPuestoTabla[categoria] || categoria }}
+                    </td>
+                      <td
+                        :class="[
+                          'py-1 px-4 text-center text-lg lg:text-xl',
+                          categoria === 'Apto Sin Restricciones' ? 'text-emerald-700' :
+                          categoria === 'Apto Con Precaución' ? 'text-amber-600' :
+                          categoria === 'Apto Con Restricciones' ? 'text-orange-600' :
+                          categoria === 'No Apto' ? 'text-rose-600' :
+                          'text-gray-500'
+                        ]"
+                      >
+                        {{ cantidad }}
+                        <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -1960,39 +2575,6 @@ function limpiarFechas() {
 
           <h4 class="text-xs text-gray-600 font-normal italic text-center">
             Actividad médica
-          </h4>
-        </div>
-
-        <!-- Cintura -->
-        <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-          <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4">
-            <!-- Título + descripción -->
-            <div class="flex flex-col gap-0.5">
-              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Riesgo por Cintura
-                <span class="relative cursor-help">
-                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                  <span
-                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                  >
-                    La circunferencia de cintura elevada se asocia con <span class="font-semibold text-rose-600">mayor riesgo de enfermedades</span> como diabetes, hipertensión y trastornos metabólicos.
-                  </span>
-                </span>
-              </h3>
-            </div>
-          </div>
-          
-          <GraficaAnillo
-            v-if="graficaCircunferenciaData.chart?.labels?.length"
-            ref="refCircunferencia"
-            :data="graficaCircunferenciaData.chart"
-            :options="{ ...opcionesGenericasAnillo, onClick: handleClickGraficaCintura }"
-            :cantidad="graficaCircunferenciaData.alto"
-            :porcentaje="graficaCircunferenciaData.porcentaje"
-          />
-
-          <h4 class="text-xs text-gray-600 font-normal italic text-center">
-            Indicador de grasa abdominal y riesgo metabólico
           </h4>
         </div>
 

@@ -68,6 +68,9 @@ const filtrosConfig = [
   { id: 'cintura', label: 'Cintura', opciones: [
     'Bajo Riesgo', 'Riesgo Aumentado', 'Alto Riesgo', '-'
   ]},
+  { id: 'tensionArterial', label: 'Tensión Arterial', opciones: [
+    'Óptima', 'Normal', 'Alta', 'Hipertensión ligera', 'Hipertensión moderada', 'Hipertensión severa', '-'
+  ]},
   { id: 'aptitud', label: 'Aptitud', opciones: [
     'Apto Sin Restricciones', 'Apto Con Precaución', 'Apto Con Restricciones',
     'No Apto', 'Evaluación No Completada', '-'
@@ -109,6 +112,7 @@ const filtros = reactive<Record<string, string>>({
   puesto: '',
   imc: '',
   cintura: '',
+  tensionArterial: '',
   aptitud: '',
   lentes: '',
   correccionVisual: '',
@@ -418,8 +422,10 @@ const exportarFiltrados = () => {
 };
 
 const filtrosValidos = {
+  sexo: ['Masculino', 'Femenino'],
   imc: ['Bajo peso', 'Normal', 'Sobrepeso', 'Obesidad clase I', 'Obesidad clase II', 'Obesidad clase III'],
   cintura: ['Bajo Riesgo', 'Riesgo Aumentado', 'Alto Riesgo', '-'],
+  tensionArterial: ['Óptima', 'Normal', 'Alta', 'Hipertensión ligera', 'Hipertensión moderada', 'Hipertensión severa'],
   aptitud: ['Apto Sin Restricciones', 'Apto Con Precaución', 'Apto Con Restricciones', 'No Apto', 'Evaluación No Completada'],
   lentes: ['Requiere lentes', 'No requiere'],
   correccionVisual: ['Corregida', 'Sin corregir', 'No requiere'],

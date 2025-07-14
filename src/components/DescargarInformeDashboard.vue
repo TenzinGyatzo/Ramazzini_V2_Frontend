@@ -2,6 +2,7 @@
 declare const pdfMake: typeof import('pdfmake/build/pdfmake');
 import type { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { exportarGraficaAltaResolucion } from '@/helpers/exportChartImage';
+import { ref, nextTick, watch } from 'vue';
 
 const props = defineProps<{
   refsGraficas: Record<string, any>;
@@ -974,14 +975,82 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     };
 };
 
-const generarPDF = () => {
-  const docDefinition = generarDocDefinition(false); // Calidad normal
-  pdfMake.createPdf(docDefinition).open();
+// Estado para controlar cuando se está generando el PDF
+const generandoPDF = ref(false);
+const mostrarModalGeneracion = ref(false);
+const mensajeExito = ref('');
+
+// Watcher para monitorear cambios en el estado
+watch(generandoPDF, (newValue) => {
+  console.log('Estado generandoPDF cambió a:', newValue);
+  if (!newValue) {
+    // Ya no cerramos automáticamente el modal
+    // El usuario debe hacer clic para cerrarlo
+  }
+});
+
+const generarPDF = async () => {
+  console.log('Iniciando generación de PDF...');
+  generandoPDF.value = true;
+  mostrarModalGeneracion.value = true;
+  console.log('Estado generandoPDF:', generandoPDF.value);
+  
+  // Esperar a que Vue actualice el DOM
+  await nextTick();
+  
+  // Pequeño delay para asegurar que el modal se muestre
+  setTimeout(async () => {
+    try {
+      const docDefinition = generarDocDefinition(false); // Calidad normal
+      pdfMake.createPdf(docDefinition).open();
+      mensajeExito.value = 'El informe se generó correctamente. Puedes revisarlo en la ventana que se abrió.';
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      mensajeExito.value = 'Error al generar el PDF.';
+    } finally {
+      // Pequeño delay para que el usuario vea el estado de carga
+      setTimeout(() => {
+        generandoPDF.value = false;
+        console.log('Finalizada generación de PDF. Estado:', generandoPDF.value);
+      }, 1000);
+    }
+  }, 100);
 };
 
-const descargarPDF = () => {
-  const docDefinition = generarDocDefinition(true); // Alta calidad
-  pdfMake.createPdf(docDefinition).download(`InformeSaludLaboral_${props.nombreEmpresa?.replace(/\s+/g, '_') || 'Empresa'}_${new Date().toISOString().split('T')[0]}.pdf`);
+const cerrarModal = () => {
+  if (!generandoPDF.value && mensajeExito.value) {
+    // Solo cerrar si ya terminó el proceso y hay mensaje de éxito
+    mostrarModalGeneracion.value = false;
+    mensajeExito.value = '';
+  }
+};
+
+const descargarPDF = async () => {
+  console.log('Iniciando descarga de PDF...');
+  generandoPDF.value = true;
+  mostrarModalGeneracion.value = true;
+  console.log('Estado generandoPDF:', generandoPDF.value);
+  
+  // Esperar a que Vue actualice el DOM
+  await nextTick();
+  
+  // Pequeño delay para asegurar que el modal se muestre
+  setTimeout(async () => {
+    try {
+      const docDefinition = generarDocDefinition(true); // Alta calidad
+      pdfMake.createPdf(docDefinition).download(`InformeSaludLaboral_${props.nombreEmpresa?.replace(/\s+/g, '_') || 'Empresa'}_${new Date().toISOString().split('T')[0]}.pdf`);
+      mensajeExito.value = 'Informe generado correctamente.';
+    } catch (error) {
+      console.error('Error al descargar PDF:', error);
+      mensajeExito.value = 'Error al descargar el informe.';
+    } finally {
+      // Pequeño delay para que el usuario vea el estado de carga
+      setTimeout(() => {
+        generandoPDF.value = false;
+        console.log('Finalizada descarga de informe. Estado:', generandoPDF.value);
+      }, 1000);
+    }
+  }, 100);
 };
 
 // Función para crear tablas en PDF con colores condicionales
@@ -1066,22 +1135,90 @@ const crearTablaPDF = (datos: any[], columnas: string[], titulo: string, tipoTab
 
 </script>
 
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+}
+</style>
+
 <template>
+    <!-- Modal de generación de PDF -->
+    <Transition name="fade">
+      <div 
+        v-if="mostrarModalGeneracion" 
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+        @click="!generandoPDF && mensajeExito ? cerrarModal() : null"
+      >
+        <div class="bg-white rounded-xl p-6 shadow-xl max-w-md w-full mx-4" @click.stop>
+          <div class="flex flex-col items-center justify-center space-y-4 py-10">
+            <!-- Spinner durante la generación -->
+            <svg v-if="generandoPDF" class="animate-spin h-8 w-8 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            
+            <!-- Icono de éxito cuando termina -->
+            <i v-else class="fas fa-check-circle text-4xl text-emerald-600"></i>
+            
+            <!-- Mensajes dinámicos -->
+            <p v-if="generandoPDF" class="text-gray-700 text-center">Generando el informe, por favor espera...</p>
+            <p v-else class="text-gray-700 text-center">{{ mensajeExito || 'Proceso completado' }}</p>
+            
+            <p v-if="generandoPDF" class="text-sm text-gray-500 text-center">Esto puede tomar unos segundos.</p>
+            
+            <!-- Botón de cerrar solo cuando está listo -->
+<!--             <button 
+              v-if="!generandoPDF && mensajeExito"
+              @click="cerrarModal"
+              class="mt-4 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition duration-200"
+            >
+              Cerrar
+            </button> -->
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <div class="flex items-center gap-4 self-center">
     <button
         @click="generarPDF"
-        class="gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow transition duration-300 flex items-center"
+        :disabled="generandoPDF"
+        :class="[
+            'gap-2 px-4 py-2 rounded-lg shadow transition duration-300 flex items-center',
+            generandoPDF 
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+        ]"
     >
-        <i class="fas fa-eye mr-1"></i>
-        Ver informe
+        <i v-if="generandoPDF" class="fas fa-spinner fa-spin mr-1"></i>
+        <i v-else class="fas fa-eye mr-1"></i>
+        {{ generandoPDF ? 'Generando PDF...' : 'Ver informe' }}
     </button>
 
     <button
         @click="descargarPDF"
-        class="gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg shadow transition duration-300 flex items-center"
+        :disabled="generandoPDF"
+        :class="[
+            'gap-2 px-4 py-2 rounded-lg shadow transition duration-300 flex items-center',
+            generandoPDF 
+                ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
+                : 'bg-gray-600 hover:bg-gray-700 text-white'
+        ]"
     >
-        <i class="fas fa-download mr-1"></i>
-        Descargar PDF en alta calidad
+        <i v-if="generandoPDF" class="fas fa-spinner fa-spin mr-1"></i>
+        <i v-else class="fas fa-download mr-1"></i>
+        {{ generandoPDF ? 'Generando PDF...' : 'Descargar en alta calidad' }}
     </button>
     </div>
 </template>

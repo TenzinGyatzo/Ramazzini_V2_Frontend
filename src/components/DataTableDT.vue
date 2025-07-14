@@ -80,19 +80,19 @@ onMounted(() => {
         { data: null, title: 'Corrección', render: d => determinarVistaCorregida(d.examenVistaResumen?.requiereLentesUsoGeneral, Number(d.examenVistaResumen?.ojoIzquierdoLejanaConCorreccion), Number(d.examenVistaResumen?.ojoDerechoLejanaConCorreccion)) }, // 15
         { data: 'examenVistaResumen.sinCorreccionLejanaInterpretacion', title: 'Agudeza', defaultContent: '-' }, // 16
         { data: 'examenVistaResumen.interpretacionIshihara', title: 'Daltonismo', defaultContent: '-' }, // 17
-        { data: 'historiaClinicaResumen.lumbalgias', title: 'Lumb.', render: d => d === 'Si' ? 'Si' : 'No' }, // 18
-        { data: 'historiaClinicaResumen.diabeticosPP', title: 'Dbt.', render: d => d === 'Si' ? 'Si' : 'No' }, // 19
-        { data: 'historiaClinicaResumen.cardiopaticosPP', title: 'Card.', render: d => d === 'Si' ? 'Si' : 'No' }, // 20
-        { data: 'historiaClinicaResumen.alergicos', title: 'Aler.', render: d => d === 'Si' ? 'Si' : 'No' }, // 21
-        { data: 'historiaClinicaResumen.hipertensivosPP', title: 'Hta.', render: d => d === 'Si' ? 'Si' : 'No' }, // 22
-        { data: 'historiaClinicaResumen.respiratorios', title: 'Resp.', render: d => d === 'Si' ? 'Si' : 'No' }, // 23
-        { data: 'historiaClinicaResumen.epilepticosPP', title: 'Epil.', render: d => d === 'Si' ? 'Si' : 'No' }, // 24
-        { data: 'historiaClinicaResumen.accidentes', title: 'Acc.', render: d => d === 'Si' ? 'Si' : 'No' }, // 25
-        { data: 'historiaClinicaResumen.quirurgicos', title: 'Ciru.', render: d => d === 'Si' ? 'Si' : 'No' }, // 26
-        { data: 'historiaClinicaResumen.traumaticos', title: 'Traum.', render: d => d === 'Si' ? 'Si' : 'No' }, // 27
+        { data: 'historiaClinicaResumen.lumbalgias', title: 'Lumbalgia', render: d => d === 'Si' ? 'Si' : 'No' }, // 18
+        { data: 'historiaClinicaResumen.diabeticosPP', title: 'Diabetes', render: d => d === 'Si' ? 'Si' : 'No' }, // 19
+        { data: 'historiaClinicaResumen.cardiopaticosPP', title: 'Cardiopatías', render: d => d === 'Si' ? 'Si' : 'No' }, // 20
+        { data: 'historiaClinicaResumen.alergicos', title: 'Alergias', render: d => d === 'Si' ? 'Si' : 'No' }, // 21
+        { data: 'historiaClinicaResumen.hipertensivosPP', title: 'Hipertensión', render: d => d === 'Si' ? 'Si' : 'No' }, // 22
+        { data: 'historiaClinicaResumen.respiratorios', title: 'Respiratorios', render: d => d === 'Si' ? 'Si' : 'No' }, // 23
+        { data: 'historiaClinicaResumen.epilepticosPP', title: 'Epilépticos', render: d => d === 'Si' ? 'Si' : 'No' }, // 24
+        { data: 'historiaClinicaResumen.accidentes', title: 'Accidentes', render: d => d === 'Si' ? 'Si' : 'No' }, // 25
+        { data: 'historiaClinicaResumen.quirurgicos', title: 'Cirugias', render: d => d === 'Si' ? 'Si' : 'No' }, // 26
+        { data: 'historiaClinicaResumen.traumaticos', title: 'Traumas', render: d => d === 'Si' ? 'Si' : 'No' }, // 27
         { data: 'historiaClinicaResumen.alcoholismo', title: 'Alcohol'}, // 28
         { data: 'historiaClinicaResumen.tabaquismo', title: 'Tabaco'}, // 29
-        { data: 'historiaClinicaResumen.accidenteLaboral', title: 'Acc. Lab.'}, // 30
+        { data: 'historiaClinicaResumen.accidenteLaboral', title: 'Acc. Laboral'}, // 30
         { data: 'aptitudResumen.aptitudPuesto', title: 'Aptitud', defaultContent: '-' }, // 31
         { data: 'agentesRiesgoActuales', title: 'Agentes Riesgo', render: d => Array.isArray(d) ? d.join(', ') : '-' }, // 32
         { data: 'consultaResumen.fechaNotaMedica', title: 'Consultas', render: d => d ? 'Si' : 'No' }, // 33
@@ -333,6 +333,7 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
     { id: 'puesto', columna: 7 },
     { id: 'imc', columna: 11 },
     { id: 'cintura', columna: 12 },
+    { id: 'tensionArterial', columna: 13 },
     { id: 'lentes', columna: 14 },
     { id: 'correccionVisual', columna: 15 },
     { id: 'agudeza', columna: 16 },

@@ -362,12 +362,12 @@ export function calcularCircunferenciaCintura(data: any[]) {
     alto,
     porcentaje,
     chart: {
-      labels: ['Alto Riesgo', 'Riesgo Aumentado', 'Bajo Riesgo'],
+      labels: ['Alto Riesgo', 'R. Aumentado', 'Bajo Riesgo'],
       datasets: [
         {
           data: [alto, aumentado, bajo],
           // backgroundColor: ['#F97316', '#FBBF24', '#D1D5DB'] // Naranja cálido, amarillo cálido y gris claro
-          backgroundColor: ['#e11d48', '#F97316', '#D1D5DB'], // Rojo, naranja cálido y gris claro
+          backgroundColor: ['#e11d48', '#F97316', '#9CA3AF'], // Rojo, naranja cálido y gris claro
           hoverOffset: 8,
         }
       ]
@@ -414,6 +414,52 @@ export function contarAgentesRiesgo(data: { agentesRiesgoActuales?: string[] }[]
     const cantidad = conteo[agente] || 0;
     const porcentaje = totalTrabajadores > 0 ? Math.round((cantidad / totalTrabajadores) * 100) : 0;
     return [agente, cantidad, porcentaje];
+  });
+}
+
+// DISTRIBUCIÓN POR SEXO
+export function contarPorSexo(data: { sexo: string }[]): { Masculino: number, Femenino: number } {
+  let masculino = 0;
+  let femenino = 0;
+
+  for (const item of data) {
+    if (item.sexo === 'Masculino') {
+      masculino++;
+    } else if (item.sexo === 'Femenino') {
+      femenino++;
+    }
+  }
+
+  return { Masculino: masculino, Femenino: femenino };
+}
+
+// TENSIÓN ARTERIAL
+export const categoriasTensionArterialOrdenadas = [
+  'Óptima',
+  'Normal',
+  'Alta',
+  'Hipertensión ligera',
+  'Hipertensión moderada',
+  'Hipertensión severa'
+];
+
+export function contarPorCategoriaTensionArterial(data: { categoriaTensionArterial: string | null }[]): [string, number, number][] {
+  const conteo: Record<string, number> = {};
+  let total = 0;
+
+  for (const item of data) {
+    if (item.categoriaTensionArterial && 
+        item.categoriaTensionArterial.trim() !== '' && 
+        categoriasTensionArterialOrdenadas.includes(item.categoriaTensionArterial)) {
+      conteo[item.categoriaTensionArterial] = (conteo[item.categoriaTensionArterial] || 0) + 1;
+      total++;
+    }
+  }
+
+  return categoriasTensionArterialOrdenadas.map((categoria) => {
+    const cantidad = conteo[categoria] || 0;
+    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+    return [categoria, cantidad, porcentaje];
   });
 }
 
