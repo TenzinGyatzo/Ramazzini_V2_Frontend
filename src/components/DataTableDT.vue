@@ -55,6 +55,33 @@ onMounted(() => {
 
     dataTableInstance = new DataTablesCore('#customTable', {
       data: props.rows,
+      createdRow: function(row, data, dataIndex) {
+        // Agregar clase CSS según la aptitud del trabajador
+        if (data && typeof data === 'object' && 'aptitudResumen' in data && 
+            data.aptitudResumen && typeof data.aptitudResumen === 'object' && 
+            'aptitudPuesto' in data.aptitudResumen) {
+          
+          const aptitud = data.aptitudResumen.aptitudPuesto;
+          
+          switch (aptitud) {
+            case 'Apto Sin Restricciones':
+              $(row).addClass('apto-sin-restricciones-row');
+              break;
+            case 'Apto Con Precaución':
+              $(row).addClass('apto-con-precaucion-row');
+              break;
+            case 'Apto Con Restricciones':
+              $(row).addClass('apto-con-restricciones-row');
+              break;
+            case 'No Apto':
+              $(row).addClass('no-apto-row');
+              break;
+            case 'Evaluación No Completada':
+              $(row).addClass('evaluacion-no-completada-row');
+              break;
+          }
+        }
+      },
       columns: [
         { data: null, title: '#', render: (data, type, row, meta) => meta.row + 1 }, // 0
         { data: 'numeroEmpleado', title: 'Num. Trab.', defaultContent: '-' }, // 1
@@ -593,6 +620,53 @@ table.dataTable tbody tr > th {
 
 table.dataTable tbody td {
   line-height: 1.3 !important; /* o prueba con 1.1 o incluso 1.0 */
+}
+
+/* Estilos para la semaforización de aptitud */
+
+/* Apto Sin Restricciones - Verde */
+table.dataTable tbody tr.apto-sin-restricciones-row {
+  border-left: 4px solid #10b981 !important;
+}
+
+table.dataTable tbody tr.apto-sin-restricciones-row:hover {
+  background-color: #f0fdf4 !important;
+}
+
+/* Apto Con Precaución - Amarillo */
+table.dataTable tbody tr.apto-con-precaucion-row {
+  border-left: 4px solid #f59e0b !important;
+}
+
+table.dataTable tbody tr.apto-con-precaucion-row:hover {
+  background-color: #fffbeb !important;
+}
+
+/* Apto Con Restricciones - Naranja */
+table.dataTable tbody tr.apto-con-restricciones-row {
+  border-left: 4px solid #f97316 !important;
+}
+
+table.dataTable tbody tr.apto-con-restricciones-row:hover {
+  background-color: #fff7ed !important;
+}
+
+/* No Apto - Rojo */
+table.dataTable tbody tr.no-apto-row {
+  border-left: 4px solid #dc2626 !important;
+}
+
+table.dataTable tbody tr.no-apto-row:hover {
+  background-color: #fef2f2 !important;
+}
+
+/* Evaluación No Completada - Gris */
+table.dataTable tbody tr.evaluacion-no-completada-row {
+  border-left: 4px solid #4B5563 !important; 
+}
+
+table.dataTable tbody tr.evaluacion-no-completada-row:hover {
+  background-color: #fef2f2 !important;
 }
 
 </style>

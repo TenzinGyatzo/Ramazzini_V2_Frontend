@@ -17,14 +17,6 @@ const props = defineProps<{
   nombreMedicoFirmante?: string;
 }>();
 
-// Debug: verificar props al cargar el componente
-console.log('DescargarInformeDashboard - Props recibidos:', {
-  tituloMedicoFirmante: props.tituloMedicoFirmante,
-  nombreMedicoFirmante: props.nombreMedicoFirmante,
-  nombreEmpresa: props.nombreEmpresa,
-  totalTrabajadores: props.totalTrabajadores
-});
-
 const obtenerBase64 = (graficaObj: any, customWidth?: number, customHeight?: number): string | undefined => {
   // Si es un objeto con ref y config (para alta resolución)
   if (graficaObj && typeof graficaObj === 'object' && ('ref' in graficaObj || 'config' in graficaObj)) {
@@ -54,28 +46,6 @@ const obtenerBase64 = (graficaObj: any, customWidth?: number, customHeight?: num
 };
 
 const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinitions => {
-    // Debug: verificar si llegan los datos del médico firmante
-    console.log('Props médico firmante:', {
-        titulo: props.tituloMedicoFirmante,
-        nombre: props.nombreMedicoFirmante
-    });
-
-    // Debug adicional: verificar todos los props importantes
-    console.log('DescargarInformeDashboard - Props al generar PDF:', {
-        tituloMedicoFirmante: props.tituloMedicoFirmante,
-        nombreMedicoFirmante: props.nombreMedicoFirmante,
-        nombreEmpresa: props.nombreEmpresa,
-        totalTrabajadores: props.totalTrabajadores,
-        centroTrabajo: props.centroTrabajo,
-        periodo: props.periodo
-    });
-
-    // Debug: verificar la condición
-    console.log('Condición para mostrar responsable:', {
-        tituloExiste: !!props.tituloMedicoFirmante,
-        nombreExiste: !!props.nombreMedicoFirmante,
-        condicion: !!(props.tituloMedicoFirmante || props.nombreMedicoFirmante)
-    });
 
     const encabezado: Content[] = [];
 
@@ -197,12 +167,6 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         grupos: obtenerBase64(props.refsGraficas.grupos, dimensiones.grupos[0], dimensiones.grupos[1]),
         cintura: obtenerBase64(props.refsGraficas.cintura, dimensiones.cintura[0], dimensiones.cintura[1]),
     };
-
-    // Debug: verificar que todas las imágenes se generen correctamente
-    console.log(`Generación de imágenes en ${altaCalidad ? 'alta' : 'normal'} calidad:`);
-    Object.entries(imagenes).forEach(([key, value]) => {
-        console.log(`${key}: ${value ? 'SÍ' : 'NO'} (${value ? value.length : 0} caracteres)`);
-    });
 
     const contenido: Content[] = [];
 
@@ -982,7 +946,6 @@ const mensajeExito = ref('');
 
 // Watcher para monitorear cambios en el estado
 watch(generandoPDF, (newValue) => {
-  console.log('Estado generandoPDF cambió a:', newValue);
   if (!newValue) {
     // Ya no cerramos automáticamente el modal
     // El usuario debe hacer clic para cerrarlo
@@ -990,10 +953,8 @@ watch(generandoPDF, (newValue) => {
 });
 
 const generarPDF = async () => {
-  console.log('Iniciando generación de PDF...');
   generandoPDF.value = true;
   mostrarModalGeneracion.value = true;
-  console.log('Estado generandoPDF:', generandoPDF.value);
   
   // Esperar a que Vue actualice el DOM
   await nextTick();
@@ -1011,7 +972,6 @@ const generarPDF = async () => {
       // Pequeño delay para que el usuario vea el estado de carga
       setTimeout(() => {
         generandoPDF.value = false;
-        console.log('Finalizada generación de PDF. Estado:', generandoPDF.value);
       }, 1000);
     }
   }, 100);
@@ -1026,10 +986,8 @@ const cerrarModal = () => {
 };
 
 const descargarPDF = async () => {
-  console.log('Iniciando descarga de PDF...');
   generandoPDF.value = true;
   mostrarModalGeneracion.value = true;
-  console.log('Estado generandoPDF:', generandoPDF.value);
   
   // Esperar a que Vue actualice el DOM
   await nextTick();
@@ -1047,7 +1005,6 @@ const descargarPDF = async () => {
       // Pequeño delay para que el usuario vea el estado de carga
       setTimeout(() => {
         generandoPDF.value = false;
-        console.log('Finalizada descarga de informe. Estado:', generandoPDF.value);
       }, 1000);
     }
   }, 100);

@@ -624,25 +624,6 @@ const toggleColumnasOcultas = () => {
         Este centro de trabajo aún no tiene trabajadores registrados
       </h1>
 
-      <!-- Botones de acciones -->
-      <div class="flex justify-center gap-4 mt-10">
-        <button
-          type="button"
-          @click="router.push({ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresaId } })"
-          class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg shadow transition duration-300"
-        >
-          <i class="fas fa-chart-line"></i>
-          Estadísticas de salud
-        </button>
-        <button
-          type="button"
-          @click="router.push({ name: 'riesgos-trabajo', params: { idEmpresa: empresas.currentEmpresaId } })"
-          class="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow transition duration-300"
-        >
-          <i class="fas fa-hard-hat"></i>
-          Riesgos de Trabajo
-        </button>
-      </div>
     </div>
   </Transition>
 </template>

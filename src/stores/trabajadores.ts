@@ -14,7 +14,7 @@ interface Trabajador {
   fechaIngreso: string;
   telefono: string;
   estadoCivil: string;
-  hijos: number;
+  numeroEmpleado: string;
   agentesRiesgoActuales: string[];
   estadoLaboral: string;
   idCentroTrabajo: string;
@@ -74,7 +74,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
       fechaIngreso: "",
       telefono: "",
       estadoCivil: "",
-      hijos: 0,
+      numeroEmpleado: "",
       agentesRiesgoActuales: [],
       estadoLaboral: "",
       idCentroTrabajo: "",

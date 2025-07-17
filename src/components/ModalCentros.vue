@@ -78,13 +78,13 @@ const closeModal = () => {
         </div>
         <!-- Contenido del modal -->
         <div v-else>
-          <h1 class="text-3xl">{{ centrosTrabajo.currentCentroTrabajo._id ? 'Editar Centro de Trabajo' : 'Registrar Centro de Trabajo' }}</h1>
+          <h1 class="text-3xl">{{ centrosTrabajo.currentCentroTrabajo._id ? 'Editar Entidad' : 'Registrar Entidad' }}</h1>
           <hr class="mt-2 mb-3">
 
           <FormKit type="form" :actions="false" incomplete-message="Por favor complete todos los campos"
             @submit="handleSubmit">
-            <FormKit type="text" label="Nombre Centro de Trabajo*" name="nombreCentro"
-              placeholder="Nombre del centro de trabajo o proyecto" validation="required"
+            <FormKit type="text" label="Nombre Entidad*" name="nombreCentro"
+              placeholder="Nombre del centro, área, departamento o proyecto" validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio' }"
               :value="centrosTrabajo.currentCentroTrabajo?.nombreCentro || ''" />
             <FormKit type="text" label="Dirección" name="direccionCentro" placeholder="Calle, número y colonia"

@@ -4,6 +4,9 @@ import { useTrabajadoresStore } from "./trabajadores";
 
 const trabajadores = useTrabajadoresStore();
 
+// Evento personalizado para campos faltantes
+const showMissingFieldsModal = ref(false);
+
 export const useStepsStore = defineStore("steps", () => {
   // Lista de pasos
   const steps = ref<Array<{ component: any; name: string }>>([]);
@@ -41,7 +44,7 @@ export const useStepsStore = defineStore("steps", () => {
       });
   
     if (visibleInputs.length > 0) {
-      alert("Por favor, completa los campos obligatorios antes de continuar.");
+      showMissingFieldsModal.value = true;
       return false;
     }
   
@@ -117,5 +120,6 @@ export const useStepsStore = defineStore("steps", () => {
     nextStep,
     previousStep,
     goToStep,
+    showMissingFieldsModal,
   };
 });

@@ -339,7 +339,7 @@ const logotipoPendiente = computed(() => {
         </h1>
         <h2 class="text-sm sm:text-base md:text-lg text-gray-500 italic">
           {{ calcularEdad(trabajadores.currentTrabajador?.fechaNacimiento) }} años - {{
-            trabajadores.currentTrabajador?.puesto }}
+            trabajadores.currentTrabajador?.puesto }}{{ trabajadores.currentTrabajador?.numeroEmpleado ? ` - No. Empleado: ${trabajadores.currentTrabajador.numeroEmpleado}` : '' }}
         </h2>
       </div>
     </Transition>

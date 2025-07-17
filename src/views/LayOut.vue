@@ -214,9 +214,9 @@ const mensajeConfiguracion = computed(() => {
   } else if (camposPendientesProveedor.value.length > 0 && camposPendientesMedico.value.length > 0) {
     return "Algunos campos están incompletos en tu configuración.";
   } else if (camposPendientesProveedor.value.length > 0) {
-    return '"Hay campos pendientes en "Mi Negocio".';
+    return 'Hay campos pendientes en "Mi Negocio".';
   } else if (camposPendientesMedico.value.length > 0) {
-    return '"Hay campos pendientes en "Médico Firmante".';
+    return 'Hay campos pendientes en "Médico Firmante".';
   } else {
     return "Algunos campos están incompletos en tu configuración.";
   }
@@ -237,7 +237,7 @@ const textoEnlace = computed(() => {
   <main class="flex flex-col items-center p-4 md:p-10 md:w-full overflow-x-auto">
     <!-- Logo de la empresa -->
     <div v-if="empresas.currentEmpresa?.logotipoEmpresa?.data && 
-      ['empresas', 'centros-trabajo', 'trabajadores', 'expediente-medico', 'crear-documento'].includes(route.name as string)"
+      ['trabajadores', 'expediente-medico', 'crear-documento'].includes(route.name as string)"
       class="fixed top-4 right-4 h-16 w-16 md:h-32 md:w-32 rounded z-0 flex items-center justify-center overflow-hidden">
       <img :src="'/uploads/logos/' + empresas.currentEmpresa?.logotipoEmpresa?.data"
       :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial" class="max-h-full max-w-full object-contain p-2">

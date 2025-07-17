@@ -155,12 +155,6 @@ const cargarDatos = async (empresaId, inicio, fin) => {
   centrosTrabajo.value = centros;
   centroSeleccionado.value = centros.length > 0 ? centros[0].nombreCentro : 'Todos';
 
-  // Debug: verificar médico firmante
-  console.log('Usuario logueado:', user);
-  console.log('Médico firmante cargado:', medicoFirmanteStore.medicoFirmante);
-  console.log('Título profesional:', medicoFirmanteStore.medicoFirmante?.tituloProfesional);
-  console.log('Nombre:', medicoFirmanteStore.medicoFirmante?.nombre);
-
   // 2. Info para el dashboard (en paralelo)
   if (centros.length > 0) {
     dashboardData.value = await Promise.all(
@@ -171,12 +165,6 @@ const cargarDatos = async (empresaId, inicio, fin) => {
   } else {
     dashboardData.value = [];
   }
-
-  // Logs
-  // console.log('Empresa data fetched:', empresasStore.currentEmpresa);
-  // console.log('Centros de trabajo data fetched:', centrosTrabajo.value);
-  // console.log('Dashboard data fetched:', dashboardData.value);
-  // console.log('Médico firmante:', medicoFirmanteStore.medicoFirmante);
 };
 
 // Llama la función al montar y si cambia el ID
@@ -212,11 +200,11 @@ const totalTrabajadores = computed(() => {
   if (!dashboardData.value.length) return 0;
 
   if (centroSeleccionado.value === 'Todos') {
-    return dashboardData.value.reduce((total, centro) => total + (centro.trabajadoresEvaluados?.length || 0), 0);
+    return dashboardData.value.reduce((total, centro) => total + (centro.grupoEtario?.[0]?.length || 0), 0);
   }
 
   const index = centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value);
-  return dashboardData.value[index]?.trabajadoresEvaluados?.length || 0;
+  return dashboardData.value[index]?.grupoEtario?.[0]?.length || 0;
 });
 
 // Computed para tabla y gráfica de distribución por sexo
@@ -1541,7 +1529,7 @@ const tablaCintura = computed(() => {
             </select>
           </div>
         </div>
-    </div>
+      </div>
     
     <!-- Ajustado a nivel del encabezado -->
     <div class="mb-2 flex items-end gap-6">

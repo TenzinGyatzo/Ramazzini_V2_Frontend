@@ -18,6 +18,8 @@ const documentos = useDocumentosStore();
 const riesgosTrabajo = useRiesgoTrabajoStore();
 
 const isMounted = ref(false);
+const hasVisitedDashboard = ref(false);
+const hasVisitedRiesgosTrabajo = ref(false);
 
 onMounted(async () => {
   try {
@@ -34,6 +36,24 @@ watch(() => route.params, async (newParams) => {
     await sidebar.initializeState(newParams);
   } catch (error) {
     console.error('Error al actualizar estado con route.params:', error);
+  }
+});
+
+// Rastrear si el usuario ha visitado el dashboard de la empresa actual
+watch(() => route.name, (newRouteName) => {
+  if (newRouteName === 'dashboard-empresa' && empresas.currentEmpresaId) {
+    hasVisitedDashboard.value = true;
+  }
+  if (newRouteName === 'riesgos-trabajo' && empresas.currentEmpresaId) {
+    hasVisitedRiesgosTrabajo.value = true;
+  }
+});
+
+// Resetear el estado cuando cambia la empresa
+watch(() => empresas.currentEmpresaId, (newEmpresaId, oldEmpresaId) => {
+  if (newEmpresaId !== oldEmpresaId) {
+    hasVisitedDashboard.value = false;
+    hasVisitedRiesgosTrabajo.value = false;
   }
 });
 
@@ -159,10 +179,19 @@ const documentTypeLabels = {
     </Transition>
     
     <Transition appear name="enter-left-exit-bounce">
-      <SidebarLink v-if="empresas.currentEmpresaId"
+      <SidebarLink v-if="empresas.currentEmpresaId && hasVisitedDashboard"
         :to="{ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresaId } }" icon="fas fa-chart-line"
         class="leading-5" @click.stop>
         <p>Estadísticas</p>
+        <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
+      </SidebarLink>
+    </Transition>
+
+    <Transition appear name="enter-left-exit-bounce">
+      <SidebarLink v-if="empresas.currentEmpresaId && hasVisitedRiesgosTrabajo"
+        :to="{ name: 'riesgos-trabajo', params: { idEmpresa: empresas.currentEmpresaId } }" icon="fas fa-hard-hat"
+        class="leading-5" @click.stop>
+        <p>Riesgos de Trabajo</p>
         <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
       </SidebarLink>
     </Transition>

@@ -1,7 +1,7 @@
 <script setup>
 import axios from 'axios';
 import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { VPdfViewer, Locales, useLicense } from '@vue-pdf-viewer/viewer';
 import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
@@ -26,6 +26,10 @@ const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? 
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 
 const mostrarModalPdfEliminado = ref(false);
+
+// Estado para verificar disponibilidad del PDF
+const pdfDisponible = ref(true);
+const verificandoPDF = ref(false);
 
 const emit = defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate', 'openSubscriptionModal']);
 
@@ -212,6 +216,7 @@ const abrirPdf = async (ruta, nombrePDF) => {
 
         if (response.status === 200 && contentType === 'application/pdf') {
             pdfUrl.value = fullPath.href; // Actualiza tu variable de URL
+            currentPdfUrl.value = fullPath.href; // Guarda la URL actual para descargar/imprimir
             showPdfViewer.value = true; // Muestra el visor PDF
         } else {
             console.warn('El archivo no es un PDF o no existe.', { status: response.status, contentType });
@@ -266,6 +271,10 @@ const construirRutaCompleta = (documento) => {
 // Estado para el visor de imágenes
 const showImageViewer = ref(false);
 const imageUrl = ref('');
+const imageZoom = ref(0.8); // Reducido de 1 a 0.8 para que las imágenes se vean más pequeñas por defecto
+const rotationAngle = ref(0);
+const currentPdfUrl = ref('');
+const currentImageUrl = ref('');
 
 // Función para abrir el visor de imágenes
 const abrirImagen = async (rutaCompleta) => {
@@ -274,6 +283,7 @@ const abrirImagen = async (rutaCompleta) => {
 
         if (response.status === 200 && response.headers['content-type'].startsWith('image/')) {
             imageUrl.value = rutaCompleta;
+            currentImageUrl.value = rutaCompleta; // Guarda la URL actual para descargar
             showImageViewer.value = true;
         } else {
             console.warn('El archivo no es una imagen válida.');
@@ -293,6 +303,81 @@ const abrirImagen = async (rutaCompleta) => {
 const cerrarImagen = () => {
     showImageViewer.value = false;
     imageUrl.value = '';
+    imageZoom.value = 0.8; // Mantiene el zoom reducido al cerrar
+    rotationAngle.value = 0; // Resetea la rotación al cerrar
+};
+
+// Funciones para controles de imagen
+const rotarImagen = () => {
+    rotationAngle.value += 90;
+    // No usamos módulo para mantener la rotación continua en la misma dirección
+};
+
+const zoomIn = () => {
+    imageZoom.value = Math.min(imageZoom.value * 1.2, 5);
+};
+
+const zoomOut = () => {
+    imageZoom.value = Math.max(imageZoom.value / 1.2, 0.1);
+};
+
+const handleImageWheel = (event) => {
+    event.preventDefault();
+    if (event.deltaY < 0) {
+        zoomIn();
+    } else {
+        zoomOut();
+    }
+};
+
+// Funciones para controles de PDF
+const descargarPdfActual = async () => {
+    if (currentPdfUrl.value) {
+        try {
+            const response = await axios.get(currentPdfUrl.value, { responseType: 'blob' });
+            const blob = response.data;
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'documento.pdf';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        } catch (error) {
+            console.error('Error al descargar el PDF:', error);
+            alert('Error al descargar el PDF');
+        }
+    }
+};
+
+const imprimirPdfActual = () => {
+    if (currentPdfUrl.value) {
+        const printWindow = window.open(currentPdfUrl.value, '_blank');
+        if (printWindow) {
+            printWindow.onload = () => {
+                printWindow.print();
+            };
+        }
+    }
+};
+
+const descargarImagenActual = async () => {
+    if (currentImageUrl.value) {
+        try {
+            const response = await axios.get(currentImageUrl.value, { responseType: 'blob' });
+            const blob = response.data;
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'imagen.jpg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        } catch (error) {
+            console.error('Error al descargar la imagen:', error);
+            alert('Error al descargar la imagen');
+        }
+    }
 };
 
 const handleCheckboxChange = (event, documento, tipoDocumento) => {
@@ -350,6 +435,7 @@ const handleKeyDown = (event) => {
 
 onMounted(() => {
     window.addEventListener('keydown', handleKeyDown);
+    verificarDisponibilidadPDF();
 });
 
 onUnmounted(() => {
@@ -423,6 +509,43 @@ const mensajeNegativo = computed(() => {
   }
   return null
 })
+
+// Mensaje detallado de sustancias positivas (similar a VisualizadorAptitud.vue)
+const mensajeDetalladoAntidoping = computed(() => {
+  if (!antidoping || typeof antidoping !== 'object') return null;
+
+  // Contar cuántos parámetros están presentes
+  const evaluados = parametros.filter(param => antidoping[param] !== undefined);
+
+  // Evaluar si todos los evaluados son 'Negativo'
+  const todosNegativos = evaluados.every(param => antidoping[param] === 'Negativo');
+
+  if (todosNegativos) {
+    const cantidadEnLetras = {
+      5: 'cinco',
+      6: 'seis',
+      10: 'diez'
+    }[evaluados.length] || evaluados.length;
+
+    return `Negativo a ${cantidadEnLetras} parámetros`;
+  }
+
+  // Si hay algún positivo, construir el mensaje con las sustancias correspondientes
+  const sustanciasPositivas = [
+    antidoping.marihuana !== 'Negativo' ? 'Marihuana' : null,
+    antidoping.cocaina !== 'Negativo' ? 'Cocaína' : null,
+    antidoping.anfetaminas !== 'Negativo' ? 'Anfetaminas' : null,
+    antidoping.metanfetaminas !== 'Negativo' ? 'Metanfetaminas' : null,
+    antidoping.opiaceos !== 'Negativo' ? 'Opiáceos' : null,
+    antidoping.benzodiacepinas && antidoping.benzodiacepinas !== 'Negativo' ? 'Benzodiazepinas' : null,
+    antidoping.fenciclidina && antidoping.fenciclidina !== 'Negativo' ? 'Fenciclidina' : null,
+    antidoping.metadona && antidoping.metadona !== 'Negativo' ? 'Metadona' : null,
+    antidoping.barbituricos && antidoping.barbituricos !== 'Negativo' ? 'Barbitúricos' : null,
+    antidoping.antidepresivosTriciclicos && antidoping.antidepresivosTriciclicos !== 'Negativo' ? 'Antidepresivos Tricíclicos' : null
+  ].filter(Boolean).join(', '); // Filtrar valores nulos o `undefined` y unirlos en una cadena separada por comas
+
+  return `Positivo a: ${sustanciasPositivas}`;
+})
 ///////////////////////////////////////////
 
 const construirRutaYNombrePDF = () => {
@@ -461,16 +584,102 @@ const construirRutaYNombrePDF = () => {
 
 const abrirDocumentoCorrespondiente = () => {
   const { ruta, nombre } = construirRutaYNombrePDF();
-  console.log('Abriendo documento desde evento regenerado:', { ruta, nombre });
   abrirPdf(ruta, nombre); 
 };
 
 const manejarRegeneracionDesdePadre = async () => {
-  console.log('✔️ Evento "regenerado" recibido desde el padre');
   await abrirDocumentoCorrespondiente();      // Abre visor
   await nextTick();                           // Espera a que DOM actualice
   mostrarModalPdfEliminado.value = false;     // Cierra el modal
+  // Verificar disponibilidad después de regenerar
+  setTimeout(() => {
+    verificarDisponibilidadPDF();
+  }, 1000); // Pequeño delay para asegurar que el PDF se haya generado
 };
+
+/*
+ * SISTEMA DE INDICADORES DE ESTADO DEL PDF:
+ * 
+ * 1. INDICADOR LATERAL (línea izquierda):
+ *    - Verde: PDF disponible y listo para mostrar
+ *    - Naranja/Rojo: Documento externo no disponible (solo para documentos externos)
+ *    - Amarillo/Naranja: Verificando disponibilidad del PDF
+ *    - Sin indicador: PDF no disponible (comportamiento normal del sistema)
+ * 
+ * 2. BORDE DEL ITEM:
+ *    - Gris: Estado normal (PDF disponible o no disponible)
+ *    - Amarillo: Verificando disponibilidad
+ * 
+ * 3. ICONO EN EL TÍTULO:
+ *    - ✓ Verde: PDF disponible
+ *    - ⚠️ Naranja: Documento externo no disponible (solo para documentos externos)
+ *    - 🔄 Amarillo: Verificando disponibilidad
+ *    - Sin icono: PDF no disponible (comportamiento normal del sistema)
+ * 
+ * 4. TOOLTIPS:
+ *    - Al hacer hover sobre el indicador lateral se muestra el estado
+ *    - Al hacer hover sobre el icono se muestra información adicional
+ * 
+ * 5. DIFERENCIACIÓN POR TIPO:
+ *    - Informes (Antidoping, Aptitud, etc.): Solo indican cuando están disponibles
+ *    - Documentos Externos: Indican tanto disponibilidad como no disponibilidad
+ */
+
+// Función para verificar si el PDF está disponible
+const verificarDisponibilidadPDF = async () => {
+  const tipoSinEspacios = props.documentoTipo.toLowerCase().replace(/\s+/g, '');
+  
+  // Para documentos externos, verificar si el archivo existe
+  if (tipoSinEspacios === 'documentoexterno') {
+    if (!props.documentoExterno || !props.documentoExterno.rutaDocumento) {
+      pdfDisponible.value = false;
+      return;
+    }
+
+    try {
+      verificandoPDF.value = true;
+      const rutaCompleta = construirRutaCompleta(props.documentoExterno);
+      const response = await axios.head(rutaCompleta);
+      pdfDisponible.value = response.status === 200;
+    } catch (error) {
+      pdfDisponible.value = false;
+    } finally {
+      verificandoPDF.value = false;
+    }
+    return;
+  }
+
+  // Para informes, verificar si el PDF existe
+  const { ruta, nombre } = construirRutaYNombrePDF();
+  if (!ruta || !nombre) {
+    pdfDisponible.value = false;
+    return;
+  }
+
+  try {
+    verificandoPDF.value = true;
+    const rutaCompleta = `${ruta}/${nombre}`.replace(/\/+/g, '/');
+    const urlCompleta = new URL(rutaCompleta, import.meta.env.VITE_API_URL).href;
+    
+    const response = await axios.head(urlCompleta);
+    pdfDisponible.value = response.status === 200 && response.headers['content-type'] === 'application/pdf';
+  } catch (error) {
+    pdfDisponible.value = false;
+  } finally {
+    verificandoPDF.value = false;
+  }
+};
+
+// Verificar disponibilidad al montar el componente
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown);
+  verificarDisponibilidadPDF();
+});
+
+// Watcher para verificar disponibilidad cuando cambien las props
+watch(() => [props.antidoping, props.aptitud, props.certificado, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica], () => {
+  verificarDisponibilidadPDF();
+}, { deep: true });
 
 </script>
 
@@ -489,371 +698,780 @@ const manejarRegeneracionDesdePadre = async () => {
         />
     </transition>
 
+    <!-- Items de documentos -->
     <div
-        class="ring-1 ring-gray-200 border-t-0 bg-white hover:bg-gray-50 shadow-lg flex justify-between items-center md:p-2 transition-transform duration-300 ease-in-out cursor-pointer">
-        <div class="flex items-center">
-            <div v-if="typeof antidoping === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
-                <div class="ml-1">
-                    <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
-                        type="checkbox" :checked="isSelected"
-                        @change="(event) => handleCheckboxChange(event, antidoping, 'Antidoping')">
-                </div>
-                <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
-                    `${antidoping.rutaPDF}`,
-                    `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`)">
-                    <div class="min-w-18 sm:min-w-44">
-                        <p class="leading-5 text-sm sm:text-xl font-medium">Antidoping</p>
-                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
-                            convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping) }}</p>
+        class="group relative bg-white hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 border rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer overflow-hidden"
+        :class="verificandoPDF ? 'border-yellow-300 hover:border-yellow-400' : pdfDisponible ? 'border-gray-200 hover:border-emerald-300' : 'border-gray-200 hover:border-gray-300'">
+        
+        <!-- Indicador de disponibilidad del PDF -->
+        <div v-if="verificandoPDF" 
+             class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-yellow-400 to-orange-500 animate-pulse"
+             title="Verificando disponibilidad del PDF..."></div>
+        <div v-else-if="pdfDisponible" 
+             class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-500 to-green-600"
+             title="PDF disponible"></div>
+        <!-- Indicador naranja solo para documentos externos no disponibles -->
+        <div v-else-if="documentoTipo.toLowerCase().replace(/\s+/g, '') === 'documentoexterno' && !pdfDisponible" 
+             class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-orange-500 to-red-500"
+             title="Documento externo no disponible"></div>
+        <!-- No mostrar indicador cuando PDF no está disponible (comportamiento normal del sistema) -->
+        
+        <div class="flex items-center justify-between p-4 pl-6 min-h-[80px]">
+            <div class="flex items-center flex-1">
+                <div v-if="typeof antidoping === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, antidoping, 'Antidoping')">
                     </div>
-                    <div class="flex gap-2 md-lg:block hidden">
-                        <div class="w-72">
-                            <p class="leading-5 text-sm px-1">Resultados:</p>
-                            <p v-if="positivos" class="leading-5 font-semibold text-red-500 px-1">Positivo</p>
-                            <p v-else-if="mensajeNegativo" class="leading-5 font-semibold text-gray-800 px-1">
-                                {{ mensajeNegativo }}
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${antidoping.rutaPDF}`,
+                        `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-red-100 rounded-lg mr-4 group-hover:bg-red-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-flask text-red-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Antidoping
+                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
+                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
+                                </h3>
+                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                    :class="positivos ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'">
+                                    {{ positivos ? 'Positivo' : 'Negativo' }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping) }}
                             </p>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <div v-if="typeof aptitud === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
-                <div class="ml-1">
-                    <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
-                        type="checkbox" :checked="isSelected"
-                        @change="(event) => handleCheckboxChange(event, aptitud, 'Aptitud')">
-                </div>
-                <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
-                    `${aptitud.rutaPDF}`,
-                    `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`)">
-                    <div class="min-w-18 sm:min-w-44">
-                        <p class="leading-5 text-sm sm:text-xl font-medium">Aptitud al Puesto</p>
-                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
-                            convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto) }}</p>
-                    </div>
-                    <div class="flex gap-2 md-lg:block hidden">
-                        <div class="w-72">
-                            <p class="leading-5 text-sm px-1">Resultado:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1"
-                                :class="aptitud.aptitudPuesto === 'No Apto' ? 'text-red-500' : 'text-gray-800'">{{
-                                    aptitud.aptitudPuesto }}</p>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div class="hidden lg:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-[calc(min(100vw-780px,900px))]">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resultados</p>
+                                    <p v-if="mensajeDetalladoAntidoping" class="font-semibold text-sm truncate max-w-full"
+                                        :class="positivos ? 'text-red-600' : 'text-gray-800'">
+                                        {{ mensajeDetalladoAntidoping }}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div v-if="typeof certificado === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
-                <div class="ml-1">
-                    <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
-                        type="checkbox" :checked="isSelected"
-                        @change="(event) => handleCheckboxChange(event, certificado, 'Certificado')">
-                </div>
-                <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
-                    `${certificado.rutaPDF}`,
-                    `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`)">
-                    <div class="min-w-18 sm:min-w-44">
-                        <p class="leading-5 text-sm sm:text-xl font-medium">Certificado</p>
-                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
-                            convertirFechaISOaDDMMYYYY(certificado.fechaCertificado) }}</p>
+                <div v-if="typeof aptitud === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, aptitud, 'Aptitud')">
                     </div>
-                    <div class="flex gap-2 md-lg:block hidden">
-                        <div class="w-72">
-                            <p class="leading-5 text-sm px-1">Impedimentos Físicos:</p>
-                            <p class="leading-5 font-semibold px-1"
-                                :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'text-gray-800' : 'text-red-500'">
-                                {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'No presenta impedimentos físicos' :
-                                certificado.impedimentosFisicos }}
-                            </p>
-
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${aptitud.rutaPDF}`,
+                        `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mr-4 group-hover:bg-green-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-user-check text-green-600 text-lg"></i>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <div v-if="typeof documentoExterno === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
-                <div class="ml-1">
-                    <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
-                        type="checkbox" :checked="isSelected"
-                        @change="(event) => handleCheckboxChange(event, documentoExterno, 'Documento Externo')">
-                </div>
-                <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirDocumentoExterno(documentoExterno)">
-                    <div class="min-w-18 sm:min-w-44">
-                        <p class="leading-5 text-sm sm:text-xl font-medium">{{ documentoExterno.nombreDocumento }}</p>
-                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
-                            convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento) }}</p>
-                    </div>
-                    <div class="flex gap-2 md-lg:block hidden">
-                        <div class="min-w-72">
-                            <p class="leading-5 text-sm px-1">Notas:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1">
-                                {{ documentoExterno.notasDocumento.trim() !== '' &&
-                                    documentoExterno.notasDocumento.trim()
-                                    !== 'undefined' ?
-                                    documentoExterno.notasDocumento : 'Sin notas'
-                                }}
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-80 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Aptitud al Puesto
+                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
+                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
+                                </h3>
+                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                    :class="aptitud.aptitudPuesto === 'Apto Sin Restricciones' ? 'bg-emerald-100 text-emerald-700' : 
+                                           aptitud.aptitudPuesto === 'Apto Con Precaución' ? 'bg-amber-100 text-amber-700' :
+                                           aptitud.aptitudPuesto === 'Apto Con Restricciones' ? 'bg-orange-100 text-orange-700' :
+                                           aptitud.aptitudPuesto === 'No Apto' ? 'bg-red-100 text-red-700' :
+                                           aptitud.aptitudPuesto === 'Evaluación No Completada' ? 'bg-gray-100 text-gray-700' : 'bg-green-100 text-green-700'">
+                                    {{ aptitud.aptitudPuesto === 'Evaluación No Completada' ? 'No completada' : 
+                                       trabajadores.currentTrabajador?.sexo === 'Femenino' ? 
+                                         aptitud.aptitudPuesto.replace('Apto', 'Apta').charAt(0).toUpperCase() + aptitud.aptitudPuesto.replace('Apto', 'Apta').slice(1).toLowerCase() :
+                                         aptitud.aptitudPuesto.charAt(0).toUpperCase() + aptitud.aptitudPuesto.slice(1).toLowerCase() }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto) }}
                             </p>
                         </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <!-- <div class="hidden lg:block w-64 flex-shrink-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resultado</p>
+                                    <p class="font-semibold text-sm truncate"
+                                        :class="aptitud.aptitudPuesto === 'No Apto' ? 'text-red-600' : 'text-gray-800'">
+                                        {{ aptitud.aptitudPuesto === 'Evaluación No Completada' ? 'No completada' : aptitud.aptitudPuesto.charAt(0).toUpperCase() + aptitud.aptitudPuesto.slice(1).toLowerCase() }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+
+                <div v-if="typeof certificado === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, certificado, 'Certificado')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${certificado.rutaPDF}`,
+                        `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mr-4 group-hover:bg-blue-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-certificate text-blue-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Certificado
+                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
+                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
+                                </h3>
+                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                    :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                                    {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'Sin impedimentos' : 'Con impedimentos' }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(certificado.fechaCertificado) }}
+                            </p>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div class="hidden lg:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-[calc(min(100vw-780px,900px))]">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Impedimentos Físicos</p>
+                                    <p class="font-semibold text-sm truncate max-w-full"
+                                        :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'text-gray-800' : 'text-red-600'">
+                                        {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'No presenta impedimentos físicos' : certificado.impedimentosFisicos }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="typeof documentoExterno === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, documentoExterno, 'Documento Externo')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirDocumentoExterno(documentoExterno)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mr-4 group-hover:bg-purple-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-file-alt text-purple-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    {{ documentoExterno.nombreDocumento }}
+                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
+                                    <i v-else-if="!pdfDisponible" class="fas fa-exclamation-triangle ml-2 text-orange-500 text-sm" title="Documento externo no disponible"></i>
+                                    <i v-else class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="Documento disponible"></i>
+                                </h3>
+                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                    Documento Externo
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento) }}
+                            </p>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div class="hidden lg:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-[calc(min(100vw-780px,900px))]">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Notas</p>
+                                    <p class="font-semibold text-gray-800 text-sm truncate max-w-full">
+                                        {{ documentoExterno.notasDocumento.trim() !== '' && documentoExterno.notasDocumento.trim() !== 'undefined' ? documentoExterno.notasDocumento : 'Sin notas' }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="typeof examenVista === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, examenVista, 'Examen Vista')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${examenVista.rutaPDF}`,
+                        `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-lg mr-4 group-hover:bg-yellow-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-eye text-yellow-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Examen de la Vista
+                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
+                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
+                                </h3>
+                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                    :class="examenVista.requiereLentesUsoGeneral === 'Si' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'">
+                                    {{ examenVista.requiereLentesUsoGeneral === 'Si' ? 'Requiere lentes' : 'Agudeza normal' }}
+                                </span>
+                            </div>
+                            <div class="flex">
+                                <p class="text-sm mr-0.5 text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista) }}
+                                </p>
+                                <span v-if="examenVista.porcentajeIshihara && examenVista.porcentajeIshihara < 80" 
+                                    class="hidden sm:flex ml-16 px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700">
+                                    Daltonismo
+                                </span>                                
+                            </div>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div class="hidden lg:block w-64 flex-shrink-0">
+                            <div class="text-sm flex space-x-2">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resultados</p>
+                                    <p v-if="!examenVista.ojoIzquierdoLejanaConCorreccion && !examenVista.ojoDerechoLejanaConCorreccion" class="font-semibold text-sm truncate"
+                                        :class="examenVista.sinCorreccionLejanaInterpretacion === 'Visión excepcional' ? 'text-emerald-600' :
+                                               examenVista.sinCorreccionLejanaInterpretacion === 'Visión normal' ? 'text-emerald-600' :
+                                               examenVista.sinCorreccionLejanaInterpretacion === 'Visión ligeramente reducida' ? 'text-amber-600' :
+                                               examenVista.sinCorreccionLejanaInterpretacion === 'Visión moderadamente reducida' ? 'text-red-600' :
+                                               examenVista.sinCorreccionLejanaInterpretacion === 'Visión significativamente reducida' ? 'text-red-600' :
+                                               examenVista.sinCorreccionLejanaInterpretacion === 'Visión muy reducida' ? 'text-red-700' : 'text-gray-800'">
+                                        {{ examenVista.sinCorreccionLejanaInterpretacion }}
+                                    </p>
+                                    <p v-else class="font-semibold text-sm text-gray-800 truncate">
+                                        {{ examenVista.conCorreccionLejanaInterpretacion }} corregida
+                                    </p>
+                                </div>
+                                <div class="hidden xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Lentes</p>
+                                    <p class="font-semibold text-sm truncate"
+                                        :class="examenVista.requiereLentesUsoGeneral === 'Si' ? 'text-red-600' : 'text-gray-800'">
+                                        {{ examenVista.requiereLentesUsoGeneral === 'Si' ? 'Requiere' : examenVista.requiereLentesUsoGeneral === 'No' ? 'No requiere' : examenVista.requiereLentesUsoGeneral }}
+                                    </p>
+                                </div>
+                                <div class="hidden xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Ishihara</p>
+                                    <p class="font-semibold text-sm truncate"
+                                        :class="!examenVista.porcentajeIshihara ? 'text-gray-600' : examenVista.porcentajeIshihara < 80 ? 'text-red-600' : 'text-gray-800'">
+                                        {{ !examenVista.porcentajeIshihara ? 'Pendiente' : examenVista.porcentajeIshihara < 80 ? `${examenVista.porcentajeIshihara}% - Daltonismo` : `${examenVista.porcentajeIshihara}% - Normal` }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="typeof exploracionFisica === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, exploracionFisica, 'Exploracion Fisica')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(`${exploracionFisica.rutaPDF}`, `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg mr-4 group-hover:bg-indigo-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-heartbeat text-indigo-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Exploración Física
+                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
+                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
+                                </h3>
+                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                    :class="exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' || exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                                    {{ exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' || exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'Sin hallazgos' : 'Hallazgos' }}
+                                </span>
+                            </div>
+                            <div class="flex">
+                                <p class="text-sm mr-1.5 text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica) }}
+                                </p>
+                                <span v-if="exploracionFisica.indiceMasaCorporal && exploracionFisica.indiceMasaCorporal >= 30" 
+                                    class="hidden sm:flex ml-14 px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700">
+                                    Obesidad
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div class="hidden lg:block w-64 flex-shrink-0">
+                            <div class="text-sm flex xl:space-x-2">
+                                <div class="hidden xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">IMC</p>
+                                    <p class="font-semibold text-sm truncate"
+                                        :class="exploracionFisica.categoriaIMC === 'Bajo peso' ? 'text-amber-600' :
+                                               exploracionFisica.categoriaIMC === 'Normal' ? 'text-emerald-600' :
+                                               exploracionFisica.categoriaIMC === 'Sobrepeso' ? 'text-amber-600' :
+                                               exploracionFisica.categoriaIMC === 'Obesidad clase I' ? 'text-red-600' :
+                                               exploracionFisica.categoriaIMC === 'Obesidad clase II' ? 'text-red-600' :
+                                               exploracionFisica.categoriaIMC === 'Obesidad clase III' ? 'text-red-700' : 'text-gray-800'">
+                                        {{ exploracionFisica.indiceMasaCorporal }} - {{ exploracionFisica.categoriaIMC }}
+                                    </p>
+                                </div>
+                                <div class="hidden 2xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Tensión Arterial</p>
+                                    <p class="font-semibold text-sm truncate"
+                                        :class="exploracionFisica.categoriaTensionArterial === 'Óptima' ? 'text-emerald-600' :
+                                               exploracionFisica.categoriaTensionArterial === 'Normal' ? 'text-emerald-600' :
+                                               exploracionFisica.categoriaTensionArterial === 'Alta' ? 'text-amber-600' :
+                                               exploracionFisica.categoriaTensionArterial === 'Hipertensión ligera' ? 'text-amber-600' :
+                                               exploracionFisica.categoriaTensionArterial === 'Hipertensión moderada' ? 'text-red-600' :
+                                               exploracionFisica.categoriaTensionArterial === 'Hipertensión severa' ? 'text-red-700' : 'text-gray-800'">
+                                        <span>
+                                            {{ exploracionFisica.categoriaTensionArterial }}
+                                            <span v-if="exploracionFisica.categoriaTensionArterial === 'Normal' || exploracionFisica.categoriaTensionArterial === 'Óptima' || exploracionFisica.categoriaTensionArterial === 'Alta'">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                        </span>
+                                    </p>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-[calc(min(100vw-770px,900px))] xl:max-w-[calc(min(100vw-955px,980px))] 2xl:max-w-[calc(min(100vw-1140px,550px))]">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resumen</p>
+                                    <p class="font-semibold text-sm truncate max-w-full "
+                                        :class="exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' || exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'text-gray-800' : 'text-red-600'">
+                                        {{ exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' ? 'Clínicamente sano' : exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'Clínicamente sana' : exploracionFisica.resumenExploracionFisica }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="typeof historiaClinica === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, historiaClinica, 'Historia Clinica')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${historiaClinica.rutaPDF}`,
+                        `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-teal-100 rounded-lg mr-4 group-hover:bg-teal-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-notes-medical text-teal-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Historia Clínica
+                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
+                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
+                                </h3>
+                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                    :class="historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' || historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                                    {{ historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' ? 'Asintomático' : historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'Asintomática' : 'Hallazgo' }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica) }}
+                            </p>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div class="hidden lg:block w-64 flex-shrink-0">
+                            <div class="text-sm flex xl:space-x-2">
+                                <div class="hidden xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Evaluación</p>
+                                    <p class="font-semibold text-gray-800 text-sm truncate">{{ historiaClinica.motivoExamen }}</p>
+                                </div>
+                                <div class="hidden 2xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Accidente</p>
+                                    <p class="font-semibold text-sm truncate"
+                                        :class="historiaClinica.accidenteLaboral === 'Si' && historiaClinica.secuelas !== 'Sin secuelas' ? 'text-red-600' : 'text-gray-600'">
+                                        {{ 
+                                            historiaClinica.accidenteLaboral === 'Si' && historiaClinica.secuelas === 'Sin secuelas' ? 'Si - Sin secuelas' :
+                                            historiaClinica.accidenteLaboral === 'Si' && historiaClinica.secuelas !== 'Sin secuelas' ? `Si - Con secuelas` :
+                                            historiaClinica.accidenteLaboral === 'No' ? 'Negado' : 'Negado'
+                                        }}
+                                    </p>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-[calc(min(100vw-780px,900px))] xl:max-w-[calc(min(100vw-875px,1010px))] 2xl:max-w-[calc(min(100vw-1005px,675px))]">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resumen</p>
+                                    <p class="font-semibold text-sm truncate max-w-full xl:max-w-none 2xl:max-w-none"
+                                        :class="historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' || historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'text-gray-800' : 'text-red-600'">
+                                        {{ historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' ? 'Se refiere asintomático' : historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'Se refiere asintomática' : historiaClinica.resumenHistoriaClinica }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="typeof notaMedica === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, notaMedica, 'Nota Medica')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${notaMedica.rutaPDF}`,
+                        `Nota Medica ${convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-pink-100 rounded-lg mr-4 group-hover:bg-pink-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-stethoscope text-pink-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Nota Médica
+                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
+                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
+                                </h3>
+                                <span v-if="notaMedica.diagnostico" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                    {{ notaMedica.tipoNota }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica) }}
+                            </p>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div v-if="notaMedica.diagnostico" class="hidden lg:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-[calc(min(100vw-780px,900px))]">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Diagnóstico</p>
+                                    <p class="font-semibold text-gray-800 text-sm truncate max-w-full">{{ notaMedica.diagnostico }}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div v-if="typeof examenVista === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
-                <div class="ml-1">
-                    <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
-                        type="checkbox" :checked="isSelected"
-                        @change="(event) => handleCheckboxChange(event, examenVista, 'Examen Vista')">
-                </div>
-                <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
-                    `${examenVista.rutaPDF}`,
-                    `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`)">
-                    <div class="min-w-18 sm:min-w-44">
-                        <p class="leading-5 text-sm sm:text-xl font-medium">Examen de la Vista</p>
-                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
-                            convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista) }}</p>
-                    </div>
-                    <div v-if="!examenVista.ojoIzquierdoLejanaConCorreccion && !examenVista.ojoDerechoLejanaConCorreccion"
-                        class="flex gap-2 md-lg:block hidden">
-                        <div class="w-72 md-lg:block hidden">
-                            <p class="leading-5 text-sm px-1">Resultados:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1"
-                                :class="examenVista.sinCorreccionLejanaInterpretacion === 'Visión moderadamente reducida' || examenVista.sinCorreccionLejanaInterpretacion === 'Visión significativamente reducida' || examenVista.sinCorreccionLejanaInterpretacion === 'Visión muy reducida' ? 'text-red-500' : 'text-gray-800'">
-                                {{ examenVista.sinCorreccionLejanaInterpretacion }}</p>
-                        </div>
-                    </div>
-                    <div v-else class="flex gap-2">
-                        <div class="w-72 md-lg:block hidden">
-                            <p class="leading-5 text-sm px-1">Resultados:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1">{{
-                                examenVista.conCorreccionLejanaInterpretacion }} corregida</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-2 2xl:block hidden">
-                        <div class="w-72">
-                            <p class="leading-5 text-sm px-1">Requiere Lentes:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1"
-                                :class="examenVista.requiereLentesUsoGeneral === 'Si' ? 'text-red-500' : 'text-gray-800'">
-                                {{
-                                    examenVista.requiereLentesUsoGeneral }}</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-2 xl:block hidden">
-                        <div class="w-72">
-                            <p class="leading-5 text-sm px-1">Ishihara:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1"
-                                :class="examenVista.porcentajeIshihara < 80 ? 'text-red-500' : 'text-gray-800'">{{
-                                    examenVista.porcentajeIshihara }}% - {{ examenVista.interpretacionIshihara }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Botones de acción -->
+            <div class="flex gap-0.5 sm:gap-0.5 md:gap-1 lg:gap-2 mx-1.5">
+                <!-- Botón de descarga dinámico -->
+                <template v-for="(documento, key) in {
+                    'Antidoping': antidoping,
+                    'Aptitud': aptitud,
+                    'Certificado': certificado,
+                    'Documento Externo': documentoExterno,
+                    'Examen Vista': examenVista,
+                    'Exploracion Fisica': exploracionFisica,
+                    'Historia Clinica': historiaClinica,
+                    'Nota Medica': notaMedica
+                }" :key="key">
+                    <button v-if="documento && documento.rutaDocumento" @click="descargarArchivo(documento, key)"
+                        type="button"
+                        class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-5">
+                        <i class="fa-solid fa-download fa-lg"></i>
+                    </button>
+                    <button v-if="documento && documento.rutaPDF" @click="descargarArchivo(documento, key)" type="button"
+                        class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-5">
+                        <i class="fa-solid fa-download fa-lg"></i>
+                    </button>
+                </template>
 
-            <div v-if="typeof exploracionFisica === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
-                <div class="ml-1">
-                    <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
-                        type="checkbox" :checked="isSelected"
-                        @change="(event) => handleCheckboxChange(event, exploracionFisica, 'Exploracion Fisica')">
-                </div>
-                <div class="my-1 mx-1 flex gap-2 items-center h-full"
-                    @click="abrirPdf(`${exploracionFisica.rutaPDF}`, `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`)">
-                    <div class="min-w-18 sm:min-w-44">
-                        <p class="leading-5 text-sm sm:text-xl font-medium">Exploración Física</p>
-                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
-                            convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica) }}</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <div class="w-72 xl:block hidden">
-                            <p class="leading-5 text-sm px-1">Categoría IMC:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1"
-                                :class="exploracionFisica.indiceMasaCorporal >= 30 ? 'text-red-500' : 'text-gray-800'">
-                                {{
-                                    exploracionFisica.indiceMasaCorporal }} - {{ exploracionFisica.categoriaIMC }}</p>
-                        </div>
-                        <div class="w-72 2xl:block hidden">
-                            <p class="leading-5 text-sm px-1">Tension Arterial:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1"
-                                :class="exploracionFisica.categoriaTensionArterial === 'Hipertensión moderada' || exploracionFisica.categoriaTensionArterial === 'Hipertensión severa' ? 'text-red-500' : 'text-gray-800'">
-                                {{ exploracionFisica.categoriaTensionArterial }}</p>
-                        </div>
-                        <div class="w-72 md-lg:block hidden">
-                            <p class="leading-5 text-sm px-1">Resumen:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1"
-                                :class="exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' || exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'text-gray-800' : 'text-red-500'">
-                                {{ exploracionFisica.resumenExploracionFisica }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div v-if="typeof historiaClinica === 'object'"
-                class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer">
-                <div class="ml-1">
-                    <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
-                        type="checkbox" :checked="isSelected"
-                        @change="(event) => handleCheckboxChange(event, historiaClinica, 'Historia Clinica')">
-                </div>
-                <div class="my-1 mx-1 flex gap-2 items-center h-full cursor-pointer" @click="abrirPdf(
-                    `${historiaClinica.rutaPDF}`,
-                    `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`)">
-                    <div class="min-w-18 sm:min-w-44">
-                        <p class="leading-5 text-sm sm:text-xl font-medium">Historia Clinica</p>
-                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
-                            convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica) }}</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <div class="w-72 xl:block hidden">
-                            <p class="leading-5 text-sm px-1">Evaluacion:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1">{{ historiaClinica.motivoExamen }}</p>
-                        </div>
-                        <div class="w-72 2xl:block hidden">
-                            <p class="leading-5 text-sm px-1">Accidente Laboral:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1"
-                                :class="historiaClinica.accidenteLaboralEspecificar !== 'Niega haber sufrido accidentes' ? 'text-red-500' : 'text-gray-800'">
-                                {{ historiaClinica.accidenteLaboralEspecificar }}</p>
-                        </div>
-                        <div class="w-72 md-lg:block hidden">
-                            <p class="leading-5 text-sm px-1">Resumen:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1"
-                                :class="historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' || historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'text-gray-800' : 'text-red-500'">
-                                {{ historiaClinica.resumenHistoriaClinica }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div v-if="typeof notaMedica === 'object'" class="my-1 mx-1 flex gap-2 items-center h-full">
-                <div class="ml-1">
-                    <input
-                        class="transform scale-125 mr-3 cursor-pointer accent-emerald-600 transition duration-200 ease-in-out hover:scale-150 z-10"
-                        type="checkbox" :checked="isSelected"
-                        @change="(event) => handleCheckboxChange(event, notaMedica, 'Nota Medica')">
-                </div>
-                <div class="my-1 mx-1 flex gap-2 items-center h-full" @click="abrirPdf(
-                    `${notaMedica.rutaPDF}`,
-                    `Nota Medica ${convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica)}.pdf`)">
-                    <div class="min-w-18 sm:min-w-44">
-                        <p class="leading-5 text-sm sm:text-xl font-medium">Nota Medica</p>
-                        <p class="leading-5 text-xs sm:text-base text-gray-500">{{
-                            convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica) }}</p>
-                    </div>
-                    <div v-if="notaMedica.diagnostico"
-                        class="flex gap-2 md-lg:block hidden">
-                        <div class="w-72 md-lg:block hidden">
-                            <p class="leading-5 text-sm px-1">IDX:</p>
-                            <p class="leading-5 font-semibold text-gray-800 px-1">
-                                {{ notaMedica.diagnostico }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-
-
-        <div class="flex gap-1 sm:gap-1 md:gap-2 lg:gap-4 mx-2">
-            <!-- Botón de descarga dinámico -->
-            <template v-for="(documento, key) in {
-                'Antidoping': antidoping,
-                'Aptitud': aptitud,
-                'Certificado': certificado,
-                'Documento Externo': documentoExterno,
-                'Examen Vista': examenVista,
-                'Exploracion Fisica': exploracionFisica,
-                'Historia Clinica': historiaClinica,
-                'Nota Medica': notaMedica
-            }" :key="key">
-                <button v-if="documento && documento.rutaDocumento" @click="descargarArchivo(documento, key)"
-                    type="button"
-                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-5">
-                    <i class="fa-solid fa-download fa-lg"></i>
+                <button v-if="documentoTipo === 'documentoExterno'" type="button"
+                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5"
+                    @click="async () => {
+                        await documentos.fetchDocumentById(documentoTipo, trabajadores.currentTrabajador._id, documentoExterno._id);
+                        $emit('abrirModalUpdate');
+                    }">
+                    <i class="fa-regular fa-pen-to-square fa-lg"></i>
                 </button>
-                <button v-if="documento && documento.rutaPDF" @click="descargarArchivo(documento, key)" type="button"
-                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-5">
-                    <i class="fa-solid fa-download fa-lg"></i>
+                <button v-else type="button" @click="editarDocumento(documentoId, documentoTipo)"
+                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5">
+                    <i class="fa-regular fa-pen-to-square fa-lg"></i>
                 </button>
-            </template>
 
-            <button v-if="documentoTipo === 'documentoExterno'" type="button"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5"
-                @click="async () => {
-                    await documentos.fetchDocumentById(documentoTipo, trabajadores.currentTrabajador._id, documentoExterno._id);
-                    $emit('abrirModalUpdate');
-                }">
-                <i class="fa-regular fa-pen-to-square fa-lg"></i>
-            </button>
-            <button v-else type="button" @click="editarDocumento(documentoId, documentoTipo)"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5">
-                <i class="fa-regular fa-pen-to-square fa-lg"></i>
-            </button>
-
-            <button type="button" @click="$emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo)"
-                class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5">
-                <i class="fa-solid fa-trash-can fa-lg"></i>
-            </button>
-
+                <button type="button" @click="$emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo)"
+                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5">
+                    <i class="fa-solid fa-trash-can fa-lg"></i>
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- Visor de PDF -->
-    <div v-if="showPdfViewer"
-        class="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-75 flex justify-center items-center z-50"
-        @click.self="cerrarPdf">
-        <!-- Botón para cerrar, en el fondo -->
-        <div class="absolute top-2 right-2">
-            <button class="bg-red-600 text-white text-sm px-4 py-2 rounded shadow-lg hover:bg-red-500 transition"
-                @click="cerrarPdf">
-                Cerrar
-            </button>
-        </div>
+    <Transition name="modal-fade" appear>
+        <div v-if="showPdfViewer"
+            class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-90 backdrop-blur-sm flex justify-center items-center z-50"
+            @click.self="cerrarPdf">
+            
+            <!-- Header del visor -->
+            <div class="absolute top-0 left-0 right-0 bg-white bg-opacity-95 backdrop-blur-sm border-b border-gray-200 z-10">
+                <div class="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
+                    <!-- Sección izquierda -->
+                    <div class="flex items-center space-x-2 sm:space-x-4">
+                        <button @click="cerrarPdf" 
+                            class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1 sm:py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                            <i class="fas fa-times text-xs sm:text-sm"></i>
+                            <span class="font-medium hidden sm:inline">Cerrar</span>
+                        </button>
+                        <div class="flex items-center space-x-1 sm:space-x-2">
+                            <i class="fas fa-file-pdf text-red-500 text-sm sm:text-lg"></i>
+                            <span class="text-gray-700 font-medium text-xs sm:text-sm">Visor de PDF</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Controles adicionales -->
+                    <div class="flex items-center space-x-1 sm:space-x-3">
+                        <button @click="descargarPdfActual" 
+                            class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                            <i class="fas fa-download text-xs sm:text-sm"></i>
+                            <span class="font-medium hidden sm:inline">Descargar</span>
+                        </button>
+                        <button @click="imprimirPdfActual" 
+                            class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                            <i class="fas fa-print text-xs sm:text-sm"></i>
+                            <span class="font-medium hidden sm:inline">Imprimir</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Contenedor del visor de PDF -->
-        <div :style="{ width: '90%', height: '90%' }" class="bg-white rounded shadow-lg relative">
-            <VPdfViewer :src="pdfUrl" :initialThumbnails-visible="initialThumbnailsVisible" :initialScale="initialScale"
-                locale="customLang" :localization="localization" />
+            <!-- Contenedor principal del visor -->
+            <div class="relative w-full h-full flex flex-col">
+                <!-- Contenedor del visor de PDF -->
+                <div class="flex-1 mt-16 sm:mt-20 mx-2 sm:mx-4 mb-4 bg-white rounded-xl shadow-2xl overflow-hidden">
+                    <VPdfViewer 
+                        :src="pdfUrl" 
+                        :initialThumbnails-visible="initialThumbnailsVisible" 
+                        :initialScale="initialScale"
+                        locale="customLang" 
+                        :localization="localization" 
+                    />
+                </div>
+            </div>
+
+            <!-- Indicador de ayuda -->
+            <div class="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm">
+                <i class="fas fa-keyboard mr-1 sm:mr-2"></i>
+                <span class="hidden sm:inline">Presiona</span> <kbd class="px-1 sm:px-2 py-0.5 sm:py-1 bg-gray-700 rounded text-xs">ESC</kbd> <span class="hidden sm:inline">para cerrar</span>
+            </div>
         </div>
-    </div>
+    </Transition>
 
     <!-- Visor de Imágenes -->
-    <div v-if="showImageViewer"
-        class="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-75 flex justify-center items-center z-50"
-        @click.self="cerrarImagen">
-        <!-- Botón para cerrar -->
-        <div class="absolute top-2 right-2">
-            <button class="bg-red-600 text-white text-sm px-4 py-2 rounded shadow-lg hover:bg-red-500 transition"
-                @click="cerrarImagen">
-                Cerrar
-            </button>
-        </div>
+    <Transition name="modal-fade" appear>
+        <div v-if="showImageViewer"
+            class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-90 backdrop-blur-sm flex justify-center items-center z-50"
+            @click.self="cerrarImagen">
+            
+            <!-- Header del visor -->
+            <div class="absolute top-0 left-0 right-0 bg-white bg-opacity-95 backdrop-blur-sm border-b border-gray-200 z-10">
+                <div class="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
+                    <!-- Sección izquierda -->
+                    <div class="flex items-center space-x-2 sm:space-x-4">
+                        <button @click="cerrarImagen" 
+                            class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1 sm:py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                            <i class="fas fa-times text-xs sm:text-sm"></i>
+                            <span class="font-medium hidden sm:inline">Cerrar</span>
+                        </button>
+                        <div class="flex items-center space-x-1 sm:space-x-2">
+                            <i class="fas fa-image text-blue-500 text-sm sm:text-lg"></i>
+                            <span class="text-gray-700 font-medium text-xs sm:text-sm">Visor de Imagen</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Controles de imagen -->
+                    <div class="flex items-center space-x-1 sm:space-x-3">
+                        <button @click="rotarImagen" 
+                            class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                            <i class="fas fa-redo text-xs sm:text-sm"></i>
+                            <span class="font-medium hidden sm:inline">Rotar</span>
+                        </button>
+                        <button @click="descargarImagenActual" 
+                            class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                            <i class="fas fa-download text-xs sm:text-sm"></i>
+                            <span class="font-medium hidden sm:inline">Descargar</span>
+                        </button>
+                        <button @click="zoomIn" 
+                            class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                            <i class="fas fa-search-plus text-xs sm:text-sm"></i>
+                            <span class="font-medium hidden sm:inline">Zoom +</span>
+                        </button>
+                        <button @click="zoomOut" 
+                            class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                            <i class="fas fa-search-minus text-xs sm:text-sm"></i>
+                            <span class="font-medium hidden sm:inline">Zoom -</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Contenedor de la imagen -->
-        <div class="relative bg-white rounded shadow-lg">
-            <h1 class="text-2xl text-center text-gray-800 p-2">Documento Externo</h1>
-            <hr>
-            <img :src="imageUrl" alt="Vista previa del documento" class="max-w-full max-h-screen rounded" />
+            <!-- Contenedor principal de la imagen -->
+            <div class="relative w-full h-full flex flex-col">
+                <div class="flex-1 mt-16 sm:mt-20 mx-2 sm:mx-4 mb-4 bg-white rounded-xl shadow-2xl overflow-hidden flex items-center justify-center">
+                    <img 
+                        :src="imageUrl" 
+                        :style="{ transform: `rotate(${rotationAngle}deg) scale(${imageZoom})` }"
+                        alt="Vista previa del documento" 
+                        class="max-w-full max-h-full object-contain transition-all duration-300 ease-in-out"
+                        @wheel="handleImageWheel"
+                    />
+                </div>
+            </div>
+
+            <!-- Indicador de zoom -->
+            <div v-if="imageZoom !== 0.8" class="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 bg-black bg-opacity-75 text-white px-2 sm:px-3 py-1 sm:py-2 rounded-full text-xs sm:text-sm">
+                <i class="fas fa-search mr-1 sm:mr-2"></i>
+                {{ Math.round(imageZoom * 100) }}%
+            </div>
+
+            <!-- Indicador de ayuda -->
+            <div class="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm">
+                <i class="fas fa-mouse mr-1 sm:mr-2"></i>
+                <span class="hidden sm:inline">Rueda del mouse para zoom •</span> <kbd class="px-1 sm:px-2 py-0.5 sm:py-1 bg-gray-700 rounded text-xs">ESC</kbd> <span class="hidden sm:inline">para cerrar</span>
+            </div>
         </div>
-    </div>
+    </Transition>
 
 </template>
 
 <style>
+/* Animaciones para los modales */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+    transition: all 0.3s ease;
+}
+
+.modal-fade-enter-from {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.modal-fade-leave-to {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+/* Estilos para los botones de control */
+.control-button {
+    @apply transition-all duration-200 ease-in-out;
+}
+
+.control-button:hover {
+    @apply transform scale-105;
+}
+
+/* Estilos para el indicador de zoom */
+.zoom-indicator {
+    @apply bg-black bg-opacity-75 text-white px-3 py-2 rounded-full text-sm;
+    backdrop-filter: blur(10px);
+}
+
+/* Estilos para el indicador de ayuda */
+.help-indicator {
+    @apply bg-black bg-opacity-75 text-white px-4 py-2 rounded-full text-sm;
+    backdrop-filter: blur(10px);
+}
+
+/* Estilos responsivos */
+@media (max-width: 640px) {
+    /* Pantallas muy pequeñas (xs) */
+    .modal-fade-enter-active,
+    .modal-fade-leave-active {
+        transition: all 0.2s ease;
+    }
+}
+
 @media (max-width: 768px) {
     /* Pantallas pequeñas (sm) */
+    .control-button {
+        @apply px-2 py-1 text-xs;
+    }
+    
+    .help-indicator {
+        @apply text-xs px-2 py-1;
+    }
+    
+    /* Ajustes específicos para móviles */
+    .modal-fade-enter-from,
+    .modal-fade-leave-to {
+        transform: scale(0.95);
+    }
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
     /* Pantallas medianas (md) */
+    .control-button {
+        @apply px-3 py-2 text-sm;
+    }
 }
 
 @media (min-width: 1024px) and (max-width: 1280px) {
-    /* Pantallas grandes (md) */
+    /* Pantallas grandes (lg) */
 }
 
 @media (min-width: 1280px) {

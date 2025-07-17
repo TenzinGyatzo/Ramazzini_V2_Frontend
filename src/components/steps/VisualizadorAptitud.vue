@@ -150,11 +150,11 @@ const antidopingResumen = computed(() => {
     nearestAntidoping.value.anfetaminas !== 'Negativo' ? 'Anfetaminas' : null,
     nearestAntidoping.value.metanfetaminas !== 'Negativo' ? 'Metanfetaminas' : null,
     nearestAntidoping.value.opiaceos !== 'Negativo' ? 'Opiáceos' : null,
-    nearestAntidoping.value.benzodiacepinas !== 'Negativo' ? 'Benzodiazepinas' : null,
-    nearestAntidoping.value.fenciclidina !== 'Negativo' ? 'Fenciclidina' : null,
-    nearestAntidoping.value.metadona !== 'Negativo' ? 'Metadona' : null,
-    nearestAntidoping.value.barbituricos !== 'Negativo' ? 'Barbitúricos' : null,
-    nearestAntidoping.value.antidepresivosTriciclicos !== 'Negativo' ? 'Antidepresivos Tricíclicos' : null
+    nearestAntidoping.value.benzodiacepinas && nearestAntidoping.value.benzodiacepinas !== 'Negativo' ? 'Benzodiazepinas' : null,
+    nearestAntidoping.value.fenciclidina && nearestAntidoping.value.fenciclidina !== 'Negativo' ? 'Fenciclidina' : null,
+    nearestAntidoping.value.metadona && nearestAntidoping.value.metadona !== 'Negativo' ? 'Metadona' : null,
+    nearestAntidoping.value.barbituricos && nearestAntidoping.value.barbituricos !== 'Negativo' ? 'Barbitúricos' : null,
+    nearestAntidoping.value.antidepresivosTriciclicos && nearestAntidoping.value.antidepresivosTriciclicos !== 'Negativo' ? 'Antidepresivos Tricíclicos' : null
   ].filter(Boolean).join(', '); // Filtrar valores nulos o `undefined` y unirlos en una cadena separada por comas
 
   return `Positivo a: ${sustanciasPositivas}`;

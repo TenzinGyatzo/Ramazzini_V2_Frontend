@@ -26,10 +26,10 @@ onUnmounted(() => {
       <!-- Header con icono animado -->
       <div class="text-center mb-6">
         <div class="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4 animate-pulse">
-          <i class="fa-solid fa-file-pdf text-2xl text-amber-600"></i>
+          <i class="fa-solid fa-exclamation-triangle text-2xl text-amber-600"></i>
         </div>
         <h2 class="text-2xl font-bold text-gray-800 mb-2">
-          Documentos Pendientes
+          Campos Pendientes
         </h2>
         <div class="w-16 h-1 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full mx-auto"></div>
       </div>
@@ -37,14 +37,13 @@ onUnmounted(() => {
       <!-- Contenido -->
       <div class="text-center mb-8">
         <p class="text-gray-600 text-lg leading-relaxed mb-4">
-          Faltan uno o más documentos seleccionados. Por favor 
-          <span class="font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-md">regenera los PDFs</span> 
-          antes de continuar.
+          Para continuar, necesitas completar todos los campos marcados como 
+          <span class="font-semibold text-amber-600 bg-amber-50 px-2 py-1 rounded-md">obligatorios</span>.
         </p>
-        <div class="flex items-center justify-center gap-2 text-sm text-gray-500">
+        <!-- <div class="flex items-center justify-center gap-2 text-sm text-gray-500">
           <i class="fa-solid fa-info-circle text-blue-500"></i>
-          <span>Los documentos deben estar disponibles para continuar</span>
-        </div>
+          <span>Los campos obligatorios están marcados <br>con un asterisco (*)</span>
+        </div> -->
       </div>
 
       <!-- Botón mejorado -->
@@ -59,7 +58,7 @@ onUnmounted(() => {
       </button>
 
       <!-- Texto de ayuda adicional -->
-      <p class="text-xs text-gray-400 text-center mt-6">
+      <p class="text-xs text-gray-400 text-center mt-4">
         Presiona ESC o haz clic fuera del modal para cerrar
       </p>
     </div>
