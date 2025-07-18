@@ -712,7 +712,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
              title="PDF disponible"></div>
         <!-- Indicador naranja solo para documentos externos no disponibles -->
         <div v-else-if="documentoTipo.toLowerCase().replace(/\s+/g, '') === 'documentoexterno' && !pdfDisponible" 
-             class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-orange-500 to-red-500"
+             class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-rose-500 to-red-400"
              title="Documento externo no disponible"></div>
         <!-- No mostrar indicador cuando PDF no está disponible (comportamiento normal del sistema) -->
         
@@ -722,7 +722,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, antidoping, 'Antidoping')">
                     </div>
@@ -742,8 +742,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                             <div class="flex items-center mb-1">
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
                                     Antidoping
-                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
-                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
+                                    <!-- <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
+                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i> -->
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="positivos ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'">
@@ -775,7 +775,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, aptitud, 'Aptitud')">
                     </div>
@@ -795,8 +795,6 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                             <div class="flex items-center mb-1">
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
                                     Aptitud al Puesto
-                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
-                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="aptitud.aptitudPuesto === 'Apto Sin Restricciones' ? 'bg-emerald-100 text-emerald-700' : 
@@ -835,7 +833,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, certificado, 'Certificado')">
                     </div>
@@ -855,8 +853,6 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                             <div class="flex items-center mb-1">
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
                                     Certificado
-                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
-                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
@@ -888,7 +884,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, documentoExterno, 'Documento Externo')">
                     </div>
@@ -905,14 +901,16 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         <div class="sm:w-72 min-w-0 max-w-xs">
                             <div class="flex items-center mb-1">
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
-                                    {{ documentoExterno.nombreDocumento }}
-                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
-                                    <i v-else-if="!pdfDisponible" class="fas fa-exclamation-triangle ml-2 text-orange-500 text-sm" title="Documento externo no disponible"></i>
-                                    <i v-else class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="Documento disponible"></i>
+                                    <span>
+                                        <i v-if="verificandoPDF" class="fas fa-spinner fa-spin mr-0.5 text-yellow-500 text-sm"></i>
+                                        <i v-else-if="!pdfDisponible" class="fas fa-exclamation-triangle mr-0.5 text-rose-500 text-sm" title="Documento externo no disponible"></i>
+                                        <!-- <i v-else class="fas fa-check-circle mr-0.5 text-emerald-500 text-sm" title="Documento disponible"></i> -->
+                                        {{ documentoExterno.nombreDocumento }}
+                                    </span>
+                                    <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                        Documento Externo
+                                    </span>
                                 </h3>
-                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
-                                    Documento Externo
-                                </span>
                             </div>
                             <p class="text-sm text-gray-500 flex items-center">
                                 <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
@@ -938,7 +936,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, examenVista, 'Examen Vista')">
                     </div>
@@ -958,8 +956,6 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                             <div class="flex items-center mb-1">
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
                                     Examen de la Vista
-                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
-                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="examenVista.requiereLentesUsoGeneral === 'Si' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'">
@@ -1019,7 +1015,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, exploracionFisica, 'Exploracion Fisica')">
                     </div>
@@ -1037,8 +1033,6 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                             <div class="flex items-center mb-1">
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
                                     Exploración Física
-                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
-                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' || exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
@@ -1103,7 +1097,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, historiaClinica, 'Historia Clinica')">
                     </div>
@@ -1123,8 +1117,6 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                             <div class="flex items-center mb-1">
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
                                     Historia Clínica
-                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
-                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' || historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
@@ -1171,7 +1163,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, notaMedica, 'Nota Medica')">
                     </div>
@@ -1191,8 +1183,6 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                             <div class="flex items-center mb-1">
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
                                     Nota Médica
-                                    <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
-                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i>
                                 </h3>
                                 <span v-if="notaMedica.diagnostico" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
                                     {{ notaMedica.tipoNota }}
