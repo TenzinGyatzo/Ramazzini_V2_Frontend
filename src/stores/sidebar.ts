@@ -35,9 +35,21 @@ export const useSidebarStore = defineStore("sidebar", () => {
     isSmallScreen.value = window.innerWidth < 640;
   }
 
+  // Función para actualizar las variables CSS del sidebar
+  function updateCSSVariables() {
+    const root = document.documentElement;
+    const sidebarWidth = collapsed.value ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH;
+    const sidebarDifference = collapsed.value ? 0 : SIDEBAR_WIDTH - SIDEBAR_WIDTH_COLLAPSED; // 175px cuando expandido
+    
+    root.style.setProperty('--sidebar-width', `${sidebarWidth}px`);
+    root.style.setProperty('--content-margin', `${sidebarWidth}px`);
+    root.style.setProperty('--sidebar-difference', `${sidebarDifference}px`);
+  }
+
   function toggleSidebar() {
     collapsed.value = !collapsed.value;
     localStorage.setItem("sidebarCollapsed", collapsed.value.toString());
+    updateCSSVariables(); // Actualizar variables CSS cuando cambie el estado
   }
 
   const SIDEBAR_WIDTH = 230;
@@ -49,10 +61,12 @@ export const useSidebarStore = defineStore("sidebar", () => {
 
   watch(collapsed, (newValue) => {
     localStorage.setItem("sidebarCollapsed", newValue.toString());
+    updateCSSVariables(); // Actualizar variables CSS cuando cambie el estado
   });
 
   onMounted(() => {
     window.addEventListener("resize", handleResize); // Escucha cambios en el tamaño de la pantalla
+    updateCSSVariables(); // Inicializar variables CSS al montar
   });
 
   onBeforeUnmount(() => {
@@ -66,5 +80,6 @@ export const useSidebarStore = defineStore("sidebar", () => {
     toggleSidebar,
     sidebarWidth,
     sidebarWidthCollapsed,
+    updateCSSVariables,
   };
 });

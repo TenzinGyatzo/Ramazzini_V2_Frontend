@@ -684,23 +684,25 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
 </script>
 
 <template>
-    <transition name="fade">
-        <ModalPdfEliminado
-            v-if="mostrarModalPdfEliminado"
-            :tipo="documentoTipo.toLowerCase().replace(/\s+/g, '')"
-            :empresaId="empresas.currentEmpresaId"
-            :trabajadorId="trabajadores.currentTrabajadorId"
-            :documentoId="documentoId"
-            :userId="user._id"
-            :getPdfMetadata="construirRutaYNombrePDF"
-            @regenerado="manejarRegeneracionDesdePadre"
-            @close="mostrarModalPdfEliminado = false"
-        />
-    </transition>
+    <Teleport to="body">
+        <transition name="fade">
+            <ModalPdfEliminado
+                v-if="mostrarModalPdfEliminado"
+                :tipo="documentoTipo.toLowerCase().replace(/\s+/g, '')"
+                :empresaId="empresas.currentEmpresaId"
+                :trabajadorId="trabajadores.currentTrabajadorId"
+                :documentoId="documentoId"
+                :userId="user._id"
+                :getPdfMetadata="construirRutaYNombrePDF"
+                @regenerado="manejarRegeneracionDesdePadre"
+                @close="mostrarModalPdfEliminado = false"
+            />
+        </transition>
+    </Teleport>
 
     <!-- Items de documentos -->
     <div
-        class="group relative bg-white hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 border rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer overflow-hidden"
+        class="group relative bg-white hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 border rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer overflow-hidden"
         :class="verificandoPDF ? 'border-yellow-300 hover:border-yellow-400' : pdfDisponible ? 'border-gray-200 hover:border-emerald-300' : 'border-gray-200 hover:border-gray-300'">
         
         <!-- Indicador de disponibilidad del PDF -->
@@ -710,11 +712,14 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
         <div v-else-if="pdfDisponible" 
              class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-500 to-green-600"
              title="PDF disponible"></div>
-        <!-- Indicador naranja solo para documentos externos no disponibles -->
+        <!-- Indicador rojo para documentos externos no disponibles -->
         <div v-else-if="documentoTipo.toLowerCase().replace(/\s+/g, '') === 'documentoexterno' && !pdfDisponible" 
              class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-rose-500 to-red-400"
              title="Documento externo no disponible"></div>
-        <!-- No mostrar indicador cuando PDF no está disponible (comportamiento normal del sistema) -->
+        <!-- Indicador gris para documentos regenerables no disponibles -->
+        <div v-else-if="documentoTipo.toLowerCase().replace(/\s+/g, '') !== 'documentoexterno' && !pdfDisponible" 
+             class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-gray-300 to-gray-300"
+             title="PDF no disponible - Se puede regenerar"></div>
         
         <div class="flex items-center justify-between p-4 pl-6 min-h-[80px]">
             <div class="flex items-center flex-1">
@@ -757,11 +762,11 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
-                        <div class="hidden lg:block mr-4 flex-shrink-0 min-w-0">
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
                             <div class="text-sm">
-                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-[calc(min(100vw-780px,900px))]">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resultados</p>
-                                    <p v-if="mensajeDetalladoAntidoping" class="font-semibold text-sm truncate max-w-full"
+                                    <p v-if="mensajeDetalladoAntidoping" class="font-medium text-sm truncate max-w-full"
                                         :class="positivos ? 'text-red-600' : 'text-gray-800'">
                                         {{ mensajeDetalladoAntidoping }}
                                     </p>
@@ -815,11 +820,11 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
-                        <!-- <div class="hidden lg:block w-64 flex-shrink-0">
+                        <!-- <div class="hidden xl:block w-64 flex-shrink-0">
                             <div class="text-sm">
                                 <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resultado</p>
-                                    <p class="font-semibold text-sm truncate"
+                                    <p class="font-medium text-sm truncate"
                                         :class="aptitud.aptitudPuesto === 'No Apto' ? 'text-red-600' : 'text-gray-800'">
                                         {{ aptitud.aptitudPuesto === 'Evaluación No Completada' ? 'No completada' : aptitud.aptitudPuesto.charAt(0).toUpperCase() + aptitud.aptitudPuesto.slice(1).toLowerCase() }}
                                     </p>
@@ -866,11 +871,11 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
-                        <div class="hidden lg:block mr-4 flex-shrink-0 min-w-0">
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
                             <div class="text-sm">
-                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-[calc(min(100vw-780px,900px))]">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Impedimentos Físicos</p>
-                                    <p class="font-semibold text-sm truncate max-w-full"
+                                    <p class="font-medium text-sm truncate max-w-full"
                                         :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'text-gray-800' : 'text-red-600'">
                                         {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'No presenta impedimentos físicos' : certificado.impedimentosFisicos }}
                                     </p>
@@ -919,11 +924,11 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
-                        <div class="hidden lg:block mr-4 flex-shrink-0 min-w-0">
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
                             <div class="text-sm">
-                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-[calc(min(100vw-780px,900px))]">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Notas</p>
-                                    <p class="font-semibold text-gray-800 text-sm truncate max-w-full">
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">
                                         {{ documentoExterno.notasDocumento.trim() !== '' && documentoExterno.notasDocumento.trim() !== 'undefined' ? documentoExterno.notasDocumento : 'Sin notas' }}
                                     </p>
                                 </div>
@@ -975,11 +980,11 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
-                        <div class="hidden lg:block w-64 flex-shrink-0">
+                        <div class="hidden xl:block flex-shrink-0">
                             <div class="text-sm flex space-x-2">
                                 <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resultados</p>
-                                    <p v-if="!examenVista.ojoIzquierdoLejanaConCorreccion && !examenVista.ojoDerechoLejanaConCorreccion" class="font-semibold text-sm truncate"
+                                    <p v-if="!examenVista.ojoIzquierdoLejanaConCorreccion && !examenVista.ojoDerechoLejanaConCorreccion" class="font-medium text-sm truncate"
                                         :class="examenVista.sinCorreccionLejanaInterpretacion === 'Visión excepcional' ? 'text-emerald-600' :
                                                examenVista.sinCorreccionLejanaInterpretacion === 'Visión normal' ? 'text-emerald-600' :
                                                examenVista.sinCorreccionLejanaInterpretacion === 'Visión ligeramente reducida' ? 'text-amber-600' :
@@ -988,20 +993,20 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                                                examenVista.sinCorreccionLejanaInterpretacion === 'Visión muy reducida' ? 'text-red-700' : 'text-gray-800'">
                                         {{ examenVista.sinCorreccionLejanaInterpretacion }}
                                     </p>
-                                    <p v-else class="font-semibold text-sm text-gray-800 truncate">
+                                    <p v-else class="font-medium text-sm text-gray-800 truncate">
                                         {{ examenVista.conCorreccionLejanaInterpretacion }} corregida
                                     </p>
                                 </div>
-                                <div class="hidden xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
+                                <div class="hidden 2xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Lentes</p>
-                                    <p class="font-semibold text-sm truncate"
+                                    <p class="font-medium text-sm truncate"
                                         :class="examenVista.requiereLentesUsoGeneral === 'Si' ? 'text-red-600' : 'text-gray-800'">
                                         {{ examenVista.requiereLentesUsoGeneral === 'Si' ? 'Requiere' : examenVista.requiereLentesUsoGeneral === 'No' ? 'No requiere' : examenVista.requiereLentesUsoGeneral }}
                                     </p>
                                 </div>
                                 <div class="hidden xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Ishihara</p>
-                                    <p class="font-semibold text-sm truncate"
+                                    <p class="font-medium text-sm truncate"
                                         :class="!examenVista.porcentajeIshihara ? 'text-gray-600' : examenVista.porcentajeIshihara < 80 ? 'text-red-600' : 'text-gray-800'">
                                         {{ !examenVista.porcentajeIshihara ? 'Pendiente' : examenVista.porcentajeIshihara < 80 ? `${examenVista.porcentajeIshihara}% - Daltonismo` : `${examenVista.porcentajeIshihara}% - Normal` }}
                                     </p>
@@ -1052,11 +1057,11 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
-                        <div class="hidden lg:block w-64 flex-shrink-0">
+                        <div class="hidden xl:block w-64 flex-shrink-0">
                             <div class="text-sm flex xl:space-x-2">
                                 <div class="hidden xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">IMC</p>
-                                    <p class="font-semibold text-sm truncate"
+                                    <p class="font-medium text-sm truncate"
                                         :class="exploracionFisica.categoriaIMC === 'Bajo peso' ? 'text-amber-600' :
                                                exploracionFisica.categoriaIMC === 'Normal' ? 'text-emerald-600' :
                                                exploracionFisica.categoriaIMC === 'Sobrepeso' ? 'text-amber-600' :
@@ -1068,7 +1073,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                                 </div>
                                 <div class="hidden 2xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Tensión Arterial</p>
-                                    <p class="font-semibold text-sm truncate"
+                                    <p class="font-medium text-sm truncate"
                                         :class="exploracionFisica.categoriaTensionArterial === 'Óptima' ? 'text-emerald-600' :
                                                exploracionFisica.categoriaTensionArterial === 'Normal' ? 'text-emerald-600' :
                                                exploracionFisica.categoriaTensionArterial === 'Alta' ? 'text-amber-600' :
@@ -1081,9 +1086,9 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                                         </span>
                                     </p>
                                 </div>
-                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-[calc(min(100vw-770px,900px))] xl:max-w-[calc(min(100vw-955px,980px))] 2xl:max-w-[calc(min(100vw-1140px,550px))]">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-exploracion xl-max-w-dynamic-exploracion-xl xxl-max-w-dynamic-exploracion-2xl">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resumen</p>
-                                    <p class="font-semibold text-sm truncate max-w-full "
+                                    <p class="font-medium text-sm truncate max-w-full "
                                         :class="exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' || exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'text-gray-800' : 'text-red-600'">
                                         {{ exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' ? 'Clínicamente sano' : exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'Clínicamente sana' : exploracionFisica.resumenExploracionFisica }}
                                     </p>
@@ -1130,16 +1135,16 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
-                        <div class="hidden lg:block w-64 flex-shrink-0">
+                        <div class="hidden xl:block w-64 flex-shrink-0">
                             <div class="text-sm flex xl:space-x-2">
                                 <div class="hidden xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Evaluación</p>
-                                    <p class="font-semibold text-gray-800 text-sm truncate">{{ historiaClinica.motivoExamen }}</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate">{{ historiaClinica.motivoExamen }}</p>
                                 </div>
                                 <div class="hidden 2xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Accidente</p>
-                                    <p class="font-semibold text-sm truncate"
-                                        :class="historiaClinica.accidenteLaboral === 'Si' && historiaClinica.secuelas !== 'Sin secuelas' ? 'text-red-600' : 'text-gray-600'">
+                                    <p class="font-medium text-sm truncate"
+                                        :class="historiaClinica.accidenteLaboral === 'Si' && historiaClinica.secuelas !== 'Sin secuelas' ? 'text-red-600' : 'text-gray-800'">
                                         {{ 
                                             historiaClinica.accidenteLaboral === 'Si' && historiaClinica.secuelas === 'Sin secuelas' ? 'Si - Sin secuelas' :
                                             historiaClinica.accidenteLaboral === 'Si' && historiaClinica.secuelas !== 'Sin secuelas' ? `Si - Con secuelas` :
@@ -1147,9 +1152,9 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                                         }}
                                     </p>
                                 </div>
-                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-[calc(min(100vw-780px,900px))] xl:max-w-[calc(min(100vw-875px,1010px))] 2xl:max-w-[calc(min(100vw-1005px,675px))]">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-historia xl-max-w-dynamic-historia-xl xxl-max-w-dynamic-historia-2xl">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resumen</p>
-                                    <p class="font-semibold text-sm truncate max-w-full xl:max-w-none 2xl:max-w-none"
+                                    <p class="font-medium text-sm truncate max-w-full xl:max-w-none 2xl:max-w-none"
                                         :class="historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' || historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'text-gray-800' : 'text-red-600'">
                                         {{ historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' ? 'Se refiere asintomático' : historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'Se refiere asintomática' : historiaClinica.resumenHistoriaClinica }}
                                     </p>
@@ -1195,11 +1200,11 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
-                        <div v-if="notaMedica.diagnostico" class="hidden lg:block mr-4 flex-shrink-0 min-w-0">
+                        <div v-if="notaMedica.diagnostico" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
                             <div class="text-sm">
-                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-[calc(min(100vw-780px,900px))]">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Diagnóstico</p>
-                                    <p class="font-semibold text-gray-800 text-sm truncate max-w-full">{{ notaMedica.diagnostico }}</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ notaMedica.diagnostico }}</p>
                                 </div>
                             </div>
                         </div>
@@ -1253,10 +1258,11 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
     </div>
 
     <!-- Visor de PDF -->
-    <Transition name="modal-fade" appear>
-        <div v-if="showPdfViewer"
-            class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-90 backdrop-blur-sm flex justify-center items-center z-50"
-            @click.self="cerrarPdf">
+    <Teleport to="body">
+        <Transition name="modal-fade" appear>
+            <div v-if="showPdfViewer"
+                class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-90 backdrop-blur-sm flex justify-center items-center z-50"
+                @click.self="cerrarPdf">
             
             <!-- Header del visor -->
             <div class="absolute top-0 left-0 right-0 bg-white bg-opacity-95 backdrop-blur-sm border-b border-gray-200 z-10">
@@ -1311,12 +1317,14 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
             </div>
         </div>
     </Transition>
+    </Teleport>
 
     <!-- Visor de Imágenes -->
-    <Transition name="modal-fade" appear>
-        <div v-if="showImageViewer"
-            class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-90 backdrop-blur-sm flex justify-center items-center z-50"
-            @click.self="cerrarImagen">
+    <Teleport to="body">
+        <Transition name="modal-fade" appear>
+            <div v-if="showImageViewer"
+                class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-90 backdrop-blur-sm flex justify-center items-center z-50"
+                @click.self="cerrarImagen">
             
             <!-- Header del visor -->
             <div class="absolute top-0 left-0 right-0 bg-white bg-opacity-95 backdrop-blur-sm border-b border-gray-200 z-10">
@@ -1386,6 +1394,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
             </div>
         </div>
     </Transition>
+    </Teleport>
 
 </template>
 

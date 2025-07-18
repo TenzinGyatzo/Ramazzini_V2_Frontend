@@ -141,6 +141,8 @@ button:focus {
 .animate-spin {
   animation: spin 1s linear infinite;
 }
+
+
 </style>
 
 <template>
@@ -173,7 +175,7 @@ button:focus {
         </div>
 
         <!-- Botones mejorados -->
-        <div class="flex flex-col sm:flex-row gap-3">
+        <div class="flex flex-row gap-3">
           <button
             class="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-200 active:scale-95"
             @click="emit('close')"

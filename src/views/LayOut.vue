@@ -238,7 +238,7 @@ const textoEnlace = computed(() => {
     <!-- Logo de la empresa -->
     <div v-if="empresas.currentEmpresa?.logotipoEmpresa?.data && 
       ['trabajadores', 'expediente-medico', 'crear-documento'].includes(route.name as string)"
-      class="fixed top-4 right-4 h-16 w-16 md:h-32 md:w-32 rounded z-0 flex items-center justify-center overflow-hidden">
+      class="fixed top-0 right-0 h-16 w-16 md:h-32 md:w-32 rounded z-50 flex flex-col items-center justify-center overflow-hidden">
       <img :src="'/uploads/logos/' + empresas.currentEmpresa?.logotipoEmpresa?.data"
       :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial" class="max-h-full max-w-full object-contain p-2">
     </div>
@@ -471,6 +471,27 @@ const textoEnlace = computed(() => {
     </Transition>
 
   </main>
+
+  <!-- Herramienta de Debug - Media Query -->
+  <div class="fixed top-4 left-4 z-50 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg text-sm font-mono">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 bg-red-500 rounded-full sm:hidden"></span>
+      <span class="w-2 h-2 bg-orange-500 rounded-full hidden sm:block md:hidden"></span>
+      <span class="w-2 h-2 bg-yellow-500 rounded-full hidden md:block lg:hidden"></span>
+      <span class="w-2 h-2 bg-green-500 rounded-full hidden lg:block xl:hidden"></span>
+      <span class="w-2 h-2 bg-blue-500 rounded-full hidden xl:block 2xl:hidden"></span>
+      <span class="w-2 h-2 bg-purple-500 rounded-full hidden 2xl:block"></span>
+      <span class="text-xs">
+        <span class="sm:hidden">xs</span>
+        <span class="hidden sm:block md:hidden">sm</span>
+        <span class="hidden md:block lg:hidden">md</span>
+        <span class="hidden lg:block xl:hidden">lg</span>
+        <span class="hidden xl:block 2xl:hidden">xl</span>
+        <span class="hidden 2xl:block">2xl</span>
+      </span>
+    </div>
+  </div>
+
 </template>
 
 <style>

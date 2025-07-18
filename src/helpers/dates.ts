@@ -48,24 +48,45 @@ function calcularAntiguedad(dateString: string): string {
   const fechaIngresoMilisegundos = fechaIngreso.getTime();
   const hoy = new Date();
   const hoyMilisegundos = new Date().getTime();
-  const milisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
   const antiguedadEnMilisegundos = hoyMilisegundos - fechaIngresoMilisegundos;
-  if (antiguedadEnMilisegundos <= milisecondsPerWeek) {
+  
+  // Convertir a días
+  const dias = Math.floor(antiguedadEnMilisegundos / (1000 * 60 * 60 * 24));
+  
+  // Menos de 7 días
+  if (dias < 7) {
     return "Nuevo Ingreso";
   }
+  
+  // Entre 7 y 28 días (1-4 semanas)
+  if (dias <= 28) {
+    const semanas = Math.floor(dias / 7);
+    return `${semanas} ${semanas === 1 ? 'semana' : 'semanas'}`;
+  }
+  
+  // Calcular meses y años
   const totalMonths =
     (hoy.getFullYear() - fechaIngreso.getFullYear()) * 12 +
     hoy.getMonth() -
     fechaIngreso.getMonth();
   const years = Math.floor(totalMonths / 12);
   const months = totalMonths % 12;
-  const mesText = months === 1 ? "mes" : "meses";
   
-  /* if (years < 1) {
+  // Menos de 1 año
+  if (years < 1) {
+    const mesText = months === 1 ? "mes" : "meses";
     return `${months} ${mesText}`;
-  } */
+  }
   
-  return `${years} años, ${months} ${mesText}`;
+  // 1 año o más
+  const mesText = months === 1 ? "mes" : "meses";
+  const yearText = years === 1 ? "año" : "años";
+  
+  if (months === 0) {
+    return `${years} ${yearText}`;
+  }
+  
+  return `${years} ${yearText}, ${months} ${mesText}`;
 }
 
   function formatDateDDMMYYYY(date) {

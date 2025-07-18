@@ -34,7 +34,7 @@ const emit = defineEmits(['click']);
     :disabled="disabled || loading"
     @click="$emit('click')"
     :class="[
-      'inline-flex items-center justify-center gap-2 font-normal rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
+      'inline-flex items-center justify-center gap-2 font-normal rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
       // Tamaños
       size === 'small' && 'px-4 py-2 text-sm min-w-32',
       size === 'medium' && 'px-6 py-3 text-base min-w-40',
@@ -68,8 +68,15 @@ const emit = defineEmits(['click']);
       ></path>
     </svg>
     
-    <!-- Icono de éxito (opcional) -->
-    <i v-else-if="!loading && text.includes('+')" class="fas fa-plus text-sm"></i>
+    <!-- Icono personalizado desde slot -->
+    <slot name="icon" v-else-if="!loading">
+      <!-- Icono por defecto basado en el texto -->
+      <i v-if="text.toLowerCase().includes('entidad')" class="fas fa-plus text-sm"></i>
+      <i v-else-if="text.toLowerCase().includes('cliente')" class="fas fa-building text-sm"></i>
+      <i v-else-if="text.toLowerCase().includes('nuevo')" class="fas fa-user-plus text-sm"></i>
+      <i v-else-if="text.toLowerCase().includes('carga')" class="fas fa-upload text-sm"></i>
+      <i v-else-if="text.toLowerCase().includes('exportar')" class="fas fa-download text-sm"></i>
+    </slot>
     
     <!-- Texto del botón -->
     <span>{{ text }}</span>

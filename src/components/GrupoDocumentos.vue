@@ -158,7 +158,7 @@ const toggleSelectAll = () => {
                 <div class="absolute inset-0" style="background-image: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 20px 20px;"></div>
             </div>
             
-            <div class="relative px-6 py-4 flex items-center justify-between">
+            <div class="relative px-6 py-3 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <!-- Icono de calendario -->
                     <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
@@ -178,7 +178,7 @@ const toggleSelectAll = () => {
                 </div>
                 
                 <!-- Indicador de selección -->
-                <div v-if="documentosSeleccionadosDelGrupo > 0" class="flex items-center space-x-2 bg-white bg-opacity-20 rounded-lg px-3 py-1">
+                <div v-if="documentosSeleccionadosDelGrupo > 0" class="hidden sm:flex items-center space-x-2 bg-white bg-opacity-20 rounded-lg px-3 py-1">
                     <div class="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></div>
                     <span class="text-white text-sm font-medium">
                         {{ documentosSeleccionadosDelGrupo }} seleccionado{{ documentosSeleccionadosDelGrupo !== 1 ? 's' : '' }}
@@ -188,7 +188,7 @@ const toggleSelectAll = () => {
         </div>
 
         <!-- Barra de selección mejorada -->
-        <div class="flex items-center px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200">
+        <div class="flex items-center px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200">
             <div class="flex items-center space-x-3">
                 <!-- Checkbox personalizado -->
                 <div class="relative">
@@ -214,10 +214,10 @@ const toggleSelectAll = () => {
                 </div>
                 
                 <div class="flex flex-col">
-                    <label :for="`select-all-checkbox-${year}`" class="text-gray-700 font-semibold cursor-pointer transition-colors duration-200 hover:text-emerald-700">
+                    <label :for="`select-all-checkbox-${year}`" class="text-gray-700 font-semibold cursor-pointer transition-colors duration-200 hover:text-emerald-600 ml-0.5">
                         Seleccionar Todos
                     </label>
-                    <span class="text-xs text-gray-500">
+                    <span class="text-xs text-gray-500 ml-0.5">
                         {{ documentosSeleccionadosDelGrupo }} de {{ totalDocumentos }} documentos
                     </span>
                 </div>
@@ -225,9 +225,9 @@ const toggleSelectAll = () => {
         </div>
 
         <!-- Contenido de documentos con espaciado mejorado -->
-        <div class="divide-y divide-gray-100">
+        <div class="divide-gray-100">
             <!-- Aptitudes -->
-            <div v-if="documents.aptitudes && documents.aptitudes.length > 0" class="space-y-1">
+            <div v-if="documents.aptitudes && documents.aptitudes.length > 0">
                 <div v-for="(aptitud, index) in documents.aptitudes" :key="aptitud._id" 
                      class="transition-all duration-200 hover:bg-gray-50"
                      :style="{ animationDelay: `${index * 50}ms` }">
@@ -250,7 +250,7 @@ const toggleSelectAll = () => {
             </div>
 
             <!-- Historias Clinicas -->
-            <div v-if="documents.historiasClinicas && documents.historiasClinicas.length > 0" class="space-y-1">
+            <div v-if="documents.historiasClinicas && documents.historiasClinicas.length > 0">
                 <div v-for="(historiaClinica, index) in documents.historiasClinicas" :key="historiaClinica._id"
                      class="transition-all duration-200 hover:bg-gray-50"
                      :style="{ animationDelay: `${index * 50}ms` }">
@@ -273,7 +273,7 @@ const toggleSelectAll = () => {
             </div>
 
             <!-- Exploraciones Fisicas -->
-            <div v-if="documents.exploracionesFisicas && documents.exploracionesFisicas.length > 0" class="space-y-1">
+            <div v-if="documents.exploracionesFisicas && documents.exploracionesFisicas.length > 0">
                 <div v-for="(exploracionFisica, index) in documents.exploracionesFisicas" :key="exploracionFisica._id"
                      class="transition-all duration-200 hover:bg-gray-50"
                      :style="{ animationDelay: `${index * 50}ms` }">
@@ -296,7 +296,7 @@ const toggleSelectAll = () => {
             </div>
 
             <!-- Examenes de la Vista -->
-            <div v-if="documents.examenesVista && documents.examenesVista.length > 0" class="space-y-1">
+            <div v-if="documents.examenesVista && documents.examenesVista.length > 0">
                 <div v-for="(examenVista, index) in documents.examenesVista" :key="examenVista._id"
                      class="transition-all duration-200 hover:bg-gray-50"
                      :style="{ animationDelay: `${index * 50}ms` }">
@@ -319,7 +319,7 @@ const toggleSelectAll = () => {
             </div>
 
             <!-- Antidopings -->
-            <div v-if="documents.antidopings && documents.antidopings.length > 0" class="space-y-1">
+            <div v-if="documents.antidopings && documents.antidopings.length > 0">
                 <div v-for="(antidoping, index) in documents.antidopings" :key="antidoping._id"
                      class="transition-all duration-200 hover:bg-gray-50"
                      :style="{ animationDelay: `${index * 50}ms` }">
@@ -342,7 +342,7 @@ const toggleSelectAll = () => {
             </div>
 
             <!-- Certificados -->
-            <div v-if="documents.certificados && documents.certificados.length > 0" class="space-y-1">
+            <div v-if="documents.certificados && documents.certificados.length > 0">
                 <div v-for="(certificado, index) in documents.certificados" :key="certificado._id"
                      class="transition-all duration-200 hover:bg-gray-50"
                      :style="{ animationDelay: `${index * 50}ms` }">
@@ -365,7 +365,7 @@ const toggleSelectAll = () => {
             </div>
 
             <!-- Documentos Externos -->
-            <div v-if="documents.documentosExternos && documents.documentosExternos.length > 0" class="space-y-1">
+            <div v-if="documents.documentosExternos && documents.documentosExternos.length > 0">
                 <div v-for="(documentoExterno, index) in documents.documentosExternos" :key="documentoExterno._id"
                      class="transition-all duration-200 hover:bg-gray-50"
                      :style="{ animationDelay: `${index * 50}ms` }">
@@ -389,7 +389,7 @@ const toggleSelectAll = () => {
             </div>
 
             <!-- Notas Medicas -->
-            <div v-if="documents.notasMedicas && documents.notasMedicas.length > 0" class="space-y-1">
+            <div v-if="documents.notasMedicas && documents.notasMedicas.length > 0">
                 <div v-for="(notaMedica, index) in documents.notasMedicas" :key="notaMedica._id"
                      class="transition-all duration-200 hover:bg-gray-50"
                      :style="{ animationDelay: `${index * 50}ms` }">
@@ -471,4 +471,6 @@ const toggleSelectAll = () => {
         opacity: .5;
     }
 }
+
+
 </style>

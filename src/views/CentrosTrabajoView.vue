@@ -208,7 +208,7 @@ onMounted(async () => {
                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-normal rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-200 active:scale-95 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl"
                 >
                   <i class="fas fa-plus text-sm"></i>
-                  <span>Nueva Entidad +</span>
+                  <span>Nueva Entidad</span>
                 </button>
               </div>
             </div>
@@ -357,7 +357,7 @@ onMounted(async () => {
               </div>
               
               <GreenButton 
-                text="Crear Primera Entidad +" 
+                text="Crear Primera Entidad" 
                 size="large"
                 @click="openModal(null)" 
               />

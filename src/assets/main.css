@@ -1,3 +1,46 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Variables CSS del sidebar */
+:root {
+  --sidebar-width: 55px;
+  --content-margin: 55px;
+  --sidebar-difference: 0px; /* Diferencia adicional cuando está expandido */
+}
+
+/* Clases utilitarias para anchos dinámicos basados en el estado del sidebar */
+@layer utilities {
+  .max-w-dynamic-base {
+    max-width: calc(min(100vw - 780px - var(--sidebar-difference), 900px));
+  }
+  
+  .max-w-dynamic-exploracion {
+    max-width: calc(min(100vw - 770px - var(--sidebar-difference), 900px));
+  }
+  
+  .max-w-dynamic-historia {
+    max-width: calc(min(100vw - 780px - var(--sidebar-difference), 900px));
+  }
+}
+
+/* Clases responsivas para exploración física */
+@media (min-width: 1280px) {
+  .xl-max-w-dynamic-exploracion-xl {
+    max-width: calc(min(100vw - 955px - var(--sidebar-difference), 980px));
+  }
+  
+  .xl-max-w-dynamic-historia-xl {
+    max-width: calc(min(100vw - 875px - var(--sidebar-difference), 1010px));
+  }
+}
+
+@media (min-width: 1536px) {
+  .xxl-max-w-dynamic-exploracion-2xl {
+    max-width: calc(min(100vw - 1140px - var(--sidebar-difference), 550px));
+  }
+  
+  .xxl-max-w-dynamic-historia-2xl {
+    max-width: calc(min(100vw - 1005px - var(--sidebar-difference), 675px));
+  }
+}

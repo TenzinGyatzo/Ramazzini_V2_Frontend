@@ -145,15 +145,22 @@ if (periodoDePruebaFinalizado && estadoSuscripcion === 'cancelled' && finDeSuscr
   <div class="p-5 grid gap-5">
     <div class="w-full px-4 grid gap-4">
       <!-- Layout responsivo -->
-      <div class="flex flex-col sm:flex-row md:items-center md:justify-between xl:grid xl:grid-cols-[1fr_auto_1fr] xl:items-center gap-0">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
       
-        <!-- Botón: centrado en sm, a la izquierda en md, centrado en xl -->
-        <div class="flex justify-center md:justify-start xl:col-start-2">
-          <GreenButton text="Nuevo Cliente +" @click="openModal(null)" />
+        <!-- Botón: siempre a la izquierda -->
+        <div class="w-full sm:w-auto">
+          <button 
+            type="button"
+            @click="openModal(null)"
+            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-normal rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-200 active:scale-95 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl"
+          >
+            <i class="fas fa-building text-sm"></i>
+            <span>Nuevo Cliente</span>
+          </button>
         </div>
 
-        <!-- Buscador -->
-        <div class="relative mt-4 sm:mt-0 w-full sm:w-60 md:w-80 lg:w-96 xl:justify-self-end sm:ml-auto">
+        <!-- Buscador: siempre a la derecha -->
+        <div class="relative w-full sm:w-60 md:w-80 lg:w-96">
           <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <i class="fa-solid fa-magnifying-glass text-gray-500 focus:text-emerald-500"></i>
           </span>
