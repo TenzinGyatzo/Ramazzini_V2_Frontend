@@ -8,6 +8,7 @@ import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 import { clasificarPorEdadYSexo, ordenarPorGrupoEtario, contarPorCategoriaIMC, etiquetasEnfermedades, contarEnfermedadesCronicas, etiquetasAntecedentesReferidos, contarAntecedentesReferidos, etiquetasVisionSinCorreccion, calcularRequierenLentes, contarVisionSinCorreccion, calcularVistaCorregida, calcularDaltonismo, etiquetasAptitudPuesto, etiquetasAptitudPuestoTabla, contarPorAptitudPuesto, calcularCircunferenciaCintura, contarConsultasUltimos30Dias, etiquetasAgentesRiesgo, contarAgentesRiesgo, contarPorSexo, categoriasTensionArterialOrdenadas, contarPorCategoriaTensionArterial } from '@/helpers/dashboardDataProcessor';
 import GraficaBarras from '@/components/graficas/GraficaBarras.vue';
 import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
+import GraficaPastel from '@/components/graficas/GraficaPastel.vue';
 import { subDays, format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import DescargarInformeDashboard from '@/components/DescargarInformeDashboard.vue';
@@ -208,56 +209,6 @@ const totalTrabajadores = computed(() => {
 });
 
 // Computed para tabla y gráfica de distribución por sexo
-const graficaSexoData = computed(() => {
-  if (!dashboardData.value.length) return { chart: { labels: [], datasets: [] }, masculino: 0, femenino: 0, porcentaje: 0 };
-
-  const trabajadores = centroSeleccionado.value === 'Todos'
-    ? dashboardData.value.flatMap((d) => d.grupoEtario[0] || [])
-    : dashboardData.value[
-        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
-      ]?.grupoEtario[0] || [];
-
-  const { Masculino, Femenino } = contarPorSexo(trabajadores);
-  const total = Masculino + Femenino;
-  const porcentaje = total > 0 ? Math.round((Masculino / total) * 100) : 0;
-
-  return {
-    masculino: Masculino,
-    femenino: Femenino,
-    porcentaje,
-    chart: {
-      labels: ['Distribución por Sexo'],
-      datasets: [
-        {
-          label: 'Hombres',
-          data: [Masculino],
-          backgroundColor: '#4B5563', // Gris oscuro
-          stack: 'Stack 0'
-        },
-        {
-          label: 'Mujeres',
-          data: [Femenino],
-          backgroundColor: '#9CA3AF', // Gris medio
-          stack: 'Stack 0'
-        }
-      ]
-    }
-  };
-});
-
-// Computed para tabla y gráfica de tensión arterial
-const tablaTensionArterial = computed(() => {
-  if (!dashboardData.value.length) return [];
-
-  const data = centroSeleccionado.value === 'Todos'
-    ? dashboardData.value.flatMap((d) => d.tensionArterial?.[0] || [])
-    : dashboardData.value[
-        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
-      ]?.tensionArterial?.[0] || [];
-
-  return contarPorCategoriaTensionArterial(data);
-});
-
 const tablaSexo = computed(() => {
   if (!dashboardData.value.length) return [];
 
@@ -274,6 +225,88 @@ const tablaSexo = computed(() => {
     ['Masculino', Masculino, total > 0 ? Math.round((Masculino / total) * 100) : 0],
     ['Femenino', Femenino, total > 0 ? Math.round((Femenino / total) * 100) : 0]
   ];
+});
+
+const graficaSexoData = computed(() => {
+  if (!dashboardData.value.length) return { labels: [], datasets: [] };
+
+  const trabajadores = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.grupoEtario[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.grupoEtario[0] || [];
+
+  const { Masculino, Femenino } = contarPorSexo(trabajadores);
+
+  return {
+    labels: ['Masculino', 'Femenino'],
+    datasets: [
+      {
+        data: [Masculino, Femenino],
+        // backgroundColor: ['#4B5563', '#9CA3AF'], // Gris oscuro, Gris claro
+        // backgroundColor: ['#0ea5e9', '#d946ef'], // sky-500, fuchsia-500 
+        backgroundColor: ['#0ea5e9', '#f43f5e'], // sky-500, rose-500 
+        hoverOffset: 8,
+      }
+    ]
+  };
+});
+
+// Computed para PDF: objeto con masculino, femenino y porcentaje
+const tablaSexoPDF = computed(() => {
+  const masculino = graficaSexoData.value.datasets[0]?.data[0] || 0;
+  const femenino = graficaSexoData.value.datasets[0]?.data[1] || 0;
+  const total = masculino + femenino;
+  return {
+    masculino,
+    femenino,
+    porcentaje: total > 0 ? Math.round((masculino / total) * 100) : 0
+  };
+});
+
+const opcionesGraficaPastelSexo = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          const total = context.dataset.data.reduce((a, b) => a + b, 0);
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `${context.label}: ${value} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      color: '#fff',
+      anchor: 'center',
+      align: 'end',
+      offset: 20,
+      font: { weight: 'bold', size: 12 },
+      formatter: (value, context) => {
+        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return value > 0 ? `${value} (${porcentaje}%)` : '';
+      }
+    }
+  }
+};
+
+// Computed para tabla y gráfica de tensión arterial
+const tablaTensionArterial = computed(() => {
+  if (!dashboardData.value.length) return [];
+
+  const data = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.tensionArterial?.[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.tensionArterial?.[0] || [];
+
+  return contarPorCategoriaTensionArterial(data);
 });
 
 const graficaTensionArterialData = computed(() => {
@@ -349,77 +382,6 @@ const graficaTensionArterialOptions = {
       }
     },
     y: {
-      grid: { display: false },
-      ticks: {
-        color: '#374151',
-        font: { size: 12 }
-      }
-    }
-  },
-  onHover: (event, elements) => {
-    const canvas = event.chart?.canvas;
-    if (canvas) {
-      canvas.style.cursor = elements.length ? 'pointer' : 'default';
-    }
-  }
-};
-
-const graficaSexoOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  layout: {
-    padding: {
-      top: 0,
-      bottom: 0
-    }
-  },
-  plugins: {
-    legend: {
-      display: false
-    },
-    tooltip: {
-      enabled: true,
-      callbacks: {
-        label: (context) => {
-          const value = context.raw;
-          const total = graficaSexoData.value.masculino + graficaSexoData.value.femenino;
-          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
-          return `${context.dataset.label}: ${value} (${porcentaje}%)`;
-        }
-      }
-    },
-    datalabels: {
-      color: '#FFFFFF',
-      anchor: 'center',
-      align: 'center',
-      formatter: (value, context) => {
-        if (value === 0) return '';
-        const total = graficaSexoData.value.masculino + graficaSexoData.value.femenino;
-        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
-        return `${value} (${porcentaje}%)`;
-      },
-      font: {
-        weight: 'bold',
-        size: 12
-      },
-      clamp: true
-    }
-  },
-  scales: {
-    x: {
-      stacked: true,
-      beginAtZero: true,
-      grid: { display: false },
-      categoryPercentage: 1.0,
-      barPercentage: 0.7,
-      ticks: {
-        color: '#374151',
-        font: { size: 12 }
-      }
-    },
-    y: {
-      stacked: true,
-      beginAtZero: true,
       grid: { display: false },
       ticks: {
         color: '#374151',
@@ -1148,13 +1110,15 @@ const graficaGruposEtariosData = computed(() => {
       {
         label: 'Hombres',
         data: hombres,
-        backgroundColor: '#4B5563', // Gris oscuro
+        // backgroundColor: '#4B5563', // Gris oscuro
+        backgroundColor: '#0ea5e9', // sky-500
         stack: 'Stack 0'
       },
       {
         label: 'Mujeres',
         data: mujeres,
-        backgroundColor: '#9CA3AF', // Gris medio
+        // backgroundColor: '#9CA3AF', // Gris medio
+        backgroundColor: '#f43f5e', // rose-500
         stack: 'Stack 0'
       }
     ]
@@ -1484,6 +1448,7 @@ const tablaCintura = computed(() => {
   });
 });
 
+
 </script>
 
 <template>
@@ -1545,7 +1510,7 @@ const tablaCintura = computed(() => {
             agentes: { ref: refAgentes, config: { type: 'bar', data: graficaAgentesRiesgoData, options: graficaAgentesRiesgoOptions } },
             grupos: { ref: refGruposEtarios, config: { type: 'bar', data: graficaGruposEtariosData, options: graficaGruposEtariosOptions } },
             cintura: { ref: refCircunferencia, config: { type: 'bar', data: graficaCircunferenciaData.chart, options: graficaCircunferenciaOptions } },
-            sexo: { ref: refSexo, config: { type: 'bar', data: graficaSexoData.chart, options: graficaSexoOptions } },
+            sexo: { ref: refSexo, config: { type: 'pie', data: graficaSexoData, options: opcionesGraficaPastelSexo } },
             tensionArterial: { ref: refTensionArterial, config: { type: 'bar', data: graficaTensionArterialData, options: graficaTensionArterialOptions } }
           }"
           :nombre-empresa="empresasStore.currentEmpresa?.nombreComercial"
@@ -1568,7 +1533,7 @@ const tablaCintura = computed(() => {
             vistaCorregida: graficaVistaCorregidaData,
             daltonismo: graficaDaltonismoData,
             cintura: graficaCircunferenciaData,
-            sexo: graficaSexoData,
+            sexo: tablaSexoPDF,
             tensionArterial: tablaTensionArterial
           }"
         />
@@ -1708,12 +1673,12 @@ const tablaCintura = computed(() => {
           <div class="flex-1">
             <Transition name="fade" mode="out-in">
               <template v-if="vistaSexo === 'grafico'">
-                <GraficaBarras
-                  v-if="graficaSexoData.chart?.labels?.length"
+                <GraficaPastel
+                  v-if="graficaSexoData.labels?.length"
                   ref="refSexo"
                   :key="vistaSexoKey"
-                  :data="graficaSexoData.chart"
-                  :options="{ ...graficaSexoOptions, onClick: handleClickGraficaSexo }"
+                  :data="graficaSexoData"
+                  :options="opcionesGraficaPastelSexo"
                 />
               </template>
 

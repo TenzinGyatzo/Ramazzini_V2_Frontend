@@ -145,7 +145,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         daltonismo: [3000, 2000],
         agentes: [3000, 2000],
         grupos: [3600, 2000],
-        cintura: [3000, 2000]
+        cintura: [3000, 2000],
+        sexo: [3000, 2000],
+        tensionArterial: [3000, 2000]
     } : {
         imc: [800, 600],
         aptitud: [800, 600],
@@ -154,7 +156,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         daltonismo: [600, 600],
         agentes: [800, 600],
         grupos: [1000, 600],
-        cintura: [600, 600]
+        cintura: [600, 800],
+        sexo: [600, 800],
+        tensionArterial: [800, 600]
     };
 
     const imagenes = {
@@ -166,26 +170,111 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         agentes: obtenerBase64(props.refsGraficas.agentes, dimensiones.agentes[0], dimensiones.agentes[1]),
         grupos: obtenerBase64(props.refsGraficas.grupos, dimensiones.grupos[0], dimensiones.grupos[1]),
         cintura: obtenerBase64(props.refsGraficas.cintura, dimensiones.cintura[0], dimensiones.cintura[1]),
+        sexo: obtenerBase64(props.refsGraficas.sexo, dimensiones.sexo[0], dimensiones.sexo[1]),
+        tensionArterial: obtenerBase64(props.refsGraficas.tensionArterial, dimensiones.tensionArterial[0], dimensiones.tensionArterial[1])
     };
 
     const contenido: Content[] = [];
 
     // Resumen ejecutivo
     contenido.push(
-        { text: 'RESUMEN EJECUTIVO', style: 'tituloSeccion' },
+        { text: 'INTRODUCCIÓN', style: 'tituloSeccion' },
         {
-            text: 'Este informe presenta un análisis integral del estado de salud de los trabajadores, con base en los datos recopilados en el periodo de evaluación. Estos documento busca proporcionar a la dirección herramientas objetivas para la toma de decisiones estratégicas en materia de salud ocupacional.',
+            text: [
+                'Este informe presenta los resultados descriptivos sobre la ',
+                { text: 'salud de los trabajadores,', bold: true },
+                'con base en los datos recopilados en el ',
+                { text: 'periodo de evaluación seleccionado.', bold: true },
+                'El documento busca proporcionar a la dirección información objetiva para apoyar la toma de ',
+                { text: 'decisiones estratégicas', bold: true },
+                ' en materia de salud ocupacional.'
+            ],
             style: 'textoNormal',
             margin: [0, 0, 0, 20]
         }
     );
 
     // Sección 1: Composición Demográfica
+    contenido.push({ text: '1. COMPOSICIÓN DEMOGRÁFICA', style: 'tituloSeccion' });
+
+    if (imagenes.sexo) {
+        contenido.push(
+            { text: '1.1 Distribución por Sexo', style: 'subtituloSeccion' },
+            {
+                text: 'A continuación se presenta la distribución proporcional por sexo de la población evaluada, lo que permite analizar las características demográficas de la plantilla laboral.',
+                style: 'textoNormal',
+                margin: [0, 0, 0, 10]
+            }
+        );
+        
+        // Obtener datos de la gráfica de sexo
+        const datosSexo = props.tablasDatos?.sexo;
+        const masculino = datosSexo?.masculino || 0;
+        const femenino = datosSexo?.femenino || 0;
+        const porcentajeMasculino = datosSexo?.porcentaje || 0;
+        const totalSexo = masculino + femenino;
+        
+        // Crear tabla con gráfica y datos lado a lado
+        // Altura de la imagen (en px)
+        const alturaImagenSexo = 175;
+        // Altura estimada de una fila de la tabla (en px)
+        const alturaFilaTabla = 24; // Ajusta este valor si tu fuente es más grande o pequeña
+        // Número de filas de la tabla de sexo (header + filas de datos)
+        const filasTablaSexo = 1 + 2; // Header + Hombres + Mujeres
+        // Altura total estimada de la tabla
+        const alturaTablaSexo = filasTablaSexo * alturaFilaTabla;
+        // Margen superior para centrar la tabla respecto a la imagen
+        const margenSuperiorTablaSexo = Math.max(0, Math.round((alturaImagenSexo - alturaTablaSexo) / 2));
+        
+        const tablaSexoCombinada = {
+            table: {
+                widths: ['60%', '40%'],
+                body: [
+                    [
+                        // Columna izquierda: Gráfica
+                        {
+                            image: imagenes.sexo,
+                            width: 175,
+                            alignment: 'center'
+                        },
+                        // Columna derecha: Tabla de datos
+                        {
+                            table: {
+                                headerRows: 1,
+                                widths: ['auto', 'auto'],
+                                body: [
+                                    [
+                                        { text: 'Sexo', style: 'tableHeaderMedium' },
+                                        { text: 'Cantidad', style: 'tableHeaderMedium' }
+                                    ],
+                                    [
+                                        { text: 'Hombres', style: 'tableCellMedium' },
+                                        { text: `${masculino} (${porcentajeMasculino}%)`, style: 'tableCellBlue' }
+                                    ],
+                                    [
+                                        { text: 'Mujeres', style: 'tableCellMedium' },
+                                        { text: `${femenino} (${totalSexo > 0 ? Math.round((femenino / totalSexo) * 100) : 0}%)`, style: 'tableCellPink' }
+                                    ]
+                                ]
+                            },
+                            layout: 'lightHorizontalLines',
+                            margin: [0, margenSuperiorTablaSexo, 0, 0]
+                        }
+                    ]
+                ]
+            },
+            layout: 'noBorders',
+            margin: [0, 10, 0, 20]
+        } as Content;
+        
+        contenido.push(tablaSexoCombinada);
+    }
+
     if (imagenes.grupos) {
         contenido.push(
-            { text: '1. COMPOSICIÓN DEMOGRÁFICA', style: 'tituloSeccion' },
+            { text: '1.2 Distribución por Grupos Etarios', style: 'subtituloSeccion' },
             {
-                text: 'Distribución de trabajadores activos por grupos de edad y género, permitiendo identificar la estructura demográfica de la plantilla laboral.',
+                text: 'Distribución de los trabajadores activos según grupos etarios y género.',
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             },
@@ -221,19 +310,27 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     }
 
     // Sección 2: Indicadores de Salud Física
-    contenido.push({ text: '2. INDICADORES DE SALUD FÍSICA', style: 'tituloSeccion' });
+    contenido.push({ text: '2. INDICADORES DE SALUD FÍSICA', style: 'tituloSeccion', pageBreak: 'before' });
 
     if (imagenes.imc) {
         contenido.push(
-            { text: '2.1 Distribución por Categoría de IMC', style: 'subtituloSeccion' },
+            { text: '2.1 Índice de Masa Corporal (IMC)', style: 'subtituloSeccion' },
             {
-                text: 'El Índice de Masa Corporal (IMC) es un indicador clave para evaluar el estado nutricional y los riesgos de salud asociados al peso corporal.',
+                text: [
+                    'El ',
+                    { text: 'sobrepeso y la obesidad', bold: true },
+                    ' se definen como una ',
+                    { text: 'acumulación anormal o excesiva de grasa', bold: true },
+                    ' que puede ser perjudicial para la salud. ',
+                    { text: 'Un IMC elevado es un importante factor de riesgo', bold: true },
+                    ' de enfermedades no transmisibles como la diabetes, los trastornos del aparato locomotor, algunos cánceres y las enfermedades cardiovasculares.'
+                ],
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             },
             { 
                 image: imagenes.imc, 
-                width: 500, 
+                width: 400, 
                 alignment: 'center',
                 margin: [0, 10, 0, 20] 
             }
@@ -249,22 +346,84 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 ]);
             
             if (datosIMC.length > 0) {
-                const tablaIMC = crearTablaPDF(
-                    datosIMC,
-                    ['Categoría', 'Cantidad (Porcentaje)'],
-                    'Detalle de Distribución por IMC',
-                    'imc'
-                );
-                tablaIMC.forEach(item => contenido.push(item));
+                // Función para asignar color según la categoría de IMC
+                const getIMCCellStyle = (categoria: string) => {
+                    if (categoria.includes('Bajo peso')) return 'tableCellAmber';
+                    if (categoria.includes('Normal')) return 'tableCellEmerald';
+                    if (categoria.includes('Sobrepeso') || categoria.includes('Pre-obesidad')) return 'tableCellAmber';
+                    if (categoria.includes('Obesidad')) return 'tableCellRose';
+                    return 'tableCellMedium';
+                };
+                const tablaResultadosIMC = [
+                    { text: 'Resultados IMC', style: 'subtituloTabla' },
+                    {
+                        table: {
+                            headerRows: 1,
+                            widths: ['auto', 'auto'],
+                            body: [
+                                [
+                                    { text: 'Categoría', style: 'tableHeaderMedium' },
+                                    { text: 'Cantidad (Porcentaje)', style: 'tableHeaderMedium' }
+                                ],
+                                ...datosIMC.map(row => [
+                                    { text: row[0], style: 'tableCellMedium' },
+                                    { text: row[1], style: getIMCCellStyle(row[0]) }
+                                ])
+                            ]
+                        },
+                        layout: 'lightHorizontalLines',
+                        margin: [0, 0, 0, 0] as [number, number, number, number]
+                    }
+                ];
+                const tablaReferenciaIMC = [
+                    { text: 'Tabla de la Organización Mundial de la Salud:', style: 'subtituloTabla' },
+                    {
+                        table: {
+                            headerRows: 1,
+                            widths: ['auto', 'auto'],
+                            body: [
+                                [
+                                    { text: 'IMC', style: 'tableHeaderMedium' },
+                                    { text: 'ESTADO', style: 'tableHeaderMedium' }
+                                ],
+                                [ { text: 'Por debajo de 18.5', style: 'tableCellMedium' }, { text: 'Bajo peso', style: 'tableCellAmber' } ],
+                                [ { text: '18.5 – 24.9', style: 'tableCellMedium' }, { text: 'Peso normal', style: 'tableCellEmerald' } ],
+                                [ { text: '25.0 – 29.9', style: 'tableCellMedium' }, { text: 'Pre-obesidad o Sobrepeso', style: 'tableCellAmber' } ],
+                                [ { text: '30.0 – 34.9', style: 'tableCellMedium' }, { text: 'Obesidad clase I', style: 'tableCellRose' } ],
+                                [ { text: '35.0 – 39.9', style: 'tableCellMedium' }, { text: 'Obesidad clase II', style: 'tableCellRose' } ],
+                                [ { text: 'Por encima de 40', style: 'tableCellMedium' }, { text: 'Obesidad clase III', style: 'tableCellRose' } ]
+                            ]
+                        },
+                        layout: 'lightHorizontalLines',
+                        margin: [0, 0, 0, 0] as [number, number, number, number]
+                    },
+                    { text: 'Fuente: OMS (2022)', style: 'pieTabla', italics: true, margin: [0, 10, 0, 20] as [number, number, number, number] }
+                ];
+                contenido.push({
+                    columns: [
+                        { width: '50%', stack: [tablaResultadosIMC[0], { ...tablaResultadosIMC[1], margin: [0, 0, 0, 0] as [number, number, number, number] }] },
+                        { width: '50%', stack: [tablaReferenciaIMC[0], { ...tablaReferenciaIMC[1], margin: [0, 0, 0, 0] as [number, number, number, number] }, tablaReferenciaIMC[2]] }
+                    ],
+                    columnGap: 5,
+                    margin: [0, 0, 0, 0]
+                });
             }
         }
     }
 
     if (imagenes.cintura) {
         contenido.push(
-            { text: '2.2 Riesgo por Circunferencia de Cintura', style: 'subtituloSeccion' },
+            { text: '2.2 Circunferencia de Cintura', style: 'subtituloSeccion', pageBreak: 'before' },
             {
-                text: 'La circunferencia de cintura elevada se asocia con mayor riesgo de enfermedades como diabetes, hipertensión y trastornos metabólicos.',
+                text: [
+                    'La circunferencia de cintura es un indicador antropométrico útil para evaluar la ',
+                    { text: 'distribución de grasa corporal', bold: true },
+                    '. Un valor elevado se asocia con acumulación de grasa central, representando un ',
+                    { text: 'riesgo incrementado de enfermedades metabólicas y cardiovasculares', bold: true },
+                    ', incluso en personas con peso normal según el IMC. El exceso de grasa abdominal está directamente relacionado con un mayor riesgo de desarrollar ',
+                    { text: 'síndrome metabólico, diabetes tipo 2, hipertensión arterial y enfermedad coronaria', bold: true },
+                    '.'
+                ],
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             }
@@ -273,27 +432,44 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         // Obtener datos de la gráfica de circunferencia de cintura
         const datosCintura = props.tablasDatos?.cintura;
         const altoRiesgo = datosCintura?.alto || 0;
-        const bajoRiesgo = datosCintura?.chart?.datasets?.[0]?.data?.[1] || 0;
-        const porcentajeAltoRiesgo = datosCintura?.porcentaje || 0;
-        const totalCintura = altoRiesgo + bajoRiesgo;
+        const riesgoAumentado = datosCintura?.chart?.datasets?.[0]?.data?.[1] || 0;
+        const bajoRiesgo = datosCintura?.chart?.datasets?.[0]?.data?.[2] || 0;
+        const totalCintura = altoRiesgo + riesgoAumentado + bajoRiesgo;
+        const porcentajeAltoRiesgo = totalCintura > 0 ? Math.round((altoRiesgo / totalCintura) * 100) : 0;
+        const porcentajeRiesgoAumentado = totalCintura > 0 ? Math.round((riesgoAumentado / totalCintura) * 100) : 0;
+        const porcentajeBajoRiesgo = totalCintura > 0 ? Math.round((bajoRiesgo / totalCintura) * 100) : 0;
         
-        // Crear tabla con gráfica y datos lado a lado
-        const tablaCinturaCombinada = {
+        // --- INICIO CAMBIO CENTRADO VERTICAL ---
+        // Altura de la imagen (en px)
+        const alturaImagenCintura = 200;
+        // Altura estimada de una fila de la tabla (en px)
+        const alturaFilaTablaCintura = 24;
+        // Número de filas de la tabla de cintura (header + 3 categorías)
+        const filasTablaCintura = 1 + 3;
+        // Altura total estimada de la tabla
+        const alturaTablaCintura = filasTablaCintura * alturaFilaTablaCintura;
+        // Margen superior para centrar la tabla respecto a la imagen
+        const margenSuperiorTablaCintura = Math.max(0, Math.round((alturaImagenCintura - alturaTablaCintura) / 2));
+        // --- FIN CAMBIO CENTRADO VERTICAL ---
+        
+        // Mostrar gráfica y tabla de resultados lado a lado
+        contenido.push({
             table: {
-                widths: ['50%', '50%'],
+                widths: ['60%', '40%'],
                 body: [
                     [
-                        // Columna izquierda: Gráfica
+                        // Gráfica a la izquierda
                         {
                             image: imagenes.cintura,
-                            width: 150,
-                            alignment: 'center'
+                            width: 200,
+                            alignment: 'center',
+                            margin: [0, 10, 0, 10]
                         },
-                        // Columna derecha: Tabla de datos
+                        // Tabla de resultados a la derecha
                         {
                             table: {
                                 headerRows: 1,
-                                widths: ['*', 'auto'],
+                                widths: ['auto', 'auto'],
                                 body: [
                                     [
                                         { text: 'Categoría', style: 'tableHeaderMedium' },
@@ -301,41 +477,244 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                                     ],
                                     [
                                         { text: 'Alto riesgo', style: 'tableCellMedium' },
-                                        { text: `${altoRiesgo} (${porcentajeAltoRiesgo}%)`, style: 'tableCellMedium' }
+                                        { text: `${altoRiesgo} (${porcentajeAltoRiesgo}%)`, style: 'tableCellRose' }
+                                    ],
+                                    [
+                                        { text: 'Riesgo aumentado', style: 'tableCellMedium' },
+                                        { text: `${riesgoAumentado} (${porcentajeRiesgoAumentado}%)`, style: 'tableCellAmber' }
                                     ],
                                     [
                                         { text: 'Bajo riesgo', style: 'tableCellMedium' },
-                                        { text: `${bajoRiesgo} (${totalCintura > 0 ? Math.round((bajoRiesgo / totalCintura) * 100) : 0}%)`, style: 'tableCellMedium' }
+                                        { text: `${bajoRiesgo} (${porcentajeBajoRiesgo}%)`, style: 'tableCellGray' }
                                     ]
                                 ]
                             },
-                            layout: 'lightHorizontalLines'
+                            layout: 'lightHorizontalLines',
+                            margin: [0, margenSuperiorTablaCintura, 0, 0]
                         }
                     ]
                 ]
             },
             layout: 'noBorders',
+            margin: [0, 0, 0, 20]
+        });
+
+        // Tabla de referencia debajo (dividida en dos: mujeres y hombres)
+        const tablaReferenciaMujeres = {
+            table: {
+                headerRows: 1,
+                widths: ['auto', 'auto', '40%'],
+                body: [
+                    [
+                        { text: 'SEXO', style: 'tableHeaderMedium' },
+                        { text: 'CIRCUNFERENCIA', style: 'tableHeaderMedium' },
+                        { text: 'NIVEL DE RIESGO', style: 'tableHeaderMedium' }
+                    ],
+                    [ { text: 'Mujeres', style: 'tableCellMedium' }, { text: '< 80 cm', style: 'tableCellMedium' }, { text: 'Bajo riesgo', style: 'tableCellMedium' } ],
+                    [ { text: 'Mujeres', style: 'tableCellMedium' }, { text: '80 – 87 cm', style: 'tableCellMedium' }, { text: 'Riesgo Aumentado', style: 'tableCellMedium' } ],
+                    [ { text: 'Mujeres', style: 'tableCellMedium' }, { text: '≥ 88 cm', style: 'tableCellMedium' }, { text: 'Alto riesgo', style: 'tableCellMedium' } ]
+                ]
+            },
+            layout: 'lightHorizontalLines',
+            margin: [0, 0, 5, 0]
+        };
+        const tablaReferenciaHombres = {
+            table: {
+                headerRows: 1,
+                widths: ['auto', 'auto', '40%'],
+                body: [
+                    [
+                        { text: 'SEXO', style: 'tableHeaderMedium' },
+                        { text: 'CIRCUNFERENCIA', style: 'tableHeaderMedium' },
+                        { text: 'NIVEL DE RIESGO', style: 'tableHeaderMedium' }
+                    ],
+                    [ { text: 'Hombres', style: 'tableCellMedium' }, { text: '< 94 cm', style: 'tableCellMedium' }, { text: 'Bajo riesgo', style: 'tableCellMedium' } ],
+                    [ { text: 'Hombres', style: 'tableCellMedium' }, { text: '94 – 101 cm', style: 'tableCellMedium' }, { text: 'Riesgo Aumentado', style: 'tableCellMedium' } ],
+                    [ { text: 'Hombres', style: 'tableCellMedium' }, { text: '≥ 102 cm', style: 'tableCellMedium' }, { text: 'Alto riesgo', style: 'tableCellMedium' } ]
+                ]
+            },
+            layout: 'lightHorizontalLines',
+            margin: [5, 0, 0, 0]
+        };
+        // Título de las tablas de referencia
+        contenido.push({
+            text: 'Tabla del Adult Treatment Panel III (ATP III):',
+            style: 'subtituloTabla',
+            alignment: 'center',
+            margin: [0, 10, 0, 5]
+        });
+        // Tablas de referencia lado a lado
+        contenido.push({
+            table: {
+                widths: ['50%', '50%'],
+                body: [
+                    [tablaReferenciaMujeres, tablaReferenciaHombres]
+                ]
+            },
+            layout: 'noBorders',
+            margin: [0, 0, 0, 0]
+        });
+        // Cita de la fuente debajo
+        contenido.push({
+            text: 'Fuente: ACC/AHA (2013)',
+            style: 'pieTabla',
+            alignment: 'center',
+            italics: true,
             margin: [0, 10, 0, 20]
-        } as Content;
+        });
+    }
+
+    if (imagenes.tensionArterial) {
+        contenido.push(
+            { text: '2.3 Alteraciones en Presión Arterial', style: 'subtituloSeccion', pageBreak: 'before' },
+            {
+                text: 'La presión arterial es la tensión ejercida por la sangre que circula sobre las paredes de los vasos sanguíneos, y constituye uno de los principales signos vitales. Los valores de la presión sanguínea se expresan en milímetros del mercurio (mmHg).',
+                style: 'textoNormal',
+                margin: [0, 0, 0, 10]
+            },
+            { 
+                image: imagenes.tensionArterial, 
+                width: 400, 
+                alignment: 'center',
+                margin: [0, 10, 0, 20] 
+            }
+        );
+        // Tabla de resultados y tabla de referencia lado a lado
+        if (props.tablasDatos?.tensionArterial) {
+            const datosTension = props.tablasDatos.tensionArterial
+                .filter(item => item && Array.isArray(item) && item.length >= 3)
+                .map(item => [
+                    item[0] || '-',
+                    `${item[1] || 0} (${item[2] || 0}%)`
+                ]);
+            if (datosTension.length > 0) {
+                // Función para asignar color según la categoría de tensión arterial
+                const getTensionCellStyle = (categoria: string) => {
+                    if (categoria.includes('Óptima') || categoria.includes('Normal')) return 'tableCellEmerald';
+                    if (categoria.includes('Alta')) return 'tableCellAmber';
+                    if (categoria.includes('Hipertensión')) return 'tableCellRose';
+                    return 'tableCellMedium';
+                };
+                // Título resultados
+                const tablaResultadosTA = [
+                    { text: 'Resultados Tensión Arterial \n ', style: 'subtituloTabla' },
+                    {
+                        table: {
+                            headerRows: 1,
+                            widths: ['*', 90],
+                            body: [
+                                [
+                                    { text: 'Categoría', style: 'tableHeaderMedium' },
+                                    { text: 'Trabajadores (%)', style: 'tableHeaderMedium' }
+                                ],
+                                ...datosTension.map(row => [
+                                    { text: row[0], style: 'tableCellMedium' },
+                                    { text: row[1], style: getTensionCellStyle(row[0]) }
+                                ])
+                            ]
+                        },
+                        layout: 'lightHorizontalLines',
+                        margin: [0, 0, 0, 0] as [number, number, number, number]
+                    }
+                ];
+                // Título y tabla de referencia
+                const tablaReferenciaTA = [
+                    { text: 'Tabla de la Organización Mundial de la Salud (OMS)\ny la Sociedad Internacional de Hipertensión (SIH):', style: 'subtituloTabla' },
+                    {
+                        table: {
+                            headerRows: 1,
+                            widths: ['*', 'auto', 'auto'],
+                            body: [
+                                [
+                                    { text: 'CATEGORÍA', style: 'tableHeaderMedium' },
+                                    { text: 'SISTÓLICA', style: 'tableHeaderMedium' },
+                                    { text: 'DIASTÓLICA', style: 'tableHeaderMedium' }
+                                ],
+                                [ { text: 'Óptima', style: 'tableCellMedium' }, { text: 'Menos de 120', style: 'tableCellMedium' }, { text: 'Menos de 80', style: 'tableCellMedium' } ],
+                                [ { text: 'Normal', style: 'tableCellMedium' }, { text: '121 – 130', style: 'tableCellMedium' }, { text: '81 – 85', style: 'tableCellMedium' } ],
+                                [ { text: 'Alta', style: 'tableCellMedium' }, { text: '131 – 139', style: 'tableCellMedium' }, { text: '86 – 89', style: 'tableCellMedium' } ],
+                                [ { text: 'Hipertensión ligera', style: 'tableCellMedium' }, { text: '140 – 159', style: 'tableCellMedium' }, { text: '90 – 99', style: 'tableCellMedium' } ],
+                                [ { text: 'Hipertensión moderada', style: 'tableCellMedium' }, { text: '160 – 179', style: 'tableCellMedium' }, { text: '100 – 109', style: 'tableCellMedium' } ],
+                                [ { text: 'Hipertensión severa', style: 'tableCellMedium' }, { text: '180 o más', style: 'tableCellMedium' }, { text: '110 o más', style: 'tableCellMedium' } ]
+                            ]
+                        },
+                        layout: 'lightHorizontalLines',
+                        margin: [0, 0, 0, 0] as [number, number, number, number]
+                    }
+                ];
+                contenido.push({
+                    columns: [
+                        { width: '45%', stack: [tablaResultadosTA[0], { ...tablaResultadosTA[1], margin: [0, 0, 0, 0] as [number, number, number, number] }] },
+                        { width: '55%', stack: [
+                            tablaReferenciaTA[0],
+                            { ...tablaReferenciaTA[1], margin: [0, 0, 0, 0] as [number, number, number, number] },
+                            {
+                                text: 'Si ambas mediciones caen en categorías distintas, se emplea la más alta.',
+                                style: 'pieTabla',
+                                alignment: 'left',
+                                italics: true,
+                                margin: [0, 10, 0, 0] as [number, number, number, number]
+                            },
+                            {
+                                text: 'Fuente: OMS y SIH (2014)',
+                                style: 'pieTabla',
+                                alignment: 'center',
+                                italics: true,
+                                margin: [0, 0, 0, 20] as [number, number, number, number]
+                            }
+                        ] }
+                    ],
+                    columnGap: 10,
+                    margin: [0, 0, 0, 0]
+                });
+            }
+        }
+    }
+
+    // Sección 3: Salud Visual
+    contenido.push({ text: '3. SALUD VISUAL', style: 'tituloSeccion', pageBreak: 'before' });
+
+    // Tabla de agudeza visual sin corrección
+    if (props.tablasDatos?.vision) {
+        contenido.push(
+            { text: '3.1 Agudeza Visual', style: 'subtituloSeccion' },
+            {
+                text: 'La agudeza visual es la capacidad del sistema visual para percibir, detectar o identificar objetos especiales en condiciones de buena iluminación. Se define como la agudeza visual normal la capacidad de discernir contornos nítidos separados por una distancia mínima de 1.75 mm desde una distancia de 20 pies (aproximadamente 6 metros).',
+                style: 'textoNormal',
+                margin: [0, 0, 0, 10]
+            }
+        );
         
-        contenido.push(tablaCinturaCombinada);
+        const datosVision = props.tablasDatos.vision
+            .filter(item => item && Array.isArray(item) && item.length >= 3)
+            .map(item => [
+                item[0] || '-',
+                `${item[1] || 0} (${item[2] || 0}%)`
+            ]);
+        
+        if (datosVision.length > 0) {
+            const tablaVision = crearTablaPDF(
+                datosVision,
+                ['Categoría', 'Trabajadores (Porcentaje)'],
+                'AGUDEZA VISUAL',
+                'vision'
+            );
+            tablaVision.forEach(item => contenido.push(item));
+        }
         
         contenido.push({
-            text: 'Interpretación: La gráfica muestra la distribución de trabajadores según su riesgo metabólico basado en la circunferencia de cintura. Una circunferencia elevada se asocia con mayor riesgo de diabetes, hipertensión y enfermedades cardiovasculares.',
+            text: 'Agudeza visual con corrección: Máxima visión lograda con la prescripción exacta en lentes o lentes de contacto. Si el paciente no tiene prescripción, sería igual a la agudeza visual sin corrección.\n\nAgudeza visual sin corrección: Máxima visión lograda sin usar lentes o lentes de contacto.',
             style: 'textoNormal',
             alignment: 'left',
             margin: [0, 0, 0, 20]
         });
     }
 
-    // Sección 3: Salud Visual
-    contenido.push({ text: '3. SALUD VISUAL', style: 'tituloSeccion' });
-
     if (imagenes.lentes) {
         contenido.push(
-            { text: '3.1 Necesidad de Corrección Visual', style: 'subtituloSeccion' },
+            { text: '3.2 Corrección de Vista y Daltonismo', style: 'subtituloSeccion' },
             {
-                text: 'Proporción de trabajadores que requieren lentes para desempeñar sus actividades de manera segura y efectiva.',
+                text: 'Se evaluó si los trabajadores requieren corrección visual y si utilizan medios para lograrla, así como la presencia de alteraciones en la visión cromática. La mayoría cuenta con corrección adecuada, y solo se identificó un caso de daltonismo.',
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             }
@@ -390,18 +769,11 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         } as Content;
         
         contenido.push(tablaLentesCombinada);
-        
-        contenido.push({
-            text: 'Interpretación: La gráfica muestra la distribución entre trabajadores que requieren corrección visual (lentes) y aquellos que no la necesitan. Los trabajadores que requieren lentes pueden tener dificultades para realizar tareas que demandan buena agudeza visual.',
-            style: 'textoNormal',
-            alignment: 'left',
-            margin: [0, 0, 0, 20]
-        });
     }
 
     if (imagenes.corregida) {
         contenido.push(
-            { text: '3.2 Corrección Visual Implementada', style: 'subtituloSeccion' },
+            { text: '3.3 Corrección Visual Implementada', style: 'subtituloSeccion' },
             {
                 text: 'Trabajadores que ya cuentan con corrección visual implementada.',
                 style: 'textoNormal',
@@ -458,18 +830,11 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         } as Content;
         
         contenido.push(tablaVistaCorregidaCombinada);
-        
-        contenido.push({
-            text: 'Interpretación: Esta gráfica indica cuántos trabajadores que requieren lentes ya cuentan con corrección visual implementada. Un alto porcentaje sugiere buena adherencia a las recomendaciones médicas.',
-            style: 'textoNormal',
-            alignment: 'left',
-            margin: [0, 0, 0, 20]
-        });
     }
 
     if (imagenes.daltonismo) {
         contenido.push(
-            { text: '3.3 Alteraciones en la Percepción de Colores', style: 'subtituloSeccion' },
+            { text: '3.4 Alteraciones en la Percepción de Colores', style: 'subtituloSeccion' },
             {
                 text: 'Informa cuántos trabajadores presentan alteraciones en la percepción de colores.',
                 style: 'textoNormal',
@@ -526,33 +891,6 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         } as Content;
         
         contenido.push(tablaDaltonismoCombinada);
-        
-        contenido.push({
-            text: 'Interpretación: La gráfica muestra la proporción de trabajadores con alteraciones en la percepción de colores. Esta condición puede afectar la capacidad para realizar tareas que requieren distinción de colores.',
-            style: 'textoNormal',
-            alignment: 'left',
-            margin: [0, 0, 0, 20]
-        });
-    }
-
-    // Tabla de agudeza visual sin corrección
-    if (props.tablasDatos?.vision) {
-        const datosVision = props.tablasDatos.vision
-            .filter(item => item && Array.isArray(item) && item.length >= 3)
-            .map(item => [
-                item[0] || '-',
-                `${item[1] || 0} (${item[2] || 0}%)`
-            ]);
-        
-        if (datosVision.length > 0) {
-            const tablaVision = crearTablaPDF(
-                datosVision,
-                ['Categoría', 'Trabajadores (Porcentaje)'],
-                'Agudeza Visual Sin Corrección',
-                'vision'
-            );
-            tablaVision.forEach(item => contenido.push(item));
-        }
     }
 
     // Sección 4: Antecedentes Médicos
@@ -644,9 +982,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     // Sección 6: Aptitud al Puesto
     if (imagenes.aptitud) {
         contenido.push(
-            { text: '6. APTITUD AL PUESTO DE TRABAJO', style: 'tituloSeccion' },
+            { text: '6. RESULTADOS DE EXÁMENES MÉDICOS PERIÓDICOS', style: 'tituloSeccion' },
             {
-                text: 'Clasificación de los trabajadores según su capacidad para desempeñar sus funciones laborales de manera segura, considerando si requieren restricciones, precauciones, o si no presentan limitaciones para el puesto.',
+                text: 'El examen médico periódico es una evaluación médica regular para los trabajadores durante su empleo. Su propósito principal es monitorear el estado de salud del trabajador, detectar oportunamente posibles alteraciones relacionadas con el trabajo y verificar la aptitud continua para las funciones. Los resultados de estos exámenes ayudan a identificar riesgos para la salud, permiten intervenciones preventivas y determinan si un individuo permanece apto para su puesto.',
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             },
@@ -671,7 +1009,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 const tablaAptitud = crearTablaPDF(
                     datosAptitud,
                     ['Resultado', 'Trabajadores (Porcentaje)'],
-                    'Detalle de Aptitud al Puesto',
+                    'RESULTADOS EXAMENES MÉDICOS',
                     'aptitud'
                 );
                 tablaAptitud.forEach(item => contenido.push(item));
@@ -801,7 +1139,14 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
             textoNormal: { 
                 fontSize: 11, 
                 color: '#374151',
-                lineHeight: 1.4
+                lineHeight: 1.4,
+                alignment: 'justify'
+            },
+            pieTabla: { 
+                fontSize: 9, 
+                color: '#6B7280',
+                lineHeight: 1.4,
+                alignment: 'justify'
             },
             subtituloTabla: { 
                 fontSize: 12, 
@@ -856,6 +1201,12 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
             tableCellPink: {
                 fontSize: 9,
                 color: '#BE185D',
+                alignment: 'center',
+                margin: [2, 2, 2, 2]
+            },
+            tableCellGray: {
+                fontSize: 9,
+                color: '#374151',
                 alignment: 'center',
                 margin: [2, 2, 2, 2]
             },
@@ -1062,6 +1413,13 @@ const crearTablaPDF = (datos: any[], columnas: string[], titulo: string, tipoTab
         if (categoriaVision === 'Visión ligeramente reducida') return 'tableCellAmber';
         if (['Visión excepcional', 'Visión normal'].includes(categoriaVision)) return 'tableCellEmerald';
         return 'tableCellRose';
+      
+      case 'tensionArterial':
+        const categoriaTension = datosLimpios[filaIndex][0];
+        if (['Óptima', 'Normal'].includes(categoriaTension)) return 'tableCellEmerald';
+        if (categoriaTension === 'Alta') return 'tableCellAmber';
+        if (['Hipertensión ligera', 'Hipertensión moderada', 'Hipertensión severa'].includes(categoriaTension)) return 'tableCellRose';
+        return 'tableCell';
       
       default:
         return 'tableCell';

@@ -18,9 +18,9 @@ export function exportarGraficaAltaResolucion(chartConfig: any, width = 1200, he
 
   // Factor de escalado optimizado según el tipo de gráfica
   let scaleFactor;
-  if (config.type === 'doughnut') {
-    // Para gráficas de anillo, usar un factor más conservador para mantener proporciones
-    scaleFactor = Math.min(width / 400, height / 300) * 0.9;
+  if (config.type === 'doughnut' || config.type === 'pie') {
+    // Para gráficas de anillo y pastel, usar un factor más conservador para mantener proporciones
+    scaleFactor = Math.min(width / 400, height / 300) * 2.0;
   } else {
     // Para gráficas de barras, usar factor estándar
     scaleFactor = Math.min(width / 400, height / 300) * 0.8;
