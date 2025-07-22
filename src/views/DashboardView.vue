@@ -296,6 +296,45 @@ const opcionesGraficaPastelSexo = {
   }
 };
 
+// Opciones específicas para PDF con contorno negro
+const opcionesGraficaPastelSexoPDF = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          const total = context.dataset.data.reduce((a, b) => a + b, 0);
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `${context.label}: ${value} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      color: '#fff',
+      anchor: 'center',
+      align: 'end',
+      offset: 20,
+      font: { weight: 'bold', size: 12 },
+      formatter: (value, context) => {
+        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return value > 0 ? `${value} (${porcentaje}%)` : '';
+      }
+    }
+  },
+  elements: {
+    arc: {
+      borderWidth: 1,
+      borderColor: '#000000'
+    }
+  }
+};
+
 // Computed para tabla y gráfica de tensión arterial
 const tablaTensionArterial = computed(() => {
   if (!dashboardData.value.length) return [];
@@ -397,6 +436,77 @@ const graficaTensionArterialOptions = {
   }
 };
 
+// Opciones específicas para PDF con contorno negro
+const graficaTensionArterialOptionsPDF = {
+  indexAxis: 'y',
+  responsive: true,
+  layout: {
+    padding: {
+      right: 60
+    }
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          const total = graficaTensionArterialData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `Trabajadores: ${value} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      color: '#374151',
+      anchor: 'end',
+      align: 'end',
+      formatter: (value, context) => {
+        const total = graficaTensionArterialData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return `${value} (${porcentaje}%)`;
+      },
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        stepSize: 1,
+        maxTicksLimit: 10,
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  },
+  elements: {
+    bar: {
+      borderWidth: 1,
+      borderColor: '#000000'
+    }
+  }
+};
+
 // Computed para tabla y grafica de categorías de IMC
 const graficaIMCData = computed(() => {
   if (!dashboardData.value.length) return { labels: [], datasets: [], porcentajes: [] };
@@ -410,13 +520,22 @@ const graficaIMCData = computed(() => {
   const conteo = contarPorCategoriaIMC(categorias);
   const total = conteo.reduce((sum, [, cantidad]) => sum + cantidad, 0);
 
+  // const coloresPorCategoria = {
+  //   'Bajo peso': '#D1D5DB',          // gray-300
+  //   'Normal': '#10B981',            // emerald-500 (verde saludable)
+  //   'Sobrepeso': '#9CA3AF',         // gray-400
+  //   'Obesidad clase I': '#6B7280',  // gray-500
+  //   'Obesidad clase II': '#4B5563', // gray-600
+  //   'Obesidad clase III': '#374151' // gray-700 (más oscuro)
+  // };
+
   const coloresPorCategoria = {
-    'Bajo peso': '#D1D5DB',          // gray-300
+    'Bajo peso': '#F59E0B',         // amber-500
     'Normal': '#10B981',            // emerald-500 (verde saludable)
-    'Sobrepeso': '#9CA3AF',         // gray-400
-    'Obesidad clase I': '#6B7280',  // gray-500
-    'Obesidad clase II': '#4B5563', // gray-600
-    'Obesidad clase III': '#374151' // gray-700 (más oscuro)
+    'Sobrepeso': '#F59E0B',         // amber-500
+    'Obesidad clase I': '#F97316',  // orange-500
+    'Obesidad clase II': '#DC2626', // red-500
+    'Obesidad clase III': '#7F1D1D' // red-700 (más oscuro)
   };
 
   return {
@@ -502,6 +621,85 @@ const graficaIMCOptions = {
     const canvas = event.chart?.canvas;
     if (canvas) {
       canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  }
+};
+
+// Opciones específicas para PDF con contorno negro
+const graficaIMCOptionsPDF = {
+  indexAxis: 'y',
+  responsive: true,
+  layout: {
+    padding: {
+      right: 60
+    }
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          const total = graficaIMCData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `Trabajadores: ${value} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      color: '#374151',
+      anchor: 'end',
+      align: 'end',
+      formatter: (value, context) => {
+        const total = graficaIMCData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return `${value} (${porcentaje}%)`;
+      },
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        stepSize: 1,
+        maxTicksLimit: 10,
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      grid: { display: false },
+      ticks: {
+        callback: (label, index) => {
+          if (typeof label === 'string') {
+            return label.replace('Obesidad clase ', 'Obesidad ');
+          }
+
+          const maybeLabel = graficaIMCData.value.labels?.[index];
+          return maybeLabel?.replace('Obesidad clase ', 'Obesidad ') || maybeLabel || '';
+        },
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  },
+  elements: {
+    bar: {
+      borderWidth: 1,
+      borderColor: '#000000'
     }
   }
 };
@@ -628,6 +826,81 @@ const graficaAptitudOptions = {
   }
 };
 
+// Opciones específicas para PDF con contorno negro
+const graficaAptitudOptionsPDF = {
+  indexAxis: 'y',
+  responsive: true,
+  layout: {
+    padding: {
+      right: 60 
+    }
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        title: (context) => {
+          const index = context[0].dataIndex;
+          const raw = context[0].label;
+          return etiquetasAptitudPuestoTabla[raw] || raw;
+        },
+        label: (context) => {
+          const index = context.dataIndex;
+          const [categoria, cantidad, porcentaje] = tablaAptitud.value[index];
+          return `Trabajadores: ${cantidad} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      anchor: 'end',
+      align: 'end',
+      color: '#374151',
+      font: { weight: 'bold', size: 12 },
+      formatter: (_valor, context) => {
+        const index = context.dataIndex;
+        const [_, cantidad, porcentaje] = tablaAptitud.value[index];
+        return `${cantidad} (${porcentaje}%)`;
+      }
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        stepSize: 1,
+        maxTicksLimit: 10,
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      grid: { display: false },
+      ticks: {
+        callback: (value) => {
+          const etiqueta = graficaAptitudData.value.labels?.[value];
+          return etiquetasAptitudPuesto[etiqueta] || etiqueta;
+        },
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  },
+  elements: {
+    bar: {
+      borderWidth: 1,
+      borderColor: '#000000'
+    }
+  }
+};
+
 // Computed para tabla y grafica de enfermedades cronicas
 const tablaEnfermedades = computed(() => {
   if (!dashboardData.value.length) return [];
@@ -687,6 +960,7 @@ const graficaEnfermedadesOptions = {
             'hipertensivosPP': 'Hipertensivos', 
             'cardiopaticosPP': 'Cardiopáticos',
             'epilepticosPP': 'Epilépticos',
+            'respiratorios': 'Respiratorios',
             'alergicos': 'Alérgicos'
           };
 
@@ -827,6 +1101,41 @@ const opcionesGenericasAnillo = {
   }
 };
 
+// Opciones para PDF con contorno negro
+const opcionesGenericasAnilloPDF = {
+  responsive: true,
+  cutout: '70%',
+  plugins: {
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          return `Casos: ${value}`;
+        }
+      }
+    },
+    datalabels: {
+      display: false
+    },
+    legend: {
+      display: false
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  },
+  elements: {
+    arc: {
+      borderWidth: 1,
+      borderColor: '#000000'
+    }
+  }
+};
+
 const tablaVisionSinCorreccion = computed(() => {
   if (!dashboardData.value.length) return [];
 
@@ -941,6 +1250,82 @@ const graficaCircunferenciaOptions = {
     const canvas = event.chart?.canvas;
     if (canvas) {
       canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  }
+};
+
+// Opciones específicas para PDF con textos más grandes
+const graficaCircunferenciaOptionsPDF = {
+  responsive: true,
+  maintainAspectRatio: false,
+  layout: {
+    padding: {
+      top: 0,
+      bottom: 0
+    }
+  },
+  plugins: {
+    legend: {
+      display: false
+    },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          const total = graficaCircunferenciaData.value.chart.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `Casos: ${value} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      color: '#FFFFFF',
+      anchor: 'center',
+      align: 'center',
+      formatter: (value, context) => {
+        if (value === 0) return '';
+        const total = graficaCircunferenciaData.value.chart.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return `  ${value}\n(${porcentaje}%)`;
+      },
+      font: {
+        weight: 'bold',
+        size: 24
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      categoryPercentage: 1.0,
+      barPercentage: 0.7,
+      ticks: {
+        color: '#374151',
+        font: { size: 20 }
+      }
+    },
+    y: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 24 }
+      }
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  },
+  elements: {
+    bar: {
+      borderWidth: 1,
+      borderColor: '#000000'
     }
   }
 };
@@ -1078,6 +1463,80 @@ const graficaAgentesRiesgoOptions = {
   }
 };
 
+// Opciones específicas para PDF con contorno negro
+const graficaAgentesRiesgoOptionsPDF = {
+  indexAxis: 'y',
+  responsive: true,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        title: (context) => {
+          const raw = context[0].label;
+          return etiquetasAgentesRiesgo[raw] || raw;
+        },
+        label: (context) => {
+          const index = context.dataIndex;
+          const [_, cantidad, porcentaje] = tablaAgentesRiesgo.value[index];
+          return `Expuestos: ${cantidad} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      anchor: 'end',
+      align: 'end',
+      color: '#374151',
+      font: { weight: 'bold', size: 12 },
+      formatter: (_valor, context) => {
+        const index = context.dataIndex;
+        const [_, cantidad, porcentaje] = tablaAgentesRiesgo.value[index];
+        return `${cantidad} (${porcentaje}%)`;
+      }
+    }
+  },
+  layout: {
+    padding: {
+      right: 60
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        stepSize: 1,
+        maxTicksLimit: 10,
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      grid: { display: false },
+      ticks: {
+        callback: (label, index) => {
+          const maybeLabel = graficaAgentesRiesgoData.value.labels?.[index];
+          return maybeLabel || '';
+        },
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  },
+  elements: {
+    bar: {
+      borderWidth: 1,
+      borderColor: '#000000'
+    }
+  }
+};
+
 // Computed para tabla y grafica de grupos etarios
 const tablaGruposEtariosFiltrada = computed(() => {
   if (!dashboardData.value.length) return [];
@@ -1159,6 +1618,51 @@ const graficaGruposEtariosOptions = {
       color: '#374151',
       font: { size: 12 },
     }
+    }
+  }
+}
+
+// Opciones específicas para PDF con contorno negro
+const graficaGruposEtariosOptionsPDF = {
+  // indexAxis: 'y', // HORIZONTAL
+  responsive: true,
+  plugins: {
+    legend: { display: false },
+    tooltip: { enabled: true },
+    datalabels: {
+      color: '#FFFFFF', // blanco
+      anchor: 'center', // puede ser 'center', 'start', 'end'
+      align: 'center', // 'top', 'bottom', 'left', 'right', 'center'
+      formatter: (value) => value > 0 ? value : '',
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      stacked: true,
+      grid: { display: false },
+      ticks: {
+      color: '#374151',
+      font: { size: 12 },
+    }
+    },
+    y: {
+      stacked: true,
+      grid: { display: false },
+      ticks: {
+      color: '#374151',
+      font: { size: 12 },
+    }
+    }
+  },
+  elements: {
+    bar: {
+      borderWidth: 1,
+      borderColor: '#000000'
     }
   }
 }
@@ -1292,6 +1796,7 @@ function handleClickTablaEnfermedades(condicion) {
     hipertensivosPP: 'hipertensivo',
     cardiopaticosPP: 'cardiopatico',
     epilepticosPP: 'epilepsia',
+    respiratorios: 'respiratorio',
     alergicos: 'alergia',
   }[condicion];
 
@@ -1502,16 +2007,16 @@ const tablaCintura = computed(() => {
         <DescargarInformeDashboard
           v-if="dashboardData.length > 0"
           :refs-graficas="{
-            imc: { ref: refIMC, config: { type: 'bar', data: graficaIMCData, options: graficaIMCOptions } },
-            aptitud: { ref: refAptitud, config: { type: 'bar', data: graficaAptitudData, options: graficaAptitudOptions } },
-            lentes: { ref: refLentes, config: { type: 'doughnut', data: graficaRequierenLentesData.chart, options: opcionesGenericasAnillo } },
-            corregida: { ref: refCorregida, config: { type: 'doughnut', data: graficaVistaCorregidaData.chart, options: opcionesGenericasAnillo } },
-            daltonismo: { ref: refDaltonismo, config: { type: 'doughnut', data: graficaDaltonismoData.chart, options: opcionesGenericasAnillo } },
-            agentes: { ref: refAgentes, config: { type: 'bar', data: graficaAgentesRiesgoData, options: graficaAgentesRiesgoOptions } },
-            grupos: { ref: refGruposEtarios, config: { type: 'bar', data: graficaGruposEtariosData, options: graficaGruposEtariosOptions } },
-            cintura: { ref: refCircunferencia, config: { type: 'bar', data: graficaCircunferenciaData.chart, options: graficaCircunferenciaOptions } },
-            sexo: { ref: refSexo, config: { type: 'pie', data: graficaSexoData, options: opcionesGraficaPastelSexo } },
-            tensionArterial: { ref: refTensionArterial, config: { type: 'bar', data: graficaTensionArterialData, options: graficaTensionArterialOptions } }
+            imc: { ref: refIMC, config: { type: 'bar', data: graficaIMCData, options: graficaIMCOptionsPDF } },
+            aptitud: { ref: refAptitud, config: { type: 'bar', data: graficaAptitudData, options: graficaAptitudOptionsPDF } },
+            lentes: { ref: refLentes, config: { type: 'doughnut', data: graficaRequierenLentesData.chart, options: opcionesGenericasAnilloPDF } },
+            corregida: { ref: refCorregida, config: { type: 'doughnut', data: graficaVistaCorregidaData.chart, options: opcionesGenericasAnilloPDF } },
+            daltonismo: { ref: refDaltonismo, config: { type: 'doughnut', data: graficaDaltonismoData.chart, options: opcionesGenericasAnilloPDF } },
+            agentes: { ref: refAgentes, config: { type: 'bar', data: graficaAgentesRiesgoData, options: graficaAgentesRiesgoOptionsPDF } },
+            grupos: { ref: refGruposEtarios, config: { type: 'bar', data: graficaGruposEtariosData, options: graficaGruposEtariosOptionsPDF } },
+            cintura: { ref: refCircunferencia, config: { type: 'bar', data: graficaCircunferenciaData.chart, options: graficaCircunferenciaOptionsPDF } },
+            sexo: { ref: refSexo, config: { type: 'pie', data: graficaSexoData, options: opcionesGraficaPastelSexoPDF } },
+            tensionArterial: { ref: refTensionArterial, config: { type: 'bar', data: graficaTensionArterialData, options: graficaTensionArterialOptionsPDF } }
           }"
           :nombre-empresa="empresasStore.currentEmpresa?.nombreComercial"
           :razon-social="empresasStore.currentEmpresa?.razonSocial"

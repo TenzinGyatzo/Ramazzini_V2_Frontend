@@ -2,8 +2,35 @@ import Chart from 'chart.js/auto';
 
 export function exportarGraficaAltaResolucion(chartConfig: any, width = 1200, height = 900): string {
   const exportCanvas = document.createElement('canvas');
-  exportCanvas.width = width;
-  exportCanvas.height = height;
+  
+  // Calcular aspect ratio basado en el tipo de gráfica
+  let aspectRatio;
+  if (chartConfig.type === 'doughnut' || chartConfig.type === 'pie') {
+    // Para gráficas circulares, mantener proporción cuadrada
+    aspectRatio = 1;
+  } else if (chartConfig.type === 'bar') {
+    // Para gráficas de barras, usar proporción más ancha
+    aspectRatio = 1.5; // 3:2 ratio
+  } else {
+    // Para otros tipos, usar proporción estándar
+    aspectRatio = 1.33; // 4:3 ratio
+  }
+  
+  // Calcular dimensiones manteniendo aspect ratio
+  let finalWidth, finalHeight;
+  if (width && height) {
+    // Si se proporcionan dimensiones específicas, usarlas
+    finalWidth = width;
+    finalHeight = height;
+  } else {
+    // Calcular dimensiones basadas en aspect ratio
+    const baseSize = 1200;
+    finalWidth = baseSize;
+    finalHeight = Math.round(baseSize / aspectRatio);
+  }
+  
+  exportCanvas.width = finalWidth;
+  exportCanvas.height = finalHeight;
   const ctx = exportCanvas.getContext('2d');
 
   if (!ctx) {
@@ -14,16 +41,17 @@ export function exportarGraficaAltaResolucion(chartConfig: any, width = 1200, he
   const config = JSON.parse(JSON.stringify(chartConfig));
   config.options = config.options || {};
   config.options.responsive = false;
+  config.options.maintainAspectRatio = false; // Importante para controlar el aspect ratio
   config.options.animation = false;
 
   // Factor de escalado optimizado según el tipo de gráfica
   let scaleFactor;
   if (config.type === 'doughnut' || config.type === 'pie') {
     // Para gráficas de anillo y pastel, usar un factor más conservador para mantener proporciones
-    scaleFactor = Math.min(width / 400, height / 300) * 2.0;
+    scaleFactor = Math.min(finalWidth / 400, finalHeight / 400) * 2.0;
   } else {
     // Para gráficas de barras, usar factor estándar
-    scaleFactor = Math.min(width / 400, height / 300) * 0.8;
+    scaleFactor = Math.min(finalWidth / 400, finalHeight / 300) * 0.8;
   }
 
   // Escalar fuentes de datos labels
@@ -51,7 +79,7 @@ export function exportarGraficaAltaResolucion(chartConfig: any, width = 1200, he
   }
 
   // Elegir color de ejes según calidad
-  const esCalidadNormal = width <= 1000;
+  const esCalidadNormal = finalWidth <= 1000;
   const ejeWidth = esCalidadNormal ? 1 : 3;
 
   if (config.options.scales?.x) {

@@ -100,6 +100,7 @@ export const etiquetasEnfermedades: Record<string, string> = {
   hipertensivosPP: 'Hipertensivos',
   cardiopaticosPP: 'Cardiopáticos',
   epilepticosPP: 'Epilépticos',
+  respiratorios: 'Respiratorios',
   alergicos: 'Alérgicos'
 };
 
@@ -108,6 +109,7 @@ export const camposEnfermedadesOrdenadas = [
   'hipertensivosPP',
   'cardiopaticosPP',
   'epilepticosPP',
+  'respiratorios',
   'alergicos'
 ];
 
@@ -120,6 +122,7 @@ export function contarEnfermedadesCronicas(data: any[]): [string, number, number
     'hipertensivosPP',
     'cardiopaticosPP',
     'epilepticosPP',
+    'respiratorios',
     'alergicos'
   ]) {
     conteo[campo] = data.filter((d) => d[campo] === 'Si').length;

@@ -138,27 +138,27 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     // Si altaCalidad es true, usa dimensiones altas para mejor calidad
     // Si es false, usa dimensiones normales para mayor velocidad
     const dimensiones = altaCalidad ? {
-        imc: [3000, 2000],
-        aptitud: [3000, 2000],
-        lentes: [3000, 2000],
-        corregida: [3000, 2000],
-        daltonismo: [3000, 2000],
-        agentes: [3000, 2000],
-        grupos: [3600, 2000],
-        cintura: [3000, 2000],
-        sexo: [3000, 2000],
-        tensionArterial: [3000, 2000]
+        imc: [3000, 2000], // Aspect ratio 3:2 para gráficas de barras horizontales
+        aptitud: [3000, 2000], // Aspect ratio 3:2 para gráficas de barras horizontales
+        lentes: [2000, 2000], // Aspect ratio 1:1 para gráficas circulares
+        corregida: [2000, 2000], // Aspect ratio 1:1 para gráficas circulares
+        daltonismo: [2000, 2000], // Aspect ratio 1:1 para gráficas circulares
+        agentes: [3000, 2000], // Aspect ratio 3:2 para gráficas de barras
+        grupos: [3600, 2000], // Aspect ratio 9:5 para gráficas de barras más anchas
+        cintura: [2000, 2700], // Aspect ratio 3:2 para gráficas de barras
+        sexo: [2000, 2000], // Aspect ratio 1:1 para gráficas circulares
+        tensionArterial: [3000, 2000] // Aspect ratio 3:2 para gráficas de barras
     } : {
-        imc: [800, 600],
-        aptitud: [800, 600],
-        lentes: [600, 600],
-        corregida: [600, 600],
-        daltonismo: [600, 600],
-        agentes: [800, 600],
-        grupos: [1000, 600],
-        cintura: [600, 800],
-        sexo: [600, 800],
-        tensionArterial: [800, 600]
+        imc: [800, 600], // Aspect ratio 4:3 para gráficas de barras horizontales
+        aptitud: [800, 600], // Aspect ratio 4:3 para gráficas de barras horizontales
+        lentes: [600, 600], // Aspect ratio 1:1 para gráficas circulares
+        corregida: [600, 600], // Aspect ratio 1:1 para gráficas circulares
+        daltonismo: [600, 600], // Aspect ratio 1:1 para gráficas circulares
+        agentes: [800, 600], // Aspect ratio 4:3 para gráficas de barras
+        grupos: [1000, 600], // Aspect ratio 5:3 para gráficas de barras más anchas
+        cintura: [600, 800], // Aspect ratio 4:3 para gráficas de barras
+        sexo: [600, 600], // Aspect ratio 1:1 para gráficas circulares
+        tensionArterial: [800, 600] // Aspect ratio 4:3 para gráficas de barras
     };
 
     const imagenes = {
@@ -175,6 +175,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     };
 
     const contenido: Content[] = [];
+
+    // Variable para rastrear el número de sección actual
+    let numeroSeccion = 1;
 
     // Resumen ejecutivo
     contenido.push(
@@ -195,7 +198,8 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     );
 
     // Sección 1: Composición Demográfica
-    contenido.push({ text: '1. COMPOSICIÓN DEMOGRÁFICA', style: 'tituloSeccion' });
+    contenido.push({ text: `${numeroSeccion}. COMPOSICIÓN DEMOGRÁFICA`, style: 'tituloSeccion' });
+    numeroSeccion++;
 
     if (imagenes.sexo) {
         contenido.push(
@@ -272,7 +276,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
 
     if (imagenes.grupos) {
         contenido.push(
-            { text: '1.2 Distribución por Grupos Etarios', style: 'subtituloSeccion' },
+            { text: '1.2 Distribución por Grupos Etarios', style: 'subtituloSeccion', pageBreak: 'before' },
             {
                 text: 'Distribución de los trabajadores activos según grupos etarios y género.',
                 style: 'textoNormal',
@@ -310,7 +314,8 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     }
 
     // Sección 2: Indicadores de Salud Física
-    contenido.push({ text: '2. INDICADORES DE SALUD FÍSICA', style: 'tituloSeccion', pageBreak: 'before' });
+    contenido.push({ text: `${numeroSeccion}. INDICADORES DE SALUD FÍSICA`, style: 'tituloSeccion', pageBreak: 'before' });
+    numeroSeccion++;
 
     if (imagenes.imc) {
         contenido.push(
@@ -351,7 +356,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                     if (categoria.includes('Bajo peso')) return 'tableCellAmber';
                     if (categoria.includes('Normal')) return 'tableCellEmerald';
                     if (categoria.includes('Sobrepeso') || categoria.includes('Pre-obesidad')) return 'tableCellAmber';
-                    if (categoria.includes('Obesidad')) return 'tableCellRose';
+                    if (categoria.includes('Obesidad clase III')) return 'tableCellDarkRed';
+                    if (categoria.includes('Obesidad clase II')) return 'tableCellRed';
+                    if (categoria.includes('Obesidad clase I')) return 'tableCellOrange';
                     return 'tableCellMedium';
                 };
                 const tablaResultadosIMC = [
@@ -386,12 +393,12 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                                     { text: 'IMC', style: 'tableHeaderMedium' },
                                     { text: 'ESTADO', style: 'tableHeaderMedium' }
                                 ],
-                                [ { text: 'Por debajo de 18.5', style: 'tableCellMedium' }, { text: 'Bajo peso', style: 'tableCellAmber' } ],
-                                [ { text: '18.5 – 24.9', style: 'tableCellMedium' }, { text: 'Peso normal', style: 'tableCellEmerald' } ],
-                                [ { text: '25.0 – 29.9', style: 'tableCellMedium' }, { text: 'Pre-obesidad o Sobrepeso', style: 'tableCellAmber' } ],
-                                [ { text: '30.0 – 34.9', style: 'tableCellMedium' }, { text: 'Obesidad clase I', style: 'tableCellRose' } ],
-                                [ { text: '35.0 – 39.9', style: 'tableCellMedium' }, { text: 'Obesidad clase II', style: 'tableCellRose' } ],
-                                [ { text: 'Por encima de 40', style: 'tableCellMedium' }, { text: 'Obesidad clase III', style: 'tableCellRose' } ]
+                                [ { text: 'Por debajo de 18.5', style: 'tableCellMedium' }, { text: 'Bajo peso', style: 'tableCellMedium' } ],
+                                [ { text: '18.5 – 24.9', style: 'tableCellMedium' }, { text: 'Peso normal', style: 'tableCellMedium' } ],
+                                [ { text: '25.0 – 29.9', style: 'tableCellMedium' }, { text: 'Pre-obesidad o Sobrepeso', style: 'tableCellMedium' } ],
+                                [ { text: '30.0 – 34.9', style: 'tableCellMedium' }, { text: 'Obesidad clase I', style: 'tableCellMedium' } ],
+                                [ { text: '35.0 – 39.9', style: 'tableCellMedium' }, { text: 'Obesidad clase II', style: 'tableCellMedium' } ],
+                                [ { text: 'Por encima de 40', style: 'tableCellMedium' }, { text: 'Obesidad clase III', style: 'tableCellMedium' } ]
                             ]
                         },
                         layout: 'lightHorizontalLines',
@@ -592,7 +599,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 const getTensionCellStyle = (categoria: string) => {
                     if (categoria.includes('Óptima') || categoria.includes('Normal')) return 'tableCellEmerald';
                     if (categoria.includes('Alta')) return 'tableCellAmber';
-                    if (categoria.includes('Hipertensión')) return 'tableCellRose';
+                    if (categoria.includes('ligera')) return 'tableCellOrange';
+                    if (categoria.includes('moderada')) return 'tableCellRed';
+                    if (categoria.includes('severa')) return 'tableCellDarkRed';
                     return 'tableCellMedium';
                 };
                 // Título resultados
@@ -642,7 +651,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                         margin: [0, 0, 0, 0] as [number, number, number, number]
                     }
                 ];
-                contenido.push({
+        contenido.push({
                     columns: [
                         { width: '45%', stack: [tablaResultadosTA[0], { ...tablaResultadosTA[1], margin: [0, 0, 0, 0] as [number, number, number, number] }] },
                         { width: '55%', stack: [
@@ -658,8 +667,8 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                             {
                                 text: 'Fuente: OMS y SIH (2014)',
                                 style: 'pieTabla',
-                                alignment: 'center',
-                                italics: true,
+            alignment: 'center',
+            italics: true,
                                 margin: [0, 0, 0, 20] as [number, number, number, number]
                             }
                         ] }
@@ -671,15 +680,206 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         }
     }
 
-    // Sección 3: Salud Visual
-    contenido.push({ text: '3. SALUD VISUAL', style: 'tituloSeccion', pageBreak: 'before' });
+    // Sección 3: Antecedentes Médicos
+    contenido.push({ text: `${numeroSeccion}. ANTECEDENTES MÉDICOS`, style: 'tituloSeccion', pageBreak: 'before' });
+    numeroSeccion++;
+    contenido.push({
+        text: [
+            'Esta sección presenta un resumen de los ',
+            { text: 'antecedentes médicos referidos', bold: true },
+            ' por los trabajadores durante su evaluación, enfocándose en la presencia de ',
+            { text: 'enfermedades crónicas y problemas localizados', bold: true },
+            ' que podrían tener ',
+            { text: 'impacto en su salud y desempeño laboral', bold: true },
+            '.'
+        ],
+        style: 'textoNormal',
+            margin: [0, 0, 0, 20]
+        });
+
+    // Tabla de enfermedades crónicas y antecedentes localizados lado a lado
+    let tablaEnfermedadesContent: any[] | null = null;
+    let tablaAntecedentesContent: any[] | null = null;
+    if (props.tablasDatos?.enfermedades) {
+        // Mapeo de nombres técnicos a nombres legibles
+        const nombreEnfermedadLegible: Record<string, string> = {
+            diabeticosPP: 'Diabéticos',
+            hipertensivosPP: 'Hipertensivos',
+            cardiopaticosPP: 'Cardiopáticos',
+            epilepticosPP: 'Epilépticos',
+            respiratorios: 'Respiratorios',
+            alergicos: 'Alérgicos'
+        };
+        const datosEnfermedades = props.tablasDatos.enfermedades
+            .filter(item => item && Array.isArray(item) && item.length >= 3)
+            .map(item => [
+                nombreEnfermedadLegible[item[0]] || item[0] || '-',
+                `${item[1] || 0} (${item[2] || 0}%)`
+            ]);
+        // Función para color condicional
+        const getEnfermedadCellStyle = (valor: string, columnaIndex: number) => {
+            if (columnaIndex === 0) return 'tableCellMedium';
+            // Si la cantidad es 0, verde; si es mayor, rojo
+            const cantidad = parseInt(valor.split(' ')[0]);
+            return cantidad === 0 ? 'tableCellEmerald' : 'tableCellRose';
+        };
+        if (datosEnfermedades.length > 0) {
+            tablaEnfermedadesContent = [
+                { text: 'Enfermedades Crónicas', style: 'subtituloTabla' },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['60%', '40%'],
+                        body: [
+                            [
+                                { text: 'Antecedente', style: 'tableHeaderMedium' },
+                                { text: 'Casos (%)', style: 'tableHeaderMedium' }
+                            ],
+                            ...datosEnfermedades.map(row => [
+                                { text: row[0], style: getEnfermedadCellStyle(row[0], 0) },
+                                { text: row[1], style: getEnfermedadCellStyle(row[1], 1) }
+                            ])
+                        ]
+                    },
+                    layout: 'lightHorizontalLines',
+                    margin: [0, 0, 0, 0] as [number, number, number, number]
+                }
+            ];
+        }
+    }
+    if (props.tablasDatos?.antecedentes) {
+        // Mapeo de nombres técnicos a nombres legibles
+        const nombreAntecedenteLegible: Record<string, string> = {
+            lumbalgias: 'Lumbalgias',
+            accidentes: 'Accidentes',
+            quirurgicos: 'Quirúrgicos',
+            traumaticos: 'Traumáticos'
+        };
+        const datosAntecedentes = props.tablasDatos.antecedentes
+            .filter(item => item && Array.isArray(item) && item.length >= 3)
+            .map(item => [
+                nombreAntecedenteLegible[item[0]] || item[0] || '-',
+                `${item[1] || 0} (${item[2] || 0}%)`
+            ]);
+        // Función para color condicional
+        const getAntecedenteCellStyle = (valor: string, columnaIndex: number) => {
+            if (columnaIndex === 0) return 'tableCellMedium';
+            const cantidad = parseInt(valor.split(' ')[0]);
+            return cantidad === 0 ? 'tableCellEmerald' : 'tableCellRose';
+        };
+        if (datosAntecedentes.length > 0) {
+            tablaAntecedentesContent = [
+                { text: 'Problemas Localizados', style: 'subtituloTabla' },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['60%', '40%'],
+                        body: [
+                            [
+                                { text: 'Antecedente', style: 'tableHeaderMedium' },
+                                { text: 'Casos (%)', style: 'tableHeaderMedium' }
+                            ],
+                            ...datosAntecedentes.map(row => [
+                                { text: row[0], style: getAntecedenteCellStyle(row[0], 0) },
+                                { text: row[1], style: getAntecedenteCellStyle(row[1], 1) }
+                            ])
+                        ]
+                    },
+                    layout: 'lightHorizontalLines',
+                    margin: [0, 0, 0, 0] as [number, number, number, number]
+                }
+            ];
+        }
+    }
+
+    if (tablaEnfermedadesContent && tablaAntecedentesContent) {
+        contenido.push({
+            columns: [
+                { width: '50%', stack: tablaEnfermedadesContent },
+                { width: '50%', stack: tablaAntecedentesContent }
+            ],
+            columnGap: 40,
+            margin: [0, 0, 0, 20]
+        });
+    } else {
+        if (tablaEnfermedadesContent) (tablaEnfermedadesContent as any[]).forEach(item => contenido.push(item));
+        if (tablaAntecedentesContent) (tablaAntecedentesContent as any[]).forEach(item => contenido.push(item));
+    }
+
+    // Sección 4: Factores de Riesgo Ocupacional
+    if (imagenes.agentes) {
+        // Verificar si hay datos de agentes de riesgo con valores mayores a 0
+        const datosAgentes = props.tablasDatos?.agentesRiesgo;
+        const hayDatosAgentes = datosAgentes && Array.isArray(datosAgentes) && datosAgentes.some(item => {
+            if (item && Array.isArray(item) && item.length >= 2) {
+                const cantidad = parseInt(item[1] || '0');
+                return cantidad > 0;
+            }
+            return false;
+        });
+
+        if (hayDatosAgentes) {
+            contenido.push(
+                { text: `${numeroSeccion}. FACTORES DE RIESGO OCUPACIONAL`, style: 'tituloSeccion', pageBreak: 'before' },
+                {
+                    text: [
+                        'Número de trabajadores ',
+                        { text: 'expuestos a cada tipo de agente de riesgo', bold: true },
+                        ' identificado en su entorno laboral. Un mismo trabajador puede estar incluido en ',
+                        { text: 'múltiples categorías de exposición', bold: true },
+                        '. Esto permite identificar los tipos de exposición más frecuentes dentro de la plantilla.'
+                    ],
+                    style: 'textoNormal',
+                    margin: [0, 0, 0, 10]
+                },
+                { 
+                    image: imagenes.agentes, 
+                    width: 400, 
+                    alignment: 'center',
+                    margin: [0, 10, 0, 20] 
+                }
+            );
+                
+            // Tabla de agentes de riesgo
+            if (datosAgentes) {
+                const datosAgentesFiltrados = datosAgentes
+                    .filter(item => item && Array.isArray(item) && item.length >= 3)
+                    .map(item => [
+                        item[0] || '-',
+                        `${item[1] || 0} (${item[2] || 0}%)`
+                    ]);
+                
+                if (datosAgentesFiltrados.length > 0) {
+                    const tablaAgentes = crearTablaPDF(
+                        datosAgentesFiltrados,
+                        ['Agente de Riesgo', 'Expuestos (Porcentaje)'],
+                        'Detalle de Exposición a Agentes de Riesgo',
+                        'agentesRiesgo'
+                    );
+                    tablaAgentes.forEach(item => contenido.push(item));
+                }
+            }
+            numeroSeccion++; // Solo incrementar si se mostró la sección
+        }
+    }
+
+    // Sección 5: Salud Visual
+    contenido.push({ text: `${numeroSeccion}. SALUD VISUAL`, style: 'tituloSeccion', pageBreak: 'before' });
+    const numeroSeccionSaludVisual = numeroSeccion; // Guardar el número de la sección de Salud Visual
+    numeroSeccion++;
 
     // Tabla de agudeza visual sin corrección
     if (props.tablasDatos?.vision) {
         contenido.push(
-            { text: '3.1 Agudeza Visual', style: 'subtituloSeccion' },
+            { text: `${numeroSeccionSaludVisual}.1 Agudeza Visual`, style: 'subtituloSeccion' },
             {
-                text: 'La agudeza visual es la capacidad del sistema visual para percibir, detectar o identificar objetos especiales en condiciones de buena iluminación. Se define como la agudeza visual normal la capacidad de discernir contornos nítidos separados por una distancia mínima de 1.75 mm desde una distancia de 20 pies (aproximadamente 6 metros).',
+                text: [
+                    'La ',
+                    { text: 'capacidad del sistema visual para percibir, detectar o identificar objetos', bold: true },
+                    ' especiales en condiciones de buena iluminación. Se define como la ',
+                    { text: 'agudeza visual normal', bold: true },
+                    ' la capacidad de discernir contornos nítidos separados por una distancia mínima de 1.75 mm desde una distancia de 20 pies (aproximadamente 6 metros).'
+                ],
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             }
@@ -688,22 +888,100 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         const datosVision = props.tablasDatos.vision
             .filter(item => item && Array.isArray(item) && item.length >= 3)
             .map(item => [
-                item[0] || '-',
+                (item[0] || '-').replace('Visión ', '').replace(/^\w/, c => c.toUpperCase()), // Remover "Visión " y capitalizar primera letra
                 `${item[1] || 0} (${item[2] || 0}%)`
             ]);
         
         if (datosVision.length > 0) {
-            const tablaVision = crearTablaPDF(
-                datosVision,
-                ['Categoría', 'Trabajadores (Porcentaje)'],
-                'AGUDEZA VISUAL',
-                'vision'
-            );
-            tablaVision.forEach(item => contenido.push(item));
+            // Función para asignar color según la categoría de visión
+            const getVisionCellStyle = (categoria: string) => {
+                if (categoria.includes('Excepcional') || categoria.includes('Normal')) return 'tableCellEmerald';
+                if (categoria.includes('Ligeramente')) return 'tableCellAmber';
+                if (categoria.includes('Moderadamente')) return 'tableCellOrange';
+                if (categoria.includes('Significativamente')) return 'tableCellRed';
+                if (categoria.includes('Muy')) return 'tableCellDarkRed';
+                return 'tableCellMedium';
+            };
+            
+            const tablaResultadosAV = [
+                { text: 'Resultados de A. V. sin corrección', style: 'subtituloTabla' },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['*', 'auto'],
+                        body: [
+                            [
+                                { text: 'Categoría Visión', style: 'tableHeaderMedium' },
+                                { text: 'Trabajadores (%)', style: 'tableHeaderMedium' }
+                            ],
+                            ...datosVision.map(row => [
+                                { text: row[0], style: 'tableCellMedium' },
+                                { text: row[1], style: getVisionCellStyle(row[0]) }
+                            ])
+                        ]
+                    },
+                    layout: 'lightHorizontalLines',
+                    margin: [0, 0, 0, 0] as [number, number, number, number]
+                }
+            ];
+            
+            const tablaReferenciaAV = [
+                { text: 'Interpretación de la Agudeza Visual', style: 'subtituloTabla' },
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: ['*', 'auto'],
+                        body: [
+                            [
+                                { text: 'AGUDEZA VISUAL', style: 'tableHeaderMedium' },
+                                { text: 'CATEGORÍA VISIÓN', style: 'tableHeaderMedium' }
+                            ],
+                            [
+                                { text: '20/10 – 20/15', style: 'tableCellMedium' },
+                                { text: 'Excepcional', style: 'tableCellMedium' }
+                            ],
+                            [
+                                { text: '20/20 – 20/25', style: 'tableCellMedium' },
+                                { text: 'Normal', style: 'tableCellMedium' }
+                            ],
+                            [
+                                { text: '20/30 – 20/35', style: 'tableCellMedium' },
+                                { text: 'Ligeramente reducida', style: 'tableCellMedium' }
+                            ],
+                            [
+                                { text: '20/40 – 20/45', style: 'tableCellMedium' },
+                                { text: 'Moderadamente reducida', style: 'tableCellMedium' }
+                            ],
+                            [
+                                { text: '20/50 – 20/55', style: 'tableCellMedium' },
+                                { text: 'Significativamente reducida', style: 'tableCellMedium' }
+                            ],
+                            [
+                                { text: '> 20/60', style: 'tableCellMedium' },
+                                { text: 'Muy reducida', style: 'tableCellMedium' }
+                            ]
+                        ]
+                    },
+                    layout: 'lightHorizontalLines',
+                    margin: [0, 0, 0, 0] as [number, number, number, number]
+                }
+            ];
+        
+        contenido.push({
+                columns: [
+                    { width: '50%', stack: tablaResultadosAV },
+                    { width: '50%', stack: tablaReferenciaAV }
+                ],
+                columnGap: 20,
+                margin: [0, 0, 0, 20]
+            });
         }
         
         contenido.push({
-            text: 'Agudeza visual con corrección: Máxima visión lograda con la prescripción exacta en lentes o lentes de contacto. Si el paciente no tiene prescripción, sería igual a la agudeza visual sin corrección.\n\nAgudeza visual sin corrección: Máxima visión lograda sin usar lentes o lentes de contacto.',
+            text: [
+                { text: 'Agudeza visual sin corrección:', bold: true },
+                ' Máxima visión lograda sin usar lentes o lentes de contacto.'
+            ],
             style: 'textoNormal',
             alignment: 'left',
             margin: [0, 0, 0, 20]
@@ -712,9 +990,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
 
     if (imagenes.lentes) {
         contenido.push(
-            { text: '3.2 Corrección de Vista y Daltonismo', style: 'subtituloSeccion' },
+            { text: `${numeroSeccionSaludVisual}.2 Necesidad de Corrección Visual`, style: 'subtituloSeccion' },
             {
-                text: 'Se evaluó si los trabajadores requieren corrección visual y si utilizan medios para lograrla, así como la presencia de alteraciones en la visión cromática. La mayoría cuenta con corrección adecuada, y solo se identificó un caso de daltonismo.',
+                text: 'Trabajadores que tienen una agudeza visual reducida y requieren corrección visual.',
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             }
@@ -759,21 +1037,33 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                                     ]
                                 ]
                             },
-                            layout: 'lightHorizontalLines'
+                            layout: 'lightHorizontalLines',
+                            margin: [0, 20, 0, 0]
                         }
                     ]
                 ]
             },
             layout: 'noBorders',
             margin: [0, 10, 0, 20]
+            
         } as Content;
         
+        
         contenido.push(tablaLentesCombinada);
+        
+        // Texto adicional debajo de la tabla
+        contenido.push({
+            text: 'Trabajadores que necesitan lentes',
+            style: 'pieTabla',
+            italics: true,
+            alignment: 'center',
+            margin: [0, 0, 0, 20] as [number, number, number, number]
+        });
     }
 
     if (imagenes.corregida) {
         contenido.push(
-            { text: '3.3 Corrección Visual Implementada', style: 'subtituloSeccion' },
+            { text: `${numeroSeccionSaludVisual}.3 Corrección Visual Implementada`, style: 'subtituloSeccion', pageBreak: 'before' },
             {
                 text: 'Trabajadores que ya cuentan con corrección visual implementada.',
                 style: 'textoNormal',
@@ -812,7 +1102,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                                     ],
                                     [
                                         { text: 'Usan lentes', style: 'tableCellMedium' },
-                                        { text: `${usanLentes} (${porcentajeUsan}%)`, style: 'tableCellMedium' }
+                                        { text: `${usanLentes} (${porcentajeUsan}%)`, style: 'tableCellEmerald' }
                                     ],
                                     [
                                         { text: 'No usan lentes', style: 'tableCellMedium' },
@@ -820,7 +1110,8 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                                     ]
                                 ]
                             },
-                            layout: 'lightHorizontalLines'
+                            layout: 'lightHorizontalLines',
+                            margin: [0, 20, 0, 0]
                         }
                     ]
                 ]
@@ -830,13 +1121,22 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         } as Content;
         
         contenido.push(tablaVistaCorregidaCombinada);
+
+        // Texto adicional debajo de la tabla
+        contenido.push({
+            text: 'Trabajadores que ya corrigieron su vista con lentes',
+            style: 'pieTabla',
+            italics: true,
+            alignment: 'center',
+            margin: [0, 0, 0, 60] as [number, number, number, number]
+        });
     }
 
     if (imagenes.daltonismo) {
         contenido.push(
-            { text: '3.4 Alteraciones en la Percepción de Colores', style: 'subtituloSeccion' },
+            { text: `${numeroSeccionSaludVisual}.4 Alteraciones en la Percepción de Colores`, style: 'subtituloSeccion' },
             {
-                text: 'Informa cuántos trabajadores presentan alteraciones en la percepción de colores.',
+                text: 'Trabajadores que presentan alteraciones en la percepción de colores.',
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             }
@@ -873,7 +1173,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                                     ],
                                     [
                                         { text: 'Con daltonismo', style: 'tableCellMedium' },
-                                        { text: `${conDaltonismo} (${porcentajeDaltonismo}%)`, style: 'tableCellMedium' }
+                                        { text: `${conDaltonismo} (${porcentajeDaltonismo}%)`, style: 'tableCellOrange' }
                                     ],
                                     [
                                         { text: 'Sin daltonismo', style: 'tableCellMedium' },
@@ -881,7 +1181,8 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                                     ]
                                 ]
                             },
-                            layout: 'lightHorizontalLines'
+                            layout: 'lightHorizontalLines',
+                            margin: [0, 20, 0, 0]
                         }
                     ]
                 ]
@@ -891,106 +1192,29 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         } as Content;
         
         contenido.push(tablaDaltonismoCombinada);
-    }
 
-    // Sección 4: Antecedentes Médicos
-    contenido.push({ text: '4. ANTECEDENTES MÉDICOS', style: 'tituloSeccion' });
+        // Texto adicional debajo de la tabla
     contenido.push({
-        text: 'Esta sección presenta un resumen de los antecedentes médicos referidos por los trabajadores durante su evaluación, enfocándose en la presencia de enfermedades crónicas y problemas localizados que podrían tener impacto en su salud y desempeño laboral.',
-        style: 'textoNormal',
-        margin: [0, 0, 0, 20]
-    });
-
-    // Tabla de enfermedades crónicas
-    if (props.tablasDatos?.enfermedades) {
-        const datosEnfermedades = props.tablasDatos.enfermedades
-            .filter(item => item && Array.isArray(item) && item.length >= 3)
-            .map(item => [
-                item[0] || '-',
-                `${item[1] || 0} (${item[2] || 0}%)`
-            ]);
-        
-        if (datosEnfermedades.length > 0) {
-            const tablaEnfermedades = crearTablaPDF(
-                datosEnfermedades,
-                ['Antecedente', 'Casos (Porcentaje)'],
-                'Enfermedades Crónicas Referidas',
-                'enfermedades'
-            );
-            tablaEnfermedades.forEach(item => contenido.push(item));
-        }
-    }
-
-    // Tabla de antecedentes localizados
-    if (props.tablasDatos?.antecedentes) {
-        const datosAntecedentes = props.tablasDatos.antecedentes
-            .filter(item => item && Array.isArray(item) && item.length >= 3)
-            .map(item => [
-                item[0] || '-',
-                `${item[1] || 0} (${item[2] || 0}%)`
-            ]);
-        
-        if (datosAntecedentes.length > 0) {
-            const tablaAntecedentes = crearTablaPDF(
-                datosAntecedentes,
-                ['Antecedente', 'Casos (Porcentaje)'],
-                'Problemas Localizados Referidos',
-                'antecedentes'
-            );
-            tablaAntecedentes.forEach(item => contenido.push(item));
-        }
-    }
-
-    // Sección 5: Factores de Riesgo Ocupacional
-    if (imagenes.agentes) {
-        contenido.push(
-            { text: '5. FACTORES DE RIESGO OCUPACIONAL', style: 'tituloSeccion' },
-            {
-                text: 'Distribución de trabajadores según los agentes de riesgo presentes en su entorno laboral, permitiendo identificar los tipos de exposición más frecuentes dentro de la plantilla.',
-                style: 'textoNormal',
-                margin: [0, 0, 0, 10]
-            },
-            { 
-                image: imagenes.agentes, 
-                width: 500, 
-                alignment: 'center',
-                margin: [0, 10, 0, 20] 
-            }
-        );
-        
-        // Tabla de agentes de riesgo
-        if (props.tablasDatos?.agentesRiesgo) {
-            const datosAgentes = props.tablasDatos.agentesRiesgo
-                .filter(item => item && Array.isArray(item) && item.length >= 3)
-                .map(item => [
-                    item[0] || '-',
-                    `${item[1] || 0} (${item[2] || 0}%)`
-                ]);
-            
-            if (datosAgentes.length > 0) {
-                const tablaAgentes = crearTablaPDF(
-                    datosAgentes,
-                    ['Agente de Riesgo', 'Expuestos (Porcentaje)'],
-                    'Detalle de Exposición a Agentes de Riesgo',
-                    'agentesRiesgo'
-                );
-                tablaAgentes.forEach(item => contenido.push(item));
-            }
-        }
+            text: 'Alteración en la percepción del color',
+            style: 'pieTabla',
+            italics: true,
+            alignment: 'center',
+            margin: [0, 0, 0, 20] as [number, number, number, number]
+        });
     }
 
     // Sección 6: Aptitud al Puesto
     if (imagenes.aptitud) {
         contenido.push(
-            { text: '6. RESULTADOS DE EXÁMENES MÉDICOS PERIÓDICOS', style: 'tituloSeccion' },
+            { text: `${numeroSeccion}. RESULTADOS DE EXÁMENES MÉDICOS PERIÓDICOS`, style: 'tituloSeccion', pageBreak: 'before' },
             {
-                text: 'El examen médico periódico es una evaluación médica regular para los trabajadores durante su empleo. Su propósito principal es monitorear el estado de salud del trabajador, detectar oportunamente posibles alteraciones relacionadas con el trabajo y verificar la aptitud continua para las funciones. Los resultados de estos exámenes ayudan a identificar riesgos para la salud, permiten intervenciones preventivas y determinan si un individuo permanece apto para su puesto.',
+                text: 'El objetivo del examen médico laboral es valorar el estado de salud del trabajador, identificar posibles alteraciones relacionadas con el trabajo y determinar su aptitud para las funciones asignadas. Los resultados permiten detectar riesgos para la salud, implementar medidas preventivas y verificar la capacidad del individuo para desempeñar su puesto.',
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             },
             { 
                 image: imagenes.aptitud, 
-                width: 500, 
+                width: 365, 
                 alignment: 'center',
                 margin: [0, 10, 0, 20] 
             }
@@ -1000,15 +1224,39 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         if (props.tablasDatos?.aptitud) {
             const datosAptitud = props.tablasDatos.aptitud
                 .filter(item => item && Array.isArray(item) && item.length >= 3)
-                .map(item => [
-                    item[0] || '-',
-                    `${item[1] || 0} (${item[2] || 0}%)`
-                ]);
+                .map(item => {
+                    const resultado = item[0] || '-';
+                    let explicacion = '';
+                    
+                    // Asignar explicación específica según el resultado
+                    switch (resultado) {
+                        case 'Apto Sin Restricciones':
+                            explicacion = 'No tiene impedimentos para el puesto al que aspira o desempeña.';
+                            break;
+                        case 'Apto Con Precaución':
+                            explicacion = 'Requiere vigilancia médica más frecuente. \n\n';
+                            break;
+                        case 'Apto Con Restricciones':
+                            explicacion = 'Requiere adaptaciones razonables para asegurar su seguridad y salud.';
+                            break;
+                        case 'No Apto':
+                            explicacion = 'No está permitido el desempeño del puesto al que aspira.';
+                            break;
+                        default:
+                            explicacion = 'Para concluir, requiere evaluaciones adicionales o tratamiento médico.';
+                    }
+                    
+                    return [
+                        resultado,
+                        `${item[1] || 0} (${item[2] || 0}%)`,
+                        explicacion
+                    ];
+                });
             
             if (datosAptitud.length > 0) {
                 const tablaAptitud = crearTablaPDF(
                     datosAptitud,
-                    ['Resultado', 'Trabajadores (Porcentaje)'],
+                    ['Resultado', 'Trabajadores (%)', 'Explicación'],
                     'RESULTADOS EXAMENES MÉDICOS',
                     'aptitud'
                 );
@@ -1021,7 +1269,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     contenido.push(
         {
             canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1, lineColor: '#E5E7EB' }],
-            margin: [0, 20, 0, 10]
+            margin: [0, 10, 0, 10]
         },
         {
             text: 'Este informe fue generado automáticamente por el sistema de gestión de salud laboral Ramazzini.',
@@ -1175,37 +1423,55 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 margin: [2, 2, 2, 2]
             },
             tableCellEmerald: {
-                fontSize: 9,
+                fontSize: 10,
                 color: '#047857',
                 alignment: 'center',
                 margin: [2, 2, 2, 2]
             },
             tableCellAmber: {
-                fontSize: 9,
+                fontSize: 10,
                 color: '#D97706',
                 alignment: 'center',
                 margin: [2, 2, 2, 2]
             },
+            tableCellOrange: {
+                fontSize: 10,
+                color: '#F97316',
+                alignment: 'center',
+                margin: [2, 2, 2, 2]
+            },
+            tableCellRed: {
+                fontSize: 10,
+                color: '#EF4444',
+                alignment: 'center',
+                margin: [2, 2, 2, 2]
+            },
+            tableCellDarkRed: {
+                fontSize: 10,
+                color: '#B91C1C',
+                alignment: 'center',
+                margin: [2, 2, 2, 2]
+            },
             tableCellRose: {
-                fontSize: 9,
+                fontSize: 10,
                 color: '#DC2626',
                 alignment: 'center',
                 margin: [2, 2, 2, 2]
             },
             tableCellBlue: {
-                fontSize: 9,
+                fontSize: 10,
                 color: '#1D4ED8',
                 alignment: 'center',
                 margin: [2, 2, 2, 2]
             },
             tableCellPink: {
-                fontSize: 9,
+                fontSize: 10,
                 color: '#BE185D',
                 alignment: 'center',
                 margin: [2, 2, 2, 2]
             },
             tableCellGray: {
-                fontSize: 9,
+                fontSize: 10,
                 color: '#374151',
                 alignment: 'center',
                 margin: [2, 2, 2, 2]
@@ -1379,7 +1645,7 @@ const crearTablaPDF = (datos: any[], columnas: string[], titulo: string, tipoTab
     const cantidad = cantidadMatch ? parseInt(cantidadMatch[1]) : 0;
     
     // Primera columna siempre sin colores (solo centrada)
-    if (columnaIndex === 0) return 'tableCell';
+    if (columnaIndex === 0) return 'tableCellMedium';
     
     // Lógica específica por tipo de tabla
     switch (tipoTabla) {
@@ -1391,11 +1657,13 @@ const crearTablaPDF = (datos: any[], columnas: string[], titulo: string, tipoTab
       
       case 'aptitud':
         const resultado = datosLimpios[filaIndex][0];
+        // Solo aplicar colores a las columnas de resultados (0 y 1), no a las explicaciones (2)
+        if (columnaIndex === 2) return 'tableCellMedium'; // Explicaciones sin color
         if (resultado === 'Apto Sin Restricciones') return 'tableCellEmerald';
         if (resultado === 'Apto Con Precaución') return 'tableCellAmber';
-        if (resultado === 'Apto Con Restricciones') return 'tableCellAmber';
-        if (resultado === 'No Apto') return 'tableCellRose';
-        return 'tableCell';
+        if (resultado === 'Apto Con Restricciones') return 'tableCellOrange';
+        if (resultado === 'No Apto') return 'tableCellRed';
+        return 'tableCellMedium';
       
       case 'enfermedades':
       case 'antecedentes':
@@ -1405,7 +1673,7 @@ const crearTablaPDF = (datos: any[], columnas: string[], titulo: string, tipoTab
       case 'gruposEtarios':
         if (columnaIndex === 1) return 'tableCellBlue'; // Hombres
         if (columnaIndex === 2) return 'tableCellPink'; // Mujeres
-        return 'tableCell';
+        return 'tableCellMedium';
       
       case 'vision':
         const categoriaVision = datosLimpios[filaIndex][0];
@@ -1419,10 +1687,10 @@ const crearTablaPDF = (datos: any[], columnas: string[], titulo: string, tipoTab
         if (['Óptima', 'Normal'].includes(categoriaTension)) return 'tableCellEmerald';
         if (categoriaTension === 'Alta') return 'tableCellAmber';
         if (['Hipertensión ligera', 'Hipertensión moderada', 'Hipertensión severa'].includes(categoriaTension)) return 'tableCellRose';
-        return 'tableCell';
+        return 'tableCellMedium';
       
       default:
-        return 'tableCell';
+        return 'tableCellMedium';
     }
   };
   
@@ -1431,7 +1699,7 @@ const crearTablaPDF = (datos: any[], columnas: string[], titulo: string, tipoTab
     {
       table: {
         headerRows: 1,
-        widths: columnas.map(() => '*'),
+        widths: tipoTabla === 'aptitud' ? [140, 100, '*'] : columnas.map(() => '*'),
         body: [
           columnas.map(col => ({ text: col, style: 'tableHeader' })),
           ...datosLimpios.map((fila, filaIndex) => 
