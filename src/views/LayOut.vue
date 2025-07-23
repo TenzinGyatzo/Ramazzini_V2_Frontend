@@ -237,7 +237,7 @@ const textoEnlace = computed(() => {
   <main class="flex flex-col items-center p-4 md:p-10 md:w-full overflow-x-auto">
     <!-- Logo de la empresa -->
     <div v-if="empresas.currentEmpresa?.logotipoEmpresa?.data && 
-      ['trabajadores', 'expediente-medico', 'crear-documento'].includes(route.name as string)"
+      ['crear-documento'].includes(route.name as string)"
       class="fixed top-0 right-0 h-16 w-16 md:h-32 md:w-32 rounded z-50 flex flex-col items-center justify-center overflow-hidden">
       <img :src="'/uploads/logos/' + empresas.currentEmpresa?.logotipoEmpresa?.data"
       :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial" class="max-h-full max-w-full object-contain p-2">

@@ -334,15 +334,62 @@ const handleImageWheel = (event) => {
 const descargarPdfActual = async () => {
     if (currentPdfUrl.value) {
         try {
-            const response = await axios.get(currentPdfUrl.value, { responseType: 'blob' });
-            const blob = response.data;
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'documento.pdf';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
+            // Determinar qué documento está siendo visualizado
+            const tipoSinEspacios = props.documentoTipo.toLowerCase().replace(/\s+/g, '');
+            let documento = null;
+            let tipoDocumento = '';
+            
+            // Identificar el documento actual basado en el tipo
+            switch (tipoSinEspacios) {
+                case 'antidoping':
+                    documento = props.antidoping;
+                    tipoDocumento = 'Antidoping';
+                    break;
+                case 'aptitud':
+                    documento = props.aptitud;
+                    tipoDocumento = 'Aptitud';
+                    break;
+                case 'certificado':
+                    documento = props.certificado;
+                    tipoDocumento = 'Certificado';
+                    break;
+                case 'examenvista':
+                    documento = props.examenVista;
+                    tipoDocumento = 'Examen Vista';
+                    break;
+                case 'exploracionfisica':
+                    documento = props.exploracionFisica;
+                    tipoDocumento = 'Exploracion Fisica';
+                    break;
+                case 'historiaclinica':
+                    documento = props.historiaClinica;
+                    tipoDocumento = 'Historia Clinica';
+                    break;
+                case 'notamedica':
+                    documento = props.notaMedica;
+                    tipoDocumento = 'Nota Medica';
+                    break;
+                case 'documentoexterno':
+                    documento = props.documentoExterno;
+                    tipoDocumento = 'Documento Externo';
+                    break;
+            }
+            
+            if (documento) {
+                // Usar la misma lógica que descargarArchivo
+                await descargarArchivo(documento, tipoDocumento);
+            } else {
+                // Fallback al método original si no se puede identificar el documento
+                const response = await axios.get(currentPdfUrl.value, { responseType: 'blob' });
+                const blob = response.data;
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'documento.pdf';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            }
         } catch (error) {
             console.error('Error al descargar el PDF:', error);
             alert('Error al descargar el PDF');
@@ -364,15 +411,32 @@ const imprimirPdfActual = () => {
 const descargarImagenActual = async () => {
     if (currentImageUrl.value) {
         try {
-            const response = await axios.get(currentImageUrl.value, { responseType: 'blob' });
-            const blob = response.data;
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'imagen.jpg';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
+            // Para documentos externos que son imágenes, usar el nombre original
+            if (props.documentoExterno && props.documentoTipo.toLowerCase().replace(/\s+/g, '') === 'documentoexterno') {
+                const extension = obtenerExtensionArchivo(props.documentoExterno);
+                const nombreArchivo = `${props.documentoExterno.nombreDocumento} ${convertirFechaISOaDDMMYYYY(props.documentoExterno.fechaDocumento)}.${extension}`;
+                
+                const response = await axios.get(currentImageUrl.value, { responseType: 'blob' });
+                const blob = response.data;
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = nombreArchivo;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            } else {
+                // Fallback para otros casos
+                const response = await axios.get(currentImageUrl.value, { responseType: 'blob' });
+                const blob = response.data;
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'imagen.jpg';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            }
         } catch (error) {
             console.error('Error al descargar la imagen:', error);
             alert('Error al descargar la imagen');

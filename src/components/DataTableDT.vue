@@ -325,22 +325,10 @@ onMounted(() => {
       }
     });
 
-    let ordenAplicado = false;
-
-    dataTableInstance.on('draw', function () {
-      if (filtroPeriodoReferencia && !ordenAplicado) {
-        ordenAplicado = true; // Evita el bucle infinito
-        dataTableInstance.order([2, 'desc']).draw(false);
-      } else if (!filtroPeriodoReferencia && !ordenAplicado) {
-        ordenAplicado = true; // Evita el bucle infinito
-        dataTableInstance.order([0, 'desc']).draw(false);
-      }
-
-      // Restablecemos la variable después del primer cambio
-      setTimeout(() => {
-        ordenAplicado = false;
-      }, 10); // Un pequeño delay para garantizar que se libere la variable
-    });
+    // Eliminamos la lógica de reordenamiento automático que interfiere con el orden original
+    // dataTableInstance.on('draw', function () {
+    //   // Esta lógica causaba que el filtro de período cambiara el orden automáticamente
+    // });
   }
 });
 
@@ -403,6 +391,7 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
 
   // 3. Aplicar filtro por fecha (periodo)
   const valorPeriodo = localStorage.getItem('filtro-periodo') || '';
+  console.log('Aplicando filtro de período:', valorPeriodo);
   if (valorPeriodo && valorPeriodo !== 'Todo el tiempo') {
     const hoy = new Date();
     let fechaInicio: Date | null = null;
@@ -412,50 +401,67 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
     switch (valorPeriodo) {
       case 'Hoy':
         fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 0, 0, 0);
+        fechaFinMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59, 999);
         break;
       case 'Esta semana':
         fechaInicio = new Date(hoy);
         fechaInicio.setDate(hoy.getDate() - hoy.getDay() + 1); // Lunes de la semana actual
         fechaInicio.setHours(0, 0, 0, 0);
+        fechaFinMesAnterior = new Date(hoy);
+        fechaFinMesAnterior.setDate(hoy.getDate() - hoy.getDay() + 7); // Domingo de la semana actual
+        fechaFinMesAnterior.setHours(23, 59, 59, 999);
         break;
       case 'Este mes':
         fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        fechaFinMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0, 23, 59, 59, 999);
         break;
       case 'Mes anterior':
         fechaInicio = new Date(hoy.getFullYear(), hoy.getMonth() - 1, 1);
-        fechaFinMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0); // Último día del mes anterior
+        fechaFinMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0, 23, 59, 59, 999);
         break;
       case 'Últimos 3 meses':
         fechaInicio = new Date(hoy);
         fechaInicio.setMonth(hoy.getMonth() - 3);
+        fechaFinMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59, 999);
         break;
       case 'Últimos 6 meses':
         fechaInicio = new Date(hoy);
         fechaInicio.setMonth(hoy.getMonth() - 6);
+        fechaFinMesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate(), 23, 59, 59, 999);
         break;
       case 'Este año':
         fechaInicio = new Date(hoy.getFullYear(), 0, 1);
+        fechaFinMesAnterior = new Date(hoy.getFullYear(), 11, 31, 23, 59, 59, 999);
         break;
       case 'Año anterior':
         fechaInicio = new Date(hoy.getFullYear() - 1, 0, 1);
-        fechaFinAnoAnterior = new Date(hoy.getFullYear() - 1, 11, 31); // Último día del año anterior
+        fechaFinAnoAnterior = new Date(hoy.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
         break;
     }
 
     if (fechaInicio) {
       const desde = fechaInicio.getTime();
-      const hasta = (fechaFinMesAnterior || fechaFinAnoAnterior) ? (fechaFinMesAnterior?.getTime() || fechaFinAnoAnterior?.getTime()) : null;
+      const hasta = (fechaFinMesAnterior || fechaFinAnoAnterior)?.getTime() || null;
+
+      console.log('Filtro período - Desde:', fechaInicio.toISOString(), 'Hasta:', (fechaFinMesAnterior || fechaFinAnoAnterior)?.toISOString());
 
       filtroPeriodoReferencia = function (settings, data) {
-        const fechaTexto = data[2]; // columna "Fecha Registro" (Asegúrate que esté correctamente en formato dd-MM-yyyy)
+        const fechaTexto = data[3]; // columna "Última actualización" (índice 3)
+        if (!fechaTexto || fechaTexto === '-') return true;
+        
         const partes = fechaTexto.split('-');
         if (partes.length !== 3) return true;
 
         const fecha = new Date(+partes[2], +partes[1] - 1, +partes[0]); // dd-MM-yyyy
-        if (hasta) {
-          return fecha.getTime() >= desde && fecha.getTime() <= hasta;
+        const fechaTime = fecha.getTime();
+        
+        const cumpleFiltro = hasta ? (fechaTime >= desde && fechaTime <= hasta) : (fechaTime >= desde);
+        
+        if (valorPeriodo === 'Hoy' || valorPeriodo === 'Esta semana') {
+          console.log('Filtro período - Fecha texto:', fechaTexto, 'Fecha parsed:', fecha.toISOString(), 'Cumple:', cumpleFiltro);
         }
-        return fecha.getTime() >= desde;
+        
+        return cumpleFiltro;
       };
       $.fn.dataTable.ext.search.push(filtroPeriodoReferencia);
     }
