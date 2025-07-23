@@ -85,7 +85,7 @@ const modalContent = computed(() => {
     return {
       title: 'Tu prueba gratuita ha finalizado',
       message: 'No te detengas aquí, sigue optimizando tu práctica.',
-      price: 'A partir de $699/mes, desbloquea el potencial completo de nuestro software y obtén acceso a todas las herramientas que necesitas.',
+      price: 'A partir de $999/mes, desbloquea el potencial completo de nuestro software y obtén acceso a todas las herramientas que necesitas.',
       benefits: [
         'Registra y gestiona a tus clientes y sus trabajadores.',
         'Genera informes y documentos personalizados de forma automática.',
@@ -154,7 +154,7 @@ const modalContent = computed(() => {
 </script>
 
 <template>
-  <div v-if="modalContent.show !== false" class="modal fixed top-0 left-0 z-50 p-8 h-screen w-full grid place-items-center">
+  <div v-if="modalContent.show !== false" class="modal fixed top-0 left-0 z-50 p-4 sm:p-8 h-screen w-full flex items-center justify-center">
     <div class="absolute top-0 left-0 w-full h-full bg-gray-800 bg-opacity-60 backdrop-blur-sm" @click="closeModal"></div>
 
     <Transition appear name="fade">

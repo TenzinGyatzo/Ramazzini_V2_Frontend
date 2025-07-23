@@ -488,9 +488,11 @@ const toggleColumnasOcultas = () => {
 
 <template>
   <!-- Modales -->
-  <Transition appear name="fade">
-    <ModalTrabajadores v-if="showModal" @closeModal="closeModal" @openSubscriptionModal="showSubscriptionModal = true" />
-  </Transition>
+   <Teleport to="body">
+    <Transition appear name="fade">
+      <ModalTrabajadores v-if="showModal" @closeModal="closeModal" @openSubscriptionModal="showSubscriptionModal = true" />
+    </Transition>
+  </Teleport>
 
   <Transition appear name="fade">
     <ModalSuscripcion v-if="showSubscriptionModal" @closeModal="showSubscriptionModal = false" />
