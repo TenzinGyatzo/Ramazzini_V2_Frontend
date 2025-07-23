@@ -52,7 +52,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     // Logo y datos de empresa en una tabla
     const headerTable: Content = {
         table: {
-            widths: ['*', 'auto'],
+            widths: props.logoBase64 ? ['*', 'auto'] : ['*'],
             body: [
                 [
                     {

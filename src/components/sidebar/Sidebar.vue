@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import SidebarLink from './SidebarLink.vue';
 import { useSidebarStore } from '@/stores/sidebar';
 import { useEmpresasStore } from '@/stores/empresas';
@@ -91,115 +91,239 @@ const documentTypeLabels = {
   notaMedica: "Nota Médica",
 };
 
+// Computed properties para mejorar la legibilidad
+const showEmpresaSection = computed(() => empresas.currentEmpresaId);
+const showCentroTrabajoSection = computed(() => centrosTrabajo.currentCentroTrabajoId && empresas.currentEmpresaId);
+const showTrabajadorSection = computed(() => trabajadores.currentTrabajadorId && centrosTrabajo.currentCentroTrabajoId && empresas.currentEmpresaId);
+const showDocumentoSection = computed(() => documentos.currentTypeOfDocument && trabajadores.currentTrabajadorId && centrosTrabajo.currentCentroTrabajoId && empresas.currentEmpresaId);
+const showAnalyticsSection = computed(() => empresas.currentEmpresaId && hasVisitedDashboard.value);
+const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisitedRiesgosTrabajo.value);
+
 </script>
 
 <template>
-  <div class="sidebar cursor-pointer" :style="{ width: sidebar.sidebarWidth }" @click="sidebar.toggleSidebar()">
-    <h1 class="text-2xl text-center my-5" :class="{ 'text-xl': sidebar.collapsed }">
-      <span v-if="sidebar.collapsed">
-        <div>N</div>
-        <div>A</div>
-        <div>V</div>
-      </span>
-      <div v-else class="flex flex-col items-center">
-        <br>
-        <div>Navegación</div>
-        <br>
+  <div class="sidebar" :class="{ 'collapsed': sidebar.collapsed }" :style="{ width: sidebar.sidebarWidth }" @click="sidebar.toggleSidebar()">
+    
+    <!-- Header del Sidebar -->
+    <div class="sidebar-header">
+      <div class="logo-container">
+        <div v-if="sidebar.collapsed" class="logo-collapsed">
+          <div class="logo-letter">N</div>
+          <div class="logo-letter">A</div>
+          <div class="logo-letter">V</div>
+        </div>
+        <div v-else class="logo-expanded">
+          <div class="logo-icon">
+            <i class="fas fa-compass"></i>
+          </div>
+          <div class="logo-text">
+            <h1>Navegación</h1>
+            <p>Sistema Ramazzini</p>
+          </div>
+        </div>
       </div>
-    </h1>
-    <Transition appear name="enter-left-exit-bounce">
-      <SidebarLink v-if="route.path !== '/login'" 
-        to="/" icon="fa-solid fa-home" :class="{ 'fade-in': isMounted }"
-        @click.stop>
-        <p>Inicio</p>
-        <p class="text-sm">Volver al inicio</p>
-      </SidebarLink>
-    </Transition>
+    </div>
 
-    <Transition appear name="enter-left-exit-bounce">
-      <SidebarLink v-if="route.path !== '/login'" 
-        to="/empresas" icon="fas fa-industry" :class="{ 'fade-in': isMounted }"
-        @click.stop>
-        <p>Clientes</p>
-        <p class="text-sm">Explorar Clientes</p>
-      </SidebarLink>
-    </Transition>
+    <!-- Contenido del Sidebar -->
+    <div class="sidebar-content">
+      
+      <!-- Sección Principal -->
+      <div class="section">
+        <div class="section-header" v-if="!sidebar.collapsed">
+          <span class="section-title">Principal</span>
+        </div>
+        
+        <Transition appear name="slide-fade" :duration="300">
+          <SidebarLink v-if="route.path !== '/login'" 
+            to="/" 
+            icon="fa-solid fa-home" 
+            tooltip="Inicio - Volver al inicio"
+            :class="{ 'fade-in': isMounted }"
+            @click.stop>
+            <p>Inicio</p>
+            <p class="text-sm">Volver al inicio</p>
+          </SidebarLink>
+        </Transition>
 
-    <Transition appear name="enter-left-exit-bounce">
-      <SidebarLink v-if="empresas.currentEmpresaId"
-        :to="{ name: 'centros-trabajo', params: { idEmpresa: empresas.currentEmpresaId } }" icon="fas fa-warehouse"
-        class="leading-5" @click.stop>
-        <p class="overflow-hidden truncate text-ellipsis max-w-[155px]">{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
-        <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">{{ empresas.currentEmpresa?.razonSocial || 'Nombre no disponible' }}</p>
-      </SidebarLink>
-    </Transition>
-    
-    <Transition name="enter-left-exit-bounce">
-      <SidebarLink v-if="centrosTrabajo.currentCentroTrabajoId && empresas.currentEmpresaId" :to="{
-        name: 'trabajadores',
-        params: {
-          idEmpresa: empresas.currentEmpresaId || '',
-          idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || ''
-        }
-      }" icon="fas fa-users" class="leading-5" @click.stop>
-        <p class="overflow-hidden truncate text-ellipsis max-w-[155px]">{{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}</p>
-        <p class="text-xs">{{ centrosTrabajo.currentCentroTrabajo?.direccionCentro }}</p>
-      </SidebarLink>
-    </Transition>
-    
-    <Transition name="enter-left-exit-bounce">
-      <SidebarLink v-if="trabajadores.currentTrabajadorId && centrosTrabajo.currentCentroTrabajoId && empresas.currentEmpresaId" :to="{
-        name: 'expediente-medico',
-        params: {
-          idEmpresa: empresas.currentEmpresaId || '',
-          idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || '',
-          idTrabajador: trabajadores.currentTrabajadorId || ''
-        }
-      }" icon="fa-regular fa-folder-open" class="leading-5" @click.stop>
-        <p>{{ trabajadores.currentTrabajador?.nombre }}</p>
-        <p class="text-xs">Expediente Médico</p>
-      </SidebarLink>
-    </Transition>
-    
-    <Transition name="enter-left-exit-bounce">
-      <SidebarLink v-if="documentos.currentTypeOfDocument && trabajadores.currentTrabajadorId && centrosTrabajo.currentCentroTrabajoId && empresas.currentEmpresaId" :to="{
-        name: 'crear-documento',
-        params: {
-          idEmpresa: empresas.currentEmpresaId || '',
-          idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || '',
-          idTrabajador: trabajadores.currentTrabajadorId || '',
-          tipoDocumento: documentos.currentTypeOfDocument,
-          idDocumento: documentos.currentDocument?._id
-        }
-      }" icon="fas fa-file-pdf" class="leading-5" @click.stop>
-        <p>{{ documentTypeLabels[documentos.currentTypeOfDocument] || 'Documento desconocido' }}</p>
-        <p v-if="documentos.currentDocument" class="text-xs">Editando</p>
-        <p v-else class="text-xs">Creando nuevo</p>
-      </SidebarLink>
-    </Transition>
-    
-    <Transition appear name="enter-left-exit-bounce">
-      <SidebarLink v-if="empresas.currentEmpresaId && hasVisitedDashboard"
-        :to="{ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresaId } }" icon="fas fa-chart-line"
-        class="leading-5" @click.stop>
-        <p>Estadísticas</p>
-        <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
-      </SidebarLink>
-    </Transition>
+        <Transition appear name="slide-fade" :duration="300">
+          <SidebarLink v-if="route.path !== '/login'" 
+            to="/empresas" 
+            icon="fas fa-industry" 
+            tooltip="Clientes - Explorar Clientes"
+            :class="{ 'fade-in': isMounted }"
+            @click.stop>
+            <p>Clientes</p>
+            <p class="text-sm">Explorar Clientes</p>
+          </SidebarLink>
+        </Transition>
+      </div>
 
-    <Transition appear name="enter-left-exit-bounce">
-      <SidebarLink v-if="empresas.currentEmpresaId && hasVisitedRiesgosTrabajo"
-        :to="{ name: 'riesgos-trabajo', params: { idEmpresa: empresas.currentEmpresaId } }" icon="fas fa-hard-hat"
-        class="leading-5" @click.stop>
-        <p>Riesgos de Trabajo</p>
-        <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">{{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}</p>
-      </SidebarLink>
-    </Transition>
+      <!-- Sección Empresa -->
+      <Transition name="slide-fade" :duration="400">
+        <div v-if="showEmpresaSection" class="section">
+          <div class="section-header" v-if="!sidebar.collapsed">
+            <span class="section-title">Empresa</span>
+            <div class="section-indicator"></div>
+          </div>
+          
+          <SidebarLink 
+            :to="{ name: 'centros-trabajo', params: { idEmpresa: empresas.currentEmpresaId } }" 
+            icon="fas fa-warehouse"
+            :tooltip="`${empresas.currentEmpresa?.nombreComercial || 'Empresa'} - Centros de Trabajo`"
+            class="leading-5" 
+            @click.stop>
+            <p class="overflow-hidden truncate text-ellipsis max-w-[155px]">
+              {{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}
+            </p>
+            <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">
+              {{ empresas.currentEmpresa?.razonSocial || 'Nombre no disponible' }}
+            </p>
+          </SidebarLink>
+        </div>
+      </Transition>
+      
+      <!-- Sección Centro de Trabajo -->
+      <Transition name="slide-fade" :duration="500">
+        <div v-if="showCentroTrabajoSection" class="section">
+          <div class="section-header" v-if="!sidebar.collapsed">
+            <span class="section-title">Centro de Trabajo</span>
+            <div class="section-indicator"></div>
+          </div>
+          
+          <SidebarLink 
+            :to="{
+              name: 'trabajadores',
+              params: {
+                idEmpresa: empresas.currentEmpresaId || '',
+                idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || ''
+              }
+            }" 
+            icon="fas fa-users" 
+            :tooltip="`${centrosTrabajo.currentCentroTrabajo?.nombreCentro || 'Centro'} - Trabajadores`"
+            class="leading-5" 
+            @click.stop>
+            <p class="overflow-hidden truncate text-ellipsis max-w-[155px]">
+              {{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}
+            </p>
+            <p class="text-xs">
+              {{ centrosTrabajo.currentCentroTrabajo?.direccionCentro }}
+            </p>
+          </SidebarLink>
+        </div>
+      </Transition>
+      
+      <!-- Sección Trabajador -->
+      <Transition name="slide-fade" :duration="600">
+        <div v-if="showTrabajadorSection" class="section">
+          <div class="section-header" v-if="!sidebar.collapsed">
+            <span class="section-title">Trabajador</span>
+            <div class="section-indicator"></div>
+          </div>
+          
+          <SidebarLink 
+            :to="{
+              name: 'expediente-medico',
+              params: {
+                idEmpresa: empresas.currentEmpresaId || '',
+                idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || '',
+                idTrabajador: trabajadores.currentTrabajadorId || ''
+              }
+            }" 
+            icon="fa-regular fa-folder-open" 
+            :tooltip="`${trabajadores.currentTrabajador?.nombre || 'Trabajador'} - Expediente Médico`"
+            class="leading-5" 
+            @click.stop>
+            <p>{{ trabajadores.currentTrabajador?.nombre }}</p>
+            <p class="text-xs">Expediente Médico</p>
+          </SidebarLink>
+        </div>
+      </Transition>
+      
+      <!-- Sección Documento -->
+      <Transition name="slide-fade" :duration="700">
+        <div v-if="showDocumentoSection" class="section">
+          <div class="section-header" v-if="!sidebar.collapsed">
+            <span class="section-title">Documento</span>
+            <div class="section-indicator"></div>
+          </div>
+          
+          <SidebarLink 
+            :to="{
+              name: 'crear-documento',
+              params: {
+                idEmpresa: empresas.currentEmpresaId || '',
+                idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId || '',
+                idTrabajador: trabajadores.currentTrabajadorId || '',
+                tipoDocumento: documentos.currentTypeOfDocument,
+                idDocumento: documentos.currentDocument?._id
+              }
+            }" 
+            icon="fas fa-file-pdf" 
+            :tooltip="`${documentTypeLabels[documentos.currentTypeOfDocument as keyof typeof documentTypeLabels] || 'Documento'} - ${documentos.currentDocument ? 'Editando' : 'Creando nuevo'}`"
+            class="leading-5" 
+            @click.stop>
+            <p>{{ documentTypeLabels[documentos.currentTypeOfDocument as keyof typeof documentTypeLabels] || 'Documento desconocido' }}</p>
+            <p v-if="documentos.currentDocument" class="text-xs">Editando</p>
+            <p v-else class="text-xs">Creando nuevo</p>
+          </SidebarLink>
+        </div>
+      </Transition>
+      
+      <!-- Sección Analytics -->
+      <Transition name="slide-fade" :duration="800">
+        <div v-if="showAnalyticsSection" class="section">
+          <div class="section-header" v-if="!sidebar.collapsed">
+            <span class="section-title">Analíticas</span>
+            <div class="section-indicator"></div>
+          </div>
+          
+          <SidebarLink 
+            :to="{ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresaId } }" 
+            icon="fas fa-chart-line"
+            :tooltip="`Estadísticas - ${empresas.currentEmpresa?.nombreComercial || 'Empresa'}`"
+            class="leading-5" 
+            @click.stop>
+            <p>Estadísticas</p>
+            <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">
+              {{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}
+            </p>
+          </SidebarLink>
+        </div>
+      </Transition>
 
-    <span class="collapse-icon cursor-pointer" :class="{ 'rotate-180': sidebar.collapsed }"
-      @click.stop="sidebar.toggleSidebar()">
-      <i class="fas fa-angle-double-left"></i>
-    </span>
+      <!-- Sección Riesgos -->
+      <Transition name="slide-fade" :duration="900">
+        <div v-if="showRiesgosSection" class="section">
+          <div class="section-header" v-if="!sidebar.collapsed">
+            <span class="section-title">Riesgos</span>
+            <div class="section-indicator"></div>
+          </div>
+          
+          <SidebarLink 
+            :to="{ name: 'riesgos-trabajo', params: { idEmpresa: empresas.currentEmpresaId } }" 
+            icon="fas fa-hard-hat"
+            :tooltip="`Riesgos de Trabajo - ${empresas.currentEmpresa?.nombreComercial || 'Empresa'}`"
+            class="leading-5" 
+            @click.stop>
+            <p>Riesgos de Trabajo</p>
+            <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">
+              {{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}
+            </p>
+          </SidebarLink>
+        </div>
+      </Transition>
+    </div>
+
+    <!-- Footer del Sidebar -->
+    <div class="sidebar-footer">
+      <button 
+        class="collapse-button" 
+        :class="{ 'collapsed': sidebar.collapsed }"
+        @click.stop="sidebar.toggleSidebar()"
+        :title="sidebar.collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'">
+        <i class="fas fa-angle-double-left"></i>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -208,70 +332,252 @@ const documentTypeLabels = {
   --sidebar-bg-color: #2f855a;
   --sidebar-item-hover: #38a169;
   --sidebar-item-active: #276749;
+  --sidebar-accent: #10b981;
+  --sidebar-text: #ffffff;
+  --sidebar-text-muted: #d1fae5;
+  --sidebar-border: #059669;
+  --sidebar-shadow: rgba(0, 0, 0, 0.3);
 }
 
-/* Transitions */
-.enter-left-exit-bounce-enter-active {
-  transition: all 0.3s ease-out;
+/* Animaciones mejoradas */
+.slide-fade-enter-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.enter-left-exit-bounce-leave-active {
-  transition: all 0.3s ease-out;
+.slide-fade-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.enter-left-exit-bounce-enter-from {
-  transform: translateX(20px);
+.slide-fade-enter-from {
   opacity: 0;
+  transform: translateX(-20px);
 }
 
-.enter-left-exit-bounce-leave-active {
-  animation: enter-left-exit-bounce-in 0.5s reverse;
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
 }
 
-@keyframes enter-left-exit-bounce-in {
-  0% {
-    transform: scale(0);
-  }
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
 
-  50% {
-    transform: scale(1.25);
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-
-  100% {
-    transform: scale(1);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>
 
 <style scoped>
 .sidebar {
-  color: white;
-  background-color: var(--sidebar-bg-color);
-
-  float: left;
+  color: var(--sidebar-text);
+  background: linear-gradient(180deg, var(--sidebar-bg-color) 0%, #276749 100%);
   position: fixed;
-  z-index: 1;
+  z-index: 5;
   top: 0;
   left: 0;
   bottom: 0;
-  padding: 0.5em;
-
-  transition: 0.5s ease;
-
   display: flex;
   flex-direction: column;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 20px var(--sidebar-shadow);
+  border-right: 1px solid var(--sidebar-border);
+  overflow: hidden;
+  cursor: pointer;
 }
 
-.collapse-icon {
-  position: absolute;
-  bottom: 0;
-  padding: 0.5em;
-  color: rgba(255, 255, 255, 0.7);
-  transition: 0.2s linear;
+.sidebar.collapsed {
+  width: 5rem !important;
 }
 
-.rotate-180 {
+/* Header */
+.sidebar-header {
+  padding: 1.5rem 1rem;
+  border-bottom: 1px solid var(--sidebar-border);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-collapsed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.logo-letter {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.logo-expanded {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, #ffffff, #f0fdf4);
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: var(--sidebar-bg-color);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+.logo-text h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+}
+
+.logo-text p {
+  font-size: 0.75rem;
+  margin: 0;
+  color: #f0fdf4;
+  font-weight: 500;
+}
+
+/* Content */
+.sidebar-content {
+  flex: 1;
+  padding: 1rem 0.75rem;
+  overflow-y: auto;
+  overflow-x: visible;
+}
+
+.sidebar-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: #ffffff;
+  border-radius: 2px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: #f0fdf4;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 1.5rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0 0.5rem;
+}
+
+.section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.section-indicator {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, #ffffff, rgba(255, 255, 255, 0.3));
+  border-radius: 1px;
+}
+
+/* Footer */
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid var(--sidebar-border);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.collapse-button {
+  width: 100%;
+  height: 2.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 0.5rem;
+  color: var(--sidebar-text-muted);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+}
+
+.collapse-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--sidebar-text);
+  border-color: var(--sidebar-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.collapse-button.collapsed {
   transform: rotate(180deg);
-  transition: 0.2s linear;
+}
+
+.collapse-button.collapsed:hover {
+  transform: rotate(180deg) translateY(-1px);
+}
+
+/* Responsive - Mantener funcionalidad original en pantallas pequeñas */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    z-index: 5;
+    width: 100% !important;
+    max-width: 300px;
+  }
+  
+  .sidebar.collapsed {
+    width: 5rem !important;
+    max-width: 5rem;
+  }
+  
+  .logo-expanded {
+    gap: 0.5rem;
+  }
+  
+  .logo-text h1 {
+    font-size: 1rem;
+  }
+  
+  .logo-text p {
+    font-size: 0.7rem;
+  }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+  .sidebar {
+    background: linear-gradient(180deg, var(--sidebar-bg-color) 0%, #276749 100%);
+  }
 }
 </style>

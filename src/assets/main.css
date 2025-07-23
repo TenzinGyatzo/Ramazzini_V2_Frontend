@@ -4,8 +4,8 @@
 
 /* Variables CSS del sidebar */
 :root {
-  --sidebar-width: 55px;
-  --content-margin: 55px;
+  --sidebar-width: 80px;
+  --content-margin: 80px;
   --sidebar-difference: 0px; /* Diferencia adicional cuando está expandido */
 }
 

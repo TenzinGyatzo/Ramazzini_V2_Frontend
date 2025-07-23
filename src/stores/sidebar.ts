@@ -53,7 +53,7 @@ export const useSidebarStore = defineStore("sidebar", () => {
   }
 
   const SIDEBAR_WIDTH = 230;
-  const SIDEBAR_WIDTH_COLLAPSED = 55;
+  const SIDEBAR_WIDTH_COLLAPSED = 80;
   const sidebarWidth = computed(
     () => `${collapsed.value ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH}px`
   );
