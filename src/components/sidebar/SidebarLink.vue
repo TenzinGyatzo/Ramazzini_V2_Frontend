@@ -15,7 +15,7 @@ const props = defineProps({
 
 const route = useRoute();
 const isHovered = ref(false);
-const linkRef = ref<HTMLElement>();
+const linkContainerRef = ref<HTMLElement>();
 
 const isActive = computed(() => {
     const resolved = router.resolve(props.to);
@@ -27,26 +27,34 @@ const showTooltip = computed(() => {
 });
 
 const tooltipStyle = computed(() => {
-    if (!linkRef.value || !showTooltip.value) return {};
+    if (!linkContainerRef.value || !showTooltip.value) {
+        return {};
+    }
     
-    const rect = linkRef.value.getBoundingClientRect();
-    const sidebarWidth = sidebar.collapsed ? 80 : 280; // 5rem = 80px, sidebar expandido = 280px
-    
-    return {
-        position: 'fixed' as const,
-        left: `${rect.left + sidebarWidth + 12}px`,
-        top: `${rect.top + rect.height / 2}px`,
-        transform: 'translateY(-50%)'
-    };
+    try {
+        const rect = linkContainerRef.value.getBoundingClientRect();
+        const sidebarWidth = sidebar.collapsed ? 80 : 280;
+        
+        return {
+            position: 'fixed' as const,
+            left: `${sidebarWidth + 12}px`,
+            top: `${rect.top + rect.height / 2}px`,
+            transform: 'translateY(-50%)',
+            zIndex: 9999
+        };
+    } catch (error) {
+        return {};
+    }
 });
 </script>
 
 <template>
     <div class="link-container" 
          @mouseenter="isHovered = true" 
-         @mouseleave="isHovered = false">
+         @mouseleave="isHovered = false"
+         ref="linkContainerRef">
         
-        <RouterLink :to="to" class="link" :class="{ 'active': isActive }" ref="linkRef" @click.stop>
+        <RouterLink :to="to" class="link" :class="{ 'active': isActive }" @click.stop>
             <div class="icon-container">
                 <i class="icon" :class="icon"></i>
                 <div v-if="badge" class="badge">{{ badge }}</div>
@@ -63,9 +71,12 @@ const tooltipStyle = computed(() => {
         </RouterLink>
         
         <!-- Tooltip para modo colapsado -->
-        <Transition name="tooltip">
+        <Transition name="tooltip" :duration="200">
             <div v-if="showTooltip" class="tooltip" :style="tooltipStyle">
-                {{ tooltip }}
+                <div class="tooltip-content">
+                    {{ tooltip }}
+                </div>
+                <div class="tooltip-arrow"></div>
             </div>
         </Transition>
     </div>
@@ -222,25 +233,30 @@ const tooltipStyle = computed(() => {
 
 /* Tooltip */
 .tooltip {
-    background: #000000;
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.tooltip-content {
+    background: linear-gradient(135deg, #1f2937, #111827);
     color: white;
     padding: 0.75rem 1rem;
     border-radius: 0.5rem;
     font-size: 0.875rem;
     font-weight: 500;
     white-space: nowrap;
-    z-index: 9999;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-    border: 2px solid #ffffff;
-    pointer-events: none;
-    min-width: 120px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    min-width: 140px;
     text-align: center;
-    max-width: 200px;
+    max-width: 220px;
     word-wrap: break-word;
+    position: relative;
 }
 
-.tooltip::before {
-    content: '';
+.tooltip-arrow {
     position: absolute;
     left: -0.5rem;
     top: 50%;
@@ -249,18 +265,19 @@ const tooltipStyle = computed(() => {
     height: 0;
     border-top: 0.5rem solid transparent;
     border-bottom: 0.5rem solid transparent;
-    border-right: 0.5rem solid #000000;
+    border-right: 0.5rem solid #1f2937;
+    filter: drop-shadow(-2px 0 2px rgba(0, 0, 0, 0.3));
 }
 
 .tooltip-enter-active,
 .tooltip-leave-active {
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tooltip-enter-from,
 .tooltip-leave-to {
     opacity: 0;
-    transform: translateY(-50%) translateX(-20px);
+    transform: translateY(-50%) translateX(-10px);
 }
 
 /* Responsive */
@@ -278,6 +295,12 @@ const tooltipStyle = computed(() => {
     
     .icon {
         font-size: 1rem;
+    }
+    
+    .tooltip-content {
+        font-size: 0.8rem;
+        padding: 0.625rem 0.875rem;
+        min-width: 120px;
     }
 }
 </style>

@@ -137,11 +137,11 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
           <SidebarLink v-if="route.path !== '/login'" 
             to="/" 
             icon="fa-solid fa-home" 
-            tooltip="Inicio - Volver al inicio"
+            tooltip="Inicio"
             :class="{ 'fade-in': isMounted }"
             @click.stop>
             <p>Inicio</p>
-            <p class="text-sm">Volver al inicio</p>
+            <p class="font-light text-xs">Volver al inicio</p>
           </SidebarLink>
         </Transition>
 
@@ -149,11 +149,11 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
           <SidebarLink v-if="route.path !== '/login'" 
             to="/empresas" 
             icon="fas fa-industry" 
-            tooltip="Clientes - Explorar Clientes"
+            tooltip="Clientes"
             :class="{ 'fade-in': isMounted }"
             @click.stop>
             <p>Clientes</p>
-            <p class="text-sm">Explorar Clientes</p>
+            <p class="font-light text-xs">Explorar Clientes</p>
           </SidebarLink>
         </Transition>
       </div>
@@ -169,13 +169,13 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
           <SidebarLink 
             :to="{ name: 'centros-trabajo', params: { idEmpresa: empresas.currentEmpresaId } }" 
             icon="fas fa-warehouse"
-            :tooltip="`${empresas.currentEmpresa?.nombreComercial || 'Empresa'} - Centros de Trabajo`"
+            :tooltip="`Centros de Trabajo`"
             class="leading-5" 
             @click.stop>
-            <p class="overflow-hidden truncate text-ellipsis max-w-[155px]">
+            <p class="overflow-hidden text-ellipsis max-w-[155px]">
               {{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}
             </p>
-            <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">
+            <p class="font-light text-xs overflow-hidden text-ellipsis max-w-[155px]">
               {{ empresas.currentEmpresa?.razonSocial || 'Nombre no disponible' }}
             </p>
           </SidebarLink>
@@ -199,13 +199,13 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
               }
             }" 
             icon="fas fa-users" 
-            :tooltip="`${centrosTrabajo.currentCentroTrabajo?.nombreCentro || 'Centro'} - Trabajadores`"
+            :tooltip="`Trabajadores`"
             class="leading-5" 
             @click.stop>
-            <p class="overflow-hidden truncate text-ellipsis max-w-[155px]">
+            <p class="overflow-hidden text-ellipsis max-w-[155px]">
               {{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}
             </p>
-            <p class="text-xs">
+            <p class="font-light text-xs">
               {{ centrosTrabajo.currentCentroTrabajo?.direccionCentro }}
             </p>
           </SidebarLink>
@@ -230,11 +230,11 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
               }
             }" 
             icon="fa-regular fa-folder-open" 
-            :tooltip="`${trabajadores.currentTrabajador?.nombre || 'Trabajador'} - Expediente Médico`"
+            :tooltip="`Expediente Médico`"
             class="leading-5" 
             @click.stop>
             <p>{{ trabajadores.currentTrabajador?.nombre }}</p>
-            <p class="text-xs">Expediente Médico</p>
+            <p class="font-light text-xs">Expediente Médico</p>
           </SidebarLink>
         </div>
       </Transition>
@@ -259,12 +259,12 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
               }
             }" 
             icon="fas fa-file-pdf" 
-            :tooltip="`${documentTypeLabels[documentos.currentTypeOfDocument as keyof typeof documentTypeLabels] || 'Documento'} - ${documentos.currentDocument ? 'Editando' : 'Creando nuevo'}`"
+            :tooltip="`${documentTypeLabels[documentos.currentTypeOfDocument as keyof typeof documentTypeLabels] || 'Documento'} - ${documentos.currentDocument ? 'Editando' : 'Nuevo'}`"
             class="leading-5" 
             @click.stop>
             <p>{{ documentTypeLabels[documentos.currentTypeOfDocument as keyof typeof documentTypeLabels] || 'Documento desconocido' }}</p>
-            <p v-if="documentos.currentDocument" class="text-xs">Editando</p>
-            <p v-else class="text-xs">Creando nuevo</p>
+            <p v-if="documentos.currentDocument" class="font-light text-xs">Editando</p>
+            <p v-else class="font-light text-xs">Creando nuevo</p>
           </SidebarLink>
         </div>
       </Transition>
@@ -280,11 +280,11 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
           <SidebarLink 
             :to="{ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresaId } }" 
             icon="fas fa-chart-line"
-            :tooltip="`Estadísticas - ${empresas.currentEmpresa?.nombreComercial || 'Empresa'}`"
+            :tooltip="`Estadísticas`"
             class="leading-5" 
             @click.stop>
             <p>Estadísticas</p>
-            <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">
+            <p class="font-light text-xs overflow-hidden text-ellipsis max-w-[155px]">
               {{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}
             </p>
           </SidebarLink>
@@ -302,11 +302,11 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
           <SidebarLink 
             :to="{ name: 'riesgos-trabajo', params: { idEmpresa: empresas.currentEmpresaId } }" 
             icon="fas fa-hard-hat"
-            :tooltip="`Riesgos de Trabajo - ${empresas.currentEmpresa?.nombreComercial || 'Empresa'}`"
+            :tooltip="`Riesgos de Trabajo`"
             class="leading-5" 
             @click.stop>
-            <p>Riesgos de Trabajo</p>
-            <p class="text-xs overflow-hidden truncate text-ellipsis max-w-[155px]">
+            <p class="text-sm">Riesgos de Trabajo</p>
+            <p class="font-light text-xs overflow-hidden text-ellipsis max-w-[155px]">
               {{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}
             </p>
           </SidebarLink>
@@ -320,7 +320,8 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
         class="collapse-button" 
         :class="{ 'collapsed': sidebar.collapsed }"
         @click.stop="sidebar.toggleSidebar()"
-        :title="sidebar.collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'">
+        :title="sidebar.collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'"
+        :aria-label="sidebar.collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'">
         <i class="fas fa-angle-double-left"></i>
       </button>
     </div>
@@ -512,17 +513,16 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
 /* Footer */
 .sidebar-footer {
   padding: 1rem;
-  border-top: 1px solid var(--sidebar-border);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .collapse-button {
   width: 100%;
   height: 2.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--sidebar-border);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.5rem;
-  color: var(--sidebar-text-muted);
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -532,19 +532,23 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
 }
 
 .collapse-button:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--sidebar-text);
-  border-color: var(--sidebar-accent);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.collapse-button.collapsed {
+.collapse-button i {
+  transition: transform 0.3s ease;
+}
+
+.collapse-button.collapsed i {
   transform: rotate(180deg);
 }
 
-.collapse-button.collapsed:hover {
-  transform: rotate(180deg) translateY(-1px);
+.collapse-button.collapsed:hover i {
+  transform: rotate(180deg);
 }
 
 /* Responsive - Mantener funcionalidad original en pantallas pequeñas */
