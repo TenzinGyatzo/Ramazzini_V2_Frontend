@@ -823,11 +823,29 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 { text: `${numeroSeccion}. FACTORES DE RIESGO OCUPACIONAL`, style: 'tituloSeccion', pageBreak: 'before' },
                 {
                     text: [
-                        'Número de trabajadores ',
-                        { text: 'expuestos a cada tipo de agente de riesgo', bold: true },
-                        ' identificado en su entorno laboral. Un mismo trabajador puede estar incluido en ',
-                        { text: 'múltiples categorías de exposición', bold: true },
-                        '. Esto permite identificar los tipos de exposición más frecuentes dentro de la plantilla.'
+                        'Este análisis identifica los ',
+                        { text: 'tipos de agentes de riesgo', bold: true },
+                        ' presentes en el entorno laboral, permitiendo detectar ',
+                        { text: 'exposiciones que pueden comprometer la salud', bold: true },
+                        ' de los trabajadores a ',
+                        { text: 'mediano o largo plazo', bold: true },
+                        '.',
+                        '\n\n',
+                        'La información es útil para ',
+                        { text: 'priorizar intervenciones preventivas', bold: true },
+                        ', ',
+                        { text: 'fortalecer el cumplimiento normativo', bold: true },
+                        ' y ',
+                        { text: 'diseñar estrategias orientadas a reducir enfermedades profesionales, ausentismo o accidentes', bold: true },
+                        ' vinculados a condiciones de trabajo no seguras.',
+                        '\n\n',
+                        'Conocer los ',
+                        { text: 'factores más frecuentes de exposición', bold: true },
+                        ' ayuda a la empresa a ',
+                        { text: 'focalizar recursos en las áreas de mayor impacto', bold: true },
+                        ' y a ',
+                        { text: 'fomentar un entorno laboral más seguro y saludable', bold: true },
+                        '.'
                     ],
                     style: 'textoNormal',
                     margin: [0, 0, 0, 10]
@@ -875,10 +893,14 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
             {
                 text: [
                     'La ',
-                    { text: 'capacidad del sistema visual para percibir, detectar o identificar objetos', bold: true },
-                    ' especiales en condiciones de buena iluminación. Se define como la ',
-                    { text: 'agudeza visual normal', bold: true },
-                    ' la capacidad de discernir contornos nítidos separados por una distancia mínima de 1.75 mm desde una distancia de 20 pies (aproximadamente 6 metros).'
+                    { text: 'agudeza visual', bold: true },
+                    ' es una capacidad funcional clave para tareas que requieren ',
+                    { text: 'precisión, vigilancia y detección oportuna de riesgos', bold: true },
+                    '. Esta evaluación permite conocer el ',
+                    { text: 'nivel de visión sin ayudas ópticas', bold: true },
+                    ', ayudando a identificar posibles ',
+                    { text: 'limitaciones que pueden afectar el desempeño seguro', bold: true },
+                    ' en diversas actividades laborales.'
                 ],
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
@@ -976,23 +998,27 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 margin: [0, 0, 0, 20]
             });
         }
-        
-        contenido.push({
-            text: [
-                { text: 'Agudeza visual sin corrección:', bold: true },
-                ' Máxima visión lograda sin usar lentes o lentes de contacto.'
-            ],
-            style: 'textoNormal',
-            alignment: 'left',
-            margin: [0, 0, 0, 20]
-        });
     }
 
     if (imagenes.lentes) {
         contenido.push(
             { text: `${numeroSeccionSaludVisual}.2 Necesidad de Corrección Visual`, style: 'subtituloSeccion' },
             {
-                text: 'Trabajadores que tienen una agudeza visual reducida y requieren corrección visual.',
+                text: [
+                    'Identificar a los trabajadores que requieren ',
+                    { text: 'lentes para alcanzar una visión adecuada', bold: true },
+                    ' es esencial en el ',
+                    { text: 'análisis de riesgos', bold: true },
+                    '. Una ',
+                    { text: 'proporción elevada', bold: true },
+                    ' puede indicar la necesidad de ',
+                    { text: 'protocolos específicos', bold: true },
+                    ' para garantizar que el personal cuente con los ',
+                    { text: 'medios ópticos necesarios', bold: true },
+                    ' para realizar sus funciones sin comprometer la ',
+                    { text: 'seguridad ni la productividad', bold: true },
+                    '.'
+                ],
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             }
@@ -1065,7 +1091,23 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         contenido.push(
             { text: `${numeroSeccionSaludVisual}.3 Corrección Visual Implementada`, style: 'subtituloSeccion', pageBreak: 'before' },
             {
-                text: 'Trabajadores que ya cuentan con corrección visual implementada.',
+                text: [
+                    'Este indicador permite valorar si los trabajadores con ',
+                    { text: 'necesidad de corrección', bold: true },
+                    ' ya cuentan con lentes y los ',
+                    { text: 'utilizan adecuadamente.', bold: true },
+                    'Una ',
+                    { text: 'baja implementación', bold: true },
+                    ' puede señalar una ',
+                    { text: 'brecha en el seguimiento médico', bold: true },
+                    ' o en las ',
+                    { text: 'medidas preventivas,', bold: true },
+                    ' lo cual representa un ',
+                    { text: 'riesgo controlable', bold: true },
+                    ' mediante ',
+                    { text: 'educación, supervisión y políticas internas claras', bold: true },
+                    '.'
+                ],
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             }
@@ -1128,7 +1170,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
             style: 'pieTabla',
             italics: true,
             alignment: 'center',
-            margin: [0, 0, 0, 60] as [number, number, number, number]
+            margin: [0, 0, 0, 30] as [number, number, number, number]
         });
     }
 
@@ -1136,7 +1178,27 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         contenido.push(
             { text: `${numeroSeccionSaludVisual}.4 Alteraciones en la Percepción de Colores`, style: 'subtituloSeccion' },
             {
-                text: 'Trabajadores que presentan alteraciones en la percepción de colores.',
+                text: [
+                    'La ',
+                    { text: 'percepción adecuada del color', bold: true },
+                    ' es crucial en tareas donde se deben distinguir ',
+                    { text: 'señales, etiquetas, indicadores visuales o cableado', bold: true },
+                    '. Este indicador permite identificar trabajadores con ',
+                    { text: 'daltonismo u otras alteraciones cromáticas', bold: true },
+                    ', lo cual puede ser relevante para la ',
+                    { text: 'asignación segura de funciones', bold: true },
+                    '.',
+                    '\n\n',
+                    'Conocer esta condición permite a la empresa ',
+                    { text: 'reducir riesgos asociados a errores visuales', bold: true },
+                    ' y tomar ',
+                    { text: 'decisiones informadas', bold: true },
+                    ' sobre la ',
+                    { text: 'adaptación de entornos de trabajo', bold: true },
+                    ' o ',
+                    { text: 'medidas compensatorias', bold: true },
+                    ' cuando sea necesario.'
+                ],
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             }
@@ -1208,7 +1270,20 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         contenido.push(
             { text: `${numeroSeccion}. RESULTADOS DE EXÁMENES MÉDICOS PERIÓDICOS`, style: 'tituloSeccion', pageBreak: 'before' },
             {
-                text: 'El objetivo del examen médico laboral es valorar el estado de salud del trabajador, identificar posibles alteraciones relacionadas con el trabajo y determinar su aptitud para las funciones asignadas. Los resultados permiten detectar riesgos para la salud, implementar medidas preventivas y verificar la capacidad del individuo para desempeñar su puesto.',
+                text: [
+                    'El objetivo del examen médico laboral es ',
+                    { text: 'valorar el estado de salud del trabajador', bold: true },
+                    ', identificar posibles ',
+                    { text: 'alteraciones relacionadas con el trabajo', bold: true },
+                    ' y determinar su ',
+                    { text: 'aptitud para las funciones asignadas.', bold: true },
+                    ' Los resultados permiten ',
+                    { text: 'detectar riesgos para la salud,', bold: true },
+                    { text: 'implementar medidas preventivas', bold: true },
+                    ' y ',
+                    { text: 'verificar la capacidad del individuo para desempeñar su puesto', bold: true },
+                    '.'
+                ],
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             },
