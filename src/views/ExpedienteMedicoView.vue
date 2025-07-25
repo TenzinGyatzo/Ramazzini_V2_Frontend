@@ -272,11 +272,6 @@ const añoMasReciente = computed(() => {
   </Transition>
 
   <div class="grid gap-5">
-    
-    <!-- Panel de botones deslizante -->
-    <div class="relative flex justify-center md:justify-start">
-      <SlidingButtonPanel :selectedRoutes="selectedRoutes" />
-    </div>
 
     <!-- Header principal con información del trabajador -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
@@ -636,6 +631,12 @@ const añoMasReciente = computed(() => {
         </div>
       </Transition>
     </div>
+
+    <!-- Panel de botones deslizante -->
+    <div class="relative flex justify-center md:justify-start">
+      <SlidingButtonPanel :selectedRoutes="selectedRoutes" />
+    </div>
+
   </div>
 </template>
 

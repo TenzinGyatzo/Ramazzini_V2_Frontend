@@ -16,7 +16,6 @@ const idDocumento = ref('');
 const nombreDocumento = ref('');
 const fechaDocumento = ref('');
 const notasDocumento = ref('');
-const tipoDocumento = ref('');
 const idTrabajador = ref('');
 
 // Inicialización de datos con valores precargados
@@ -28,23 +27,11 @@ watch(
       nombreDocumento.value = newData.nombreDocumento || '';
       fechaDocumento.value = convertirFechaISOaYYYYMMDD(newData.fechaDocumento) || '';
       notasDocumento.value = newData.notasDocumento || '';
-      tipoDocumento.value = newData.tipoDocumento || '';
       idTrabajador.value = newData.idTrabajador || '';
     }
   },
   { immediate: true }
 );
-
-const tiposDocumentos = [
-  "Prueba(s) de laboratorio",
-  "Estudio de Gabinete",
-  "Imagenología",
-  "Fotografía de prueba rápida",
-  "Identificación",
-  "Receta médica",
-  "Formato específico",
-  "Otro",
-];
 
 // Función para manejar el envío del formulario
 const handleSubmit = async () => {
@@ -55,7 +42,6 @@ const handleSubmit = async () => {
     nombreDocumento: nombreDocumento.value,
     fechaDocumento: fechaISO,
     notasDocumento: notasDocumento.value,
-    tipoDocumento: tipoDocumento.value,
     idTrabajador: idTrabajador.value
   };
 
@@ -96,28 +82,24 @@ const closeModal = () => {
         <hr class="mt-2 mb-3">
 
         <FormKit type="form" :actions="false" @submit="handleSubmit">
-          <FormKit type="select" label="Tipo de Documento" name="tipoDocumento" v-model="tipoDocumento"
-            placeholder="Seleccione un tipo de documento" :options="tiposDocumentos" validation="required"
+          <FormKit type="text" label="Nombre del Documento" name="nombreDocumento" v-model="nombreDocumento" validation="required"
             :validation-messages="{ required: 'Este campo es obligatorio' }" />
 
-          <FormKit type="text" label="Nombre del Documento" name="nombreDocumento" v-model="nombreDocumento"
-            validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }" />
-
-          <FormKit type="date" label="Fecha de emisión del documento" name="fechaDocumento" v-model="fechaDocumento"
-            validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }" />
+          <FormKit type="date" label="Fecha de emisión del documento" name="fechaDocumento" v-model="fechaDocumento" validation="required"
+            :validation-messages="{ required: 'Este campo es obligatorio' }" />
 
           <FormKit type="text" label="Agregar notas (opcional)" name="notasDocumento" v-model="notasDocumento" />
 
           <hr class="my-3">
           <FormKit type="submit">
-            <span>Guardar Cambios</span>
+            <span>Guardar</span>
           </FormKit>
+          <button
+            class="text-xl mt-2 w-full rounded-lg bg-white font-semibold text-gray-800 shadow-sm ring-2 ring-inset ring-gray-300 hover:bg-gray-100 p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg flex-1"
+            @click="closeModal">
+            Cerrar
+          </button>
         </FormKit>
-        <button
-          class="text-xl mt-2 w-full rounded-lg bg-white font-semibold text-gray-800 shadow-sm ring-2 ring-inset ring-gray-300 hover:bg-gray-100 p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg flex-1"
-          @click="closeModal">
-          Cerrar
-        </button>
       </div>
     </Transition>
   </div>

@@ -54,7 +54,6 @@ export interface Certificado {
 
 export interface DocumentoExterno {
     _id: string;
-    tipoDocumento: string;
     nombreDocumento: string;
     fechaDocumento: string;
     notasDocumento?: string;

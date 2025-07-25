@@ -276,6 +276,12 @@ const rotationAngle = ref(0);
 const currentPdfUrl = ref('');
 const currentImageUrl = ref('');
 
+// Estado para el pan (desplazamiento) de la imagen
+const isDragging = ref(false);
+const dragStart = ref({ x: 0, y: 0 });
+const imagePosition = ref({ x: 0, y: 0 });
+const lastImagePosition = ref({ x: 0, y: 0 });
+
 // Función para abrir el visor de imágenes
 const abrirImagen = async (rutaCompleta) => {
     try {
@@ -285,6 +291,14 @@ const abrirImagen = async (rutaCompleta) => {
             imageUrl.value = rutaCompleta;
             currentImageUrl.value = rutaCompleta; // Guarda la URL actual para descargar
             showImageViewer.value = true;
+            
+            // Agregar event listeners globales para el arrastre
+            nextTick(() => {
+                document.addEventListener('mousemove', handleGlobalMouseMove);
+                document.addEventListener('mouseup', handleGlobalMouseUp);
+                // Agregar event listener para ESC
+                document.addEventListener('keydown', handleKeyDown);
+            });
         } else {
             console.warn('El archivo no es una imagen válida.');
             mostrarModalPdfEliminado.value = true;
@@ -305,6 +319,18 @@ const cerrarImagen = () => {
     imageUrl.value = '';
     imageZoom.value = 0.8; // Mantiene el zoom reducido al cerrar
     rotationAngle.value = 0; // Resetea la rotación al cerrar
+    // Resetear posición de la imagen
+    imagePosition.value = { x: 0, y: 0 };
+    lastImagePosition.value = { x: 0, y: 0 };
+    
+    // Resetear estado de arrastre y cursor
+    isDragging.value = false;
+    document.body.style.cursor = 'default';
+    
+    // Remover event listeners globales
+    document.removeEventListener('mousemove', handleGlobalMouseMove);
+    document.removeEventListener('mouseup', handleGlobalMouseUp);
+    document.removeEventListener('keydown', handleKeyDown);
 };
 
 // Funciones para controles de imagen
@@ -318,7 +344,15 @@ const zoomIn = () => {
 };
 
 const zoomOut = () => {
-    imageZoom.value = Math.max(imageZoom.value / 1.2, 0.1);
+    const newZoom = Math.max(imageZoom.value / 1.2, 0.4);
+    imageZoom.value = newZoom;
+    
+    // Solo resetear posición si el zoom es menor o igual a 1 Y la imagen está desplazada
+    if (newZoom <= 1 && (imagePosition.value.x !== 0 || imagePosition.value.y !== 0)) {
+        // Solo resetear posición, no el zoom
+        imagePosition.value = { x: 0, y: 0 };
+        lastImagePosition.value = { x: 0, y: 0 };
+    }
 };
 
 const handleImageWheel = (event) => {
@@ -327,6 +361,89 @@ const handleImageWheel = (event) => {
         zoomIn();
     } else {
         zoomOut();
+    }
+};
+
+// Event listener global para el mouse
+const handleGlobalMouseMove = (event) => {
+    if (isDragging.value) {
+        onDrag(event);
+    }
+};
+
+const handleGlobalMouseUp = (event) => {
+    if (isDragging.value) {
+        stopDrag(event);
+    }
+    
+    // Asegurar que el cursor se restaure correctamente
+    document.body.style.cursor = 'default';
+};
+
+
+
+// Funciones para el pan (desplazamiento) de la imagen
+const startDrag = (event) => {
+    // Prevenir el comportamiento de arrastre por defecto del navegador
+    event.preventDefault();
+    
+    // Removida la limitación del zoom - ahora se puede arrastrar en cualquier zoom
+    isDragging.value = true;
+    dragStart.value = {
+        x: event.clientX - imagePosition.value.x,
+        y: event.clientY - imagePosition.value.y
+    };
+    
+    // Cambiar cursor
+    event.target.style.cursor = 'grabbing';
+};
+
+const onDrag = (event) => {
+    if (!isDragging.value) return; // Removida la limitación del zoom
+    
+    // Prevenir el comportamiento de arrastre por defecto del navegador
+    event.preventDefault();
+    
+    imagePosition.value = {
+        x: event.clientX - dragStart.value.x,
+        y: event.clientY - dragStart.value.y
+    };
+};
+
+const stopDrag = (event) => {
+    if (!isDragging.value) return;
+    
+    // Prevenir el comportamiento de arrastre por defecto del navegador
+    if (event) {
+        event.preventDefault();
+    }
+    
+    isDragging.value = false;
+    lastImagePosition.value = { ...imagePosition.value };
+    
+    // Restaurar cursor en todos los elementos de imagen
+    const imageElements = document.querySelectorAll('.image-viewer img');
+    imageElements.forEach(element => {
+        element.style.cursor = 'grab';
+    });
+    
+    // También restaurar el cursor en el documento
+    document.body.style.cursor = 'default';
+};
+
+// Función para resetear la posición de la imagen
+const resetImagePosition = () => {
+    imagePosition.value = { x: 0, y: 0 };
+    lastImagePosition.value = { x: 0, y: 0 };
+    // Resetear también el zoom al valor inicial
+    imageZoom.value = 0.8;
+};
+
+// Función para manejar cuando el mouse sale de la imagen
+const handleMouseLeave = (event) => {
+    // Solo cambiar el cursor si no estamos arrastrando
+    if (!isDragging.value) {
+        event.target.style.cursor = 'default';
     }
 };
 
@@ -961,30 +1078,44 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Contenido principal -->
                     <div class="flex items-center flex-1 h-full" @click="abrirDocumentoExterno(documentoExterno)">
                         
-                        <!-- Icono del documento -->
-                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mr-4 group-hover:bg-purple-200 transition-colors duration-200 flex-shrink-0">
-                            <i class="fas fa-file-alt text-purple-600 text-lg"></i>
+                        <!-- Icono del documento dinámico -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 rounded-lg mr-4 transition-colors duration-200 flex-shrink-0"
+                             :class="obtenerExtensionArchivo(documentoExterno) === 'pdf' ? 'bg-red-100 group-hover:bg-red-200' : 'bg-blue-100 group-hover:bg-blue-200'">
+                            <!-- Icono PDF -->
+                            <svg v-if="obtenerExtensionArchivo(documentoExterno) === 'pdf'" class="h-6 w-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                            </svg>
+                            <!-- Icono imagen -->
+                            <svg v-else class="h-6 w-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                            </svg>
                         </div>
                         
                         <!-- Información del documento -->
                         <div class="sm:w-72 min-w-0 max-w-xs">
                             <div class="flex items-center mb-1">
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
-                                    <span>
+                                    <span class="max-w-56">
                                         <i v-if="verificandoPDF" class="fas fa-spinner fa-spin mr-0.5 text-yellow-500 text-sm"></i>
                                         <i v-else-if="!pdfDisponible" class="fas fa-exclamation-triangle mr-0.5 text-rose-500 text-sm" title="Documento externo no disponible"></i>
                                         <!-- <i v-else class="fas fa-check-circle mr-0.5 text-emerald-500 text-sm" title="Documento disponible"></i> -->
                                         {{ documentoExterno.nombreDocumento }}
                                     </span>
-                                    <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
-                                        Documento Externo
+                                    <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                          :class="obtenerExtensionArchivo(documentoExterno) === 'pdf' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'">
+                                        {{ obtenerExtensionArchivo(documentoExterno).toUpperCase() }}
                                     </span>
                                 </h3>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento) }}
-                            </p>
+                            <div class="flex">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento) }}
+                                </p>
+                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                    Documento Externo
+                                </span>
+                            </div>
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
@@ -1418,6 +1549,11 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                             <i class="fas fa-download text-xs sm:text-sm"></i>
                             <span class="font-medium hidden sm:inline">Descargar</span>
                         </button>
+                        <button @click="resetImagePosition" 
+                            class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                            <i class="fas fa-crosshairs text-xs sm:text-sm"></i>
+                            <span class="font-medium hidden sm:inline">Centrar</span>
+                        </button>
                         <button @click="zoomIn" 
                             class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
                             <i class="fas fa-search-plus text-xs sm:text-sm"></i>
@@ -1433,19 +1569,26 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
             </div>
 
             <!-- Contenedor principal de la imagen -->
-            <div class="relative w-full h-full flex flex-col">
+            <div class="relative w-full h-full flex flex-col image-viewer">
                 <div class="flex-1 mt-16 sm:mt-20 mx-2 sm:mx-4 mb-4 bg-white rounded-xl shadow-2xl overflow-hidden flex items-center justify-center">
                     <img 
                         :src="imageUrl" 
-                        :style="{ transform: `rotate(${rotationAngle}deg) scale(${imageZoom})` }"
+                        :style="{ 
+                            transform: `translate(${imagePosition.x}px, ${imagePosition.y}px) rotate(${rotationAngle}deg) scale(${imageZoom})`,
+                            cursor: isDragging ? 'grabbing' : 'grab'
+                        }"
                         alt="Vista previa del documento" 
-                        class="max-w-full max-h-full object-contain transition-all duration-300 ease-in-out"
+                        class="max-w-full max-h-full object-contain select-none"
+                        draggable="false"
                         @wheel="handleImageWheel"
+                        @mousedown="startDrag"
+                        @mouseenter="$event.target.style.cursor = isDragging ? 'grabbing' : 'grab'"
+                        @mouseleave="handleMouseLeave"
                     />
                 </div>
             </div>
 
-            <!-- Indicador de zoom -->
+            <!-- Indicador de zoom (se muestra cuando el zoom es diferente al valor inicial) -->
             <div v-if="imageZoom !== 0.8" class="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 bg-black bg-opacity-75 text-white px-2 sm:px-3 py-1 sm:py-2 rounded-full text-xs sm:text-sm">
                 <i class="fas fa-search mr-1 sm:mr-2"></i>
                 {{ Math.round(imageZoom * 100) }}%
@@ -1454,7 +1597,9 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
             <!-- Indicador de ayuda -->
             <div class="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm">
                 <i class="fas fa-mouse mr-1 sm:mr-2"></i>
-                <span class="hidden sm:inline">Rueda del mouse para zoom •</span> <kbd class="px-1 sm:px-2 py-0.5 sm:py-1 bg-gray-700 rounded text-xs">ESC</kbd> <span class="hidden sm:inline">para cerrar</span>
+                <span class="hidden sm:inline">Rueda del mouse para zoom •</span> 
+                <span class="hidden sm:inline">Arrastra para mover •</span>
+                <kbd class="px-1 sm:px-2 py-0.5 sm:py-1 bg-gray-700 rounded text-xs">ESC</kbd> <span class="hidden sm:inline">para cerrar</span>
             </div>
         </div>
     </Transition>
