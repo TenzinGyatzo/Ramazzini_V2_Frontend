@@ -656,7 +656,7 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
   </main>
 
   <!-- Herramienta de Debug - Media Query -->
-  <div class="fixed top-4 left-4 z-50 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg text-sm font-mono">
+  <!-- <div class="fixed top-4 left-4 z-50 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg text-sm font-mono">
     <div class="flex items-center gap-2">
       <span class="w-2 h-2 bg-red-500 rounded-full sm:hidden"></span>
       <span class="w-2 h-2 bg-orange-500 rounded-full hidden sm:block md:hidden"></span>
@@ -673,7 +673,7 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
         <span class="hidden 2xl:block">2xl</span>
       </span>
     </div>
-  </div>
+  </div> -->
 
 </template>
 
