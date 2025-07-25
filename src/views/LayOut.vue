@@ -19,54 +19,50 @@ const empresasCargadas = ref(false);
 
 const isVisible = ref(false);
 const isMenuOpen = ref(false);
-const menuRef = ref<HTMLElement | null>(null); // Referencia para el menú desplegable
+const menuRef = ref<HTMLElement | null>(null);
 const isGuideMenuOpen = ref(false);
 const guideMenuRef = ref<HTMLElement | null>(null);
+const isNotificationVisible = ref(false);
 
 const guiaConfiguracionInicialURL = "https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace"
 const guiaRegistrarClientesURL = "https://scribehow.com/shared/Agregar_Clientes_y_Centros_de_Trabajo__32Haet8BQy6oFUDacWcbWg?referrer=documents"
 
 // Función para cerrar el menú si se hace clic fuera
 const handleClickOutside = (event: MouseEvent) => {
-  // Cerrar menú principal si se hace clic fuera
   if (menuRef.value && !menuRef.value.contains(event.target as Node)) {
     isMenuOpen.value = false;
   }
-
-  // Cerrar menú de guías si se hace clic fuera
   if (guideMenuRef.value && !guideMenuRef.value.contains(event.target as Node)) {
     isGuideMenuOpen.value = false;
   }
 };
 
-onMounted( () => {
-    // Escucha los cambios en el usuario para cargar proveedor de salud
-    // Verificar y cargar Proveedor de Salud y Médico Firmante
-    watch(
-      () => user.user,
-      async (user) => {
-        datosCargados.value = false; // Comienza como false hasta que se cargue todo
+// Función para cerrar notificaciones
+const closeNotification = () => {
+  isNotificationVisible.value = false;
+};
 
-        if (user?.idProveedorSalud) {
-          await proveedorSaludStore.loadProveedorSalud(user.idProveedorSalud);
-        }
+onMounted(() => {
+  watch(
+    () => user.user,
+    async (user) => {
+      datosCargados.value = false;
+      if (user?.idProveedorSalud) {
+        await proveedorSaludStore.loadProveedorSalud(user.idProveedorSalud);
+      }
+      if (user?._id) {
+        await medicoFirmanteStore.loadMedicoFirmante(user._id);
+      }
+      datosCargados.value = true;
+    },
+    { immediate: true }
+  );
 
-        if (user?._id) {
-          await medicoFirmanteStore.loadMedicoFirmante(user._id);
-        }
+  setTimeout(() => {
+    isVisible.value = true;
+  }, 400);
 
-        datosCargados.value = true; // Solo se marca como cargado cuando ambas promesas terminan
-      },
-      { immediate: true }
-    );
-
-    setTimeout(() => {
-        isVisible.value = true;
-    }, 400);
-
-    // Agregar detector de eventos de clic en el documento
-    document.addEventListener("click", handleClickOutside);
-
+  document.addEventListener("click", handleClickOutside);
 });
 
 watch(
@@ -76,7 +72,6 @@ watch(
   }
 );
 
-// Cargar empresas al montar el componente
 onMounted(() => {
   if (user.user?.idProveedorSalud) {
     empresas.fetchEmpresas(user.user.idProveedorSalud).then(() => {
@@ -86,26 +81,31 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Eliminar detector de eventos de clic al desmontar el componente
   document.removeEventListener("click", handleClickOutside);
 });
 
 const toggleMenu = () => {
   event?.stopPropagation();
-    isMenuOpen.value = !isMenuOpen.value;
+  isMenuOpen.value = !isMenuOpen.value;
+  if (isMenuOpen.value) {
+    isGuideMenuOpen.value = false;
+  }
 };
 
 const toggleGuideMenu = (event: MouseEvent) => {
   event.stopPropagation();
   isGuideMenuOpen.value = !isGuideMenuOpen.value;
+  if (isGuideMenuOpen.value) {
+    isMenuOpen.value = false;
+  }
 };
 
-// Cerrar menu cuando se cambia de ruta
 watch(
   () => route.path,
   (newPath, oldPath) => {
     if (oldPath === "/" && newPath !== "/") {
       isMenuOpen.value = false;
+      isGuideMenuOpen.value = false;
     }
   }
 );
@@ -173,16 +173,22 @@ onMounted(() => {
     if (camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0) {
       mostrarNotificacionCampos.value = true;
     }
-  }, 1200); // Ajusta el delay en milisegundos (800ms en este caso)
+  }, 1200);
 });
 
 // Control de animación
 const animacionNotificacion = ref("notificacion-animada");
+const animacionTooltipProveedor = ref("tooltip-pulse");
+const animacionTooltipMedico = ref("tooltip-pulse");
+const showTooltipProveedor = ref(false);
+const showTooltipMedico = ref(false);
+const showTooltipLogotipo = ref(false);
 
 let intervaloAnimacion: ReturnType<typeof setInterval> | null = null;
+let intervaloTooltipProveedor: ReturnType<typeof setInterval> | null = null;
+let intervaloTooltipMedico: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
-  // Alternar entre las animaciones cada 3 segundos
   intervaloAnimacion = setInterval(() => {
     animacionNotificacion.value = 
       animacionNotificacion.value === "notificacion-pulso" 
@@ -192,9 +198,14 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  // Limpiar el intervalo para evitar fugas de memoria
   if (intervaloAnimacion !== null) {
     clearInterval(intervaloAnimacion);
+  }
+  if (intervaloTooltipProveedor !== null) {
+    clearInterval(intervaloTooltipProveedor);
+  }
+  if (intervaloTooltipMedico !== null) {
+    clearInterval(intervaloTooltipMedico);
   }
 });
 
@@ -231,48 +242,110 @@ const textoEnlace = computed(() => {
   }
 });
 
+// Computed para determinar el tipo de notificación
+const tipoNotificacion = computed(() => {
+  if (logotipoPendiente.value) return 'error';
+  if (camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0) return 'warning';
+  return 'info';
+});
+
+// Computed para el ícono de notificación
+const iconoNotificacion = computed(() => {
+  switch (tipoNotificacion.value) {
+    case 'error': return 'fa-solid fa-exclamation-triangle';
+    case 'warning': return 'fa-solid fa-exclamation-circle';
+    default: return 'fa-regular fa-lightbulb';
+  }
+});
+
+// Computed para el color de notificación
+const colorNotificacion = computed(() => {
+  switch (tipoNotificacion.value) {
+    case 'error': return 'text-red-500';
+    case 'warning': return 'text-yellow-500';
+    default: return 'text-blue-500';
+  }
+});
+
+// Watchers para las animaciones de tooltips
+watch(mostrarTooltipProveedor, (nuevoValor) => {
+  if (intervaloTooltipProveedor) {
+    clearInterval(intervaloTooltipProveedor);
+    intervaloTooltipProveedor = null;
+  }
+  
+  if (nuevoValor) {
+    intervaloTooltipProveedor = setInterval(() => {
+      animacionTooltipProveedor.value = 
+        animacionTooltipProveedor.value === "tooltip-pulse" 
+        ? "tooltip-bounce" 
+        : "tooltip-pulse";
+    }, 2000);
+  }
+});
+
+watch(mostrarTooltipMedico, (nuevoValor) => {
+  if (intervaloTooltipMedico) {
+    clearInterval(intervaloTooltipMedico);
+    intervaloTooltipMedico = null;
+  }
+  
+  if (nuevoValor) {
+    intervaloTooltipMedico = setInterval(() => {
+      animacionTooltipMedico.value = 
+        animacionTooltipMedico.value === "tooltip-bounce" 
+        ? "tooltip-pulse" 
+        : "tooltip-bounce";
+    }, 2000);
+  }
+});
+
 </script>
 
 <template>
   <main class="flex flex-col items-center p-4 md:p-10 md:w-full overflow-x-auto">
+    
     <!-- Logo de la empresa -->
     <div v-if="empresas.currentEmpresa?.logotipoEmpresa?.data && 
       ['crear-documento'].includes(route.name as string)"
-      class="fixed top-0 right-0 h-16 w-16 md:h-32 md:w-32 rounded z-50 flex flex-col items-center justify-center overflow-hidden">
+      class="fixed top-4 right-4 h-16 w-16 md:h-24 md:w-24 rounded-lg z-50 flex flex-col items-center justify-center overflow-hidden bg-white shadow-lg border border-gray-200">
       <img :src="'/uploads/logos/' + empresas.currentEmpresa?.logotipoEmpresa?.data"
-      :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial" class="max-h-full max-w-full object-contain p-2">
+      :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial" 
+      class="max-h-full max-w-full object-contain p-2">
     </div>
 
     <!-- Transición para el logo de Ramazzini -->
     <Transition appear mode="out-in" name="slide-up">
-      <div v-if="route.path === '/'" class="w-1/2 sm:w-1/3 md:1/3 lg:w-1/4 xl:w-1/5 2xl:w-1/6 mt-14 cursor-pointer" @click="router.push({ name: 'inicio' })">
-        <img src="/img/logosRamazzini/RamazziniBrand.png" alt="Ramazzini-Logo" class="w-full" />
+      <div v-if="route.path === '/'" 
+        class="w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 xl:w-1/6 2xl:w-1/8 mt-14 cursor-pointer transform hover:scale-105 transition-transform duration-300" 
+        @click="router.push({ name: 'inicio' })">
+        <img src="/img/logosRamazzini/RamazziniBrand.png" alt="Ramazzini-Logo" class="w-full drop-shadow-lg" />
       </div>
-      <div v-else class="w-2/3 sm:w-1/2 md:1/3 lg:w-1/4 xl:w-1/5 2xl:w-1/6 mt-3 mb-5 cursor-pointer" @click="router.push({ name: 'inicio' })">
-        <img src="/img/logosRamazzini/RamazziniLogoNoBg.png" alt="Ramazzini-Logo" />
+      <div v-else 
+        class="w-2/3 sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 2xl:w-1/6 mt-3 mb-5 cursor-pointer transform hover:scale-105 transition-transform duration-300" 
+        @click="router.push({ name: 'inicio' })">
+        <img src="/img/logosRamazzini/RamazziniLogoNoBg.png" alt="Ramazzini-Logo" class="w-full drop-shadow-lg" />
       </div>
     </Transition>
 
     <!-- Contenido principal -->
     <Transition appear mode="out-in" name="slide-up">
-      <div v-if="route.path === '/' || route.path === '/login'" class="flex flex-col items-center">
-        <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl py-5 text-center text-slate-700 font-medium">
+      <div v-if="route.path === '/' || route.path === '/login'" class="flex flex-col items-center mx-auto">
+        <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl py-5 text-center text-slate-700 font-medium bg-gradient-to-r from-slate-700 to-gray-600 bg-clip-text text-transparent">
           Ramazzini
         </h1>
-        <p class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl xl:w-2/3 py-2 text-center text-gray-600">
+        <p class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl xl:w-2/3 py-2 text-center text-gray-600">
           La aplicación para la creación y gestión de informes de exámenes médicos laborales.
         </p>
-        <p class="text-gray-600 text-lg my-4">Hola, {{ user.getUsername }}</p>
+        <p class="text-gray-600 text-md sm:text-lg my-4">Hola, {{ user.getUsername }}</p>
         
         <!-- Botones de acción -->
-        <div class="grid gap-4 mb-5">
-          <div class="flex justify-center">
-            <button
-              @click="router.push({ name: 'empresas' })"
-              class="w-full text-xl sm:text-2xl md:text-3xl bg-emerald-600 hover:bg-emerald-700 text-white uppercase rounded-lg px-28 py-2 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200">
-              VER MIS CLIENTES
-            </button>
-          </div>
+        <div class="grid gap-4 w-full max-w-md mt-2">
+          <button
+            @click="router.push({ name: 'empresas' })"
+            class="w-full text-lg sm:text-xl md:text-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white uppercase rounded-xl px-6 py-3 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl font-medium tracking-wide">
+            VER MIS CLIENTES
+          </button>
 
           <div class="flex justify-center">
             <a href="/login">
@@ -280,6 +353,7 @@ const textoEnlace = computed(() => {
                 <button
                   class="text-sm sm:text-base md:text-lg border-2 border-gray-300 hover:bg-red-600 text-gray-800 uppercase rounded-lg px-4 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200"
                   @click="user.logout">
+                  <i class="fa-solid fa-sign-out-alt mr-3"></i>
                   CERRAR SESIÓN
                 </button>
               </Transition>
@@ -293,38 +367,60 @@ const textoEnlace = computed(() => {
       </div>
     </Transition>
 
-    <!-- Mensaje de configuración pendiente -->
+    <!-- Notificaciones mejoradas -->
     <Transition name="slide-up">
-      <div v-if="datosCargados && mostrarMensajePendiente" 
-          class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105 z-20">
-        <i class="fa-regular fa-lightbulb text-yellow-500 text-xl mr-1"></i>
-        <div>
-          <p class="text-sm font-medium">
-            {{ mensajeConfiguracion }} <br>
-            <a :href="guiaConfiguracionInicialURL" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">{{ textoEnlace }}</a>.
-          </p>
+      <div v-if="datosCargados && mostrarMensajePendiente && isNotificationVisible" 
+          class="fixed bottom-6 right-6 bg-white text-gray-700 border-l-4 border-red-500 rounded-xl shadow-2xl p-4 max-w-sm z-50 transform hover:scale-105 transition-all duration-300 ease-in-out">
+        <div class="flex items-start gap-3">
+          <i :class="[iconoNotificacion, colorNotificacion, 'text-xl mt-1']"></i>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-800 mb-2">
+              {{ mensajeConfiguracion }}
+            </p>
+            <a :href="guiaConfiguracionInicialURL" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="text-blue-600 hover:text-blue-800 underline text-sm font-medium transition-colors duration-200">
+              {{ textoEnlace }}
+            </a>
+          </div>
+          <button @click="closeNotification" 
+                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+            <i class="fa-solid fa-times"></i>
+          </button>
         </div>
       </div>
-      <div v-else>
-        <div v-if="datosCargados && empresasCargadas && empresas.empresas.length === 0 && ['inicio', 'empresas'].includes(route.name as string)" 
-            class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105">
-          <i class="fa-regular fa-lightbulb text-yellow-500 text-xl mr-1"></i>
-          <div>
-            <p class="text-sm font-medium">
-              Aún no tienes clientes registrados <br>
-              <a :href="guiaRegistrarClientesURL" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">Guía para registrar a tu primer cliente</a>.
+      
+      <div v-else-if="datosCargados && empresasCargadas && empresas.empresas.length === 0 && ['inicio', 'empresas'].includes(route.name as string)" 
+          class="fixed bottom-6 right-6 bg-white text-gray-700 border-l-4 border-blue-500 rounded-xl shadow-2xl p-4 max-w-sm z-50 transform hover:scale-105 transition-all duration-300 ease-in-out">
+        <div class="flex items-start gap-3">
+          <i class="fa-regular fa-lightbulb text-blue-500 text-xl mt-1"></i>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-800 mb-2">
+              Aún no tienes clientes registrados
             </p>
+            <a :href="guiaRegistrarClientesURL" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="text-blue-600 hover:text-blue-800 underline text-sm font-medium transition-colors duration-200">
+              Guía para registrar a tu primer cliente
+            </a>
           </div>
+          <button @click="closeNotification" 
+                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+            <i class="fa-solid fa-times"></i>
+          </button>
         </div>
       </div>
     </Transition>
 
-    <!-- Botón del engrane (fuera de la transición principal) -->
+    <!-- Botón del engrane mejorado -->
     <Transition name="delayed-appear">
       <button 
         v-if="isVisible && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success'].includes(route.name as string)"
         @click="toggleMenu"
-        class="fixed top-4 right-4 p-3 bg-white text-gray-700 rounded-full hover:bg-gray-100 transition-all duration-300 ease-in-out shadow-md hover:shadow-xl border border-gray-300 z-50 transform hover:scale-105 focus:outline-none focus:ring-1 focus:ring-gray-500"
+        class="fixed top-6 right-6 p-4 bg-white text-gray-700 rounded-full hover:bg-gray-50 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl border border-gray-200 z-50 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-200"
+        :aria-label="isMenuOpen ? 'Cerrar menú de configuración' : 'Abrir menú de configuración'"
         >
         <svg 
           class="w-6 h-6 text-gray-700 transition-transform duration-300 ease-in-out"
@@ -334,137 +430,224 @@ const textoEnlace = computed(() => {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
         
-        <!-- Notificación de Campos Pendientes -->
-        <div v-if="mostrarNotificacionCampos" :class="['absolute -top-1 -left-1 w-5 h-5 bg-yellow-500 rounded-full border border-white', animacionNotificacion]"></div>
+        <!-- Notificaciones mejoradas -->
+        <div v-if="mostrarNotificacionCampos" 
+             :class="['absolute -top-2 -right-2 w-6 h-6 bg-yellow-500 rounded-full border-2 border-white shadow-lg', animacionNotificacion]">
+          <i class="fa-solid fa-exclamation text-white text-xs absolute inset-0 flex items-center justify-center"></i>
+        </div>
         
-        <!-- Notificación de Logotipo -->
-        <div v-if="mostrarNotificacionLogotipo" :class="['absolute -top-1 -left-1 w-5 h-5 bg-red-500 rounded-full border border-white', animacionNotificacion]"></div>
+        <div v-if="mostrarNotificacionLogotipo" 
+             :class="['absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full border-2 border-white shadow-lg', animacionNotificacion]">
+          <i class="fa-solid fa-exclamation-triangle text-white text-xs absolute inset-0 flex items-center justify-center"></i>
+        </div>
       </button>
     </Transition>
 
-    <!-- Menú desplegable (también fuera de la transición principal) -->
+    <!-- Menú desplegable mejorado -->
     <Transition name="fade">
       <div 
         v-if="isMenuOpen && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success'].includes(route.name as string)"
         ref="menuRef"
-        class="fixed top-16 right-4 bg-white rounded-lg shadow-lg p-4 w-64 z-40">
+        class="fixed top-20 right-6 bg-white rounded-2xl shadow-2xl p-6 w-72 z-40 border border-gray-100 backdrop-blur-sm bg-white/95">
 
-        <div class="space-y-2">
+        <div class="space-y-4">
+
+          <!-- Administrador -->
+          <div v-if="user.user?.role === 'Administrador'">
+            <p class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+              <i class="fa-solid fa-shield-alt mr-2 text-orange-500"></i>
+              Administrador
+            </p>
+            <a @click="router.push({ name: 'panel-administrador' })" 
+               class="block py-3 px-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-orange-50 hover:to-orange-100 rounded-xl transition-all duration-300 ease-in-out cursor-pointer border border-gray-200 hover:border-orange-300 group">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-tachometer-alt text-orange-500 group-hover:text-orange-600 transition-colors duration-200"></i>
+                <span class="font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Panel de Administrador</span>
+              </div>
+            </a>
+          </div>
           
           <!-- Configuración -->
-          <div v-if="user.user?.role !== 'Administrador'">
-            <p class="text-sm font-medium text-gray-700">Configuración</p>
+          <div>
+            <p class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+              <i class="fa-solid fa-cog mr-2 text-blue-500"></i>
+              Configuración
+            </p>
 
             <!-- Proveedor de Salud -->
-            <a v-if="user.user?.role === 'Principal'" @click="router.push({ name: 'perfil-proveedor' })" 
-              class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
-              <div class="flex items-center gap-2">
-                <TooltipInfo 
-                  v-if="logotipoPendiente"
-                  title="Se requiere un logotipo para el encabezado del informe"
-                  icon="fa-solid fa-triangle-exclamation text-red-500"
-                />
-                <TooltipInfo 
-                  v-if="mostrarTooltipProveedor"
-                  title="Para un mejor pie de página, se recomienda guardar:"
-                  :items="camposPendientesProveedor" 
-                />
-                <span>Mi Negocio</span>
+            <a v-if="user.user?.role === 'Principal' || user.user?.role === 'Administrador'" 
+               @click="router.push({ name: 'perfil-proveedor' })" 
+               :class="[
+                 'block py-3 px-4 rounded-xl transition-all duration-300 ease-in-out cursor-pointer border group',
+                 logotipoPendiente 
+                   ? 'bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 border-red-300 hover:border-red-400' 
+                   : mostrarTooltipProveedor 
+                     ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 border-yellow-300 hover:border-yellow-400'
+                     : 'bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 border-gray-200 hover:border-blue-300'
+               ]">
+              <div class="flex items-center gap-3">
+                <!-- Icono con animación para logotipo pendiente -->
+                <div v-if="logotipoPendiente" class="relative group" @mouseenter="showTooltipLogotipo = true" @mouseleave="showTooltipLogotipo = false">
+                  <i :class="['fa-solid fa-triangle-exclamation text-red-500 text-lg cursor-pointer', animacionTooltipProveedor]"></i>
+                  <div v-if="showTooltipLogotipo" class="absolute right-full -mr-4 top-1/2 transform -translate-y-1/2 z-50 bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64">
+                    <p class="font-semibold mb-1 text-base">Se requiere un logotipo para el encabezado del informe</p>
+                  </div>
+                </div>
+                
+                <!-- Icono con animación para campos pendientes -->
+                <div v-if="mostrarTooltipProveedor" class="relative group" @mouseenter="showTooltipProveedor = true" @mouseleave="showTooltipProveedor = false">
+                  <i :class="['fa-solid fa-exclamation-circle text-yellow-500 text-lg cursor-pointer', animacionTooltipProveedor]"></i>
+                  <div v-if="showTooltipProveedor" class="absolute right-full -mr-4 top-1/2 transform -translate-y-1/2 z-50 bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64">
+                    <p class="font-semibold mb-1 text-base">Para un mejor pie de página, se recomienda guardar:</p>
+                    <ul class="list-disc pl-4 mt-2 text-gray-300">
+                      <li v-for="item in camposPendientesProveedor" :key="item">{{ item }}</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <i v-if="!logotipoPendiente && !mostrarTooltipProveedor" :class="[
+                  'fa-solid fa-building transition-colors duration-200 text-blue-500 group-hover:text-blue-600'
+                ]"></i>
+                <span :class="[
+                  'font-medium transition-colors duration-200',
+                  logotipoPendiente 
+                    ? 'text-red-700 group-hover:text-red-800' 
+                    : mostrarTooltipProveedor 
+                      ? 'text-yellow-700 group-hover:text-yellow-800'
+                      : 'text-gray-700 group-hover:text-gray-900'
+                ]">Mi Negocio</span>
               </div>
             </a>
 
             <!-- Médico Firmante -->
             <a @click="router.push({ name: 'medico-firmante' })" 
-              class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out cursor-pointer">
-              <div class="flex items-center gap-2">
-                <TooltipInfo 
-                  v-if="mostrarTooltipMedico"
-                  title="Para un mejor pie de página, se recomienda guardar:"
-                  :items="camposPendientesMedico" 
-                />
-                <span>Médico Firmante</span>
+               :class="[
+                 'block py-3 px-4 rounded-xl mt-2 transition-all duration-300 ease-in-out cursor-pointer border group',
+                 mostrarTooltipMedico 
+                   ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 border-yellow-300 hover:border-yellow-400'
+                   : 'bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 border-gray-200 hover:border-blue-300'
+               ]">
+              <div class="flex items-center gap-3">
+                <!-- Icono con animación para campos pendientes del médico -->
+                <div v-if="mostrarTooltipMedico" class="relative group" @mouseenter="showTooltipMedico = true" @mouseleave="showTooltipMedico = false">
+                  <i :class="['fa-solid fa-exclamation-circle text-yellow-500 text-lg cursor-pointer', animacionTooltipMedico]"></i>
+                  <div v-if="showTooltipMedico" class="absolute right-full -mr-4 top-1/2 transform -translate-y-1/2 z-50 bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64">
+                    <p class="font-semibold mb-1 text-base">Para un mejor pie de página, se recomienda guardar:</p>
+                    <ul class="list-disc pl-4 mt-2 text-gray-300">
+                      <li v-for="item in camposPendientesMedico" :key="item">{{ item }}</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <i v-if="!mostrarTooltipMedico" :class="[
+                  'fa-solid fa-user-md transition-colors duration-200 text-green-500 group-hover:text-green-600'
+                ]"></i>
+                <span :class="[
+                  'font-medium transition-colors duration-200',
+                  mostrarTooltipMedico 
+                    ? 'text-yellow-700 group-hover:text-yellow-800'
+                    : 'text-gray-700 group-hover:text-gray-900'
+                ]">Médico Firmante</span>
               </div>
             </a>
-
           </div>
 
           <!-- Gestión de Usuarios -->
-          <div v-if="user.user?.role === 'Principal'">
-            <p class="text-sm font-medium text-gray-700 mt-3">Gestión de Usuarios</p>
-            <a @click="router.push({ name: 'add-user' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
-              Agregar Usuario
+          <div v-if="user.user?.role === 'Principal' || user.user?.role === 'Administrador'">
+            <p class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+              <i class="fa-solid fa-users mr-2 text-purple-500"></i>
+              Gestión de Usuarios
+            </p>
+            <a @click="router.push({ name: 'add-user' })" 
+               class="block py-3 px-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-purple-100 rounded-xl transition-all duration-300 ease-in-out cursor-pointer border border-gray-200 hover:border-purple-300 group">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-user-plus text-purple-500 group-hover:text-purple-600 transition-colors duration-200"></i>
+                <span class="font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Agregar Usuario</span>
+              </div>
             </a>
-            <a @click="router.push({ name: 'remove-users' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out cursor-pointer">
-              Eliminar Usuarios
+            <a @click="router.push({ name: 'remove-users' })" 
+               class="block py-3 px-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-red-50 hover:to-red-100 rounded-xl mt-2 transition-all duration-300 ease-in-out cursor-pointer border border-gray-200 hover:border-red-300 group">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-user-minus text-red-500 group-hover:text-red-600 transition-colors duration-200"></i>
+                <span class="font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Eliminar Usuarios</span>
+              </div>
             </a>
           </div>
 
           <!-- Suscripción -->
-          <div v-if="user.user?.role === 'Principal'">
-            <p class="text-sm font-medium text-gray-700 mt-3">Suscripción</p>
-            <a @click="router.push({ name: 'suscripcion-activa' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
-              Mi Suscripción
+          <div v-if="user.user?.role === 'Principal' || user.user?.role === 'Administrador'">
+            <p class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+              <i class="fa-solid fa-credit-card mr-2 text-emerald-500"></i>
+              Suscripción
+            </p>
+            <a @click="router.push({ name: 'suscripcion-activa' })" 
+               class="block py-3 px-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-emerald-50 hover:to-emerald-100 rounded-xl transition-all duration-300 ease-in-out cursor-pointer border border-gray-200 hover:border-emerald-300 group">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-crown text-emerald-500 group-hover:text-emerald-600 transition-colors duration-200"></i>
+                <span class="font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Mi Suscripción</span>
+              </div>
             </a>
-            <a @click="router.push({ name: 'subscription' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg mt-1 transition-all duration-300 ease-in-out cursor-pointer">
-              Ver Planes
+            <a @click="router.push({ name: 'subscription' })" 
+               class="block py-3 px-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-emerald-50 hover:to-emerald-100 rounded-xl mt-2 transition-all duration-300 ease-in-out cursor-pointer border border-gray-200 hover:border-emerald-300 group">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-list text-emerald-500 group-hover:text-emerald-600 transition-colors duration-200"></i>
+                <span class="font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Ver Planes</span>
+              </div>
             </a>
           </div>
 
-          <!-- Administrador -->
-          <div v-if="user.user?.role === 'Administrador'">
-            <p class="text-sm font-medium text-gray-700 mb-2">Administrador</p>
-            <a @click="router.push({ name: 'panel-administrador' })" class="block py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-300 ease-in-out cursor-pointer">
-              Panel de Administrador
-            </a>
-          </div>
         </div>
       </div>
     </Transition>
 
-    <!-- Icono de guía de uso (Desplegable) -->
+    <!-- Icono de guía de uso mejorado -->
     <Transition name="delayed-appear">
       <button 
         v-if="isVisible && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success'].includes(route.name as string)"
         @click="toggleGuideMenu($event)"
-        class="fixed top-20 right-4 w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full shadow-lg hover:shadow-xl transition-transform duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-300 z-30 flex items-center justify-center">
-        <i class="fa-solid fa-book text-lg"></i>
+        class="fixed top-24 right-6 w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-300 z-30 flex items-center justify-center group"
+        :aria-label="isGuideMenuOpen ? 'Cerrar guías de uso' : 'Abrir guías de uso'">
+        <i class="fa-solid fa-book text-lg group-hover:rotate-12 transition-transform duration-300"></i>
       </button>
     </Transition>
 
-    <!-- Menú desplegable de guías de uso -->
+    <!-- Menú desplegable de guías de uso mejorado -->
     <Transition name="fade">
       <div 
         v-if="isGuideMenuOpen"
         ref="guideMenuRef"
-        class="fixed top-32 right-4 bg-white rounded-xl shadow-xl p-4 w-80 z-20 border border-gray-200 transition-all duration-300 ease-in-out">
-        <h3 class="text-lg font-medium text-gray-700 mb-1">Guías de Uso</h3>
-        <ul class="space-y-0">
-          <li>
-            <a href="https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">1. Configuración de Informes</a>
+        class="fixed top-40 right-6 bg-white rounded-2xl shadow-2xl p-6 w-82 z-20 border border-gray-100 backdrop-blur-sm bg-white/95 transition-all duration-300 ease-in-out">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+          <i class="fa-solid fa-graduation-cap mr-2 text-blue-500"></i>
+          Guías de Uso
+        </h3>
+        <ul class="space-y-2">
+          <li v-for="(guia, index) in [
+            { url: 'https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace', text: 'Configuración de Informes', icon: 'fa-solid fa-cog' },
+            { url: 'https://scribehow.com/shared/Agregar_Clientes_y_Centros_de_Trabajo__32Haet8BQy6oFUDacWcbWg?referrer=documents', text: 'Agregar Clientes y Centros de Trabajo', icon: 'fa-solid fa-building' },
+            { url: 'https://scribehow.com/shared/Registrar_Trabajadores__C2clnmBvTT2xGW7QE-YHQQ?referrer=documents', text: 'Registrar Trabajadores', icon: 'fa-solid fa-user-plus' },
+            { url: 'https://scribehow.com/shared/Gestion_de_Trabajadores__bGNGxMbuRXiKD6G8JiDGIQ?referrer=documents', text: 'Gestión de Trabajadores', icon: 'fa-solid fa-users' },
+            { url: 'https://scribehow.com/shared/Creacion_de_Informes_Medicos__BffBrtm4Qze068R96fLL9w?referrer=documents', text: 'Creación de Informes Médicos', icon: 'fa-solid fa-file-medical' },
+            { url: 'https://scribehow.com/shared/Subir_Documentos_Externos__p2VINQjBSYq8RKntzNZHSQ?referrer=workspace', text: 'Subir Documentos Externos', icon: 'fa-solid fa-upload' },
+            { url: 'https://scribehow.com/shared/Resumen_de_Aptitud_al_Puesto__RZbuEGIpTTOiY1wSuxbqKQ?referrer=workspace', text: 'Resumen de Aptitud al Puesto', icon: 'fa-solid fa-clipboard-check' }
+          ]" :key="index">
+            <a :href="guia.url" 
+               target="_blank" 
+               class="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-blue-50 transition-all duration-200 group">
+              <span class="text-sm font-medium text-gray-500 group-hover:text-blue-600 transition-colors duration-200">{{ index + 1 }}.</span>
+              <i :class="[guia.icon, 'text-blue-500 group-hover:text-blue-600 transition-colors duration-200']"></i>
+              <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">{{ guia.text }}</span>
+            </a>
           </li>
-          <li>
-            <a href="https://scribehow.com/shared/Agregar_Clientes_y_Centros_de_Trabajo__32Haet8BQy6oFUDacWcbWg?referrer=documents" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">2. Agregar Clientes y Centros de Trabajo</a>
-          </li>
-          <li>
-            <a href="https://scribehow.com/shared/Registrar_Trabajadores__C2clnmBvTT2xGW7QE-YHQQ?referrer=documents" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">3. Registrar Trabajadores</a>
-          </li>
-          <li>
-            <a href="https://scribehow.com/shared/Gestion_de_Trabajadores__bGNGxMbuRXiKD6G8JiDGIQ?referrer=documents" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">4. Gestión de Trabajadores</a>
-          </li>
-          <li>
-            <a href="https://scribehow.com/shared/Creacion_de_Informes_Medicos__BffBrtm4Qze068R96fLL9w?referrer=documents" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">5. Creación de Informes Médicos</a>
-          </li>
-          <li>
-            <a href="https://scribehow.com/shared/Subir_Documentos_Externos__p2VINQjBSYq8RKntzNZHSQ?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">6. Subir Documentos Externos</a>
-          </li>
-          <li>
-            <a href="https://scribehow.com/shared/Resumen_de_Aptitud_al_Puesto__RZbuEGIpTTOiY1wSuxbqKQ?referrer=workspace" target="_blank" class="font-light text-blue-700 hover:text-blue-500 hover:font-normal">7. Resumen de Aptitud al Puesto</a>
-          </li>
-          <li>
-            <a href="" target="_blank" class="font-light text-gray-400">8. Estadísticas de Salud</a>
-          </li>
-          <li>
-            <a href="" target="_blank" class="font-light text-gray-400">9. Gestión de RTs</a>
+          <li v-for="(guia, index) in [
+            { text: 'Estadísticas de Salud', icon: 'fa-solid fa-chart-line' },
+            { text: 'Gestión de RTs', icon: 'fa-solid fa-exclamation-triangle' }
+          ]" :key="index + 7">
+            <div class="flex items-center gap-3 py-2 px-3 rounded-lg opacity-50">
+              <span class="text-sm font-medium text-gray-400">{{ index + 8 }}.</span>
+              <i :class="[guia.icon, 'text-gray-400']"></i>
+              <span class="text-sm font-medium text-gray-400">{{ guia.text }}</span>
+            </div>
           </li>
         </ul>
       </div>
@@ -473,7 +656,7 @@ const textoEnlace = computed(() => {
   </main>
 
   <!-- Herramienta de Debug - Media Query -->
-  <!-- <div class="fixed top-4 left-4 z-50 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg text-sm font-mono">
+  <div class="fixed top-4 left-4 z-50 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg text-sm font-mono">
     <div class="flex items-center gap-2">
       <span class="w-2 h-2 bg-red-500 rounded-full sm:hidden"></span>
       <span class="w-2 h-2 bg-orange-500 rounded-full hidden sm:block md:hidden"></span>
@@ -490,11 +673,11 @@ const textoEnlace = computed(() => {
         <span class="hidden 2xl:block">2xl</span>
       </span>
     </div>
-  </div> -->
+  </div>
 
 </template>
 
-<style>
+<style scoped>
 @keyframes bounceIn {
   0% {
     transform: scale(0);
@@ -533,6 +716,41 @@ const textoEnlace = computed(() => {
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes attention-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+@keyframes attention-bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -8px, 0);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
 .notificacion-animada {
   animation: bounceIn 0.5s ease-out;
 }
@@ -545,40 +763,87 @@ const textoEnlace = computed(() => {
   animation: shake 0.5s infinite;
 }
 
-/* Transición slide-up mejorada */
+.attention-pulse {
+  animation: attention-pulse 2s ease-in-out infinite;
+}
+
+.attention-bounce {
+  animation: attention-bounce 2s ease-in-out infinite;
+}
+
+.tooltip-icon-pulse {
+  animation: attention-pulse 1.5s ease-in-out infinite;
+}
+
+.tooltip-pulse {
+  animation: attention-pulse 1.5s ease-in-out infinite;
+}
+
+.tooltip-bounce {
+  animation: attention-bounce 1.5s ease-in-out infinite;
+}
+
+/* Estilos para tooltips personalizados */
+.group:hover .absolute {
+  display: block;
+}
+
+.group .absolute {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.group:hover .absolute {
+  opacity: 1;
+  transform: translate(-29px, -26px);
+}
+
+/* Flecha del Tooltip */
+.group .absolute::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: -14px;
+  width: 0;
+  height: 0;
+  border-top: 14px solid transparent;
+  border-bottom: 14px solid transparent;
+  border-left: 14px solid black;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+/* Transiciones mejoradas */
 .slide-up-enter-active {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .slide-up-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Reduced to 0.3s for faster exit */
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .slide-up-enter-from {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(30px);
 }
 
 .slide-up-leave-to {
   opacity: 0;
-  transform: translateY(-20px);
+  transform: translateY(-30px);
 }
 
-/* Transición fade mejorada */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-  /* transform: translateY(-10px); */ /* Desplazamiento ligero hacia arriba */
+  transform: translateY(-10px) scale(0.95);
 }
 
-/* Transición delayed-appear mejorada */
 .delayed-appear-enter-active {
-  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .delayed-appear-leave-active {
@@ -591,7 +856,6 @@ const textoEnlace = computed(() => {
   transform: scale(0.5) rotate(-180deg);
 }
 
-/* Transición para botones interactivos */
 .button-transition-enter-active,
 .button-transition-leave-active {
   transition: all 0.3s ease;
@@ -600,54 +864,107 @@ const textoEnlace = computed(() => {
 .button-transition-enter-from,
 .button-transition-leave-to {
   opacity: 0;
-  transform: scale(0.9); /* Efecto de escala al aparecer/desaparecer */
+  transform: scale(0.9);
 }
 
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: all 0.5s ease-out;
-}
-
-.slide-down-enter-from {
-  transform: translateY(-130px);
-}
-
-.slide-down-leave-to {
-  transform: translateY(-130px);
-}
-
-.fade-enter-from .modal-inner,
-.fade-leave-to .modal-inner {
-  opacity: 0;
-  transform: translateY(-32px);
-}
-
-/* Personalización para navegadores basados en WebKit (Chrome, Safari, Edge) */
+/* Scrollbar personalizada */
 ::-webkit-scrollbar {
-  width: 12px;
-  /* Ancho de la barra de scroll */
-  height: 12px;
-  /* Altura de la barra de scroll para scroll horizontal */
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
-  /* Color del track (fondo del scroll) */
   border-radius: 10px;
-  /* Bordes redondeados del track */
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #888;
-  /* Color de la "thumb" (barra) */
+  background: linear-gradient(45deg, #cbd5e1, #94a3b8);
   border-radius: 10px;
-  /* Bordes redondeados de la thumb */
-  border: 3px solid #f1f1f1;
-  /* Añadir un borde alrededor */
+  border: 2px solid #f1f1f1;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #555;
-  /* Cambiar el color cuando se hace hover */
+  background: linear-gradient(45deg, #94a3b8, #64748b);
+}
+
+/* Efectos de hover mejorados */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Animaciones de carga */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Responsive improvements */
+@media (max-width: 640px) {
+  .fixed {
+    position: fixed;
+  }
+  
+  .top-6 {
+    top: 1rem;
+  }
+  
+  .right-6 {
+    right: 1rem;
+  }
+  
+  .bottom-6 {
+    bottom: 1rem;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles for better accessibility */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .bg-white {
+    background-color: #1f2937;
+  }
+  
+  .text-gray-700 {
+    color: #d1d5db;
+  }
+  
+  .text-gray-600 {
+    color: #9ca3af;
+  }
+  
+  .border-gray-200 {
+    border-color: #374151;
+  }
 }
 </style>

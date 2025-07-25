@@ -284,7 +284,7 @@ const opcionesGraficaPastelSexo = {
     datalabels: {
       color: '#fff',
       anchor: 'center',
-      align: 'end',
+      align: 'center',
       offset: 20,
       font: { weight: 'bold', size: 12 },
       formatter: (value, context) => {

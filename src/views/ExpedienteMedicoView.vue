@@ -271,7 +271,7 @@ const añoMasReciente = computed(() => {
       @closeModal="toggleDeleteModal" @confirmDelete="handleDeleteDocument" />
   </Transition>
 
-  <div class="p-5 grid gap-5">
+  <div class="grid gap-5">
     
     <!-- Panel de botones deslizante -->
     <div class="relative flex justify-center md:justify-start">

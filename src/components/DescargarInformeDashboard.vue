@@ -278,7 +278,25 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         contenido.push(
             { text: '1.2 Distribución por Grupos Etarios', style: 'subtituloSeccion', pageBreak: 'before' },
             {
-                text: 'Distribución de los trabajadores activos según grupos etarios y género.',
+                text: [
+                    'Conocer la ',
+                    { text: 'edad de la plantilla', bold: true },
+                    ' permite anticipar ',
+                    { text: 'necesidades específicas de salud, desempeño y riesgos laborales', bold: true },
+                    '.',
+                    '\n\n',
+                    'Una ',
+                    { text: 'población mayor', bold: true },
+                    ' puede requerir mayor ',
+                    { text: 'vigilancia en enfermedades crónicas', bold: true },
+                    ', mientras que una ',
+                    { text: 'plantilla joven', bold: true },
+                    ' puede beneficiarse de ',
+                    { text: 'acciones preventivas enfocadas en hábitos saludables y educación en seguridad', bold: true },
+                    '. Esta información orienta ',
+                    { text: 'decisiones en salud laboral y gestión de recursos humanos', bold: true },
+                    '.'
+                ],
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             },
@@ -322,13 +340,21 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
             { text: '2.1 Índice de Masa Corporal (IMC)', style: 'subtituloSeccion' },
             {
                 text: [
-                    'El ',
-                    { text: 'sobrepeso y la obesidad', bold: true },
-                    ' se definen como una ',
-                    { text: 'acumulación anormal o excesiva de grasa', bold: true },
-                    ' que puede ser perjudicial para la salud. ',
-                    { text: 'Un IMC elevado es un importante factor de riesgo', bold: true },
-                    ' de enfermedades no transmisibles como la diabetes, los trastornos del aparato locomotor, algunos cánceres y las enfermedades cardiovasculares.'
+                    'La ',
+                    { text: 'obesidad aumenta el riesgo de accidentes laborales', bold: true },
+                    '. La ',
+                    { text: 'movilidad reducida y la fatiga', bold: true },
+                    ' comprometen la ',
+                    { text: 'seguridad y el desempeño físico', bold: true },
+                    '.',
+                    '\n',
+                    'Un IMC elevado también anticipa ',
+                    { text: 'complicaciones metabólicas o musculoesqueléticas', bold: true },
+                    ', guiando ',
+                    { text: 'acciones preventivas', bold: true },
+                    ' para reducir ausentismo y preservar la ',
+                    { text: 'capacidad funcional', bold: true },
+                    '.'
                 ],
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
@@ -575,7 +601,19 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         contenido.push(
             { text: '2.3 Alteraciones en Presión Arterial', style: 'subtituloSeccion', pageBreak: 'before' },
             {
-                text: 'La presión arterial es la tensión ejercida por la sangre que circula sobre las paredes de los vasos sanguíneos, y constituye uno de los principales signos vitales. Los valores de la presión sanguínea se expresan en milímetros del mercurio (mmHg).',
+                text: [
+                    'La ',
+                    { text: 'presión arterial elevada', bold: true },
+                    ' puede aumentar el riesgo de ',
+                    { text: 'eventos cardiovasculares', bold: true },
+                    ' durante la jornada laboral, especialmente en tareas que implican ',
+                    { text: 'esfuerzo físico, turnos prolongados o exposición a calor', bold: true },
+                    '.',
+                    '\n',
+                    'Este indicador permite detectar trabajadores con ',
+                    { text: 'posibles alteraciones que requieren seguimiento médico', bold: true },
+                    '.'
+                ],
                 style: 'textoNormal',
                 margin: [0, 0, 0, 10]
             },
@@ -583,7 +621,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 image: imagenes.tensionArterial, 
                 width: 400, 
                 alignment: 'center',
-                margin: [0, 10, 0, 20] 
+                margin: [0, 0, 0, 20] 
             }
         );
         // Tabla de resultados y tabla de referencia lado a lado
@@ -683,19 +721,54 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     // Sección 3: Antecedentes Médicos
     contenido.push({ text: `${numeroSeccion}. ANTECEDENTES MÉDICOS`, style: 'tituloSeccion', pageBreak: 'before' });
     numeroSeccion++;
+    // Texto introductorio
     contenido.push({
         text: [
-            'Esta sección presenta un resumen de los ',
-            { text: 'antecedentes médicos referidos', bold: true },
-            ' por los trabajadores durante su evaluación, enfocándose en la presencia de ',
+            'Este apartado permite conocer la presencia de ',
             { text: 'enfermedades crónicas y problemas localizados', bold: true },
-            ' que podrían tener ',
-            { text: 'impacto en su salud y desempeño laboral', bold: true },
+            ' entre los trabajadores. Estas condiciones, aunque no siempre incapacitantes, pueden influir en la ',
+            { text: 'productividad, el ausentismo y la susceptibilidad a riesgos laborales', bold: true },
             '.'
         ],
         style: 'textoNormal',
-            margin: [0, 0, 0, 20]
-        });
+        margin: [0, 0, 0, 10]
+    });
+
+    // Párrafo sobre la importancia
+    contenido.push({
+        text: [
+            'Contar con esta información es clave para la empresa, ya que permite:'
+        ],
+        style: 'textoNormal',
+        margin: [0, 0, 0, 10]
+    });
+
+    // Lista usando tabla para sangría
+    contenido.push({
+        table: {
+            widths: ['*'],
+            body: [
+                [{ text: '• Anticipar posibles restricciones laborales o adaptaciones en el puesto de trabajo.', style: 'textoNormal' }],
+                [{ text: '• Identificar necesidades de seguimiento médico o vigilancia específica.', style: 'textoNormal' }],
+                [{ text: '• Implementar estrategias de prevención secundaria, reduciendo el impacto de estos padecimientos en el entorno laboral.', style: 'textoNormal' }]
+            ]
+        },
+        layout: 'noBorders',
+        margin: [20, 0, 0, 10]
+    });
+
+    // Párrafo final
+    contenido.push({
+        text: [
+            'El ',
+            { text: 'monitoreo continuo de estos antecedentes', bold: true },
+            ' fortalece la gestión integral de la salud en la empresa, y contribuye a un ',
+            { text: 'ambiente laboral más seguro, eficiente y humano', bold: true },
+            '.'
+        ],
+        style: 'textoNormal',
+        margin: [0, 0, 0, 20]
+    });
 
     // Tabla de enfermedades crónicas y antecedentes localizados lado a lado
     let tablaEnfermedadesContent: any[] | null = null;
@@ -823,28 +896,16 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 { text: `${numeroSeccion}. FACTORES DE RIESGO OCUPACIONAL`, style: 'tituloSeccion', pageBreak: 'before' },
                 {
                     text: [
-                        'Este análisis identifica los ',
-                        { text: 'tipos de agentes de riesgo', bold: true },
-                        ' presentes en el entorno laboral, permitiendo detectar ',
-                        { text: 'exposiciones que pueden comprometer la salud', bold: true },
-                        ' de los trabajadores a ',
-                        { text: 'mediano o largo plazo', bold: true },
-                        '.',
-                        '\n\n',
-                        'La información es útil para ',
-                        { text: 'priorizar intervenciones preventivas', bold: true },
-                        ', ',
-                        { text: 'fortalecer el cumplimiento normativo', bold: true },
-                        ' y ',
-                        { text: 'diseñar estrategias orientadas a reducir enfermedades profesionales, ausentismo o accidentes', bold: true },
-                        ' vinculados a condiciones de trabajo no seguras.',
-                        '\n\n',
-                        'Conocer los ',
-                        { text: 'factores más frecuentes de exposición', bold: true },
-                        ' ayuda a la empresa a ',
-                        { text: 'focalizar recursos en las áreas de mayor impacto', bold: true },
-                        ' y a ',
-                        { text: 'fomentar un entorno laboral más seguro y saludable', bold: true },
+                        'Esta sección permite identificar ',
+                        { text: 'agentes de riesgo presentes en el entorno laboral', bold: true },
+                        ' y detectar ',
+                        { text: 'exposiciones que pueden afectar la salud', bold: true },
+                        ' del trabajador.',
+                        '\n',
+                        'Conocer estos factores ayuda a ',
+                        { text: 'enfocar acciones preventivas', bold: true },
+                        ', cumplir con la normativa y ',
+                        { text: 'reducir el riesgo de enfermedades o accidentes laborales', bold: true },
                         '.'
                     ],
                     style: 'textoNormal',
@@ -854,7 +915,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                     image: imagenes.agentes, 
                     width: 400, 
                     alignment: 'center',
-                    margin: [0, 10, 0, 20] 
+                    margin: [0, 0, 0, 20] 
                 }
             );
                 
