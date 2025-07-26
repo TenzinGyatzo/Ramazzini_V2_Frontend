@@ -23,6 +23,19 @@ const props = defineProps({
         type: Array as PropType<string[]>,
         required: true,
     },
+    // Nuevas props para el modo eliminación
+    isDeletionMode: {
+        type: Boolean,
+        default: false,
+    },
+    toggleDeletionMode: {
+        type: Function as PropType<() => void>,
+        required: true,
+    },
+    onDeleteSelected: {
+        type: Function as PropType<() => void>,
+        required: true,
+    },
 });
 
 const emit = defineEmits(['abrirModalUpdate', 'eliminarDocumento', 'openSubscriptionModal']);
@@ -177,18 +190,29 @@ const toggleSelectAll = () => {
                     </div>
                 </div>
                 
+                <!-- Indicador de modo eliminación centrado -->
+                <div v-if="isDeletionMode" class="absolute inset-0 flex items-center justify-center md:justify-end md:mr-4 lg:justify-center pointer-events-none">
+                    <div class="flex items-center space-x-3 bg-red-600 bg-opacity-90 rounded-xl px-6 py-3 shadow-lg animate-fade-pulse">
+                        <i class="fas fa-exclamation-triangle text-red-100 text-lg"></i>
+                        <span class="text-white text-lg font-semibold">Modo eliminación activado</span>
+                        <i class="fas fa-exclamation-triangle text-red-100 text-lg"></i>
+                    </div>
+                </div>
+                
                 <!-- Indicador de selección -->
-                <div v-if="documentosSeleccionadosDelGrupo > 0" class="hidden sm:flex items-center space-x-2 bg-white bg-opacity-20 rounded-lg px-3 py-1">
-                    <div class="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></div>
+                <div v-if="documentosSeleccionadosDelGrupo > 0" class="hidden lg:flex items-center space-x-2 rounded-lg px-3 py-1"
+                     :class="isDeletionMode ? 'bg-red-500 bg-opacity-20' : 'bg-white bg-opacity-20'">
+                    <div class="w-2 h-2 rounded-full animate-pulse"
+                         :class="isDeletionMode ? 'bg-red-300' : 'bg-yellow-300'"></div>
                     <span class="text-white text-sm font-medium">
-                        {{ documentosSeleccionadosDelGrupo }} seleccionado{{ documentosSeleccionadosDelGrupo !== 1 ? 's' : '' }}
+                        {{ documentosSeleccionadosDelGrupo }} seleccionado{{ documentosSeleccionadosDelGrupo !== 1 ? 's' : '' }}<span v-if="isDeletionMode" class="ml-1">para eliminar</span>
                     </span>
                 </div>
             </div>
         </div>
 
         <!-- Barra de selección mejorada -->
-        <div class="flex items-center px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200">
+        <div class="flex items-center justify-between px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200">
             <div class="flex items-center space-x-3">
                 <!-- Checkbox personalizado -->
                 <div class="relative">
@@ -203,8 +227,10 @@ const toggleSelectAll = () => {
                         :for="`select-all-checkbox-${year}`"
                         class="flex items-center justify-center w-6 h-6 border-2 rounded-md cursor-pointer transition-all duration-200"
                         :class="{
-                            'bg-emerald-500 border-emerald-600 shadow-sm': selectAll,
-                            'border-gray-300 hover:border-emerald-500 hover:bg-emerald-50 hover:scale-105': !selectAll
+                            'bg-emerald-500 border-emerald-600 shadow-sm': selectAll && !isDeletionMode,
+                            'bg-red-500 border-red-600 shadow-sm': selectAll && isDeletionMode,
+                            'border-gray-300 hover:border-emerald-500 hover:bg-emerald-50 hover:scale-105': !selectAll && !isDeletionMode,
+                            'border-gray-300 hover:border-red-500 hover:bg-red-50 hover:scale-105': !selectAll && isDeletionMode
                         }"
                     >
                         <svg v-if="selectAll" class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -214,15 +240,35 @@ const toggleSelectAll = () => {
                 </div>
                 
                 <div class="flex flex-col">
-                    <label :for="`select-all-checkbox-${year}`" class="text-gray-700 font-semibold cursor-pointer transition-colors duration-200 hover:text-emerald-600 ml-0.5">
-                        Seleccionar Todos
+                    <label :for="`select-all-checkbox-${year}`" class="font-semibold cursor-pointer transition-colors duration-200 ml-0.5"
+                           :class="isDeletionMode ? 'text-red-700 hover:text-red-800' : 'text-gray-700 hover:text-emerald-600'">
+                           Seleccionar Todos
+                        <!-- {{ isDeletionMode ? 'Seleccionar Todos para Eliminar' : 'Seleccionar Todos' }} -->
                     </label>
-                    <span class="text-xs text-gray-500 ml-0.5">
+                    <span class="text-xs ml-0.5"
+                          :class="isDeletionMode ? 'text-red-500' : 'text-gray-500'">
                         {{ documentosSeleccionadosDelGrupo }} de {{ totalDocumentos }} documentos
                     </span>
                 </div>
             </div>
+
+            <!-- Botón de modo eliminación -->
+            <div class="flex items-center space-x-2">
+                <button
+                    @click="toggleDeletionMode"
+                    class="flex items-center space-x-2 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm font-medium"
+                    :class="isDeletionMode 
+                        ? 'bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 hover:border-red-400 shadow-sm' 
+                        : 'bg-gray-50 hover:bg-gray-100 text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700'"
+                >
+                    <i class="fas fa-trash-alt text-xs" :class="isDeletionMode ? 'text-red-600' : 'text-gray-400'"></i>
+                    <span class="md:hidden">{{ isDeletionMode ? 'Desactivar' : 'Eliminación' }}</span>
+                    <span class="hidden md:inline">{{ isDeletionMode ? 'Desactivar Modo Eliminación' : 'Activar Modo Eliminación' }}</span>
+                </button>
+            </div>
         </div>
+
+
 
         <!-- Contenido de documentos con espaciado mejorado -->
         <div class="divide-gray-100">
@@ -236,6 +282,7 @@ const toggleSelectAll = () => {
                         :documentoId="aptitud._id" 
                         :documentoTipo="'aptitud'" 
                         :toggleRouteSelection="toggleRouteSelection" 
+                        :isDeletionMode="isDeletionMode"
                         :isSelected="(() => {
                             const rutaBase = obtenerRutaDocumento(aptitud, 'Aptitud');
                             const fecha = obtenerFechaDocumento(aptitud) || 'SinFecha';
@@ -259,6 +306,7 @@ const toggleSelectAll = () => {
                         :documentoId="historiaClinica._id"
                         :documentoTipo="'historiaClinica'" 
                         :toggleRouteSelection="toggleRouteSelection"
+                        :isDeletionMode="isDeletionMode"
                         :isSelected="(() => {
                             const rutaBase = obtenerRutaDocumento(historiaClinica, 'Historia Clinica');
                             const fecha = obtenerFechaDocumento(historiaClinica) || 'SinFecha';
@@ -282,6 +330,7 @@ const toggleSelectAll = () => {
                         :documentoId="exploracionFisica._id"
                         :documentoTipo="'exploracionFisica'" 
                         :toggleRouteSelection="toggleRouteSelection"
+                        :isDeletionMode="isDeletionMode"
                         :isSelected="(() => {
                             const rutaBase = obtenerRutaDocumento(exploracionFisica, 'Exploracion Fisica');
                             const fecha = obtenerFechaDocumento(exploracionFisica) || 'SinFecha';
@@ -305,6 +354,7 @@ const toggleSelectAll = () => {
                         :documentoId="examenVista._id" 
                         :documentoTipo="'examenVista'" 
                         :toggleRouteSelection="toggleRouteSelection"
+                        :isDeletionMode="isDeletionMode"
                         :isSelected="(() => {
                             const rutaBase = obtenerRutaDocumento(examenVista, 'Examen Vista');
                             const fecha = obtenerFechaDocumento(examenVista) || 'SinFecha';
@@ -328,6 +378,7 @@ const toggleSelectAll = () => {
                         :documentoId="antidoping._id" 
                         :documentoTipo="'antidoping'" 
                         :toggleRouteSelection="toggleRouteSelection"
+                        :isDeletionMode="isDeletionMode"
                         :isSelected="(() => {
                             const rutaBase = obtenerRutaDocumento(antidoping, 'Antidoping');
                             const fecha = obtenerFechaDocumento(antidoping) || 'SinFecha';
@@ -351,6 +402,7 @@ const toggleSelectAll = () => {
                         :documentoId="certificado._id" 
                         :documentoTipo="'certificado'" 
                         :toggleRouteSelection="toggleRouteSelection"
+                        :isDeletionMode="isDeletionMode"
                         :isSelected="(() => {
                             const rutaBase = obtenerRutaDocumento(certificado, 'Certificado');
                             const fecha = obtenerFechaDocumento(certificado) || 'SinFecha';
@@ -374,6 +426,7 @@ const toggleSelectAll = () => {
                         :documentoId="documentoExterno._id"
                         :documentoTipo="'documentoExterno'" 
                         :toggleRouteSelection="toggleRouteSelection"
+                        :isDeletionMode="isDeletionMode"
                         :isSelected="(() => {
                             const rutaBase = obtenerRutaDocumento(documentoExterno, 'Documento Externo');
                             const fecha = obtenerFechaDocumento(documentoExterno) || 'SinFecha';
@@ -398,6 +451,7 @@ const toggleSelectAll = () => {
                         :documentoId="notaMedica._id" 
                         :documentoTipo="'notaMedica'" 
                         :toggleRouteSelection="toggleRouteSelection"
+                        :isDeletionMode="isDeletionMode"
                         :isSelected="(() => {
                             const rutaBase = obtenerRutaDocumento(notaMedica, 'Nota Medica');
                             const fecha = obtenerFechaDocumento(notaMedica) || 'SinFecha';
@@ -470,6 +524,34 @@ const toggleSelectAll = () => {
     50% {
         opacity: .5;
     }
+}
+
+/* Animación de desvanecido para el indicador de modo eliminación */
+@keyframes fade-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+.animate-fade-pulse {
+    animation: fade-pulse 2s ease-in-out infinite;
+}
+
+/* Efectos de hover mejorados para modo eliminación */
+.hover\:bg-red-50:hover {
+    background-color: #fef2f2;
+    transform: translateX(2px);
+}
+
+.hover\:border-red-300:hover {
+    border-color: #fca5a5;
+}
+
+.hover\:border-red-400:hover {
+    border-color: #f87171;
 }
 
 

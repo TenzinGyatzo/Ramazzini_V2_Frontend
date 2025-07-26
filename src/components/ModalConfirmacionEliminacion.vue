@@ -1,0 +1,203 @@
+<script setup>
+import { ref, computed } from 'vue';
+
+const props = defineProps({
+  isVisible: {
+    type: Boolean,
+    required: true,
+  },
+  selectedCount: {
+    type: Number,
+    required: true,
+  },
+  selectedRoutes: {
+    type: Array,
+    required: true,
+  },
+});
+
+const emit = defineEmits(['confirm', 'cancel']);
+
+const isConfirming = ref(false);
+
+const handleConfirm = async () => {
+  isConfirming.value = true;
+  try {
+    await emit('confirm');
+  } finally {
+    isConfirming.value = false;
+  }
+};
+
+const handleCancel = () => {
+  emit('cancel');
+};
+
+// Computed para mostrar información de los documentos seleccionados
+const documentTypes = computed(() => {
+  const types = {};
+  
+  props.selectedRoutes.forEach(route => {
+    if (route.includes('Aptitud')) {
+      types.aptitudes = (types.aptitudes || 0) + 1;
+    }
+    else if (route.includes('Historia Clinica')) {
+      types.historiasClinicas = (types.historiasClinicas || 0) + 1;
+    }
+    else if (route.includes('Exploracion Fisica')) {
+      types.exploracionesFisicas = (types.exploracionesFisicas || 0) + 1;
+    }
+    else if (route.includes('Examen Vista')) {
+      types.examenesVista = (types.examenesVista || 0) + 1;
+    }
+    else if (route.includes('Antidoping')) {
+      types.antidopings = (types.antidopings || 0) + 1;
+    }
+    else if (route.includes('Certificado')) {
+      types.certificados = (types.certificados || 0) + 1;
+    }
+    else if (route.includes('Documento Externo')) {
+      types.documentosExternos = (types.documentosExternos || 0) + 1;
+    }
+    // Si la ruta no contiene ninguno de los tipos específicos pero tiene extensión, es un documento externo
+    else if (!route.includes('Aptitud') && !route.includes('Historia Clinica') && !route.includes('Exploracion Fisica') && 
+             !route.includes('Examen Vista') && !route.includes('Antidoping') && !route.includes('Certificado') && 
+             !route.includes('Nota Medica') && (route.includes('.pdf') || route.includes('.png') || route.includes('.jpg') || 
+             route.includes('.jpeg') || route.includes('.doc') || route.includes('.docx'))) {
+      types.documentosExternos = (types.documentosExternos || 0) + 1;
+    }
+    else if (route.includes('Nota Medica')) {
+      types.notasMedicas = (types.notasMedicas || 0) + 1;
+    }
+  });
+  
+  return types;
+});
+</script>
+
+<template>
+  <Transition name="modal-fade" appear>
+    <div v-if="isVisible" class="fixed inset-0 z-50 overflow-y-auto">
+      <!-- Overlay -->
+      <div class="flex items-center justify-center min-h-screen px-4 py-6">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+
+        <!-- Modal -->
+        <div class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all w-full max-w-lg mx-auto">
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-red-500 to-rose-600 px-4 py-3 sm:px-6">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="text-lg font-medium text-white">
+                    Confirmar Eliminación Masiva
+                  </h3>
+                  <p class="text-red-100 text-sm">
+                    Esta acción no se puede deshacer
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                <i class="fas fa-trash-alt text-red-600 text-lg"></i>
+              </div>
+              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">
+                  ¿Estás seguro?
+                </h3>
+                <div class="mt-2">
+                  <p class="text-sm text-gray-500">
+                    Estás a punto de eliminar <span class="font-semibold text-red-600">{{ selectedCount }} documento{{ selectedCount !== 1 ? 's' : '' }}</span> de forma permanente.
+                  </p>
+                  
+                  <!-- Detalles de documentos -->
+                  <div v-if="Object.keys(documentTypes).length > 0" class="mt-4 bg-gray-50 rounded-lg p-3">
+                    <p class="text-xs font-medium text-gray-700 mb-2">Documentos a eliminar:</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                      <div v-if="documentTypes.aptitudes" class="flex items-center space-x-2">
+                        <i class="fas fa-user-check text-green-600"></i>
+                        <span>{{ documentTypes.aptitudes }} Aptitud{{ documentTypes.aptitudes !== 1 ? 'es' : '' }}</span>
+                      </div>
+                      <div v-if="documentTypes.historiasClinicas" class="flex items-center space-x-2">
+                        <i class="fas fa-notes-medical text-teal-600"></i>
+                        <span>{{ documentTypes.historiasClinicas }} Historia{{ documentTypes.historiasClinicas !== 1 ? 's' : '' }} Clínica{{ documentTypes.historiasClinicas !== 1 ? 's' : '' }}</span>
+                      </div>
+                      <div v-if="documentTypes.exploracionesFisicas" class="flex items-center space-x-2">
+                        <i class="fas fa-heartbeat text-indigo-600"></i>
+                        <span>{{ documentTypes.exploracionesFisicas }} Exploración{{ documentTypes.exploracionesFisicas !== 1 ? 'es' : '' }} Física</span>
+                      </div>
+                      <div v-if="documentTypes.examenesVista" class="flex items-center space-x-2">
+                        <i class="fas fa-eye text-yellow-600"></i>
+                        <span>{{ documentTypes.examenesVista }} Examen{{ documentTypes.examenesVista !== 1 ? 'es' : '' }} Vista</span>
+                      </div>
+                      <div v-if="documentTypes.antidopings" class="flex items-center space-x-2">
+                        <i class="fas fa-flask text-red-600"></i>
+                        <span>{{ documentTypes.antidopings }} Antidoping{{ documentTypes.antidopings !== 1 ? 's' : '' }}</span>
+                      </div>
+                      <div v-if="documentTypes.certificados" class="flex items-center space-x-2">
+                        <i class="fas fa-certificate text-blue-600"></i>
+                        <span>{{ documentTypes.certificados }} Certificado{{ documentTypes.certificados !== 1 ? 's' : '' }}</span>
+                      </div>
+                      <div v-if="documentTypes.documentosExternos" class="flex items-center space-x-2">
+                        <i class="fas fa-file-alt text-purple-600"></i>
+                        <span>{{ documentTypes.documentosExternos }} Documento{{ documentTypes.documentosExternos !== 1 ? 's' : '' }} Externo{{ documentTypes.documentosExternos !== 1 ? 's' : '' }}</span>
+                      </div>
+                      <div v-if="documentTypes.notasMedicas" class="flex items-center space-x-2">
+                        <i class="fas fa-stethoscope text-pink-600"></i>
+                        <span>{{ documentTypes.notasMedicas }} Nota{{ documentTypes.notasMedicas !== 1 ? 's' : '' }} Médica{{ documentTypes.notasMedicas !== 1 ? 's' : '' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button
+              type="button"
+              @click="handleConfirm"
+              :disabled="isConfirming"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <i v-if="isConfirming" class="fas fa-spinner fa-spin mr-2"></i>
+              <i v-else class="fas fa-trash-alt mr-2"></i>
+              {{ isConfirming ? 'Eliminando...' : 'Sí, eliminar' }}
+            </button>
+            <button
+              type="button"
+              @click="handleCancel"
+              :disabled="isConfirming"
+              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Transition>
+</template>
+
+<style scoped>
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+</style> 

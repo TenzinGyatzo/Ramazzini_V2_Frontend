@@ -13,7 +13,9 @@ import ModalUpdateDocumentoExterno from '@/components/ModalUpdateDocumentoExtern
 import ModalEliminar from '@/components/ModalEliminar.vue';
 import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
 import SlidingButtonPanel from '@/components/SlidingButtonPanel.vue';
+import DeletionButtonPanel from '@/components/DeletionButtonPanel.vue';
 import { calcularEdad, calcularAntiguedad } from '@/helpers/dates';
+import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento } from '@/helpers/rutas';
 import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
@@ -38,6 +40,7 @@ const selectedDocumentId = ref<string | null>(null);
 const selectedDocumentName = ref<string>('');
 const selectedDocumentType = ref<string | null>(null);
 const selectedRoutes = ref<string[]>([]);
+const isDeletionMode = ref(false);
 const periodoDePruebaFinalizado = ref<boolean | null>(null);
 const estadoSuscripcion = ref<string | null>(null);
 const finDeSuscripcion = ref<Date | null>(null);
@@ -208,6 +211,175 @@ const toggleRouteSelection = (route: string, isSelected: boolean) => {
         }
     } else {
         selectedRoutes.value = selectedRoutes.value.filter(r => r !== route);
+    }
+};
+
+const toggleDeletionMode = () => {
+    isDeletionMode.value = !isDeletionMode.value;
+    // Ya no limpiamos la selección al cambiar de modo
+    // Los checkboxes mantienen su estado
+};
+
+const handleDeleteSelected = async () => {
+    if (selectedRoutes.value.length === 0) return;
+    
+    console.log('🚀 Iniciando eliminación masiva');
+    console.log('📋 Rutas seleccionadas:', selectedRoutes.value);
+    
+    try {
+        toast.open({ 
+            message: `Eliminando ${selectedRoutes.value.length} documento${selectedRoutes.value.length !== 1 ? 's' : ''}...`, 
+            type: "info" 
+        });
+        
+        // Mapear rutas a documentos para eliminación
+        const documentosAEliminar: Array<{id: string, tipo: string}> = [];
+        
+        console.log('📚 Documentos disponibles:', documentos.documentsByYear);
+        
+        // Recorrer todos los documentos por año para encontrar los que coinciden con las rutas seleccionadas
+        Object.values(documentos.documentsByYear).forEach(yearData => {
+            // Aptitudes
+            yearData.aptitudes?.forEach(aptitud => {
+                const rutaBase = obtenerRutaDocumento(aptitud, 'Aptitud');
+                const fecha = obtenerFechaDocumento(aptitud) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(aptitud, 'Aptitud', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                console.log(`🔍 Comparando ruta aptitud: "${ruta}" con seleccionadas:`, selectedRoutes.value.includes(ruta));
+                if (selectedRoutes.value.includes(ruta)) {
+                    console.log(`✅ Coincidencia encontrada para aptitud:`, aptitud._id);
+                    documentosAEliminar.push({ id: aptitud._id, tipo: 'aptitud' });
+                }
+            });
+            
+            // Historias Clínicas
+            yearData.historiasClinicas?.forEach(historiaClinica => {
+                const rutaBase = obtenerRutaDocumento(historiaClinica, 'Historia Clinica');
+                const fecha = obtenerFechaDocumento(historiaClinica) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(historiaClinica, 'Historia Clinica', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: historiaClinica._id, tipo: 'historiaClinica' });
+                }
+            });
+            
+            // Exploraciones Físicas
+            yearData.exploracionesFisicas?.forEach(exploracionFisica => {
+                const rutaBase = obtenerRutaDocumento(exploracionFisica, 'Exploracion Fisica');
+                const fecha = obtenerFechaDocumento(exploracionFisica) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(exploracionFisica, 'Exploracion Fisica', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: exploracionFisica._id, tipo: 'exploracionFisica' });
+                }
+            });
+            
+            // Exámenes de Vista
+            yearData.examenesVista?.forEach(examenVista => {
+                const rutaBase = obtenerRutaDocumento(examenVista, 'Examen Vista');
+                const fecha = obtenerFechaDocumento(examenVista) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(examenVista, 'Examen Vista', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: examenVista._id, tipo: 'examenVista' });
+                }
+            });
+            
+            // Antidopings
+            yearData.antidopings?.forEach(antidoping => {
+                const rutaBase = obtenerRutaDocumento(antidoping, 'Antidoping');
+                const fecha = obtenerFechaDocumento(antidoping) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(antidoping, 'Antidoping', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: antidoping._id, tipo: 'antidoping' });
+                }
+            });
+            
+            // Certificados
+            yearData.certificados?.forEach(certificado => {
+                const rutaBase = obtenerRutaDocumento(certificado, 'Certificado');
+                const fecha = obtenerFechaDocumento(certificado) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(certificado, 'Certificado', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: certificado._id, tipo: 'certificado' });
+                }
+            });
+            
+            // Documentos Externos
+            yearData.documentosExternos?.forEach(documentoExterno => {
+                const rutaBase = obtenerRutaDocumento(documentoExterno, 'Documento Externo');
+                const fecha = obtenerFechaDocumento(documentoExterno) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(documentoExterno, 'Documento Externo', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: documentoExterno._id, tipo: 'documentoExterno' });
+                }
+            });
+            
+            // Notas Médicas
+            yearData.notasMedicas?.forEach(notaMedica => {
+                const rutaBase = obtenerRutaDocumento(notaMedica, 'Nota Medica');
+                const fecha = obtenerFechaDocumento(notaMedica) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(notaMedica, 'Nota Medica', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: notaMedica._id, tipo: 'notaMedica' });
+                }
+            });
+        });
+        
+        console.log('🎯 Documentos a eliminar:', documentosAEliminar);
+        
+        // Eliminar documentos uno por uno
+        const eliminacionesExitosas: Array<{id: string, tipo: string}> = [];
+        const eliminacionesFallidas: Array<{id: string, tipo: string}> = [];
+        
+        for (const documento of documentosAEliminar) {
+            console.log(`🗑️ Intentando eliminar documento:`, documento);
+            try {
+                await documentos.deleteDocumentById(
+                    documento.tipo,
+                    trabajadores.currentTrabajadorId!,
+                    documento.id
+                );
+                console.log(`✅ Documento eliminado exitosamente:`, documento);
+                eliminacionesExitosas.push(documento);
+            } catch (error) {
+                console.error(`❌ Error al eliminar documento ${documento.id}:`, error);
+                eliminacionesFallidas.push(documento);
+            }
+        }
+        
+        // Mostrar resultados
+        if (eliminacionesExitosas.length > 0) {
+            toast.open({ 
+                message: `${eliminacionesExitosas.length} documento${eliminacionesExitosas.length !== 1 ? 's' : ''} eliminado${eliminacionesExitosas.length !== 1 ? 's' : ''} exitosamente.`, 
+                type: "success" 
+            });
+        }
+        
+        if (eliminacionesFallidas.length > 0) {
+            toast.open({ 
+                message: `${eliminacionesFallidas.length} documento${eliminacionesFallidas.length !== 1 ? 's' : ''} no se pudieron eliminar.`, 
+                type: "error" 
+            });
+        }
+        
+        // Limpiar selección después de eliminar
+        selectedRoutes.value = [];
+        isDeletionMode.value = false;
+        
+        // Recargar documentos
+        await documentos.fetchAllDocuments(trabajadores.currentTrabajadorId!);
+        
+    } catch (error) {
+        console.error('Error al eliminar documentos:', error);
+        toast.open({ 
+            message: "Error al eliminar los documentos. Por favor, inténtalo de nuevo.", 
+            type: "error" 
+        });
     }
 };
 
@@ -552,6 +724,9 @@ const añoMasReciente = computed(() => {
               @openSubscriptionModal="showSubscriptionModal = true"
               :toggleRouteSelection="toggleRouteSelection" 
               :selectedRoutes="selectedRoutes"
+              :isDeletionMode="isDeletionMode"
+              :toggleDeletionMode="toggleDeletionMode"
+              :onDeleteSelected="handleDeleteSelected"
             />
           </div>
           
@@ -634,7 +809,13 @@ const añoMasReciente = computed(() => {
 
     <!-- Panel de botones deslizante -->
     <div class="relative flex justify-center md:justify-start">
-      <SlidingButtonPanel :selectedRoutes="selectedRoutes" />
+      <SlidingButtonPanel v-if="!isDeletionMode" :selectedRoutes="selectedRoutes" />
+      <DeletionButtonPanel 
+        v-if="isDeletionMode" 
+        :selectedRoutes="selectedRoutes" 
+        :isDeletionMode="isDeletionMode"
+        @deleteSelected="handleDeleteSelected"
+      />
     </div>
 
   </div>

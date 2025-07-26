@@ -592,6 +592,11 @@ const props = defineProps({
         type: Function,
         required: true,
     },
+    // Nueva prop para el modo eliminación
+    isDeletionMode: {
+        type: Boolean,
+        default: false,
+    },
     antidoping: [Object, String],
     aptitud: [Object, String],
     certificado: [Object, String],
@@ -603,6 +608,63 @@ const props = defineProps({
 });
 
 const { antidoping } = props; // Desestructuración para acceder a antidoping
+
+// Computed para el indicador lateral
+const indicadorLateral = computed(() => {
+  // Verificando disponibilidad
+  if (verificandoPDF.value) {
+    return {
+      class: 'absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-yellow-400 to-orange-500 animate-pulse',
+      title: 'Verificando disponibilidad del PDF...'
+    };
+  }
+  
+  // Modo Eliminación
+  if (props.isDeletionMode) {
+    // Si está seleccionado en modo eliminación, siempre rojo
+    if (props.isSelected) {
+      return {
+        class: 'absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-red-500 to-rose-600',
+        title: 'Seleccionado para eliminar'
+      };
+    }
+    
+    // Si no está seleccionado, verde si está disponible, gris si no
+    if (pdfDisponible.value) {
+      return {
+        class: 'absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-500 to-green-600',
+        title: 'PDF disponible'
+      };
+    } else {
+      return {
+        class: 'absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-gray-300 to-gray-300',
+        title: 'No disponible'
+      };
+    }
+  }
+  
+  // Modo Normal
+  if (pdfDisponible.value) {
+    return {
+      class: 'absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-500 to-green-600',
+      title: 'PDF disponible'
+    };
+  }
+  
+  // Documento externo no disponible (solo en modo normal)
+  if (props.documentoTipo.toLowerCase().replace(/\s+/g, '') === 'documentoexterno' && !pdfDisponible.value) {
+    return {
+      class: 'absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-rose-500 to-red-400',
+      title: 'Documento externo no disponible'
+    };
+  }
+  
+  // PDF no disponible (modo normal)
+  return {
+    class: 'absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-gray-300 to-gray-300',
+    title: 'PDF no disponible - Se puede regenerar'
+  };
+});
 
 const handleKeyDown = (event) => {
     if (event.key === 'Escape') {
@@ -883,24 +945,19 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
 
     <!-- Items de documentos -->
     <div
-        class="group relative bg-white hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50 border rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer overflow-hidden"
-        :class="verificandoPDF ? 'border-yellow-300 hover:border-yellow-400' : pdfDisponible ? 'border-gray-200 hover:border-emerald-300' : 'border-gray-200 hover:border-gray-300'">
+        class="group relative bg-white border rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 ease-in-out cursor-pointer overflow-hidden"
+        :class="{
+            'hover:bg-gradient-to-r hover:from-emerald-50 hover:to-green-50': !isDeletionMode,
+            'hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50': isDeletionMode,
+            'border-yellow-300 hover:border-yellow-400': verificandoPDF,
+            'border-gray-200 hover:border-emerald-300': pdfDisponible && !isDeletionMode,
+            'border-gray-200 hover:border-red-300': pdfDisponible && isDeletionMode,
+            'border-gray-200 hover:border-gray-300': !pdfDisponible && !isDeletionMode,
+            'border-gray-200 hover:border-red-400': !pdfDisponible && isDeletionMode
+        }">
         
         <!-- Indicador de disponibilidad del PDF -->
-        <div v-if="verificandoPDF" 
-             class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-yellow-400 to-orange-500 animate-pulse"
-             title="Verificando disponibilidad del PDF..."></div>
-        <div v-else-if="pdfDisponible" 
-             class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-500 to-green-600"
-             title="PDF disponible"></div>
-        <!-- Indicador rojo para documentos externos no disponibles -->
-        <div v-else-if="documentoTipo.toLowerCase().replace(/\s+/g, '') === 'documentoexterno' && !pdfDisponible" 
-             class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-rose-500 to-red-400"
-             title="Documento externo no disponible"></div>
-        <!-- Indicador gris para documentos regenerables no disponibles -->
-        <div v-else-if="documentoTipo.toLowerCase().replace(/\s+/g, '') !== 'documentoexterno' && !pdfDisponible" 
-             class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-gray-300 to-gray-300"
-             title="PDF no disponible - Se puede regenerar"></div>
+        <div :class="indicadorLateral.class" :title="indicadorLateral.title"></div>
         
         <div class="flex items-center justify-between p-4 pl-6 min-h-[80px]">
             <div class="flex items-center flex-1">
@@ -908,7 +965,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, antidoping, 'Antidoping')">
                     </div>
@@ -961,7 +1019,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, aptitud, 'Aptitud')">
                     </div>
@@ -1019,7 +1078,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, certificado, 'Certificado')">
                     </div>
@@ -1070,7 +1130,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, documentoExterno, 'Documento Externo')">
                     </div>
@@ -1136,7 +1197,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, examenVista, 'Examen Vista')">
                     </div>
@@ -1215,7 +1277,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, exploracionFisica, 'Exploracion Fisica')">
                     </div>
@@ -1297,7 +1360,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, historiaClinica, 'Historia Clinica')">
                     </div>
@@ -1363,7 +1427,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
-                            class="w-5 h-5 accent-teal-600 text-emerald-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-emerald-500 focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
                             type="checkbox" :checked="isSelected"
                             @change="(event) => handleCheckboxChange(event, notaMedica, 'Nota Medica')">
                     </div>
