@@ -22,6 +22,7 @@ interface Trabajador {
   updatedBy: string;
   createdAt: string;
   updatedAt: string;
+  fechaTransferencia?: string;
   historiaClinicaResumen?: {
     diabeticosPP?: string | null;
     hipertensivosPP?: string | null;
@@ -82,6 +83,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
       updatedBy: "",
       createdAt: "",
       updatedAt: "",
+      fechaTransferencia: "",
     };
     currentTrabajadorId.value = "";
   }

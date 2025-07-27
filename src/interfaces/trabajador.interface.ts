@@ -15,4 +15,5 @@ export interface Trabajador {
   updatedBy: string;
   createdAt: string;
   updatedAt: string;
+  fechaTransferencia?: string;
 }
