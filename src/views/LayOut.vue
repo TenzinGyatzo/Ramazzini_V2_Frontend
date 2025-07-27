@@ -350,12 +350,12 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
     <!-- Transición para el logo de Ramazzini -->
     <Transition appear mode="out-in" name="slide-up">
       <div v-if="route.path === '/'" 
-        class="w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 xl:w-1/6 2xl:w-1/8 mt-14 cursor-pointer transform hover:scale-105 transition-transform duration-300" 
+        class="w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/5 xl:w-1/6 2xl:w-1/8 mt-14 cursor-pointer transform hover:scale-105 transition-transform duration-300 ease logo-transition" 
         @click="router.push({ name: 'inicio' })">
         <img src="/img/logosRamazzini/RamazziniBrand.png" alt="Ramazzini-Logo" class="w-full drop-shadow-lg" />
       </div>
       <div v-else 
-        class="w-2/3 sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 2xl:w-1/6 mt-3 mb-5 cursor-pointer transform hover:scale-105 transition-transform duration-300" 
+        class="w-2/3 sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 2xl:w-1/6 mt-3 mb-5 cursor-pointer transform hover:scale-105 transition-transform duration-300 ease logo-transition" 
         @click="router.push({ name: 'inicio' })">
         <img src="/img/logosRamazzini/RamazziniLogoNoBg.png" alt="Ramazzini-Logo" class="w-full drop-shadow-lg" />
       </div>
@@ -376,7 +376,7 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
         <div class="grid gap-4 w-full max-w-md mt-2">
           <button
             @click="router.push({ name: 'empresas' })"
-            class="w-full text-lg sm:text-xl md:text-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white uppercase rounded-xl px-6 py-3 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl font-medium tracking-wide">
+            class="w-full text-lg sm:text-xl md:text-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white uppercase rounded-xl px-6 py-3 transition-all duration-300 ease transform hover:scale-105 shadow-lg hover:shadow-xl font-medium tracking-wide button-transition">
             VER MIS CLIENTES
           </button>
 
@@ -384,7 +384,7 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
             <a href="/login">
               <Transition name="button-transition">
                 <button
-                  class="text-sm sm:text-base md:text-lg border-2 border-gray-300 hover:bg-red-600 text-gray-800 uppercase rounded-lg px-4 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200"
+                  class="text-sm sm:text-base md:text-lg border-2 border-gray-300 hover:bg-red-600 text-gray-800 uppercase rounded-lg px-4 py-1 transition-all duration-300 ease transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200 button-transition"
                   @click="user.logout">
                   <i class="fa-solid fa-sign-out-alt mr-3"></i>
                   CERRAR SESIÓN
@@ -1518,6 +1518,24 @@ a:focus-visible {
 
 .dark-mode .transition-colors {
   transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Estilos específicos para el logo - transición suave en ambos modos */
+.logo-transition {
+  transition: transform 0.3s ease !important;
+}
+
+.logo-transition:hover {
+  transform: scale(1.05) !important;
+}
+
+/* Estilos específicos para el botón "VER MIS CLIENTES" - transición suave en ambos modos */
+.button-transition {
+  transition: all 0.3s ease !important;
+}
+
+.button-transition:hover {
+  transform: scale(1.05) !important;
 }
 
 /* Estilos para elementos de posición */

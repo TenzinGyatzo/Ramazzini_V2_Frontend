@@ -304,6 +304,29 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
     }
   }
 
+  async function transferirTrabajador(
+    empresaId: string,
+    centroTrabajoId: string,
+    trabajadorId: string,
+    nuevoCentroId: string
+  ) {
+    try {
+      loading.value = true;
+      const response = await TrabajadoresAPI.transferirTrabajador(
+        empresaId,
+        centroTrabajoId,
+        trabajadorId,
+        nuevoCentroId
+      );
+      return response;
+    } catch (error) {
+      console.error("Error al transferir el trabajador", error);
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   return {
     loading,
     loadingOnSidebar,
@@ -323,5 +346,6 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
     importTrabajadores,
     deleteTrabajadorById,
     exportTrabajadores,
+    transferirTrabajador,
   };
 });

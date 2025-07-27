@@ -804,6 +804,15 @@ const toggleColumnasOcultas = () => {
   transform: translateY(0);
 }
 
+/* Estilos de cursor para elementos interactivos */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+select {
+  cursor: pointer;
+}
+
 /* Efectos hover para los botones de control */
 button:not(:disabled):hover {
   transform: translateY(-1px);
@@ -827,6 +836,16 @@ button:not(:disabled):hover {
 /* Efectos para los selects de filtros */
 select:focus {
   transform: scale(1.01);
+}
+
+/* Cursor específico para elementos deshabilitados */
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Cursor para enlaces y elementos clickeables */
+a, .cursor-pointer {
+  cursor: pointer;
 }
 
 /* Transiciones suaves para todos los elementos interactivos */

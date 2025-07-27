@@ -1,10 +1,21 @@
 <script setup>
-import { inject } from 'vue';
+import { inject, ref } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
-import { convertirFechaISOaYYYYMMDD } from '@/helpers/dates';
+import { convertirFechaISOaYYYYMMDD, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
+import TrabajadoresAPI from '@/api/TrabajadoresAPI';
+
+// Método para formatear la dirección (igual que en CentroTrabajoItem.vue)
+const formatDireccion = (centro) => {
+    const parts = [];
+    if (centro.direccionCentro) parts.push(centro.direccionCentro);
+    if (centro.codigoPostal) parts.push(centro.codigoPostal);
+    if (centro.municipio) parts.push(centro.municipio);
+    if (centro.estado) parts.push(centro.estado);
+    return parts.join(', ');
+};
 
 const toast = inject('toast');
 
@@ -12,6 +23,7 @@ const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const proveedorSaludStore = useProveedorSaludStore();
+
 const emit = defineEmits(['closeModal', 'openSubscriptionModal'])
 
 const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado;
@@ -28,6 +40,63 @@ const estadosCiviles = [
   "Soltero/a", "Casado/a", "Unión libre",
   "Separado/a", "Divorciado/a", "Viudo/a",
 ];
+
+// Variables reactivas para el modal de transferencia
+const mostrarModalTransferencia = ref(false);
+const centrosDisponibles = ref([]);
+const centroSeleccionado = ref(null);
+const transferenciaEnProceso = ref(false);
+
+// Variables para contar trabajadores por centro
+const trabajadoresPorCentro = ref({});
+const loadingTrabajadores = ref(false);
+
+// Función para obtener el número de trabajadores de un centro sin afectar el estado global
+const obtenerNumeroTrabajadores = async (centroId) => {
+  if (!centroId) return 0;
+  
+  try {
+    // Usar directamente la API sin pasar por el store para evitar modificar el estado
+    const { data } = await TrabajadoresAPI.getTrabajadores(
+      empresas.currentEmpresaId, 
+      centroId
+    );
+    
+    if (Array.isArray(data)) {
+      return data.length;
+    } else {
+      return 0;
+    }
+  } catch (error) {
+    console.error('Error al obtener trabajadores del centro:', error);
+    return 0;
+  }
+};
+
+// Función para cargar el número de trabajadores para todos los centros
+const cargarTrabajadoresPorCentro = async () => {
+  if (!centrosDisponibles.value.length) return;
+  
+  loadingTrabajadores.value = true;
+  try {
+    const conteos = await Promise.all(
+      centrosDisponibles.value.map(async (centro) => {
+        const numero = await obtenerNumeroTrabajadores(centro._id);
+        return { centroId: centro._id, numero };
+      })
+    );
+    
+    // Convertir a objeto para fácil acceso
+    trabajadoresPorCentro.value = conteos.reduce((acc, { centroId, numero }) => {
+      acc[centroId] = numero;
+      return acc;
+    }, {});
+  } catch (error) {
+    console.error('Error al cargar trabajadores por centro:', error);
+  } finally {
+    loadingTrabajadores.value = false;
+  }
+};
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
@@ -100,6 +169,90 @@ const handleSubmit = async (data) => {
 const closeModal = () => {
   emit('closeModal');
 };
+
+// Función para transferir trabajador a otro centro de trabajo
+const transferirTrabajador = async () => {
+  try {
+    // Obtener todos los centros de trabajo de la empresa
+    await centrosTrabajo.fetchCentrosTrabajo(empresas.currentEmpresaId);
+    
+    // Filtrar centros de trabajo (excluir el actual)
+    centrosDisponibles.value = centrosTrabajo.centrosTrabajo.filter(
+      centro => centro._id !== centrosTrabajo.currentCentroTrabajoId
+    );
+
+    if (centrosDisponibles.value.length === 0) {
+      toast.open({ 
+        message: 'No hay otros centros de trabajo disponibles para transferir', 
+        type: 'warning' 
+      });
+      return;
+    }
+
+    // Cargar el número de trabajadores para cada centro
+    await cargarTrabajadoresPorCentro();
+
+    // Mostrar modal de selección
+    mostrarModalTransferencia.value = true;
+  } catch (error) {
+    console.error('Error al cargar centros de trabajo:', error);
+    toast.open({ 
+      message: 'Error al cargar los centros de trabajo disponibles', 
+      type: 'error' 
+    });
+  }
+};
+
+// Función para confirmar la transferencia
+const confirmarTransferencia = async () => {
+  if (!centroSeleccionado.value) {
+    toast.open({ 
+      message: 'Por favor seleccione un centro de trabajo', 
+      type: 'warning' 
+    });
+    return;
+  }
+
+  try {
+    transferenciaEnProceso.value = true;
+    
+    await trabajadores.transferirTrabajador(
+      empresas.currentEmpresaId,
+      centrosTrabajo.currentCentroTrabajoId,
+      trabajadores.currentTrabajador._id,
+      centroSeleccionado.value._id
+    );
+
+    toast.open({ 
+      message: `Trabajador transferido exitosamente a ${centroSeleccionado.value.nombreCentro}`, 
+      type: 'success' 
+    });
+
+    // Cerrar modales y actualizar la lista
+    mostrarModalTransferencia.value = false;
+    emit('closeModal');
+    trabajadores.fetchTrabajadoresConHistoria(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId);
+  } catch (error) {
+    console.error('Error al transferir trabajador:', error);
+    
+    let errorMessage = 'Error al transferir el trabajador';
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    toast.open({ message: errorMessage, type: 'error' });
+  } finally {
+    transferenciaEnProceso.value = false;
+  }
+};
+
+// Función para cancelar la transferencia
+const cancelarTransferencia = () => {
+  mostrarModalTransferencia.value = false;
+  centroSeleccionado.value = null;
+};
 </script>
 
 <template>
@@ -123,8 +276,20 @@ const closeModal = () => {
         </div>
         <!-- Contenido del modal -->
         <div v-else>
-          <h1 class="text-3xl">{{ trabajadores.currentTrabajador._id ? 'Editar Trabajador' : 'Registrar Trabajador' }}
-          </h1>
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-2">
+            <h1 class="text-2xl sm:text-3xl text-center sm:text-left w-full sm:w-auto">
+              {{ trabajadores.currentTrabajador._id ? 'Editar Trabajador' : 'Registrar Trabajador' }}
+            </h1>
+            <!-- Botón de transferir solo visible cuando se está editando -->
+            <button
+              v-if="trabajadores.currentTrabajador._id"
+              class="mr-8 w-full sm:w-auto text-xs sm:text-sm md:text-base px-3 py-2 sm:py-1 text-emerald-600 hover:text-emerald-700 border border-emerald-300 hover:border-emerald-400 rounded-md transition-colors duration-200 hover:bg-emerald-50"
+              @click="transferirTrabajador"
+              title="Transferir a otro centro de trabajo">
+              <span>Transferir</span>
+              <span class="inline sm:hidden"> a otro centro de trabajo</span>
+            </button>
+          </div>
           <hr class="mt-2 mb-3">
 
           <FormKit type="form" :actions="false" incomplete-message="Por favor complete todos los campos"
@@ -185,6 +350,162 @@ const closeModal = () => {
           @click="closeModal">
           Cerrar
         </button>
+      </div>
+    </Transition>
+
+    <!-- Modal de transferencia -->
+    <Transition appear name="fade">
+      <div v-if="mostrarModalTransferencia" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" @click="cancelarTransferencia">
+        <div class="modal-inner bg-white text-gray-900 w-4/5 sm:w-3/5 md:w-1/2 lg:w-2/5 xl:w-1/3 2xl:w-1/4 p-8 rounded-lg shadow-md shadow-slate-900 max-h-[80vh] overflow-y-auto" @click.stop>
+          <!-- Header del modal -->
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-semibold text-gray-800">Transferir Trabajador</h2>
+            <button
+              @click="cancelarTransferencia"
+              class="text-gray-400 hover:text-gray-600 text-2xl"
+              :disabled="transferenciaEnProceso">
+              &times;
+            </button>
+          </div>
+
+          <!-- Información del trabajador -->
+          <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-6">
+            
+            <!-- Información principal -->
+            <div class="mb-3 flex gap-3">
+              <p class="text-xl font-semibold text-emerald-700">
+                {{ trabajadores.currentTrabajador?.nombre }}
+                <!-- Número de empleado -->
+              </p>
+              <div v-if="trabajadores.currentTrabajador?.numeroEmpleado" class="flex items-center gap-2 text-sm">
+                <i class="fas fa-id-badge text-purple-500"></i>
+                <span class="text-emerald-700">No. {{ trabajadores.currentTrabajador.numeroEmpleado }}</span>
+              </div>
+            </div>
+            
+            <!-- Información detallada -->
+            <div class="flex flex-wrap gap-3 text-sm">
+              <!-- Sexo -->
+              <div v-if="trabajadores.currentTrabajador?.sexo" class="flex items-center gap-2">
+                <i v-if="trabajadores.currentTrabajador?.sexo === 'Masculino'" class="fas fa-mars text-sky-600"></i>
+                <i v-else class="fas fa-venus text-rose-600"></i>
+                <span class="text-emerald-700">{{ trabajadores.currentTrabajador.sexo }}</span>
+              </div>
+              
+              <!-- Edad -->
+              <div v-if="trabajadores.currentTrabajador?.fechaNacimiento" class="flex items-center gap-2">
+                <i class="fas fa-birthday-cake text-emerald-500"></i>
+                <span class="text-emerald-700">{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }} años</span>
+              </div>
+              
+              <!-- Puesto -->
+              <div v-if="trabajadores.currentTrabajador?.puesto" class="flex items-center gap-2">
+                <i class="fas fa-briefcase text-blue-500"></i>
+                <span class="text-emerald-700">{{ trabajadores.currentTrabajador.puesto }}</span>
+              </div>
+              
+              <!-- Antigüedad -->
+              <div v-if="trabajadores.currentTrabajador?.fechaIngreso" class="flex items-center gap-2">
+                <i class="fas fa-clock text-cyan-500"></i>
+                <span class="text-emerald-700">{{ calcularAntiguedad(trabajadores.currentTrabajador.fechaIngreso) }}</span>
+              </div>
+              <p class="text-md text-emerald-600">Centro actual: <span class="text-lg font-medium text-emerald-700">{{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}</span></p>
+            </div>
+          </div>
+
+          <!-- Selección de centro destino -->
+          <div class="mb-6">
+            <h3 class="font-medium text-gray-700 mb-3">Seleccione el centro de trabajo destino:</h3>
+            <div class="space-y-3 max-h-60 overflow-y-auto p-2">
+              <div v-for="centro in centrosDisponibles" :key="centro._id" class="group">
+                <div class="bg-white rounded-2xl shadow-sm border-2 border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden"
+                     :class="[
+                       centroSeleccionado?._id === centro._id
+                         ? 'bg-emerald-50 border-emerald-500 shadow-lg ring-2 ring-emerald-300'
+                         : ''
+                     ]">
+                  <!-- Contenido principal -->
+                  <button type="button"
+                      class="w-full text-left p-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                      :class="centroSeleccionado?._id === centro._id ? 'bg-emerald-50' : 'hover:bg-gray-100'"
+                      @click="centroSeleccionado = centro"
+                      :disabled="transferenciaEnProceso">
+                      
+                      <!-- Header con icono y título -->
+                      <div class="flex items-start justify-between mb-4">
+                          <div class="flex items-center gap-3">
+                              <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center shadow-sm">
+                                  <i class="fas fa-building text-white text-lg"></i>
+                              </div>
+                              <div>
+                                  <h3 class="text-xl font-bold text-gray-900 mb-1">{{ centro.nombreCentro }}</h3>
+                                  <div class="flex items-center gap-2">
+                                      <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                                      <span v-if="loadingTrabajadores" class="text-sm text-gray-400">
+                                          <i class="fas fa-spinner fa-spin mr-1"></i>
+                                          Contando...
+                                      </span>
+                                      <span v-else class="text-sm text-gray-600">
+                                          {{ trabajadoresPorCentro[centro._id] || 0 }} {{ (trabajadoresPorCentro[centro._id] || 0) === 1 ? 'trabajador' : 'trabajadores' }}
+                                      </span>
+                                  </div>
+                              </div>
+                          </div>
+                          
+                          <!-- Indicador de selección -->
+                          <div v-if="centroSeleccionado?._id === centro._id" 
+                               class="opacity-100 transition-opacity duration-300 ml-2">
+                              <i class="fas fa-check text-emerald-500 text-lg"></i>
+                          </div>
+                      </div>
+
+                      <!-- Información de ubicación -->
+                      <div class="space-y-2">
+                          <div class="flex items-start gap-2">
+                              <div class="w-4 h-4 bg-gray-100 rounded-full flex items-center justify-center mt-0.5">
+                                  <i class="fas fa-map-marker-alt text-gray-400 text-xs"></i>
+                              </div>
+                              <div class="flex-1">
+                                  <p v-if="formatDireccion(centro)" class="text-gray-700 leading-relaxed text-sm">
+                                      {{ formatDireccion(centro) }}
+                                  </p>
+                                  <p v-else class="text-gray-400 italic text-sm">
+                                      Dirección no registrada
+                                  </p>
+                              </div>
+                          </div>
+                      </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+            <button
+              @click="cancelarTransferencia"
+              class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-200"
+              :disabled="transferenciaEnProceso">
+              Cancelar
+            </button>
+            <button
+              @click="confirmarTransferencia"
+              class="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              :disabled="!centroSeleccionado || transferenciaEnProceso">
+              <span v-if="transferenciaEnProceso" class="flex items-center gap-2">
+                <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Transferiendo...
+              </span>
+              <span v-else>
+                Transferir
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
     </Transition>
   </div>

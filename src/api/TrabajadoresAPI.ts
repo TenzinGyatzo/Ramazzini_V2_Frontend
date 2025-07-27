@@ -49,6 +49,13 @@ export default {
             },
             responseType: 'blob'
         });
+    },
+
+    transferirTrabajador(empresaId: string, centroTrabajoId: string, trabajadorId: string, nuevoCentroId: string) {
+        return api.patch(`/${empresaId}/${centroTrabajoId}/transferir-trabajador/${trabajadorId}`, {
+            nuevoCentroId,
+            updatedBy: '6650f38308ac3beedf5ac41b' // TODO: Obtener el ID del usuario actual
+        });
     }
 
 }

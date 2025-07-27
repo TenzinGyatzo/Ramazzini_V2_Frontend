@@ -97,17 +97,17 @@ const emit = defineEmits(['click']);
 
 /* Efectos de hover mejorados */
 button:not(:disabled):hover {
-  transform: translateY(-1px) scale(1.02);
+  transform: scale(1.05) !important;
 }
 
 /* Efecto de presión al hacer clic */
 button:not(:disabled):active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.95) !important;
 }
 
 /* Transición suave para todos los estados */
 button {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease !important;
 }
 
 /* Efecto de focus mejorado */

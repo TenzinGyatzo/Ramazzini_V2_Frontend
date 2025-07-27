@@ -473,6 +473,15 @@ const añoMasReciente = computed(() => {
                     {{ trabajadores.currentTrabajador?.nombre }}
                   </h1>
                   <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
+                    <div v-if="trabajadores.currentTrabajador?.sexo" class="flex items-center gap-2 group relative">
+                      <i v-if="trabajadores.currentTrabajador?.sexo === 'Masculino'" class="fas fa-mars text-sky-600 text-sm sm:text-md lg:text-lg xl:text-xl"></i>
+                      <i v-else class="fas fa-venus text-rose-600 text-sm sm:text-md lg:text-lg xl:text-xl"></i>
+                                             <span class="text-sm sm:text-base text-gray-600">
+                         <span class="block lg:hidden">{{ trabajadores.currentTrabajador.sexo }}</span>
+                         <span class="hidden lg:block 2xl:hidden">{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'M' : 'F' }}</span>
+                         <span class="hidden 2xl:block">{{ trabajadores.currentTrabajador.sexo }}</span>
+                       </span>
+                    </div>
                     <div class="flex sm:hidden md:flex items-center gap-2 group relative">
                       <i class="fas fa-birthday-cake text-emerald-500 text-sm"></i>
                       <span class="text-sm sm:text-base text-gray-600">
