@@ -974,1161 +974,1165 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
 </script>
 
 <template>
-  <div class="mx-auto">
-    <div v-if="!empresasStore.currentEmpresa" class="text-center py-8">
-      <p class="text-gray-600 text-lg">Loading empresa data...</p>
-    </div>
-
-    <div v-else>
-      <!-- Header con logo a la izquierda y datos a la derecha -->
-      <div class="flex items-center gap-6 mb-6">
-        <img
-          v-if="empresasStore.currentEmpresa.logotipoEmpresa?.data"
-          :src="'/uploads/logos/' + empresasStore.currentEmpresa.logotipoEmpresa.data + '?t=' + empresasStore.currentEmpresa.updatedAt"
-          :alt="'Logo de ' + empresasStore.currentEmpresa.nombreComercial"
-          class="w-24 h-24 object-contain rounded"
-        />
-        <div v-else class="w-1/4 h-32 flex flex-col items-center justify-center bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 rounded mb-4 text-center px-4 border-2 border-dashed border-gray-400">
-            <i class="fas fa-camera text-4xl mb-2"></i> <!-- Icono de FontAwesome -->
-            <span class="text-xs text-center">Identifica más rápido a tu cliente agregando un logotipo</span>
-        </div>
-
-        <div class="hidden sm:block">
-            <h1 class="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-800">{{ empresasStore.currentEmpresa.nombreComercial }}</h1>
-            <h2 class="text-sm md:text-base lg:text-lg xl:text-xl text-gray-600 mt-1">{{ empresasStore.currentEmpresa.razonSocial }}</h2>
-        </div>
-
-        <!-- Ajustado a nivel del encabezado -->
-        <div class="mb-4 ml-auto flex items-end gap-6">
-          <!-- Indicador de total de trabajadores -->
-            <div class="bg-white border border-gray-200 shadow-md rounded-xl px-6 py-2 text-center self-center">
-            <div class="text-xs text-gray-500">
-              <i class="fas fa-users mr-1 text-gray-400"></i>
-              <span class="lg:hidden">RTs</span>
-              <span class="hidden lg:block">Riesgos de Trabajo</span>
-            </div>
-            <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ totalRiesgos }}</div>
-            </div>
-
-          <!-- Selector de centro de trabajo -->
-          <div class="self-end">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Centro de trabajo</label>
-            <select
-              v-model="centroSeleccionado"
-              class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-xs md:text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out mt-1"
-            >
-              <option v-for="centro in centrosTrabajoOptions" :key="centro" :value="centro">{{ centro }}</option>
-            </select>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- =======================
-        Toggle Filtros + Indicador
-      ======================= -->
-      <div class="flex justify-center items-center gap-3 my-4">        
-        <div class="flex items-center gap-3">
-          <button
-            @click="mostrarFiltros = !mostrarFiltros"
-            class="text-sm px-3 py-1.5 rounded-md text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-300 transition duration-200 flex items-center gap-2"
-          >
-            <i :class="mostrarFiltros ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-            {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
-          </button>
-
-          <div v-if="hayFiltrosActivos" class="flex items-center gap-1 text-xs text-emerald-600 font-medium">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Filtros activos
-          </div>
-        </div>
-
-      </div>
-
-      <!-- =======================
-          Filtros Desplegables (Con Toggle)
-      ======================= -->
-      <Transition name="desplegar" mode="out-in">
-        <div v-if="mostrarFiltros" class="flex flex-wrap gap-4 my-6 justify-center">
-          <!-- Filtro por Sexo -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Sexo</label>
-            <select
-              v-model="sexoSeleccionado"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                sexoSeleccionado !== 'todos' 
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option value="Masculino">Masculino</option>
-              <option value="Femenino">Femenino</option>
-            </select>
-            <!-- Testigo de Filtro Aplicado (Sexo) -->
-            <div v-if="sexoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-      
-          <!-- Filtro por Puesto -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Puesto</label>
-            <select
-              v-model="puestoSeleccionado"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                puestoSeleccionado !== 'todos' 
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option v-for="puesto in puestosDisponibles" :key="puesto" :value="puesto">
-                {{ puesto }}
-              </option>
-            </select>
-            <!-- Testigo de Filtro Aplicado (Puesto) -->
-            <div v-if="puestoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-
-          <!-- Filtro por Periodo -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Periodo</label>
-            <select
-              v-model="periodoSeleccionado"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                periodoSeleccionado !== 'todos' 
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option v-for="opcion in opcionesPeriodo" :key="opcion" :value="opcion">
-                {{ opcion }}
-              </option>
-            </select>
-
-            <!-- Testigo de Filtro Aplicado (Periodo) -->
-            <div v-if="periodoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-
-          <!-- Filtro por Edad -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Edad</label>
-            <select
-              v-model="edadSeleccionada"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                edadSeleccionada !== 'todos' 
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option v-for="rango in opcionesEdad" :key="rango" :value="rango">
-                {{ rango }}
-              </option>
-            </select>
-
-            <!-- Testigo de Filtro Aplicado (Edad) -->
-            <div v-if="edadSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-
-          <!-- Filtro por Antigüedad -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Antigüedad</label>
-            <select
-              v-model="antiguedadSeleccionada"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                antiguedadSeleccionada !== 'todos' 
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option v-for="rango in opcionesAntiguedad" :key="rango" :value="rango">
-                {{ rango }}
-              </option>
-            </select>
-
-            <!-- Testigo de Filtro Aplicado (Antigüedad) -->
-            <div v-if="antiguedadSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-
-          <!-- Filtro por Naturaleza de la Lesión -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Naturaleza de la Lesión</label>
-            <select
-              v-model="naturalezaSeleccionada"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                naturalezaSeleccionada !== 'todos' 
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option v-for="naturaleza in naturalezasDisponibles" :key="naturaleza" :value="naturaleza">
-                {{ naturaleza }}
-              </option>
-            </select>
-            <!-- Testigo de Filtro Aplicado (Naturaleza) -->
-            <div v-if="naturalezaSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-
-          <!-- Filtro por Parte del Cuerpo Afectada -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Parte del Cuerpo Afectada</label>
-            <select
-              v-model="parteCuerpoSeleccionada"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                parteCuerpoSeleccionada !== 'todos' 
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option v-for="parte in parteCuerpoDisponibles" :key="parte" :value="parte">
-                {{ parte }}
-              </option>
-            </select>
-
-            <!-- Testigo de Filtro Aplicado (Parte del Cuerpo) -->
-            <div v-if="parteCuerpoSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-
-          <!-- Filtro por Recaída -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Recaída</label>
-            <select
-              v-model="recaidaSeleccionada"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                recaidaSeleccionada !== 'todos' 
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option value="Si">Sí</option>
-              <option value="No">No</option>
-            </select>
-
-            <!-- Testigo de Filtro Aplicado (Recaída) -->
-            <div v-if="recaidaSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-          
-          <!-- Filtro por Tipo de Riesgo -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Tipo de Riesgo</label>
-            <select
-              v-model="tipoRiesgoSeleccionado"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                tipoRiesgoSeleccionado !== 'todos' 
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option value="Accidente de Trabajo">Accidente de Trabajo</option>
-              <option value="Accidente de Trayecto">Accidente de Trayecto</option>
-              <option value="Enfermedad de Trabajo">Enfermedad de Trabajo</option>
-            </select>
-
-            <!-- Testigo de Filtro Aplicado (Tipo de Riesgo) -->
-            <div v-if="tipoRiesgoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-          
-          <!-- Filtro por Manejo -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Manejo</label>
-            <select
-              v-model="manejoSeleccionado"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                manejoSeleccionado !== 'todos'
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option value="IMSS">IMSS</option>
-              <option value="Interno">Interno</option>
-            </select>
-
-            <!-- Testigo de Filtro Aplicado (Manejo) -->
-            <div v-if="manejoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-
-          <!-- Filtro por Alta -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Alta</label>
-            <select
-              v-model="altaSeleccionada"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                altaSeleccionada !== 'todos'
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option value="Incapacidad Activa">Incapacidad Activa</option>
-              <option value="Alta ST2">Alta ST2</option>
-              <option value="Alta Interna">Alta Interna</option>
-            </select>
-
-            <!-- Testigo de Filtro Aplicado (Alta) -->
-            <div v-if="altaSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-
-          <!-- Filtro por Días de Incapacidad -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Días de Incapacidad</label>
-            <select
-              v-model="diasIncapacidadSeleccionados"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                diasIncapacidadSeleccionados !== 'todos' 
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option v-for="rango in opcionesDiasIncapacidad" :key="rango" :value="rango">
-                {{ rango }}
-              </option>
-            </select>
-
-            <!-- Testigo de Filtro Aplicado (Días de Incapacidad) -->
-            <div v-if="diasIncapacidadSeleccionados !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-
-          <!-- Filtro por Secuelas -->
-          <div class="ml-4 items-center gap-2">
-            <label class="block text-xs md:text-sm font-medium text-gray-700">Secuelas</label>
-            <select
-              v-model="secuelasSeleccionadas"
-              :class="[
-                'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                secuelasSeleccionadas !== 'todos'
-                  ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
-                  : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-              ]"
-            >
-              <option value="todos">Todos</option>
-              <option value="Si">Si</option>
-              <option value="No">No</option>
-            </select>
-
-            <!-- Testigo de Filtro Aplicado (secuelas) -->
-            <div v-if="secuelasSeleccionadas !== 'todos'" class="flex items-center gap-1 mt-1">
-              <i class="fas fa-filter text-xs text-emerald-500"></i>
-              <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-            </div>
-          </div>
-
-          <!-- Botón para limpiar filtros -->
-          <div class="text-xs ml-4 items-center gap-2">
-            <label class="block text-xs font-medium text-gray-100 mb-0.5">Filtros</label>
-            <button
-              @click="limpiarFiltros"
-              class="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-1.5 px-3 rounded-lg border-2 border-red-200 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out flex items-center justify-center gap-2"
-            >
-              <i class="fa-solid fa-filter-circle-xmark"></i>
-              Quitar Filtros
-            </button>
-          </div>
-        </div>
-      </Transition>
-
-      <!-- =======================
-          Gráficas y Tablas
-      ======================= -->
+  <Transition appear mode="out-in" name="slide-up">
+    <div>
       <div class="mx-auto">
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-8 auto-rows-[370px] sm:auto-rows-[400px] md:auto-rows-[425px] lg:auto-rows-[450px]">
+        <div v-if="!empresasStore.currentEmpresa" class="text-center py-8">
+          <p class="text-gray-600 text-lg">Loading empresa data...</p>
+        </div>
 
-          <!-- Naturaleza Lesión: 2 columnas -->
-          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Naturaleza Lesión
-                <span class="relative cursor-help">
-                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                  <span
-                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-72 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                  >
-                    Muestra la distribución de riesgos de trabajo según la naturaleza de la lesión.
-                  </span>
-                </span>
-              </h3>
-              <div class="flex gap-2">
-                <button
-                  @click="vistaNaturalezaLesion = 'grafico'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaNaturalezaLesion === 'grafico'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Gráfico
-                </button>
-                <button
-                  @click="vistaNaturalezaLesion = 'tabla'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaNaturalezaLesion === 'tabla'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Tabla
-                </button>
-              </div>
+        <div v-else>
+          <!-- Header con logo a la izquierda y datos a la derecha -->
+          <div class="flex items-center gap-6 mb-6">
+            <img
+              v-if="empresasStore.currentEmpresa.logotipoEmpresa?.data"
+              :src="'/uploads/logos/' + empresasStore.currentEmpresa.logotipoEmpresa.data + '?t=' + empresasStore.currentEmpresa.updatedAt"
+              :alt="'Logo de ' + empresasStore.currentEmpresa.nombreComercial"
+              class="w-24 h-24 object-contain rounded"
+            />
+            <div v-else class="w-1/4 h-32 flex flex-col items-center justify-center bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 rounded mb-4 text-center px-4 border-2 border-dashed border-gray-400">
+                <i class="fas fa-camera text-4xl mb-2"></i> <!-- Icono de FontAwesome -->
+                <span class="text-xs text-center">Identifica más rápido a tu cliente agregando un logotipo</span>
             </div>
 
-            <div class="flex-1 overflow-x-auto">
-              <Transition name="fade" mode="out-in">
-                <template v-if="vistaNaturalezaLesion === 'grafico'">
-                  <GraficaBarras
-                    :data="graficaNaturalezaLesionData"
-                    :options="graficaBarrasHorizontalesOptions"
-                  />
-                </template>
-
-                <template v-else>
-                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
-                    <thead class="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th class="py-2 px-4 text-left text-lg">Naturaleza Lesión</th>
-                        <th class="py-2 px-4 text-center text-lg">Hombres</th>
-                        <th class="py-2 px-4 text-center text-lg">Mujeres</th>
-                      </tr>
-                    </thead>
-                    <TransitionGroup name="fade-table" tag="tbody">
-                      <tr
-                        v-for="item in tablaNaturalezaLesion"
-                        :key="item.naturaleza"
-                        class="border-t hover:bg-gray-200 transition cursor-pointer"
-                        @click="handleClickTablaNaturalezaLesion(item.naturaleza)"
-                      >
-                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.naturaleza }}</td>
-                        <td class="py-1 px-4 text-center text-blue-700 text-lg">
-                          {{ item.hombres }} 
-                          <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
-                        </td>
-                        <td class="py-1 px-4 text-center text-pink-700 text-lg">
-                          {{ item.mujeres }} 
-                          <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
-                        </td>
-                      </tr>
-                    </TransitionGroup>
-                  </table>
-
-                </template>
-              </Transition>
-            </div>
-          </div>
-
-          <!-- Parte de Cuerpo Afectada: 2 columnas -->
-          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Parte del Cuerpo Afectada
-              </h3>
-              <div class="flex gap-2">
-                <button
-                  @click="vistaParteCuerpo = 'grafico'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaParteCuerpo === 'grafico'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Gráfico
-                </button>
-                <button
-                  @click="vistaParteCuerpo = 'tabla'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaParteCuerpo === 'tabla'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Tabla
-                </button>
-              </div>
+            <div class="hidden sm:block">
+                <h1 class="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-800">{{ empresasStore.currentEmpresa.nombreComercial }}</h1>
+                <h2 class="text-sm md:text-base lg:text-lg xl:text-xl text-gray-600 mt-1">{{ empresasStore.currentEmpresa.razonSocial }}</h2>
             </div>
 
-            <div class="flex-1 overflow-x-auto">
-              <Transition name="fade" mode="out-in">
-                <template v-if="vistaParteCuerpo === 'grafico'">
-                  <GraficaBarras
-                    :data="graficaParteCuerpoData"
-                    :options="graficaBarrasHorizontalesOptions" 
-                  />
-                </template>
-
-                <template v-else>
-                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
-                    <thead class="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th class="py-2 px-4 text-left text-lg">Parte del Cuerpo</th>
-                        <th class="py-2 px-4 text-center text-lg">Hombres</th>
-                        <th class="py-2 px-4 text-center text-lg">Mujeres</th>
-                      </tr>
-                    </thead>
-                    <TransitionGroup name="fade-table" tag="tbody">
-                      <tr
-                        v-for="item in tablaParteCuerpo"
-                        :key="item.parte"
-                        class="border-t hover:bg-gray-200 transition cursor-pointer"
-                      >
-                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.parte }}</td>
-                        <td class="py-1 px-4 text-center text-blue-700 text-lg">
-                          {{ item.hombres }} 
-                          <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
-                        </td>
-                        <td class="py-1 px-4 text-center text-pink-700 text-lg">
-                          {{ item.mujeres }} 
-                          <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
-                        </td>
-                      </tr>
-                    </TransitionGroup>
-                  </table>
-                </template>
-              </Transition>
-            </div>
-          </div>
-
-          <!-- Tipo de Riesgo, Estado Alta, Puestos de Trabajo -->
-            <!-- Tipos de Riesgo: 1 columna -->
-          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Tipos de Riesgo
-                <span class="relative cursor-help">
-                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                  <span
-                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                  >
-                    Distribución de los diferentes tipos de riesgo por género.
-                  </span>
-                </span>
-              </h3>
-              <div class="flex gap-2">
-                <button
-                  @click="vistaTiposRiesgo = 'grafico'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaTiposRiesgo === 'grafico'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Gráfico
-                </button>
-                <button
-                  @click="vistaTiposRiesgo = 'tabla'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaTiposRiesgo === 'tabla'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Tabla
-                </button>
-              </div>
-            </div>
-
-            <div class="flex-1 overflow-x-auto">
-              <Transition name="fade" mode="out-in">
-                <template v-if="vistaTiposRiesgo === 'grafico'">
-                  <GraficaBarras
-                    :data="graficaTiposRiesgoData"
-                    :options="graficaTiposRiesgoOptions"
-                  />
-                </template>
-
-                <template v-else>
-                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
-                    <thead class="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th class="py-2 px-4 text-left text-lg">Tipo de Riesgo</th>
-                        <th class="py-2 px-4 text-center text-lg">Hombres</th>
-                        <th class="py-2 px-4 text-center text-lg">Mujeres</th>
-                      </tr>
-                    </thead>
-                    <TransitionGroup name="fade-table" tag="tbody">
-                      <tr
-                        v-for="item in tablaTiposRiesgo"
-                        :key="item.tipo"
-                        class="border-t hover:bg-gray-200 transition cursor-pointer"
-                      >
-                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.tipo }}</td>
-                        <td class="py-1 px-4 text-center text-blue-700 text-lg">
-                          {{ item.hombres }} 
-                          <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
-                        </td>
-                        <td class="py-1 px-4 text-center text-pink-700 text-lg">
-                          {{ item.mujeres }} 
-                          <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
-                        </td>
-                      </tr>
-                    </TransitionGroup>
-                  </table>
-                </template>
-              </Transition>
-            </div>
-          </div>
-
-          <!-- Estado Alta: 1 columna -->
-          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Incapacidades
-                <span class="relative cursor-help">
-                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                  <span
-                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                  >
-                    Distribución del estado de alta de los riesgos de trabajo.
-                  </span>
-                </span>
-              </h3>
-
-              <div class="flex gap-2 mt-2">
-                <button
-                  @click="vistaEstadoAlta = 'grafico'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaEstadoAlta === 'grafico' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Gráfico
-                </button>
-                <button
-                  @click="vistaEstadoAlta = 'tabla'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaEstadoAlta === 'tabla' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Tabla
-                </button>
-              </div>
-            </div>
-            
-            <div class="flex-1 overflow-x-auto mt-4">
-              <Transition name="fade" mode="out-in">
-                <template v-if="vistaEstadoAlta === 'grafico'">
-                  <GraficaAnillo
-                    :data="graficaEstadoAltaData"
-                    :options="opcionesGenericasAnillo"
-                    :cantidad="graficaEstadoAltaData.incapacidadActiva"
-                    :porcentaje="graficaEstadoAltaData.porcentaje"
-                  />
-                </template>
-
-                <template v-else>
-                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
-                    <thead class="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th class="py-2 px-4 text-left text-lg">Estado Alta</th>
-                        <th class="py-2 px-4 text-center text-lg">Casos</th>
-                      </tr>
-                    </thead>
-                    <TransitionGroup name="fade-table" tag="tbody">
-                      <tr
-                        v-for="item in tablaEstadoAlta"
-                        :key="item.estado"
-                        class="border-t hover:bg-gray-200 transition cursor-pointer"
-                      >
-                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.estado }}</td>
-                        <td class="py-1 px-4 text-center text-gray-700 text-lg">{{ item.cantidad }}
-                          <span class="text-sm text-gray-500">({{ item.porcentaje }}%)</span>
-                        </td>
-
-                      </tr>
-                    </TransitionGroup>
-                  </table>
-                </template>
-              </Transition>
-            </div>
-          </div>
-
-          <!-- Puestos de Trabajo: 2 columnas -->
-          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Puestos de Trabajo
-              </h3>
-              <div class="flex gap-2">
-                <button
-                  @click="vistaPuestosTrabajo = 'grafico'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaPuestosTrabajo === 'grafico'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Gráfico
-                </button>
-                <button
-                  @click="vistaPuestosTrabajo = 'tabla'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaPuestosTrabajo === 'tabla'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Tabla
-                </button>
-              </div>
-            </div>
-
-            <div class="flex-1 overflow-x-auto">
-              <Transition name="fade" mode="out-in">
-                <template v-if="vistaPuestosTrabajo === 'grafico'">
-                  <GraficaBarras
-                    :data="graficaPuestosTrabajoData"
-                    :options="graficaBarrasHorizontalesOptions"
-                  />
-                </template>
-
-                <template v-else>
-                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
-                    <thead class="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th class="py-2 px-4 text-left text-lg">Puesto</th>
-                        <th class="py-2 px-4 text-center text-lg">Hombres</th>
-                        <th class="py-2 px-4 text-center text-lg">Mujeres</th>
-                      </tr>
-                    </thead>
-                    <TransitionGroup name="fade-table" tag="tbody">
-                      <tr
-                        v-for="item in tablaPuestosTrabajo"
-                        :key="item.puesto"
-                        class="border-t hover:bg-gray-200 transition cursor-pointer"
-                      >
-                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.puesto }}</td>
-                        <td class="py-1 px-4 text-center text-blue-700 text-lg">
-                          {{ item.hombres }} 
-                          <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
-                        </td>
-                        <td class="py-1 px-4 text-center text-pink-700 text-lg">
-                          {{ item.mujeres }} 
-                          <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
-                        </td>
-                      </tr>
-                    </TransitionGroup>
-                  </table>
-                </template>
-              </Transition>
-            </div>
-          </div>
-
-          <!-- Distribución Días, Casos IPP, Total Días -->
-            <!-- Distribución de Días de Incapacidad: 2 columnas -->
-          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Distribución de Casos con Días de Incapacidad
-                <span class="relative cursor-help">
-                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                  <span
-                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-72 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                  >
-                    Muestra el número de casos (RTs) que resultaron en días de incapacidad, distribuidos por rango.
-                  </span>
-                </span>
-              </h3>
-              <div class="flex gap-2">
-                <button
-                  @click="vistaDiasIncapacidad = 'grafico'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaDiasIncapacidad === 'grafico'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Gráfico
-                </button>
-                <button
-                  @click="vistaDiasIncapacidad = 'tabla'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaDiasIncapacidad === 'tabla'
-                      ? 'bg-emerald-500 text-white'
-                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Tabla
-                </button>
-              </div>
-            </div>
-
-            <div class="flex-1 overflow-x-auto">
-              <Transition name="fade" mode="out-in">
-                <template v-if="vistaDiasIncapacidad === 'grafico'">
-                  <GraficaBarras
-                    :data="graficaDiasIncapacidadData"
-                    :options="graficaDiasIncapacidadOptions"
-                  />
-                </template>
-
-                <template v-else>
-                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
-                    <thead class="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th class="py-2 px-4 text-left text-lg">Rango</th>
-                        <th class="py-2 px-4 text-center text-lg">Hombres</th>
-                        <th class="py-2 px-4 text-center text-lg">Mujeres</th>
-                      </tr>
-                    </thead>
-                    <TransitionGroup name="fade-table" tag="tbody">
-                      <tr
-                        v-for="item in tablaDiasIncapacidad"
-                        :key="item.rango"
-                        class="border-t hover:bg-gray-200 transition cursor-pointer"
-                      >
-                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.rango }}</td>
-                        <td class="py-1 px-4 text-center text-blue-700 text-lg">
-                          {{ item.hombres }} 
-                          <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
-                        </td>
-                        <td class="py-1 px-4 text-center text-pink-700 text-lg">
-                          {{ item.mujeres }} 
-                          <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
-                        </td>
-                      </tr>
-                    </TransitionGroup>
-                  </table>
-                </template>
-              </Transition>
-            </div>
-          </div>
-
-            <!-- Casos Secuelas: 1 columna -->
-          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Secuelas
-                <span class="relative cursor-help">
-                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                  <span
-                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                  >
-                    Muestra el total de casos con IPP (Incapacidad Permanente Parcial).
-                  </span>
-                </span>
-              </h3>
-
-              <div class="flex gap-2 mt-2">
-                <button
-                  @click="vistaCasosSecuelas = 'grafico'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaCasosSecuelas === 'grafico' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Gráfico
-                </button>
-                <button
-                  @click="vistaCasosSecuelas = 'tabla'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaCasosSecuelas === 'tabla' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Tabla
-                </button>
-              </div>
-            </div>
-            
-            <div class="flex-1 overflow-x-auto mt-4">
-              <Transition name="fade" mode="out-in">
-                <template v-if="vistaCasosSecuelas === 'grafico'">
-                  <GraficaAnillo
-                    :data="graficaCasosSecuelasData"
-                    :options="opcionesGenericasAnillo"
-                    :cantidad="graficaCasosSecuelasData.casosSecuelas"
-                    :porcentaje="graficaCasosSecuelasData.porcentaje"
-                  />
-                </template>
-
-                <template v-else>
-                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
-                    <thead class="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th class="py-2 px-4 text-left text-lg">Secuelas</th>
-                        <th class="py-2 px-4 text-center text-lg">Casos</th>
-                      </tr>
-                    </thead>
-                    <TransitionGroup name="fade-table" tag="tbody">
-                      <tr
-                        v-for="item in tablaCasosSecuelas"
-                        :key="item.estado"
-                        class="border-t hover:bg-gray-200 transition cursor-pointer"
-                      >
-                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.estado }}</td>
-                        <td class="py-1 px-4 text-center text-gray-700 text-lg">{{ item.cantidad }}
-                          <span class="text-sm text-gray-500">({{ item.porcentaje }}%)</span>
-                        </td>
-                      </tr>
-                    </TransitionGroup>
-                  </table>
-                </template>
-              </Transition>
-            </div>
-          </div>
-
-          <!-- Total de Días de Incapacidad -->
-          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4">
-              <div class="flex flex-col gap-0.5">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                  Total de Días de Incapacidad
-                  <span class="relative cursor-help">
-                    <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                    <span
-                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                    >
-                      Suma total de <span class="font-semibold text-emerald-600">días de incapacidad</span> acumulados en todos los <span class="font-semibold text-emerald-600">riesgos de trabajo</span>.
-                    </span>
-                  </span>
-                </h3>
-              </div>
-            </div>
-
-            <!-- Número principal -->
-            <div 
-              :class="[
-                'flex-1 flex items-center justify-center text-center rounded-lg transition',
-                totalDiasIncapacidadAcumulada > 0 ? 'cursor-pointer hover:bg-emerald-50' : 'cursor-default'
-              ]"
-            >
-              <div class="text-center">
-                <div class="text-8xl font-medium text-emerald-600">
-                  {{ totalDiasIncapacidadAcumulada }}
+            <!-- Ajustado a nivel del encabezado -->
+            <div class="mb-4 ml-auto flex items-end gap-6">
+              <!-- Indicador de total de trabajadores -->
+                <div class="bg-white border border-gray-200 shadow-md rounded-xl px-6 py-2 text-center self-center">
+                <div class="text-xs text-gray-500">
+                  <i class="fas fa-users mr-1 text-gray-400"></i>
+                  <span class="lg:hidden">RTs</span>
+                  <span class="hidden lg:block">Riesgos de Trabajo</span>
                 </div>
-                <div class="text-sm text-gray-500 mt-1">Total de días acumulados</div>
+                <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ totalRiesgos }}</div>
+                </div>
+
+              <!-- Selector de centro de trabajo -->
+              <div class="self-end">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Centro de trabajo</label>
+                <select
+                  v-model="centroSeleccionado"
+                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 px-2 py-1 rounded-md shadow-sm text-xs md:text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out mt-1"
+                >
+                  <option v-for="centro in centrosTrabajoOptions" :key="centro" :value="centro">{{ centro }}</option>
+                </select>
               </div>
             </div>
 
-            <h4 class="text-xs text-gray-600 font-normal italic text-center">
-              Días acumulados en todos los riesgos de trabajo
-            </h4>
           </div>
 
-          <!-- Manejo y Recaídas -->
-            <!-- Manejo: 1 columna -->
-          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Casos IMSS
-                <span class="relative cursor-help">
-                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                  <span
-                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                  >
-                    Muestra la distribución de casos por tipo de manejo (IMSS, Interno).
-                  </span>
-                </span>
-              </h3>
+          <!-- =======================
+            Toggle Filtros + Indicador
+          ======================= -->
+          <div class="flex justify-center items-center gap-3 my-4">        
+            <div class="flex items-center gap-3">
+              <button
+                @click="mostrarFiltros = !mostrarFiltros"
+                class="text-sm px-3 py-1.5 rounded-md text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-300 transition duration-200 flex items-center gap-2"
+              >
+                <i :class="mostrarFiltros ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+                {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
+              </button>
 
-              <div class="flex gap-2 mt-2">
-                <button
-                  @click="vistaManejo = 'grafico'"
+              <div v-if="hayFiltrosActivos" class="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Filtros activos
+              </div>
+            </div>
+
+          </div>
+
+          <!-- =======================
+              Filtros Desplegables (Con Toggle)
+          ======================= -->
+          <Transition name="desplegar" mode="out-in">
+            <div v-if="mostrarFiltros" class="flex flex-wrap gap-4 my-6 justify-center">
+              <!-- Filtro por Sexo -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Sexo</label>
+                <select
+                  v-model="sexoSeleccionado"
                   :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaManejo === 'grafico' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    sexoSeleccionado !== 'todos' 
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
                   ]"
                 >
-                  Gráfico
-                </button>
-                <button
-                  @click="vistaManejo = 'tabla'"
+                  <option value="todos">Todos</option>
+                  <option value="Masculino">Masculino</option>
+                  <option value="Femenino">Femenino</option>
+                </select>
+                <!-- Testigo de Filtro Aplicado (Sexo) -->
+                <div v-if="sexoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+      
+              <!-- Filtro por Puesto -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Puesto</label>
+                <select
+                  v-model="puestoSeleccionado"
                   :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaManejo === 'tabla' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    puestoSeleccionado !== 'todos' 
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
                   ]"
                 >
-                  Tabla
+                  <option value="todos">Todos</option>
+                  <option v-for="puesto in puestosDisponibles" :key="puesto" :value="puesto">
+                    {{ puesto }}
+                  </option>
+                </select>
+                <!-- Testigo de Filtro Aplicado (Puesto) -->
+                <div v-if="puestoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+
+              <!-- Filtro por Periodo -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Periodo</label>
+                <select
+                  v-model="periodoSeleccionado"
+                  :class="[
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    periodoSeleccionado !== 'todos' 
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+                  ]"
+                >
+                  <option value="todos">Todos</option>
+                  <option v-for="opcion in opcionesPeriodo" :key="opcion" :value="opcion">
+                    {{ opcion }}
+                  </option>
+                </select>
+
+                <!-- Testigo de Filtro Aplicado (Periodo) -->
+                <div v-if="periodoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+
+              <!-- Filtro por Edad -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Edad</label>
+                <select
+                  v-model="edadSeleccionada"
+                  :class="[
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    edadSeleccionada !== 'todos' 
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+                  ]"
+                >
+                  <option value="todos">Todos</option>
+                  <option v-for="rango in opcionesEdad" :key="rango" :value="rango">
+                    {{ rango }}
+                  </option>
+                </select>
+
+                <!-- Testigo de Filtro Aplicado (Edad) -->
+                <div v-if="edadSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+
+              <!-- Filtro por Antigüedad -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Antigüedad</label>
+                <select
+                  v-model="antiguedadSeleccionada"
+                  :class="[
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    antiguedadSeleccionada !== 'todos' 
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+                  ]"
+                >
+                  <option value="todos">Todos</option>
+                  <option v-for="rango in opcionesAntiguedad" :key="rango" :value="rango">
+                    {{ rango }}
+                  </option>
+                </select>
+
+                <!-- Testigo de Filtro Aplicado (Antigüedad) -->
+                <div v-if="antiguedadSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+
+              <!-- Filtro por Naturaleza de la Lesión -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Naturaleza de la Lesión</label>
+                <select
+                  v-model="naturalezaSeleccionada"
+                  :class="[
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    naturalezaSeleccionada !== 'todos' 
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+                  ]"
+                >
+                  <option value="todos">Todos</option>
+                  <option v-for="naturaleza in naturalezasDisponibles" :key="naturaleza" :value="naturaleza">
+                    {{ naturaleza }}
+                  </option>
+                </select>
+                <!-- Testigo de Filtro Aplicado (Naturaleza) -->
+                <div v-if="naturalezaSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+
+              <!-- Filtro por Parte del Cuerpo Afectada -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Parte del Cuerpo Afectada</label>
+                <select
+                  v-model="parteCuerpoSeleccionada"
+                  :class="[
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    parteCuerpoSeleccionada !== 'todos' 
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+                  ]"
+                >
+                  <option value="todos">Todos</option>
+                  <option v-for="parte in parteCuerpoDisponibles" :key="parte" :value="parte">
+                    {{ parte }}
+                  </option>
+                </select>
+
+                <!-- Testigo de Filtro Aplicado (Parte del Cuerpo) -->
+                <div v-if="parteCuerpoSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+
+              <!-- Filtro por Recaída -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Recaída</label>
+                <select
+                  v-model="recaidaSeleccionada"
+                  :class="[
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    recaidaSeleccionada !== 'todos' 
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+                  ]"
+                >
+                  <option value="todos">Todos</option>
+                  <option value="Si">Sí</option>
+                  <option value="No">No</option>
+                </select>
+
+                <!-- Testigo de Filtro Aplicado (Recaída) -->
+                <div v-if="recaidaSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+              
+              <!-- Filtro por Tipo de Riesgo -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Tipo de Riesgo</label>
+                <select
+                  v-model="tipoRiesgoSeleccionado"
+                  :class="[
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    tipoRiesgoSeleccionado !== 'todos' 
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+                  ]"
+                >
+                  <option value="todos">Todos</option>
+                  <option value="Accidente de Trabajo">Accidente de Trabajo</option>
+                  <option value="Accidente de Trayecto">Accidente de Trayecto</option>
+                  <option value="Enfermedad de Trabajo">Enfermedad de Trabajo</option>
+                </select>
+
+                <!-- Testigo de Filtro Aplicado (Tipo de Riesgo) -->
+                <div v-if="tipoRiesgoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+              
+              <!-- Filtro por Manejo -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Manejo</label>
+                <select
+                  v-model="manejoSeleccionado"
+                  :class="[
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    manejoSeleccionado !== 'todos'
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+                  ]"
+                >
+                  <option value="todos">Todos</option>
+                  <option value="IMSS">IMSS</option>
+                  <option value="Interno">Interno</option>
+                </select>
+
+                <!-- Testigo de Filtro Aplicado (Manejo) -->
+                <div v-if="manejoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+
+              <!-- Filtro por Alta -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Alta</label>
+                <select
+                  v-model="altaSeleccionada"
+                  :class="[
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    altaSeleccionada !== 'todos'
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+                  ]"
+                >
+                  <option value="todos">Todos</option>
+                  <option value="Incapacidad Activa">Incapacidad Activa</option>
+                  <option value="Alta ST2">Alta ST2</option>
+                  <option value="Alta Interna">Alta Interna</option>
+                </select>
+
+                <!-- Testigo de Filtro Aplicado (Alta) -->
+                <div v-if="altaSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+
+              <!-- Filtro por Días de Incapacidad -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Días de Incapacidad</label>
+                <select
+                  v-model="diasIncapacidadSeleccionados"
+                  :class="[
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    diasIncapacidadSeleccionados !== 'todos' 
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+                  ]"
+                >
+                  <option value="todos">Todos</option>
+                  <option v-for="rango in opcionesDiasIncapacidad" :key="rango" :value="rango">
+                    {{ rango }}
+                  </option>
+                </select>
+
+                <!-- Testigo de Filtro Aplicado (Días de Incapacidad) -->
+                <div v-if="diasIncapacidadSeleccionados !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+
+              <!-- Filtro por Secuelas -->
+              <div class="ml-4 items-center gap-2">
+                <label class="block text-xs md:text-sm font-medium text-gray-700">Secuelas</label>
+                <select
+                  v-model="secuelasSeleccionadas"
+                  :class="[
+                    'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
+                    secuelasSeleccionadas !== 'todos'
+                      ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
+                      : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
+                  ]"
+                >
+                  <option value="todos">Todos</option>
+                  <option value="Si">Si</option>
+                  <option value="No">No</option>
+                </select>
+
+                <!-- Testigo de Filtro Aplicado (secuelas) -->
+                <div v-if="secuelasSeleccionadas !== 'todos'" class="flex items-center gap-1 mt-1">
+                  <i class="fas fa-filter text-xs text-emerald-500"></i>
+                  <span class="text-emerald-600 text-xs">Filtro aplicado</span>
+                </div>
+              </div>
+
+              <!-- Botón para limpiar filtros -->
+              <div class="text-xs ml-4 items-center gap-2">
+                <label class="block text-xs font-medium text-gray-100 mb-0.5">Filtros</label>
+                <button
+                  @click="limpiarFiltros"
+                  class="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-1.5 px-3 rounded-lg border-2 border-red-200 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out flex items-center justify-center gap-2"
+                >
+                  <i class="fa-solid fa-filter-circle-xmark"></i>
+                  Quitar Filtros
                 </button>
               </div>
             </div>
-            
-            <div class="flex-1 overflow-x-auto mt-4">
-              <Transition name="fade" mode="out-in">
-                <template v-if="vistaManejo === 'grafico'">
-                  <GraficaAnillo
-                    :data="graficaManejoData"
-                    :options="opcionesGenericasAnillo"
-                    :cantidad="graficaManejoData.total"
-                    :porcentaje="graficaManejoData.porcentaje"
-                  />
-                </template>
+          </Transition>
 
-                <template v-else>
-                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
-                    <thead class="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th class="py-2 px-4 text-left text-lg">Manejo</th>
-                        <th class="py-2 px-4 text-center text-lg">Casos</th>
-                      </tr>
-                    </thead>
-                    <TransitionGroup name="fade-table" tag="tbody">
-                      <tr
-                        v-for="item in tablaManejo"
-                        :key="item.manejo"
-                        class="border-t hover:bg-gray-200 transition cursor-pointer"
+          <!-- =======================
+              Gráficas y Tablas
+          ======================= -->
+          <div class="mx-auto">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-8 auto-rows-[370px] sm:auto-rows-[400px] md:auto-rows-[425px] lg:auto-rows-[450px]">
+
+              <!-- Naturaleza Lesión: 2 columnas -->
+              <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                  <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    Naturaleza Lesión
+                    <span class="relative cursor-help">
+                      <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                      <span
+                        class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-72 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
                       >
-                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.manejo }}</td>
-                        <td class="py-1 px-4 text-center text-gray-700 text-lg">
-                          {{ item.cantidad }}
-                          <span class="text-sm text-gray-500">({{ item.porcentaje }}%)</span>
-                        </td>
-                      </tr>
-                    </TransitionGroup>
-                  </table>
-                </template>
-              </Transition>
-            </div>
-          </div>
+                        Muestra la distribución de riesgos de trabajo según la naturaleza de la lesión.
+                      </span>
+                    </span>
+                  </h3>
+                  <div class="flex gap-2">
+                    <button
+                      @click="vistaNaturalezaLesion = 'grafico'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaNaturalezaLesion === 'grafico'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Gráfico
+                    </button>
+                    <button
+                      @click="vistaNaturalezaLesion = 'tabla'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaNaturalezaLesion === 'tabla'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Tabla
+                    </button>
+                  </div>
+                </div>
 
-            <!-- Recaídas: 1 columna -->
-          <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-              <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                Recaídas
-                <span class="relative cursor-help">
-                  <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                  <span
-                    class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                  >
-                    Muestra el total de casos con y sin recaídas.
-                  </span>
-                </span>
-              </h3>
+                <div class="flex-1 overflow-x-auto">
+                  <Transition name="fade" mode="out-in">
+                    <template v-if="vistaNaturalezaLesion === 'grafico'">
+                      <GraficaBarras
+                        :data="graficaNaturalezaLesionData"
+                        :options="graficaBarrasHorizontalesOptions"
+                      />
+                    </template>
 
-              <div class="flex gap-2 mt-2">
-                <button
-                  @click="vistaRecaidas = 'grafico'"
+                    <template v-else>
+                      <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                        <thead class="bg-gray-100 text-gray-700">
+                          <tr>
+                            <th class="py-2 px-4 text-left text-lg">Naturaleza Lesión</th>
+                            <th class="py-2 px-4 text-center text-lg">Hombres</th>
+                            <th class="py-2 px-4 text-center text-lg">Mujeres</th>
+                          </tr>
+                        </thead>
+                        <TransitionGroup name="fade-table" tag="tbody">
+                          <tr
+                            v-for="item in tablaNaturalezaLesion"
+                            :key="item.naturaleza"
+                            class="border-t hover:bg-gray-200 transition cursor-pointer"
+                            @click="handleClickTablaNaturalezaLesion(item.naturaleza)"
+                          >
+                            <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.naturaleza }}</td>
+                            <td class="py-1 px-4 text-center text-blue-700 text-lg">
+                              {{ item.hombres }} 
+                              <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
+                            </td>
+                            <td class="py-1 px-4 text-center text-pink-700 text-lg">
+                              {{ item.mujeres }} 
+                              <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
+                            </td>
+                          </tr>
+                        </TransitionGroup>
+                      </table>
+
+                    </template>
+                  </Transition>
+                </div>
+              </div>
+
+              <!-- Parte de Cuerpo Afectada: 2 columnas -->
+              <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                  <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    Parte del Cuerpo Afectada
+                  </h3>
+                  <div class="flex gap-2">
+                    <button
+                      @click="vistaParteCuerpo = 'grafico'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaParteCuerpo === 'grafico'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Gráfico
+                    </button>
+                    <button
+                      @click="vistaParteCuerpo = 'tabla'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaParteCuerpo === 'tabla'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Tabla
+                    </button>
+                  </div>
+                </div>
+
+                <div class="flex-1 overflow-x-auto">
+                  <Transition name="fade" mode="out-in">
+                    <template v-if="vistaParteCuerpo === 'grafico'">
+                      <GraficaBarras
+                        :data="graficaParteCuerpoData"
+                        :options="graficaBarrasHorizontalesOptions" 
+                      />
+                    </template>
+
+                    <template v-else>
+                      <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                        <thead class="bg-gray-100 text-gray-700">
+                          <tr>
+                            <th class="py-2 px-4 text-left text-lg">Parte del Cuerpo</th>
+                            <th class="py-2 px-4 text-center text-lg">Hombres</th>
+                            <th class="py-2 px-4 text-center text-lg">Mujeres</th>
+                          </tr>
+                        </thead>
+                        <TransitionGroup name="fade-table" tag="tbody">
+                          <tr
+                            v-for="item in tablaParteCuerpo"
+                            :key="item.parte"
+                            class="border-t hover:bg-gray-200 transition cursor-pointer"
+                          >
+                            <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.parte }}</td>
+                            <td class="py-1 px-4 text-center text-blue-700 text-lg">
+                              {{ item.hombres }} 
+                              <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
+                            </td>
+                            <td class="py-1 px-4 text-center text-pink-700 text-lg">
+                              {{ item.mujeres }} 
+                              <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
+                            </td>
+                          </tr>
+                        </TransitionGroup>
+                      </table>
+                    </template>
+                  </Transition>
+                </div>
+              </div>
+
+              <!-- Tipo de Riesgo, Estado Alta, Puestos de Trabajo -->
+                <!-- Tipos de Riesgo: 1 columna -->
+              <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                  <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    Tipos de Riesgo
+                    <span class="relative cursor-help">
+                      <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                      <span
+                        class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                      >
+                        Distribución de los diferentes tipos de riesgo por género.
+                      </span>
+                    </span>
+                  </h3>
+                  <div class="flex gap-2">
+                    <button
+                      @click="vistaTiposRiesgo = 'grafico'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaTiposRiesgo === 'grafico'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Gráfico
+                    </button>
+                    <button
+                      @click="vistaTiposRiesgo = 'tabla'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaTiposRiesgo === 'tabla'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Tabla
+                    </button>
+                  </div>
+                </div>
+
+                <div class="flex-1 overflow-x-auto">
+                  <Transition name="fade" mode="out-in">
+                    <template v-if="vistaTiposRiesgo === 'grafico'">
+                      <GraficaBarras
+                        :data="graficaTiposRiesgoData"
+                        :options="graficaTiposRiesgoOptions"
+                      />
+                    </template>
+
+                    <template v-else>
+                      <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                        <thead class="bg-gray-100 text-gray-700">
+                          <tr>
+                            <th class="py-2 px-4 text-left text-lg">Tipo de Riesgo</th>
+                            <th class="py-2 px-4 text-center text-lg">Hombres</th>
+                            <th class="py-2 px-4 text-center text-lg">Mujeres</th>
+                          </tr>
+                        </thead>
+                        <TransitionGroup name="fade-table" tag="tbody">
+                          <tr
+                            v-for="item in tablaTiposRiesgo"
+                            :key="item.tipo"
+                            class="border-t hover:bg-gray-200 transition cursor-pointer"
+                          >
+                            <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.tipo }}</td>
+                            <td class="py-1 px-4 text-center text-blue-700 text-lg">
+                              {{ item.hombres }} 
+                              <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
+                            </td>
+                            <td class="py-1 px-4 text-center text-pink-700 text-lg">
+                              {{ item.mujeres }} 
+                              <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
+                            </td>
+                          </tr>
+                        </TransitionGroup>
+                      </table>
+                    </template>
+                  </Transition>
+                </div>
+              </div>
+
+              <!-- Estado Alta: 1 columna -->
+              <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                  <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    Incapacidades
+                    <span class="relative cursor-help">
+                      <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                      <span
+                        class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                      >
+                        Distribución del estado de alta de los riesgos de trabajo.
+                      </span>
+                    </span>
+                  </h3>
+
+                  <div class="flex gap-2 mt-2">
+                    <button
+                      @click="vistaEstadoAlta = 'grafico'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaEstadoAlta === 'grafico' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Gráfico
+                    </button>
+                    <button
+                      @click="vistaEstadoAlta = 'tabla'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaEstadoAlta === 'tabla' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Tabla
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="flex-1 overflow-x-auto mt-4">
+                  <Transition name="fade" mode="out-in">
+                    <template v-if="vistaEstadoAlta === 'grafico'">
+                      <GraficaAnillo
+                        :data="graficaEstadoAltaData"
+                        :options="opcionesGenericasAnillo"
+                        :cantidad="graficaEstadoAltaData.incapacidadActiva"
+                        :porcentaje="graficaEstadoAltaData.porcentaje"
+                      />
+                    </template>
+
+                    <template v-else>
+                      <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                        <thead class="bg-gray-100 text-gray-700">
+                          <tr>
+                            <th class="py-2 px-4 text-left text-lg">Estado Alta</th>
+                            <th class="py-2 px-4 text-center text-lg">Casos</th>
+                          </tr>
+                        </thead>
+                        <TransitionGroup name="fade-table" tag="tbody">
+                          <tr
+                            v-for="item in tablaEstadoAlta"
+                            :key="item.estado"
+                            class="border-t hover:bg-gray-200 transition cursor-pointer"
+                          >
+                            <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.estado }}</td>
+                            <td class="py-1 px-4 text-center text-gray-700 text-lg">{{ item.cantidad }}
+                              <span class="text-sm text-gray-500">({{ item.porcentaje }}%)</span>
+                            </td>
+
+                          </tr>
+                        </TransitionGroup>
+                      </table>
+                    </template>
+                  </Transition>
+                </div>
+              </div>
+
+              <!-- Puestos de Trabajo: 2 columnas -->
+              <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                  <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    Puestos de Trabajo
+                  </h3>
+                  <div class="flex gap-2">
+                    <button
+                      @click="vistaPuestosTrabajo = 'grafico'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaPuestosTrabajo === 'grafico'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Gráfico
+                    </button>
+                    <button
+                      @click="vistaPuestosTrabajo = 'tabla'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaPuestosTrabajo === 'tabla'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Tabla
+                    </button>
+                  </div>
+                </div>
+
+                <div class="flex-1 overflow-x-auto">
+                  <Transition name="fade" mode="out-in">
+                    <template v-if="vistaPuestosTrabajo === 'grafico'">
+                      <GraficaBarras
+                        :data="graficaPuestosTrabajoData"
+                        :options="graficaBarrasHorizontalesOptions"
+                      />
+                    </template>
+
+                    <template v-else>
+                      <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                        <thead class="bg-gray-100 text-gray-700">
+                          <tr>
+                            <th class="py-2 px-4 text-left text-lg">Puesto</th>
+                            <th class="py-2 px-4 text-center text-lg">Hombres</th>
+                            <th class="py-2 px-4 text-center text-lg">Mujeres</th>
+                          </tr>
+                        </thead>
+                        <TransitionGroup name="fade-table" tag="tbody">
+                          <tr
+                            v-for="item in tablaPuestosTrabajo"
+                            :key="item.puesto"
+                            class="border-t hover:bg-gray-200 transition cursor-pointer"
+                          >
+                            <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.puesto }}</td>
+                            <td class="py-1 px-4 text-center text-blue-700 text-lg">
+                              {{ item.hombres }} 
+                              <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
+                            </td>
+                            <td class="py-1 px-4 text-center text-pink-700 text-lg">
+                              {{ item.mujeres }} 
+                              <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
+                            </td>
+                          </tr>
+                        </TransitionGroup>
+                      </table>
+                    </template>
+                  </Transition>
+                </div>
+              </div>
+
+              <!-- Distribución Días, Casos IPP, Total Días -->
+                <!-- Distribución de Días de Incapacidad: 2 columnas -->
+              <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                  <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    Distribución de Casos con Días de Incapacidad
+                    <span class="relative cursor-help">
+                      <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                      <span
+                        class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-72 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                      >
+                        Muestra el número de casos (RTs) que resultaron en días de incapacidad, distribuidos por rango.
+                      </span>
+                    </span>
+                  </h3>
+                  <div class="flex gap-2">
+                    <button
+                      @click="vistaDiasIncapacidad = 'grafico'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaDiasIncapacidad === 'grafico'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Gráfico
+                    </button>
+                    <button
+                      @click="vistaDiasIncapacidad = 'tabla'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaDiasIncapacidad === 'tabla'
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Tabla
+                    </button>
+                  </div>
+                </div>
+
+                <div class="flex-1 overflow-x-auto">
+                  <Transition name="fade" mode="out-in">
+                    <template v-if="vistaDiasIncapacidad === 'grafico'">
+                      <GraficaBarras
+                        :data="graficaDiasIncapacidadData"
+                        :options="graficaDiasIncapacidadOptions"
+                      />
+                    </template>
+
+                    <template v-else>
+                      <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                        <thead class="bg-gray-100 text-gray-700">
+                          <tr>
+                            <th class="py-2 px-4 text-left text-lg">Rango</th>
+                            <th class="py-2 px-4 text-center text-lg">Hombres</th>
+                            <th class="py-2 px-4 text-center text-lg">Mujeres</th>
+                          </tr>
+                        </thead>
+                        <TransitionGroup name="fade-table" tag="tbody">
+                          <tr
+                            v-for="item in tablaDiasIncapacidad"
+                            :key="item.rango"
+                            class="border-t hover:bg-gray-200 transition cursor-pointer"
+                          >
+                            <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.rango }}</td>
+                            <td class="py-1 px-4 text-center text-blue-700 text-lg">
+                              {{ item.hombres }} 
+                              <span class="text-sm text-gray-500">({{ item.porcentajeHombres }}%)</span>
+                            </td>
+                            <td class="py-1 px-4 text-center text-pink-700 text-lg">
+                              {{ item.mujeres }} 
+                              <span class="text-sm text-gray-500">({{ item.porcentajeMujeres }}%)</span>
+                            </td>
+                          </tr>
+                        </TransitionGroup>
+                      </table>
+                    </template>
+                  </Transition>
+                </div>
+              </div>
+
+                <!-- Casos Secuelas: 1 columna -->
+              <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                  <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    Secuelas
+                    <span class="relative cursor-help">
+                      <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                      <span
+                        class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                      >
+                        Muestra el total de casos con IPP (Incapacidad Permanente Parcial).
+                      </span>
+                    </span>
+                  </h3>
+
+                  <div class="flex gap-2 mt-2">
+                    <button
+                      @click="vistaCasosSecuelas = 'grafico'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaCasosSecuelas === 'grafico' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Gráfico
+                    </button>
+                    <button
+                      @click="vistaCasosSecuelas = 'tabla'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaCasosSecuelas === 'tabla' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Tabla
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="flex-1 overflow-x-auto mt-4">
+                  <Transition name="fade" mode="out-in">
+                    <template v-if="vistaCasosSecuelas === 'grafico'">
+                      <GraficaAnillo
+                        :data="graficaCasosSecuelasData"
+                        :options="opcionesGenericasAnillo"
+                        :cantidad="graficaCasosSecuelasData.casosSecuelas"
+                        :porcentaje="graficaCasosSecuelasData.porcentaje"
+                      />
+                    </template>
+
+                    <template v-else>
+                      <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                        <thead class="bg-gray-100 text-gray-700">
+                          <tr>
+                            <th class="py-2 px-4 text-left text-lg">Secuelas</th>
+                            <th class="py-2 px-4 text-center text-lg">Casos</th>
+                          </tr>
+                        </thead>
+                        <TransitionGroup name="fade-table" tag="tbody">
+                          <tr
+                            v-for="item in tablaCasosSecuelas"
+                            :key="item.estado"
+                            class="border-t hover:bg-gray-200 transition cursor-pointer"
+                          >
+                            <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.estado }}</td>
+                            <td class="py-1 px-4 text-center text-gray-700 text-lg">{{ item.cantidad }}
+                              <span class="text-sm text-gray-500">({{ item.porcentaje }}%)</span>
+                            </td>
+                          </tr>
+                        </TransitionGroup>
+                      </table>
+                    </template>
+                  </Transition>
+                </div>
+              </div>
+
+              <!-- Total de Días de Incapacidad -->
+              <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+                <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4">
+                  <div class="flex flex-col gap-0.5">
+                    <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                      Total de Días de Incapacidad
+                      <span class="relative cursor-help">
+                        <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                        <span
+                          class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                        >
+                          Suma total de <span class="font-semibold text-emerald-600">días de incapacidad</span> acumulados en todos los <span class="font-semibold text-emerald-600">riesgos de trabajo</span>.
+                        </span>
+                      </span>
+                    </h3>
+                  </div>
+                </div>
+
+                <!-- Número principal -->
+                <div 
                   :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaRecaidas === 'grafico' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    'flex-1 flex items-center justify-center text-center rounded-lg transition',
+                    totalDiasIncapacidadAcumulada > 0 ? 'cursor-pointer hover:bg-emerald-50' : 'cursor-default'
                   ]"
                 >
-                  Gráfico
-                </button>
-                <button
-                  @click="vistaRecaidas = 'tabla'"
-                  :class="[
-                    'px-3 py-1 rounded text-sm font-medium',
-                    vistaRecaidas === 'tabla' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                  ]"
-                >
-                  Tabla
-                </button>
+                  <div class="text-center">
+                    <div class="text-8xl font-medium text-emerald-600">
+                      {{ totalDiasIncapacidadAcumulada }}
+                    </div>
+                    <div class="text-sm text-gray-500 mt-1">Total de días acumulados</div>
+                  </div>
+                </div>
+
+                <h4 class="text-xs text-gray-600 font-normal italic text-center">
+                  Días acumulados en todos los riesgos de trabajo
+                </h4>
+              </div>
+
+              <!-- Manejo y Recaídas -->
+                <!-- Manejo: 1 columna -->
+              <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                  <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    Casos IMSS
+                    <span class="relative cursor-help">
+                      <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                      <span
+                        class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                      >
+                        Muestra la distribución de casos por tipo de manejo (IMSS, Interno).
+                      </span>
+                    </span>
+                  </h3>
+
+                  <div class="flex gap-2 mt-2">
+                    <button
+                      @click="vistaManejo = 'grafico'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaManejo === 'grafico' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Gráfico
+                    </button>
+                    <button
+                      @click="vistaManejo = 'tabla'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaManejo === 'tabla' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Tabla
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="flex-1 overflow-x-auto mt-4">
+                  <Transition name="fade" mode="out-in">
+                    <template v-if="vistaManejo === 'grafico'">
+                      <GraficaAnillo
+                        :data="graficaManejoData"
+                        :options="opcionesGenericasAnillo"
+                        :cantidad="graficaManejoData.total"
+                        :porcentaje="graficaManejoData.porcentaje"
+                      />
+                    </template>
+
+                    <template v-else>
+                      <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                        <thead class="bg-gray-100 text-gray-700">
+                          <tr>
+                            <th class="py-2 px-4 text-left text-lg">Manejo</th>
+                            <th class="py-2 px-4 text-center text-lg">Casos</th>
+                          </tr>
+                        </thead>
+                        <TransitionGroup name="fade-table" tag="tbody">
+                          <tr
+                            v-for="item in tablaManejo"
+                            :key="item.manejo"
+                            class="border-t hover:bg-gray-200 transition cursor-pointer"
+                          >
+                            <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.manejo }}</td>
+                            <td class="py-1 px-4 text-center text-gray-700 text-lg">
+                              {{ item.cantidad }}
+                              <span class="text-sm text-gray-500">({{ item.porcentaje }}%)</span>
+                            </td>
+                          </tr>
+                        </TransitionGroup>
+                      </table>
+                    </template>
+                  </Transition>
+                </div>
+              </div>
+
+                <!-- Recaídas: 1 columna -->
+              <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                  <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    Recaídas
+                    <span class="relative cursor-help">
+                      <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                      <span
+                        class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                      >
+                        Muestra el total de casos con y sin recaídas.
+                      </span>
+                    </span>
+                  </h3>
+
+                  <div class="flex gap-2 mt-2">
+                    <button
+                      @click="vistaRecaidas = 'grafico'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaRecaidas === 'grafico' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Gráfico
+                    </button>
+                    <button
+                      @click="vistaRecaidas = 'tabla'"
+                      :class="[
+                        'px-3 py-1 rounded text-sm font-medium',
+                        vistaRecaidas === 'tabla' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      ]"
+                    >
+                      Tabla
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="flex-1 overflow-x-auto mt-4">
+                  <Transition name="fade" mode="out-in">
+                    <template v-if="vistaRecaidas === 'grafico'">
+                      <GraficaAnillo
+                        :data="graficaRecaidasData"
+                        :options="opcionesGenericasAnillo"
+                        :cantidad="graficaRecaidasData.total"
+                        :porcentaje="graficaRecaidasData.porcentaje"
+                      />
+                    </template>
+
+                    <template v-else>
+                      <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                        <thead class="bg-gray-100 text-gray-700">
+                          <tr>
+                            <th class="py-2 px-4 text-left text-lg">Recaída</th>
+                            <th class="py-2 px-4 text-center text-lg">Casos</th>
+                          </tr>
+                        </thead>
+                        <TransitionGroup name="fade-table" tag="tbody">
+                          <tr
+                            v-for="item in tablaRecaidas"
+                            :key="item.recaida"
+                            class="border-t hover:bg-gray-200 transition cursor-pointer"
+                          >
+                            <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.recaida }}</td>
+                            <td class="py-1 px-4 text-center text-gray-700 text-lg">
+                              {{ item.cantidad }} 
+                              <span class="text-sm text-gray-500">({{ item.porcentaje }}%)</span>
+                            </td>
+                          </tr>
+                        </TransitionGroup>
+                      </table>
+                    </template>
+                  </Transition>
+                </div>
               </div>
             </div>
-            
-            <div class="flex-1 overflow-x-auto mt-4">
-              <Transition name="fade" mode="out-in">
-                <template v-if="vistaRecaidas === 'grafico'">
-                  <GraficaAnillo
-                    :data="graficaRecaidasData"
-                    :options="opcionesGenericasAnillo"
-                    :cantidad="graficaRecaidasData.total"
-                    :porcentaje="graficaRecaidasData.porcentaje"
-                  />
-                </template>
-
-                <template v-else>
-                  <table class="min-w-full text-sm border border-gray-300 rounded h-full">
-                    <thead class="bg-gray-100 text-gray-700">
-                      <tr>
-                        <th class="py-2 px-4 text-left text-lg">Recaída</th>
-                        <th class="py-2 px-4 text-center text-lg">Casos</th>
-                      </tr>
-                    </thead>
-                    <TransitionGroup name="fade-table" tag="tbody">
-                      <tr
-                        v-for="item in tablaRecaidas"
-                        :key="item.recaida"
-                        class="border-t hover:bg-gray-200 transition cursor-pointer"
-                      >
-                        <td class="py-1 px-4 font-medium text-gray-700 text-lg">{{ item.recaida }}</td>
-                        <td class="py-1 px-4 text-center text-gray-700 text-lg">
-                          {{ item.cantidad }} 
-                          <span class="text-sm text-gray-500">({{ item.porcentaje }}%)</span>
-                        </td>
-                      </tr>
-                    </TransitionGroup>
-                  </table>
-                </template>
-              </Transition>
-            </div>
           </div>
+
+          <button
+            @click="$router.back()"
+            class="inline-block text-gray-700 hover:text-emerald-500 font-medium"
+          >
+            ← Regresar
+          </button>
         </div>
       </div>
-
-      <button
-        @click="$router.back()"
-        class="inline-block text-gray-700 hover:text-emerald-500 font-medium"
-      >
-        ← Regresar
-      </button>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <style scoped>

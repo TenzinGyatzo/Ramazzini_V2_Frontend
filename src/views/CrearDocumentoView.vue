@@ -196,154 +196,158 @@ const marcarSinHallazgos = () => {
 </script>
 
 <template>
-
   <Transition appear mode="out-in" name="slide-up">
-    <div v-if="documentos.currentTypeOfDocument === 'antidoping'"
-      class="max-w-3xl mx-auto flex flex-wrap lg:flex-nowrap gap-3 md:gap-6 justify-center">
-      <div class="w-full lg:w-1/2">
-        <FormStepper />
-      </div>
-      <div class="w-full lg:w-1/2">
-        <VisualizadorAntidoping />
-      </div>
-    </div>
-  </Transition>
-
-  <Transition appear mode="out-in" name="slide-up">
-    <div v-if="documentos.currentTypeOfDocument === 'aptitud'"
-      class=" flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
-      <div class="w-full xl:w-1/4">
-        <FormStepper />
-        <div class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
-          <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-            </svg>
-            <span>Acción Rápida</span>
-          </p>
-          <button 
-            type="button"
-            @click="() => { goToStep(8); }"
-            class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
-            <span>No más evaluaciones adicionales</span>
-          </button>
+    <div>
+      <Transition appear mode="out-in" name="slide-up">
+        <div v-if="documentos.currentTypeOfDocument === 'antidoping'"
+          class="max-w-3xl mx-auto flex flex-wrap lg:flex-nowrap gap-3 md:gap-6 justify-center">
+          <div class="w-full lg:w-1/2">
+            <FormStepper />
+          </div>
+          <div class="w-full lg:w-1/2">
+            <VisualizadorAntidoping />
+          </div>
         </div>
-      </div>
-      <div class="w-full xl:w-3/4">
-        <VisualizadorAptitud />
-      </div>
-    </div>
-  </Transition>
+      </Transition>
 
-  <Transition appear mode="out-in" name="slide-up">
-    <div v-if="documentos.currentTypeOfDocument === 'certificado'"
-      class="max-w-6xl mx-auto flex flex-wrap lg:flex-nowrap gap-3 md:gap-6 justify-center">
-      <div class="w-full xl:w-1/3">
-        <FormStepper />
-      </div>
-      <div class="w-full xl:w-2/3">
-        <VisualizadorCertificado />
-      </div>
-    </div>
-  </Transition>
-
-  <Transition appear mode="out-in" name="slide-up">  
-    <div v-if="documentos.currentTypeOfDocument === 'exploracionFisica'"
-      class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
-      <div class="w-full xl:w-1/4">
-        <FormStepper />
-        <div class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
-          <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-            </svg>
-            <span>Acción Rápida</span>
-          </p>
-          <button 
-            type="button"
-            @click="() => { marcarSinHallazgos(); goToStep(31); }"
-            class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
-            <span>Sin hallazgos en la exploración</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </button>
+      <Transition appear mode="out-in" name="slide-up">
+        <div v-if="documentos.currentTypeOfDocument === 'aptitud'"
+          class=" flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/4">
+            <FormStepper />
+            <div class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
+              <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                <span>Acción Rápida</span>
+              </p>
+              <button 
+                type="button"
+                @click="() => { goToStep(8); }"
+                class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
+                <span>No más evaluaciones adicionales</span>
+              </button>
+            </div>
+          </div>
+          <div class="w-full xl:w-3/4">
+            <VisualizadorAptitud />
+          </div>
         </div>
-      </div>
-      <div class="w-full xl:w-3/4">
-        <VisualizadorExploracionFisica />
-      </div>
-    </div>
-  </Transition>
+      </Transition>
 
-  <Transition appear mode="out-in" name="slide-up">  
-    <div v-if="documentos.currentTypeOfDocument === 'examenVista'"
-      class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
-      <div class="w-full xl:w-1/4">
-        <FormStepper />
-      </div>
-      <div class="w-full xl:w-3/4">
-        <VisualizadorExamenVista />
-      </div>
-    </div>
-  </Transition>
-
-  <Transition appear mode="out-in" name="slide-up">
-    <div v-if="documentos.currentTypeOfDocument === 'historiaClinica'"
-      class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
-      <div class="w-full xl:w-1/4">
-        <FormStepper />
-        <div class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
-          <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-            </svg>
-            <span>Acciones Rápidas</span>
-          </p>
-          <button 
-            type="button"
-            @click="() => { heredoFamiliaresNegados(); goToStep(12); }"
-            class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
-            <span>Heredofamiliares Negados</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </button>
-          <button 
-            type="button"
-            @click="() => { personalesPatologicosNegados(); goToStep(22); }"
-            class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
-            <span>Patológicos Negados</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </button>
-          <button 
-            type="button"
-            @click="() => { personalesNoPatologicosNegados(); goToStep(28); }"
-            class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-indigo-400 to-indigo-500 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
-            <span>No Patológicos Negados</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </button>
+      <Transition appear mode="out-in" name="slide-up">
+        <div v-if="documentos.currentTypeOfDocument === 'certificado'"
+          class="max-w-6xl mx-auto flex flex-wrap lg:flex-nowrap gap-3 md:gap-6 justify-center">
+          <div class="w-full xl:w-1/3">
+            <FormStepper />
+          </div>
+          <div class="w-full xl:w-2/3">
+            <VisualizadorCertificado />
+          </div>
         </div>
-      </div>
-      <div class="w-full xl:w-3/4">
-        <VisualizadorHistoriaClinica />
-      </div>
-    </div>
-  </Transition>
+      </Transition>
 
-  <Transition appear mode="out-in" name="slide-up">  
-    <div v-if="documentos.currentTypeOfDocument === 'notaMedica'"
-      class="max-w-6xl mx-auto flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
-      <div class="w-full xl:w-1/3">
-        <FormStepper />
-      </div>
-      <div class="w-full xl:w-2/3 max-w-3xl mx-auto">
-        <VisualizadorNotaMedica />
-      </div>
+      <Transition appear mode="out-in" name="slide-up">  
+        <div v-if="documentos.currentTypeOfDocument === 'exploracionFisica'"
+          class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/4">
+            <FormStepper />
+            <div class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
+              <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                <span>Acción Rápida</span>
+              </p>
+              <button 
+                type="button"
+                @click="() => { marcarSinHallazgos(); goToStep(31); }"
+                class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
+                <span>Sin hallazgos en la exploración</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="w-full xl:w-3/4">
+            <VisualizadorExploracionFisica />
+          </div>
+        </div>
+      </Transition>
+
+      <Transition appear mode="out-in" name="slide-up">  
+        <div v-if="documentos.currentTypeOfDocument === 'examenVista'"
+          class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/4">
+            <FormStepper />
+          </div>
+          <div class="w-full xl:w-3/4">
+            <VisualizadorExamenVista />
+          </div>
+        </div>
+      </Transition>
+
+      <Transition appear mode="out-in" name="slide-up">
+        <div v-if="documentos.currentTypeOfDocument === 'historiaClinica'"
+          class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/4">
+            <FormStepper />
+            <div class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
+              <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                <span>Acciones Rápidas</span>
+              </p>
+              <button 
+                type="button"
+                @click="() => { heredoFamiliaresNegados(); goToStep(12); }"
+                class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
+                <span>Heredofamiliares Negados</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </button>
+              <button 
+                type="button"
+                @click="() => { personalesPatologicosNegados(); goToStep(22); }"
+                class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
+                <span>Patológicos Negados</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </button>
+              <button 
+                type="button"
+                @click="() => { personalesNoPatologicosNegados(); goToStep(28); }"
+                class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-indigo-400 to-indigo-500 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2">
+                <span>No Patológicos Negados</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="w-full xl:w-3/4">
+            <VisualizadorHistoriaClinica />
+          </div>
+        </div>
+      </Transition>
+
+      <Transition appear mode="out-in" name="slide-up">  
+        <div v-if="documentos.currentTypeOfDocument === 'notaMedica'"
+          class="max-w-6xl mx-auto flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/3">
+            <FormStepper />
+          </div>
+          <div class="w-full xl:w-2/3 max-w-3xl mx-auto">
+            <VisualizadorNotaMedica />
+          </div>
+        </div>
+      </Transition>
+
     </div>
   </Transition>
 

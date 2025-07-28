@@ -127,79 +127,83 @@ if (periodoDePruebaFinalizado && estadoSuscripcion === 'cancelled' && finDeSuscr
 </script>
 
 <template>
-  <Transition appear name="fade">
-    <ModalEmpresas v-if="showModal" @closeModal="closeModal" @openSubscriptionModal="showSubscriptionModal = true"/>
-  </Transition>
+  <Transition appear mode="out-in" name="slide-up">
+    <div>
+      <Transition appear name="fade">
+        <ModalEmpresas v-if="showModal" @closeModal="closeModal" @openSubscriptionModal="showSubscriptionModal = true"/>
+      </Transition>
 
-  <Transition appear name="fade">
-    <ModalSuscripcion v-if="showSubscriptionModal" 
-      @closeModal="showSubscriptionModal = false"/>
-  </Transition>
+      <Transition appear name="fade">
+        <ModalSuscripcion v-if="showSubscriptionModal" 
+          @closeModal="showSubscriptionModal = false"/>
+      </Transition>
 
-  <Transition appear name="fade">
-    <ModalEliminar v-if="showDeleteModal && selectedEmpresaId && selectedEmpresaNombre" :idRegistro="selectedEmpresaId"
-      :identificacion="selectedEmpresaNombre" tipoRegistro="Empresa" @closeModal="toggleDeleteModal"
-      @confirmDelete="deleteEmpresaById" />
-  </Transition>
+      <Transition appear name="fade">
+        <ModalEliminar v-if="showDeleteModal && selectedEmpresaId && selectedEmpresaNombre" :idRegistro="selectedEmpresaId"
+          :identificacion="selectedEmpresaNombre" tipoRegistro="Empresa" @closeModal="toggleDeleteModal"
+          @confirmDelete="deleteEmpresaById" />
+      </Transition>
 
-  <div class="p-5 grid gap-5">
-    <div class="w-full px-4 grid gap-4">
-      <!-- Layout responsivo -->
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-      
-        <!-- Botón: siempre a la izquierda -->
-        <div class="w-full sm:w-auto">
-          <button 
-            type="button"
-            @click="openModal(null)"
-            class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-normal rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-200 active:scale-95 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl"
-          >
-            <i class="fas fa-building text-sm"></i>
-            <span>Nuevo Cliente</span>
-          </button>
+      <div class="p-5 grid gap-5">
+        <div class="w-full px-4 grid gap-4">
+          <!-- Layout responsivo -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          
+            <!-- Botón: siempre a la izquierda -->
+            <div class="w-full sm:w-auto">
+              <button 
+                type="button"
+                @click="openModal(null)"
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-normal rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-200 active:scale-95 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl"
+              >
+                <i class="fas fa-building text-sm"></i>
+                <span>Nuevo Cliente</span>
+              </button>
+            </div>
+
+            <!-- Buscador: siempre a la derecha -->
+            <div class="relative w-full sm:w-60 md:w-80 lg:w-96">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fa-solid fa-magnifying-glass text-gray-500 focus:text-emerald-500"></i>
+              </span>
+              <input
+              v-model="busqueda"
+              type="text"
+              placeholder="Buscar empresa..."
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 hover:shadow-md rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+              />
+            </div>
+          </div>
         </div>
 
-        <!-- Buscador: siempre a la derecha -->
-        <div class="relative w-full sm:w-60 md:w-80 lg:w-96">
-          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <i class="fa-solid fa-magnifying-glass text-gray-500 focus:text-emerald-500"></i>
-          </span>
-          <input
-          v-model="busqueda"
-          type="text"
-          placeholder="Buscar empresa..."
-          class="w-full pl-10 pr-4 py-2 border border-gray-300 hover:shadow-md rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
-          />
-        </div>
+        <!-- <Transition name="slide-up">
+          <div v-if="empresasFiltradas.length === 0" 
+              class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105">
+            <i class="fa-regular fa-lightbulb text-yellow-500 text-xl mr-1"></i>
+            <div>
+              <p class="text-sm font-medium">
+                Aún no tienes clientes registrados <br>
+                <a :href="guiaURL" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">Sigue esta guía para registrar a tu primer cliente.</a>.
+              </p>
+            </div>
+          </div>
+        </Transition> -->
+
+        <Transition appear mode="out-in" name="slide-up">
+          <div>
+            <!-- Si el array está vacío, mostramos el mensaje -->
+            <div v-if="empresasFiltradas.length === 0">
+              <h2 class="text-2xl sm:text-3xl md:text-4xl py-10 text-center font-semibold text-gray-700">Aún no hay empresas de clientes registradas</h2>
+            </div>
+            <!-- Si hay empresas, mostramos los items -->
+            <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+              <EmpresaItem v-for="empresa in empresasFiltradas" :key="empresa._id" :empresa="empresa"
+                @editarEmpresa="openModal" @eliminarEmpresa="toggleDeleteModal" />
+            </div>
+          </div>
+        </Transition>
       </div>
     </div>
-
-    <!-- <Transition name="slide-up">
-      <div v-if="empresasFiltradas.length === 0" 
-          class="fixed bottom-4 right-4 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-lg p-3 flex items-center gap-2 cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105">
-        <i class="fa-regular fa-lightbulb text-yellow-500 text-xl mr-1"></i>
-        <div>
-          <p class="text-sm font-medium">
-            Aún no tienes clientes registrados <br>
-            <a :href="guiaURL" target="_blank" rel="noopener noreferrer" class="underline text-blue-600">Sigue esta guía para registrar a tu primer cliente.</a>.
-          </p>
-        </div>
-      </div>
-    </Transition> -->
-
-    <Transition appear mode="out-in" name="slide-up">
-      <div>
-        <!-- Si el array está vacío, mostramos el mensaje -->
-        <div v-if="empresasFiltradas.length === 0">
-          <h2 class="text-2xl sm:text-3xl md:text-4xl py-10 text-center font-semibold text-gray-700">Aún no hay empresas de clientes registradas</h2>
-        </div>
-        <!-- Si hay empresas, mostramos los items -->
-        <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
-          <EmpresaItem v-for="empresa in empresasFiltradas" :key="empresa._id" :empresa="empresa"
-            @editarEmpresa="openModal" @eliminarEmpresa="toggleDeleteModal" />
-        </div>
-      </div>
-    </Transition>
-  </div>
+  </Transition>
 </template>
 

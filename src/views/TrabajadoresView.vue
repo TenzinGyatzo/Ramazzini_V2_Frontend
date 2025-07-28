@@ -487,298 +487,302 @@ const toggleColumnasOcultas = () => {
 </script>
 
 <template>
-  <!-- Modales -->
-   <Teleport to="body">
-    <Transition appear name="fade">
-      <ModalTrabajadores v-if="showModal" @closeModal="closeModal" @openSubscriptionModal="showSubscriptionModal = true" />
-    </Transition>
-  </Teleport>
-
-  <Transition appear name="fade">
-    <ModalSuscripcion v-if="showSubscriptionModal" @closeModal="showSubscriptionModal = false" />
-  </Transition>
-
-  <Transition appear name="fade">
-    <ModalEliminar
-      v-if="showDeleteModal"
-      :idRegistro="deleteConfig.id ?? ''"
-      :identificacion="deleteConfig.descripcion"
-      :tipoRegistro="deleteConfig.tipo"
-      @closeModal="showDeleteModal = false"
-      @confirmDelete="confirmarEliminacion"
-    />
-  </Transition>
-
-  <Transition appear name="fade">
-    <ModalCargaMasiva v-if="showImportModal" @openSubscriptionModal="showSubscriptionModal = true" @closeModal="toggleImportModal" />
-  </Transition>
-
-  <Transition appear name="fade">
-    <ModalRTs v-if="showRTsModal" @closeModal="closeRTsModal" @solicitarEliminacion="solicitarEliminacion" />
-  </Transition>
-
-  <Transition appear name="fade">
-    <ModalRiesgos v-if="showRisksModal" @closeModal="closeRisksModal" />
-  </Transition>
-
-  <!-- Encabezado de acciones -->
-  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 xl:p-6 mb-4 transition-all duration-500 ease-in-out">
-    <div class="flex flex-col lg:flex-row justify-between items-center lg:items-center gap-4 xl:gap-6 transition-all duration-500 ease-in-out">
-      <!-- Información con logotipo -->
-      <div class="flex items-center gap-4 flex-1 transition-all duration-500 ease-in-out">
-        <!-- Logo o placeholder -->
-        <div class="flex-shrink-0 transition-all duration-500 ease-in-out">
-          <img
-            v-if="empresas.currentEmpresa?.logotipoEmpresa?.data"
-            :src="'/uploads/logos/' + empresas.currentEmpresa.logotipoEmpresa.data + '?t=' + empresas.currentEmpresa.updatedAt"
-            :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial"
-            class="w-12 h-12 sm:w-16 sm:h-16 xl:w-20 xl:h-20 object-contain rounded-lg shadow-sm transition-all duration-500 ease-in-out"
-          />
-          <div v-else class="w-12 h-12 sm:w-16 sm:h-16 xl:w-20 xl:h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 transition-all duration-500 ease-in-out">
-            <i class="fas fa-building text-gray-400 text-lg sm:text-xl xl:text-2xl transition-all duration-500 ease-in-out"></i>
-          </div>
-        </div>
-        
-        <!-- Título y descripción -->
-        <div class="flex-1 text-center lg:text-left min-w-0 transition-all duration-500 ease-in-out">
-          <h2 class="text-xl xl:text-2xl font-bold text-gray-900 mb-1 xl:mb-2 truncate flex items-center gap-2 transition-all duration-500 ease-in-out">
-            <i class="fas fa-map-marker-alt text-emerald-600 text-lg xl:text-xl transition-all duration-500 ease-in-out"></i>
-            {{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}
-          </h2>
-          <p v-if="empresas.currentEmpresa?.nombreComercial" class="text-sm text-gray-600 mt-1 truncate flex items-center gap-2 transition-all duration-500 ease-in-out">
-            <i class="fas fa-building text-gray-500 text-sm transition-all duration-500 ease-in-out"></i>
-            {{ empresas.currentEmpresa?.nombreComercial }}
-            <span class="hidden xl:inline transition-all duration-500 ease-in-out"> - {{ empresas.currentEmpresa?.razonSocial }}</span>
-          </p>
-        </div>
-      </div>
-      
-      <!-- Botones de acción principales -->
-      <div class="flex flex-col sm:flex-row gap-2 xl:gap-3 w-full lg:w-auto justify-center lg:justify-end transition-all duration-500 ease-in-out">
-        <GreenButton 
-          text="Nuevo Trabajador" 
-          size="small"
-          :class="['group', 'xl:!px-6 xl:!py-3 xl:!text-base']"
-          @click="openModal(null)" 
-          title="Agregar un nuevo trabajador al centro de trabajo"
-        >
-          <template #icon>
-            <i class="fas fa-user-plus text-sm xl:text-base group-hover:scale-110 transition-transform duration-200"></i>
-          </template>
-        </GreenButton>
-        
-        <GreenButton 
-          text="Carga Masiva" 
-          variant="outline"
-          size="small"
-          :class="['group', 'xl:!px-6 xl:!py-3 xl:!text-base']"
-          @click="toggleImportModal" 
-          title="Importar múltiples trabajadores desde un archivo Excel"
-        >
-          <template #icon>
-            <i class="fas fa-upload text-sm xl:text-base group-hover:scale-110 transition-transform duration-200"></i>
-          </template>
-        </GreenButton>
-        
-        <GreenButton 
-          text="Exportar" 
-          variant="secondary"
-          size="small"
-          :class="['group', 'xl:!px-6 xl:!py-3 xl:!text-base']"
-          @click="exportarFiltrados" 
-          title="Exportar trabajadores filtrados a Excel"
-        >
-          <template #icon>
-            <i class="fas fa-file-excel text-sm xl:text-base group-hover:scale-110 transition-transform duration-200"></i>
-          </template>
-        </GreenButton>
-      </div>
-    </div>
-  </div>
-
-  <!-- Panel de controles y filtros -->
-  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3">
-    <!-- Controles principales -->
-    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-3">
-      <div class="flex flex-wrap items-center gap-2">
-        <!-- Toggle filtros -->
-        <button
-          @click="mostrarFiltros = !mostrarFiltros"
-          :class="[
-            'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 border',
-            mostrarFiltros 
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' 
-              : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300'
-          ]"
-          :title="mostrarFiltros ? 'Ocultar panel de filtros' : 'Mostrar opciones de filtrado avanzado'"
-        >
-          <i :class="mostrarFiltros ? 'fa-solid fa-filter-circle-xmark' : 'fa-solid fa-filter'"></i>
-          {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
-        </button>
-
-        <!-- Toggle columnas -->
-        <button
-          @click="toggleColumnasOcultas"
-          :disabled="actualizandoTabla"
-          :class="[
-            'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 border',
-            actualizandoTabla 
-              ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed' 
-              : mostrarColumnasOcultas
-                ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'
-                : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300'
-          ]"
-          :title="actualizandoTabla ? 'Actualizando configuración de tabla...' : (mostrarColumnasOcultas ? 'Mostrar solo columnas básicas' : 'Mostrar todas las columnas disponibles')"
-        >
-          <i v-if="actualizandoTabla" class="fa-solid fa-spinner fa-spin"></i>
-          <i v-else :class="mostrarColumnasOcultas ? 'fa-solid fa-table-columns' : 'fa-solid fa-table'"></i>
-          {{ actualizandoTabla ? 'Actualizando...' : (mostrarColumnasOcultas ? 'Mostrar sólo columnas básicas' : 'Mostrar todas las columnas') }}
-        </button>
-
-        <!-- Indicador de filtros activos -->
-        <div v-if="hayFiltrosActivos" 
-             class="inline-flex items-center gap-1.5 px-2 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg"
-             title="Filtros aplicados actualmente">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span class="text-xs font-medium text-emerald-700">{{ filtrosAplicados.size }} filtro{{ filtrosAplicados.size > 1 ? 's' : '' }} activo{{ filtrosAplicados.size > 1 ? 's' : '' }}</span>
-        </div>
-      </div>
-
-      <!-- Botón reset filtros -->
-      <button
-        v-if="hayFiltrosActivos"
-        @click="resetearFiltros"
-        class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-lg border border-red-200 transition-all duration-200 hover:border-red-300 hover:shadow-sm"
-        title="Eliminar todos los filtros aplicados"
-      >
-        <i class="fa-solid fa-rotate-left text-xs"></i>
-        Limpiar filtros
-      </button>
-    </div>
-
-    <!-- Sección de filtros -->
-    <Transition name="desplegar-filtros" mode="out-in">
-      <div v-if="mostrarFiltros" class="border-t border-gray-100 pt-4">
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
-          <div v-for="filtro in filtrosConfig" :key="filtro.id" class="space-y-1">
-            <label :for="`filtro-${filtro.id}`" class="block text-xs font-medium text-gray-700">
-              {{ filtro.label }}
-            </label>
-            <div class="relative">
-              <select
-                :id="`filtro-${filtro.id}`"
-                v-model="filtros[filtro.id]"
-                @change="actualizarFiltroYGuardar(filtro.id)"
-                :class="[
-                  'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
-                  filtrosAplicados.has(filtro.id) 
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
-                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
-                ]"
-              >
-                <option value="">Todos</option>
-                <option
-                  v-for="opcion in typeof filtro.opciones === 'function' ? filtro.opciones() : filtro.opciones"
-                  :key="opcion"
-                  :value="opcion"
-                >
-                  {{ opcion }}
-                </option>
-              </select>
-              
-              <!-- Indicador de filtro activo -->
-              <div v-if="filtrosAplicados.has(filtro.id)" 
-                   class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
-            </div>
-            
-          </div>
-        </div>
-      </div>
-    </Transition>
-  </div>
-
-  <!-- Tabla o mensaje de carga -->
   <Transition appear mode="out-in" name="slide-up">
-    <div v-if="trabajadores.loading">
-      <h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1>
-    </div>
-    <div v-else>
-      <!-- DataTable (siempre visible, pero vacía si no hay trabajadores) -->
-      <DataTableDT
-        ref="dataTableRef"
-        :rows="trabajadores.trabajadores || []"
-        :mostrarColumnasOcultas="mostrarColumnasOcultas"
-        v-if="mostrarTabla"
-        class="table-auto z-1"
-        @riesgo-trabajo="openRTsModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, $event)"
-        @riesgos="openRisksModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, $event)"
-        @editar="openModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo, $event)"
-        @toggle-estado-laboral="toggleEstadoLaboral($event)"
-        @eliminar="solicitarEliminacion('Trabajador', $event.id, $event.nombre, eliminarTrabajador)"
-        @actualizando-tabla="actualizandoTabla = $event"
-      />
+    <div>
+      <!-- Modales -->
+       <Teleport to="body">
+        <Transition appear name="fade">
+          <ModalTrabajadores v-if="showModal" @closeModal="closeModal" @openSubscriptionModal="showSubscriptionModal = true" />
+        </Transition>
+      </Teleport>
 
-      <!-- Mensaje de estado vacío (siempre visible cuando no hay trabajadores) -->
-      <div v-if="!trabajadores.loading && (!Array.isArray(trabajadores.trabajadores) || trabajadores.trabajadores.length === 0 || (typeof trabajadores.trabajadores === 'object' && trabajadores.trabajadores && 'message' in trabajadores.trabajadores))" class="text-center">
-        <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
-          <i class="fas fa-users text-4xl text-gray-400"></i>
-        </div>
-        <h2 class="text-xl font-bold text-gray-900 mb-3">
-          No hay trabajadores registrados
-        </h2>
-        <p class="text-gray-600 mb-6 max-w-2xl mx-auto text-sm">
-          Este centro de trabajo aún no tiene trabajadores registrados. 
-          Comienza agregando el primer trabajador para gestionar su expediente médico.
-        </p>
-        
-        <!-- Sugerencias de acciones -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6 max-w-4xl mx-auto">
-          <h3 class="text-base font-semibold text-gray-800 mb-4 text-center">
-            ¿Por dónde empezar?
-          </h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            
-            <div class="text-center p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200">
-              <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-3">
-                <i class="fas fa-user-plus text-white text-lg"></i>
+      <Transition appear name="fade">
+        <ModalSuscripcion v-if="showSubscriptionModal" @closeModal="showSubscriptionModal = false" />
+      </Transition>
+
+      <Transition appear name="fade">
+        <ModalEliminar
+          v-if="showDeleteModal"
+          :idRegistro="deleteConfig.id ?? ''"
+          :identificacion="deleteConfig.descripcion"
+          :tipoRegistro="deleteConfig.tipo"
+          @closeModal="showDeleteModal = false"
+          @confirmDelete="confirmarEliminacion"
+        />
+      </Transition>
+
+      <Transition appear name="fade">
+        <ModalCargaMasiva v-if="showImportModal" @openSubscriptionModal="showSubscriptionModal = true" @closeModal="toggleImportModal" />
+      </Transition>
+
+      <Transition appear name="fade">
+        <ModalRTs v-if="showRTsModal" @closeModal="closeRTsModal" @solicitarEliminacion="solicitarEliminacion" />
+      </Transition>
+
+      <Transition appear name="fade">
+        <ModalRiesgos v-if="showRisksModal" @closeModal="closeRisksModal" />
+      </Transition>
+
+      <!-- Encabezado de acciones -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 xl:p-6 mb-4 transition-all duration-500 ease-in-out">
+        <div class="flex flex-col lg:flex-row justify-between items-center lg:items-center gap-4 xl:gap-6 transition-all duration-500 ease-in-out">
+          <!-- Información con logotipo -->
+          <div class="flex items-center gap-4 flex-1 transition-all duration-500 ease-in-out">
+            <!-- Logo o placeholder -->
+            <div class="flex-shrink-0 transition-all duration-500 ease-in-out">
+              <img
+                v-if="empresas.currentEmpresa?.logotipoEmpresa?.data"
+                :src="'/uploads/logos/' + empresas.currentEmpresa.logotipoEmpresa.data + '?t=' + empresas.currentEmpresa.updatedAt"
+                :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial"
+                class="w-12 h-12 sm:w-16 sm:h-16 xl:w-20 xl:h-20 object-contain rounded-lg shadow-sm transition-all duration-500 ease-in-out"
+              />
+              <div v-else class="w-12 h-12 sm:w-16 sm:h-16 xl:w-20 xl:h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 transition-all duration-500 ease-in-out">
+                <i class="fas fa-building text-gray-400 text-lg sm:text-xl xl:text-2xl transition-all duration-500 ease-in-out"></i>
               </div>
-              <h4 class="font-semibold text-gray-900 mb-2 text-sm">Agregar Trabajador</h4>
-              <p class="text-xs text-gray-600 mb-3">
-                Registra a un trabajador individualmente
-              </p>
-              <button @click="openModal(null)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors">
-                Registrar Trabajador
-              </button>
             </div>
             
-            <div class="text-center p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
-              <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3">
-                <i class="fas fa-upload text-white text-lg"></i>
-              </div>
-              <h4 class="font-semibold text-gray-900 mb-2 text-sm">Carga Masiva</h4>
-              <p class="text-xs text-gray-600 mb-3">
-                Importa múltiples trabajadores desde Excel
+            <!-- Título y descripción -->
+            <div class="flex-1 text-center lg:text-left min-w-0 transition-all duration-500 ease-in-out">
+              <h2 class="text-xl xl:text-2xl font-bold text-gray-900 mb-1 xl:mb-2 truncate flex items-center gap-2 transition-all duration-500 ease-in-out">
+                <i class="fas fa-map-marker-alt text-emerald-600 text-lg xl:text-xl transition-all duration-500 ease-in-out"></i>
+                {{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}
+              </h2>
+              <p v-if="empresas.currentEmpresa?.nombreComercial" class="text-sm text-gray-600 mt-1 truncate flex items-center gap-2 transition-all duration-500 ease-in-out">
+                <i class="fas fa-building text-gray-500 text-sm transition-all duration-500 ease-in-out"></i>
+                {{ empresas.currentEmpresa?.nombreComercial }}
+                <span class="hidden xl:inline transition-all duration-500 ease-in-out"> - {{ empresas.currentEmpresa?.razonSocial }}</span>
               </p>
-              <button @click="toggleImportModal" class="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors">
-                Importar Trabajadores
-              </button>
             </div>
+          </div>
+          
+          <!-- Botones de acción principales -->
+          <div class="flex flex-col sm:flex-row gap-2 xl:gap-3 w-full lg:w-auto justify-center lg:justify-end transition-all duration-500 ease-in-out">
+            <GreenButton 
+              text="Nuevo Trabajador" 
+              size="small"
+              :class="['group', 'xl:!px-6 xl:!py-3 xl:!text-base']"
+              @click="openModal(null)" 
+              title="Agregar un nuevo trabajador al centro de trabajo"
+            >
+              <template #icon>
+                <i class="fas fa-user-plus text-sm xl:text-base group-hover:scale-110 transition-transform duration-200"></i>
+              </template>
+            </GreenButton>
             
-            <div class="text-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200">
-              <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3">
-                <i class="fas fa-file-excel text-white text-lg"></i>
-              </div>
-              <h4 class="font-semibold text-gray-900 mb-2 text-sm">Plantilla Excel</h4>
-              <p class="text-xs text-gray-600 mb-3">
-                Descarga la plantilla para carga masiva
-              </p>
-              <a href="/template/Plantilla para Importar Trabajadores.xlsx" download class="w-full bg-purple-500 hover:bg-purple-600 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors inline-block">
-                Descargar Plantilla
-              </a>
-            </div>
+            <GreenButton 
+              text="Carga Masiva" 
+              variant="outline"
+              size="small"
+              :class="['group', 'xl:!px-6 xl:!py-3 xl:!text-base']"
+              @click="toggleImportModal" 
+              title="Importar múltiples trabajadores desde un archivo Excel"
+            >
+              <template #icon>
+                <i class="fas fa-upload text-sm xl:text-base group-hover:scale-110 transition-transform duration-200"></i>
+              </template>
+            </GreenButton>
+            
+            <GreenButton 
+              text="Exportar" 
+              variant="secondary"
+              size="small"
+              :class="['group', 'xl:!px-6 xl:!py-3 xl:!text-base']"
+              @click="exportarFiltrados" 
+              title="Exportar trabajadores filtrados a Excel"
+            >
+              <template #icon>
+                <i class="fas fa-file-excel text-sm xl:text-base group-hover:scale-110 transition-transform duration-200"></i>
+              </template>
+            </GreenButton>
           </div>
         </div>
       </div>
+
+      <!-- Panel de controles y filtros -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3">
+        <!-- Controles principales -->
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Toggle filtros -->
+            <button
+              @click="mostrarFiltros = !mostrarFiltros"
+              :class="[
+                'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 border',
+                mostrarFiltros 
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' 
+                  : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300'
+              ]"
+              :title="mostrarFiltros ? 'Ocultar panel de filtros' : 'Mostrar opciones de filtrado avanzado'"
+            >
+              <i :class="mostrarFiltros ? 'fa-solid fa-filter-circle-xmark' : 'fa-solid fa-filter'"></i>
+              {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
+            </button>
+
+            <!-- Toggle columnas -->
+            <button
+              @click="toggleColumnasOcultas"
+              :disabled="actualizandoTabla"
+              :class="[
+                'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 border',
+                actualizandoTabla 
+                  ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed' 
+                  : mostrarColumnasOcultas
+                    ? 'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100'
+                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300'
+              ]"
+              :title="actualizandoTabla ? 'Actualizando configuración de tabla...' : (mostrarColumnasOcultas ? 'Mostrar solo columnas básicas' : 'Mostrar todas las columnas disponibles')"
+            >
+              <i v-if="actualizandoTabla" class="fa-solid fa-spinner fa-spin"></i>
+              <i v-else :class="mostrarColumnasOcultas ? 'fa-solid fa-table-columns' : 'fa-solid fa-table'"></i>
+              {{ actualizandoTabla ? 'Actualizando...' : (mostrarColumnasOcultas ? 'Mostrar sólo columnas básicas' : 'Mostrar todas las columnas') }}
+            </button>
+
+            <!-- Indicador de filtros activos -->
+            <div v-if="hayFiltrosActivos" 
+                 class="inline-flex items-center gap-1.5 px-2 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg"
+                 title="Filtros aplicados actualmente">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="text-xs font-medium text-emerald-700">{{ filtrosAplicados.size }} filtro{{ filtrosAplicados.size > 1 ? 's' : '' }} activo{{ filtrosAplicados.size > 1 ? 's' : '' }}</span>
+            </div>
+          </div>
+
+          <!-- Botón reset filtros -->
+          <button
+            v-if="hayFiltrosActivos"
+            @click="resetearFiltros"
+            class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-lg border border-red-200 transition-all duration-200 hover:border-red-300 hover:shadow-sm"
+            title="Eliminar todos los filtros aplicados"
+          >
+            <i class="fa-solid fa-rotate-left text-xs"></i>
+            Limpiar filtros
+          </button>
+        </div>
+
+        <!-- Sección de filtros -->
+        <Transition name="desplegar-filtros" mode="out-in">
+          <div v-if="mostrarFiltros" class="border-t border-gray-100 pt-4">
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+              <div v-for="filtro in filtrosConfig" :key="filtro.id" class="space-y-1">
+                <label :for="`filtro-${filtro.id}`" class="block text-xs font-medium text-gray-700">
+                  {{ filtro.label }}
+                </label>
+                <div class="relative">
+                  <select
+                    :id="`filtro-${filtro.id}`"
+                    v-model="filtros[filtro.id]"
+                    @change="actualizarFiltroYGuardar(filtro.id)"
+                    :class="[
+                      'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                      filtrosAplicados.has(filtro.id) 
+                        ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                    ]"
+                  >
+                    <option value="">Todos</option>
+                    <option
+                      v-for="opcion in typeof filtro.opciones === 'function' ? filtro.opciones() : filtro.opciones"
+                      :key="opcion"
+                      :value="opcion"
+                    >
+                      {{ opcion }}
+                    </option>
+                  </select>
+                  
+                  <!-- Indicador de filtro activo -->
+                  <div v-if="filtrosAplicados.has(filtro.id)" 
+                       class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </div>
+
+      <!-- Tabla o mensaje de carga -->
+      <Transition appear mode="out-in" name="slide-up">
+        <div v-if="trabajadores.loading">
+          <h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1>
+        </div>
+        <div v-else>
+          <!-- DataTable (siempre visible, pero vacía si no hay trabajadores) -->
+          <DataTableDT
+            ref="dataTableRef"
+            :rows="trabajadores.trabajadores || []"
+            :mostrarColumnasOcultas="mostrarColumnasOcultas"
+            v-if="mostrarTabla"
+            class="table-auto z-1"
+            @riesgo-trabajo="openRTsModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, $event)"
+            @riesgos="openRisksModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, $event)"
+            @editar="openModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo, $event)"
+            @toggle-estado-laboral="toggleEstadoLaboral($event)"
+            @eliminar="solicitarEliminacion('Trabajador', $event.id, $event.nombre, eliminarTrabajador)"
+            @actualizando-tabla="actualizandoTabla = $event"
+          />
+
+          <!-- Mensaje de estado vacío (siempre visible cuando no hay trabajadores) -->
+          <div v-if="!trabajadores.loading && (!Array.isArray(trabajadores.trabajadores) || trabajadores.trabajadores.length === 0 || (typeof trabajadores.trabajadores === 'object' && trabajadores.trabajadores && 'message' in trabajadores.trabajadores))" class="text-center">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
+              <i class="fas fa-users text-4xl text-gray-400"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 mb-3">
+              No hay trabajadores registrados
+            </h2>
+            <p class="text-gray-600 mb-6 max-w-2xl mx-auto text-sm">
+              Este centro de trabajo aún no tiene trabajadores registrados. 
+              Comienza agregando el primer trabajador para gestionar su expediente médico.
+            </p>
+            
+            <!-- Sugerencias de acciones -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6 max-w-4xl mx-auto">
+              <h3 class="text-base font-semibold text-gray-800 mb-4 text-center">
+                ¿Por dónde empezar?
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                <div class="text-center p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200">
+                  <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-user-plus text-white text-lg"></i>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 mb-2 text-sm">Agregar Trabajador</h4>
+                  <p class="text-xs text-gray-600 mb-3">
+                    Registra a un trabajador individualmente
+                  </p>
+                  <button @click="openModal(null)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors">
+                    Registrar Trabajador
+                  </button>
+                </div>
+                
+                <div class="text-center p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
+                  <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-upload text-white text-lg"></i>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 mb-2 text-sm">Carga Masiva</h4>
+                  <p class="text-xs text-gray-600 mb-3">
+                    Importa múltiples trabajadores desde Excel
+                  </p>
+                  <button @click="toggleImportModal" class="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors">
+                    Importar Trabajadores
+                  </button>
+                </div>
+                
+                <div class="text-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200">
+                  <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-file-excel text-white text-lg"></i>
+                  </div>
+                  <h4 class="font-semibold text-gray-900 mb-2 text-sm">Plantilla Excel</h4>
+                  <p class="text-xs text-gray-600 mb-3">
+                    Descarga la plantilla para carga masiva
+                  </p>
+                  <a href="/template/Plantilla para Importar Trabajadores.xlsx" download class="w-full bg-purple-500 hover:bg-purple-600 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors inline-block">
+                    Descargar Plantilla
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
     </div>
   </Transition>
 </template>
