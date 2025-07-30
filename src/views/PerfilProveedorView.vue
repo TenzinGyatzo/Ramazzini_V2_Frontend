@@ -8,6 +8,7 @@ const router = useRouter();
 
 const logotipoPreview = ref(null);
 const logotipoArchivo = ref(null);
+const isDragOver = ref(false);  // Para el estado de drag and drop
 const toast = inject("toast");
 
 const colorInforme = ref("#343A40");
@@ -48,6 +49,20 @@ watchEffect(() => {
   }
 });
 
+// Función para validar archivo
+const validateFile = (file) => {
+  const validExtensions = ['.png', '.jpg', '.jpeg', '.svg'];
+  const maxSizeMB = 1;
+  
+  const extension = '.' + file.name.split('.').pop().toLowerCase();
+  if (!validExtensions.includes(extension)) {
+    return { valid: false, message: 'Solo se permiten archivos: PNG, JPG, JPEG, SVG' };
+  }
+  if (file.size > maxSizeMB * 1024 * 1024) {
+    return { valid: false, message: `El archivo es muy grande. Límite: ${maxSizeMB}MB` };
+  }
+  return { valid: true };
+};
 
 // Computed Reactivo para el Pie de Página del Informe
 const piePaginaInforme = computed(() => ({
@@ -60,7 +75,6 @@ const piePaginaInforme = computed(() => ({
   RFC: formulario.value.RFC || "",
   correoElectronico: formulario.value.correoElectronico || ""
 }));
-
 
 // Función para formatear el teléfono
 function formatearTelefono(telefono) {
@@ -91,6 +105,12 @@ const colorOptions = [
 const handleFileChange = (event) => {
   const file = event?.target?.files?.[0];
   if (file && file instanceof File) {
+    const validation = validateFile(file);
+    if (!validation.valid) {
+      toast.open({ message: validation.message, type: 'error' });
+      return;
+    }
+    
     logotipoArchivo.value = file;
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -100,6 +120,50 @@ const handleFileChange = (event) => {
   } else {
     logotipoPreview.value = null;
     logotipoArchivo.value = null;
+  }
+};
+
+// Eventos de drag and drop
+const handleDragEnter = (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  isDragOver.value = true;
+};
+
+const handleDragLeave = (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  // Solo cambiar a false si salimos del área de drop
+  if (!event.currentTarget.contains(event.relatedTarget)) {
+    isDragOver.value = false;
+  }
+};
+
+const handleDragOver = (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+};
+
+const handleDrop = (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  isDragOver.value = false;
+  
+  const files = Array.from(event.dataTransfer.files);
+  if (files.length > 0) {
+    const file = files[0]; // Solo tomamos el primer archivo
+    const validation = validateFile(file);
+    if (!validation.valid) {
+      toast.open({ message: validation.message, type: 'error' });
+      return;
+    }
+    
+    logotipoArchivo.value = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      logotipoPreview.value = e.target.result;
+    };
+    reader.readAsDataURL(file);
   }
 };
 
@@ -335,8 +399,64 @@ const logoSrc = computed(() => {
 
             </div>
 
-            <FormKit type="file" label="Logotipo (Asegura que sea .png sin fondo, cuadrada, de al menos 500 x 500px, con el menor espacio posible entre el logo y el borde de la imagen)" name="logotipoEmpresa" accept=".png, .jpg, .jpeg, .svg"
-              multiple="false" @change="handleFileChange" />
+            <!-- Área de arrastrar y soltar para el logotipo -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Logotipo (Asegura que sea .png sin fondo, cuadrada, de al menos 500 x 500px, con el menor espacio posible entre el logo y el borde de la imagen)</label>
+              <div 
+                class="border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 cursor-pointer"
+                :class="[
+                  isDragOver 
+                    ? 'border-emerald-500 bg-emerald-50 scale-105' 
+                    : 'border-gray-300 hover:border-emerald-400 hover:bg-gray-50'
+                ]"
+                @dragenter="handleDragEnter"
+                @dragleave="handleDragLeave"
+                @dragover="handleDragOver"
+                @drop="handleDrop"
+                @click="$refs.logotipoInput.click()"
+              >
+                <input
+                  ref="logotipoInput"
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.svg"
+                  @change="handleFileChange"
+                  class="hidden"
+                />
+                
+                <div class="text-gray-600">
+                  <!-- Icono dinámico -->
+                  <div class="mx-auto h-12 w-12 mb-4 transition-all duration-200" :class="isDragOver ? 'scale-110' : ''">
+                    <div v-if="!isDragOver" class="flex items-center justify-center">
+                      <svg class="h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </div>
+
+                    <div v-else class="flex items-center justify-center">
+                      <svg class="h-12 w-12 text-emerald-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  <!-- Texto dinámico -->
+                  <p class="text-lg font-medium transition-colors duration-200" :class="isDragOver ? 'text-emerald-700' : ''">
+                    {{ isDragOver ? '¡Suelta el logotipo aquí!' : 'Arrastra el logotipo aquí o haz clic para seleccionar' }}
+                  </p>
+                  <p class="text-sm text-gray-500 mt-2">PNG, JPG, JPEG (máximo 1MB)</p>
+                  
+                  <!-- Indicador visual cuando se arrastra -->
+                  <div v-if="isDragOver" class="mt-3">
+                    <div class="inline-flex items-center px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                      </svg>
+                      Listo para soltar
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <!-- Mostrar la vista previa del logotipo -->
             <div class="flex flex-row justify-center items-center gap-4">
@@ -353,8 +473,7 @@ const logoSrc = computed(() => {
 
               <Transition appear name="fade-slow">
                 <div v-if="logotipoPreview" class="w-1/3 flex flex-col items-center">
-                  <p v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data"
-                    class="font-medium text-lg text-gray-700">
+                  <p v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data" class="font-medium text-lg text-gray-700">
                     Logotipo nuevo:
                   </p>
                   <p v-else class="font-medium text-lg text-gray-700">
@@ -363,14 +482,13 @@ const logoSrc = computed(() => {
                   <img :src="logotipoPreview" alt="Vista previa del logotipo"
                     class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />
                 </div>
-                
               </Transition>
               
               <!-- Vista previa del Pie de Página del Informe -->
-               <div v-if="piePaginaInforme.nombre" class="w-1/2 flex flex-col items-center">
-                 <p class="font-medium text-lg text-gray-700">
-                   Pie de Página en Informes:
-                 </p>
+              <div v-if="piePaginaInforme.nombre" class="w-1/2 flex flex-col items-center">
+                <p class="font-medium text-lg text-gray-700">
+                  Pie de Página en Informes:
+                </p>
                 <div class="mt-6 p-4 border rounded-lg bg-gray-50 text-right">                  
                   <p class="text-sm text-gray-800 mt-2 italic">
                     <span v-if="piePaginaInforme.nombre" class="font-medium">{{ piePaginaInforme.nombre }}</span><br v-if="piePaginaInforme.nombre">
@@ -387,8 +505,7 @@ const logoSrc = computed(() => {
                     <span v-if="piePaginaInforme.sitioWeb" class="font-light text-blue-700">{{ piePaginaInforme.sitioWeb }}</span>
                   </p>
                 </div>
-               </div>
-
+              </div>
             </div>
 
             <hr class="my-3" />

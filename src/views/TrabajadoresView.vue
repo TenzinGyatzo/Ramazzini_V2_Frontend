@@ -196,8 +196,16 @@ onMounted(async () => {
 
   filtrosConfig.forEach(({ id }) => {
     const select = document.getElementById(`filtro-${id}`) as HTMLSelectElement;
-    const valorGuardado = localStorage.getItem(`filtro-${id}`) ?? '';
+    // Para estadoLaboral, el valor por defecto es 'Activo', para otros filtros es ''
+    const valorPorDefecto = id === 'estadoLaboral' ? 'Activo' : '';
+    const valorGuardado = localStorage.getItem(`filtro-${id}`) ?? valorPorDefecto;
     filtros[id] = valorGuardado;
+    
+    // Si es la primera vez que se carga y es estadoLaboral, guardar el valor por defecto
+    if (id === 'estadoLaboral' && !localStorage.getItem(`filtro-${id}`)) {
+      localStorage.setItem(`filtro-${id}`, 'Activo');
+    }
+    
     actualizarEstadoFiltro(id, filtros[id]);
 
     if (select) {
