@@ -391,7 +391,6 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
 
   // 3. Aplicar filtro por fecha (periodo)
   const valorPeriodo = localStorage.getItem('filtro-periodo') || '';
-  console.log('Aplicando filtro de período:', valorPeriodo);
   if (valorPeriodo && valorPeriodo !== 'Todo el tiempo') {
     const hoy = new Date();
     let fechaInicio: Date | null = null;
@@ -443,8 +442,6 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
       const desde = fechaInicio.getTime();
       const hasta = (fechaFinMesAnterior || fechaFinAnoAnterior)?.getTime() || null;
 
-      console.log('Filtro período - Desde:', fechaInicio.toISOString(), 'Hasta:', (fechaFinMesAnterior || fechaFinAnoAnterior)?.toISOString());
-
       filtroPeriodoReferencia = function (settings, data) {
         const fechaTexto = data[3]; // columna "Última actualización" (índice 3)
         if (!fechaTexto || fechaTexto === '-') return true;
@@ -456,11 +453,7 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
         const fechaTime = fecha.getTime();
         
         const cumpleFiltro = hasta ? (fechaTime >= desde && fechaTime <= hasta) : (fechaTime >= desde);
-        
-        if (valorPeriodo === 'Hoy' || valorPeriodo === 'Esta semana') {
-          console.log('Filtro período - Fecha texto:', fechaTexto, 'Fecha parsed:', fecha.toISOString(), 'Cumple:', cumpleFiltro);
-        }
-        
+                
         return cumpleFiltro;
       };
       $.fn.dataTable.ext.search.push(filtroPeriodoReferencia);
