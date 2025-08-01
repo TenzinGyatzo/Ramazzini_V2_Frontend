@@ -7,6 +7,7 @@ import { useEmpresasStore } from "@/stores/empresas";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
 import TooltipInfo from "@/components/TooltipInfo.vue";
+import InformesAPI from "@/api/InformesAPI";
 
 const user = useUserStore();
 const proveedorSaludStore = useProveedorSaludStore();
@@ -48,6 +49,8 @@ const isMenuOpen = ref(false);
 const menuRef = ref<HTMLElement | null>(null);
 const isGuideMenuOpen = ref(false);
 const guideMenuRef = ref<HTMLElement | null>(null);
+const isFormatosMenuOpen = ref(false);
+const formatosMenuRef = ref<HTMLElement | null>(null);
 const isNotificationVisible = ref(false);
 
 const guiaConfiguracionInicialURL = "https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace"
@@ -60,6 +63,9 @@ const handleClickOutside = (event: MouseEvent) => {
   }
   if (guideMenuRef.value && !guideMenuRef.value.contains(event.target as Node)) {
     isGuideMenuOpen.value = false;
+  }
+  if (formatosMenuRef.value && !formatosMenuRef.value.contains(event.target as Node)) {
+    isFormatosMenuOpen.value = false;
   }
 };
 
@@ -130,6 +136,92 @@ const toggleGuideMenu = (event: MouseEvent) => {
   isGuideMenuOpen.value = !isGuideMenuOpen.value;
   if (isGuideMenuOpen.value) {
     isMenuOpen.value = false;
+  }
+};
+
+const toggleFormatosMenu = (event: MouseEvent) => {
+  event.stopPropagation();
+  isFormatosMenuOpen.value = !isFormatosMenuOpen.value;
+  if (isFormatosMenuOpen.value) {
+    isMenuOpen.value = false;
+    isGuideMenuOpen.value = false;
+  }
+};
+
+// Función para navegar a los formatos médicos
+const downloadFormat = async (formatType: string) => {
+  isFormatosMenuOpen.value = false;
+  
+  // Si es historia clínica, descargar el formato en blanco
+  if (formatType === 'historia-clinica') {
+    try {
+      // Usar valores por defecto para empresa y trabajador ya que el formato en blanco no los necesita
+      const empresaId = 'default';
+      const trabajadorId = 'default';
+      const userId = user.user?._id;
+      
+      if (!userId) {
+        console.error('Usuario no autenticado');
+        return;
+      }
+      
+      const response = await InformesAPI.descargarFormatoHistoriaClinica(empresaId, trabajadorId, userId);
+      
+      // Crear un blob y descargar el archivo
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'Formato_Historia_Clinica.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error al descargar el formato de historia clínica:', error);
+    }
+    return;
+  }
+  
+  // Si es exploración física, descargar el formato en blanco
+  if (formatType === 'exploracion-fisica') {
+    try {
+      // Usar valores por defecto para empresa y trabajador ya que el formato en blanco no los necesita
+      const empresaId = 'default';
+      const trabajadorId = 'default';
+      const userId = user.user?._id;
+      
+      if (!userId) {
+        console.error('Usuario no autenticado');
+        return;
+      }
+      
+      const response = await InformesAPI.descargarFormatoExploracionFisica(empresaId, trabajadorId, userId);
+      
+      // Crear un blob y descargar el archivo
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'Formato_Exploracion_Fisica.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error al descargar el formato de exploración física:', error);
+    }
+    return;
+  }
+  
+  // Mapeo de tipos de formato a rutas para otros formatos
+  const formatRoutes: Record<string, string> = {
+    'examen-vista': '/crear-documento/examen-vista'
+  };
+  
+  const route = formatRoutes[formatType];
+  if (route) {
+    router.push(route);
   }
 };
 
@@ -696,6 +788,62 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
               <i :class="[guia.icon, 'text-gray-400']"></i>
               <span class="text-sm font-medium text-gray-400">{{ guia.text }}</span>
             </div>
+          </li>
+        </ul>
+      </div>
+    </Transition>
+
+    <!-- Icono de Formatos -->
+    <Transition name="delayed-appear">
+      <button 
+        v-if="isVisible && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
+        @click="toggleFormatosMenu($event)"
+        class="fixed top-40 right-6 w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-300 z-30 flex items-center justify-center group"
+        :aria-label="isFormatosMenuOpen ? 'Cerrar formatos médicos' : 'Abrir formatos médicos'">
+        <i class="fa-solid fa-file-medical text-lg group-hover:rotate-12 transition-transform duration-300"></i>
+      </button>
+    </Transition>
+
+    <!-- Menú desplegable de formatos médicos -->
+    <Transition name="fade">
+      <div 
+        v-if="isFormatosMenuOpen"
+        ref="formatosMenuRef"
+        class="fixed top-56 right-6 bg-white rounded-2xl shadow-2xl p-6 w-80 z-20 border border-gray-100 backdrop-blur-sm bg-white/95 transition-all duration-300 ease-in-out">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+          <i class="fa-solid fa-file-medical mr-2 text-green-500"></i>
+          Descargar Formatos
+        </h3>
+        <ul class="space-y-3">
+          <li>
+            <button 
+              @click="downloadFormat('historia-clinica')"
+              class="w-full flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-green-50 transition-all duration-200 group border border-gray-100 hover:border-green-200">
+              <span class="text-sm font-medium text-gray-500 group-hover:text-green-600 transition-colors duration-200">1.</span>
+              <i class="fa-solid fa-notes-medical text-green-500 group-hover:text-green-600 transition-colors duration-200"></i>
+              <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Historia Clínica</span>
+              <i class="fa-solid fa-chevron-right ml-auto text-gray-400 group-hover:text-green-500 transition-colors duration-200"></i>
+            </button>
+          </li>
+          <li>
+            <button 
+              @click="downloadFormat('exploracion-fisica')"
+              class="w-full flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-green-50 transition-all duration-200 group border border-gray-100 hover:border-green-200">
+              <span class="text-sm font-medium text-gray-500 group-hover:text-green-600 transition-colors duration-200">2.</span>
+              <i class="fa-solid fa-stethoscope text-green-500 group-hover:text-green-600 transition-colors duration-200"></i>
+              <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Exploración Física</span>
+              <i class="fa-solid fa-chevron-right ml-auto text-gray-400 group-hover:text-green-500 transition-colors duration-200"></i>
+            </button>
+          </li>
+          <li>
+            <button 
+              @click="downloadFormat('examen-vista')"
+              class="w-full flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-green-50 transition-all duration-200 group border border-gray-100 hover:border-green-200">
+              <span class="text-sm font-medium text-gray-500 group-hover:text-green-600 transition-colors duration-200">3.</span>
+              <i class="fa-solid fa-eye text-green-500 group-hover:text-green-600 transition-colors duration-200"></i>
+              <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Examen de la Vista</span>
+              <i class="fa-solid fa-chevron-right ml-auto text-gray-400 group-hover:text-green-500 transition-colors duration-200"></i>
+            </button>
           </li>
         </ul>
       </div>
