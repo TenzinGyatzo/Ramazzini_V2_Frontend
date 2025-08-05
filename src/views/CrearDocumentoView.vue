@@ -7,6 +7,7 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
+import { useCurrentUser } from '@/composables/useCurrentUser';
 import FormStepper from '@/components/steps/FormStepper.vue';
 import VisualizadorAntidoping from '@/components/steps/VisualizadorAntidoping.vue';
 import VisualizadorAptitud from '@/components/steps/VisualizadorAptitud.vue';
@@ -23,6 +24,7 @@ const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 const steps = useStepsStore();
+const { ensureUserLoaded } = useCurrentUser();
 
 const empresaId = ref('');
 const centroTrabajoId = ref('');
@@ -64,12 +66,20 @@ onMounted(() => {
 });
 
 // Verificar cuando los datos se hayan cargado completamente
-watchEffect(() => {
+watchEffect(async () => {
   const empresa = empresas.currentEmpresa?.nombreComercial;
   const centroTrabajo = centrosTrabajo.currentCentroTrabajo?.nombreCentro;
   const trabajador = trabajadores.currentTrabajador?.nombre;
 
   if (empresa && centroTrabajo && trabajador && tipoDocumento.value) {
+    // Obtener el ID del usuario actual
+    const currentUserId = await ensureUserLoaded();
+    
+    if (!currentUserId) {
+      console.error('No se pudo obtener el ID del usuario actual');
+      return;
+    }
+
     const rutaBase = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
 
     const documentoMap = {
@@ -86,8 +96,8 @@ watchEffect(() => {
     const documentoForm = documentoMap[tipoDocumento.value];
 
     if (documentoForm) {
-      documentoForm.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-      documentoForm.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
+      documentoForm.createdBy = currentUserId;
+      documentoForm.updatedBy = currentUserId;
       documentoForm.rutaPDF = rutaBase;
     } else {
       console.error(`Tipo de documento no reconocido: ${tipoDocumento.value}`);

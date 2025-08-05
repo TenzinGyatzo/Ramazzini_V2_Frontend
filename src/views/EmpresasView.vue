@@ -66,6 +66,11 @@ const toggleDeleteModal = (idEmpresa: string | null = null, nombreComercial: str
 
 const deleteEmpresaById = async (id: string) => {
   try {
+    toast.open({ 
+      message: `Eliminando empresa ${selectedEmpresaNombre.value}...`, 
+      type: "info" 
+    });
+    
     // Esperamos a que la empresa sea eliminada
     await empresas.deleteEmpresaById(id);
 

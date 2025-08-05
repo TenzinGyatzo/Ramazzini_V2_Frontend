@@ -2,11 +2,13 @@
 import { ref, watch, inject, onMounted } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
+import { useCurrentUser } from '@/composables/useCurrentUser';
 
 const toast = inject('toast');
 
 const empresas = useEmpresasStore();
 const proveedorSaludStore = useProveedorSaludStore();
+const { getCurrentUserId, ensureUserLoaded } = useCurrentUser();
 const emit = defineEmits(['closeModal', 'openSubscriptionModal']);
 
 // Propiedades reactivas para el logotipo
@@ -119,6 +121,14 @@ const proveedorSalud = ref(
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
 
+  // Obtener el ID del usuario actual
+  const currentUserId = await ensureUserLoaded();
+  
+  if (!currentUserId) {
+    toast.open({ message: 'No se pudo identificar al usuario. Por favor, inicie sesión nuevamente.', type: 'error' });
+    return;
+  }
+
   const formData = new FormData();
 
   // Añadir los datos del formulario al FormData 
@@ -126,8 +136,8 @@ const handleSubmit = async (data) => {
   formData.append('razonSocial', data.razonSocial);
   formData.append('RFC', data.RFC);
   formData.append('giroDeEmpresa', data.giroDeEmpresa);
-  formData.append('createdBy', '6650f38308ac3beedf5ac41b'); // TODO: Obtener el ID del usuario actual
-  formData.append('updatedBy', '6650f38308ac3beedf5ac41b'); // TODO: Obtener el ID del usuario actual
+  formData.append('createdBy', currentUserId);
+  formData.append('updatedBy', currentUserId);
   formData.append('idProveedorSalud', proveedorSaludStore.proveedorSalud._id);
 
   // Añadir el archivo del logotipo si existe

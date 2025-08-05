@@ -4,6 +4,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
+import { useCurrentUser } from '@/composables/useCurrentUser';
 import { format } from 'date-fns';
 import { convertirYYYYMMDDaISO } from '@/helpers/dates';
 
@@ -13,6 +14,7 @@ const { currentEmpresa } = useEmpresasStore();
 const { currentCentroTrabajo } = useCentrosTrabajoStore();
 const { currentTrabajador } = useTrabajadoresStore();
 const documentos = useDocumentosStore();
+const { ensureUserLoaded } = useCurrentUser();
 
 const selectedFiles = ref([]);
 const isUploading = ref(false);
@@ -137,6 +139,14 @@ const handleSubmit = async () => {
     return;
   }
 
+  // Obtener el ID del usuario actual
+  const currentUserId = await ensureUserLoaded();
+  
+  if (!currentUserId) {
+    toast.open({ message: 'No se pudo identificar al usuario. Por favor, inicie sesión nuevamente.', type: 'error' });
+    return;
+  }
+
   isUploading.value = true;
   uploadProgress.value = 0;
 
@@ -162,8 +172,8 @@ const handleSubmit = async () => {
         extension: extension,
         rutaDocumento: `expedientes-medicos/${currentEmpresa.nombreComercial}/${currentCentroTrabajo.nombreCentro}/${currentTrabajador.nombre}`,
         idTrabajador: currentTrabajador._id,
-        createdBy: '6650f38308ac3beedf5ac41b',
-        updatedBy: '6650f38308ac3beedf5ac41b'
+        createdBy: currentUserId,
+        updatedBy: currentUserId
       };
 
       // Agregar datos al FormData

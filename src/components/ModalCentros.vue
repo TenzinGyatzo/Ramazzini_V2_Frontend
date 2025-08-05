@@ -2,11 +2,13 @@
 import { inject } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
+import { useCurrentUser } from '@/composables/useCurrentUser';
 
 const toast = inject('toast');
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
+const { getCurrentUserId, ensureUserLoaded } = useCurrentUser();
 const emit = defineEmits(['closeModal']);
 
 const estadosDeMexico = [
@@ -19,6 +21,14 @@ const estadosDeMexico = [
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
+  // Obtener el ID del usuario actual
+  const currentUserId = await ensureUserLoaded();
+  
+  if (!currentUserId) {
+    toast.open({ message: 'No se pudo identificar al usuario. Por favor, inicie sesión nuevamente.', type: 'error' });
+    return;
+  }
+
   const centroTrabajoData = {
     nombreCentro: data.nombreCentro,
     direccionCentro: data.direccionCentro,
@@ -26,8 +36,8 @@ const handleSubmit = async (data) => {
     estado: data.estado,
     municipio: data.municipio,
     idEmpresa: data.idEmpresa,
-    createdBy: data.createdBy, // TODO: Obtener el ID del usuario actual
-    updatedBy: data.updatedBy // TODO: Obtener el ID del usuario actual
+    createdBy: currentUserId,
+    updatedBy: currentUserId
   };
 
   // console.log('Centro de trabajo:', centroTrabajoData);
@@ -102,8 +112,6 @@ const closeModal = () => {
               :value="centrosTrabajo.currentCentroTrabajo?.municipio || ''" />
 
             <FormKit type="hidden" name="idEmpresa" :value="empresas.currentEmpresaId" />
-            <FormKit type="hidden" name="createdBy" :value="'6650f38308ac3beedf5ac41b'" />
-            <FormKit type="hidden" name="updatedBy" :value="'6650f38308ac3beedf5ac41b'" />
 
             <hr class="my-3">
             <FormKit type="submit" :disabled="centrosTrabajo.loadingModal">

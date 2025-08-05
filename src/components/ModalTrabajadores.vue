@@ -4,6 +4,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
+import { useCurrentUser } from '@/composables/useCurrentUser';
 import { convertirFechaISOaYYYYMMDD, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
 import TrabajadoresAPI from '@/api/TrabajadoresAPI';
 
@@ -23,6 +24,7 @@ const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const proveedorSaludStore = useProveedorSaludStore();
+const { ensureUserLoaded } = useCurrentUser();
 
 const emit = defineEmits(['closeModal', 'openSubscriptionModal'])
 
@@ -102,6 +104,14 @@ const cargarTrabajadoresPorCentro = async () => {
 const handleSubmit = async (data) => {
   if (!proveedorSaludStore.proveedorSalud) return;
 
+  // Obtener el ID del usuario actual
+  const currentUserId = await ensureUserLoaded();
+  
+  if (!currentUserId) {
+    toast.open({ message: 'No se pudo identificar al usuario. Por favor, inicie sesión nuevamente.', type: 'error' });
+    return;
+  }
+
   if (periodoDePruebaFinalizado) {
     // Bloquear si el periodo de prueba ha finalizado y no tiene suscripción activa (Inactive aparece cuando el pago falla repetidamente)
     if (!estadoSuscripcion || estadoSuscripcion === 'inactive') {
@@ -127,8 +137,8 @@ const handleSubmit = async (data) => {
     estadoCivil: data.estadoCivil,
     numeroEmpleado: data.numeroEmpleado,
     idCentroTrabajo: data.idCentroTrabajo,
-    createdBy: data.createdBy, // TODO: Obtener el ID del usuario actual
-    updatedBy: data.updatedBy // TODO: Obtener el ID del usuario actual
+    createdBy: currentUserId,
+    updatedBy: currentUserId
   };
 
   // Agregar estadoLaboral solo si es un nuevo registro
@@ -333,8 +343,6 @@ const cancelarTransferencia = () => {
 
             <!-- Campos ocultos y botón de enviar -->
             <FormKit type="hidden" name="idCentroTrabajo" :value="centrosTrabajo.currentCentroTrabajoId" />
-            <FormKit type="hidden" name="createdBy" :value="'6650f38308ac3beedf5ac41b'" />
-            <FormKit type="hidden" name="updatedBy" :value="'6650f38308ac3beedf5ac41b'" />
 
             <hr class="my-3">
             <FormKit type="submit" :disabled="trabajadores.loadingModal">

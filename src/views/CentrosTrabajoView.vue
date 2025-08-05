@@ -61,6 +61,11 @@ const toggleDeleteModal = (idCentroTrabajo: string | null = null, nombreCentro: 
 
 const deleteCentroTrabajoById = async (empresaId: string, centroTrabajoId: string) => {
   try {
+    toast.open({ 
+      message: `Eliminando centro de trabajo ${selectedCentroTrabajoNombre.value}...`, 
+      type: "info" 
+    });
+    
     // Esperamos a que el centro de trabajo sea eliminado
     await centrosTrabajo.deleteCentroTrabajoById(empresaId, centroTrabajoId);
 
