@@ -1,6 +1,6 @@
 <script>
 import axios from 'axios';
-import { ref, onMounted, onUnmounted, inject } from 'vue';
+import { ref, onMounted, onUnmounted, inject, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -129,6 +129,18 @@ export default {
     const route = useRoute();
 
     const toast = inject('toast');
+
+    // Computed properties para mejor UX
+    const progressPercentage = computed(() => {
+      // El porcentaje debe reflejar los pasos completados, no el paso actual
+      // Si estamos en el paso 3, significa que hemos completado 2 pasos (pasos 1 y 2)
+      const pasosCompletados = Math.max(0, stepsStore.currentStep - 1);
+      return Math.round((pasosCompletados / stepsStore.steps.length) * 100);
+    });
+
+    const currentStepDisplay = computed(() => {
+      return Math.min(stepsStore.currentStep, stepsStore.steps.length);
+    });
 
     // Establece los pasos al montar el componente
     onMounted(() => {
@@ -425,6 +437,8 @@ export default {
     return {
       stepsStore,
       handleSubmit,
+      progressPercentage,
+      currentStepDisplay,
     };
   },
 };
@@ -440,10 +454,16 @@ export default {
   <div
     class="border-shadow w-full col-span-1 2xl:col-span-9 text-left rounded-lg p-7 2xl:p-7 transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-md mx-auto">
 
-    <!-- Barra de progreso -->
+    <!-- Barra de progreso mejorada -->
     <div class="relative w-full h-2 mb-4 bg-gray-200 rounded-full overflow-hidden">
       <div class="progress-bar absolute top-0 left-0 h-full bg-emerald-600 transition-all duration-300"
         :style="{ width: (stepsStore.currentStep / stepsStore.steps.length) * 100 + '%' }"></div>
+    </div>
+
+    <!-- Indicador sutil de progreso -->
+    <div class="flex justify-between items-center mb-4 text-xs text-gray-500">
+      <span>Paso {{ currentStepDisplay }} de {{ stepsStore.steps.length }}</span>
+      <span class="font-medium text-emerald-600">{{ progressPercentage }}% completado</span>
     </div>
 
     <!-- Formulario dinámico -->
@@ -499,7 +519,6 @@ export default {
     </div>
   </div>
 </template>
-
 
 <style scoped>
 .fade-slide-enter-active,

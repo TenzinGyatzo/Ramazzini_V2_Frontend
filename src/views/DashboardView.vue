@@ -29,6 +29,39 @@ const fechaInicio = ref(null)
 const fechaFin = ref(null)
 const periodoPredefinido = ref('')
 
+// Funciones para manejar localStorage del centro seleccionado
+const CENTRO_SELECCIONADO_KEY = 'centroSeleccionado';
+
+const guardarCentroSeleccionado = (centro) => {
+  try {
+    localStorage.setItem(CENTRO_SELECCIONADO_KEY, centro);
+  } catch (error) {
+    console.warn('No se pudo guardar el centro seleccionado en localStorage:', error);
+  }
+};
+
+const cargarCentroSeleccionado = () => {
+  try {
+    return localStorage.getItem(CENTRO_SELECCIONADO_KEY) || 'Todos';
+  } catch (error) {
+    console.warn('No se pudo cargar el centro seleccionado de localStorage:', error);
+    return 'Todos';
+  }
+};
+
+const validarCentroSeleccionado = (centroGuardado, centrosDisponibles) => {
+  // Si el centro guardado es 'Todos', siempre es válido
+  if (centroGuardado === 'Todos') {
+    return 'Todos';
+  }
+  
+  // Verificar si el centro guardado existe en los centros disponibles
+  const centroExiste = centrosDisponibles.some(centro => centro.nombreCentro === centroGuardado);
+  
+  // Si existe, usarlo; si no, usar 'Todos' como fallback
+  return centroExiste ? centroGuardado : 'Todos';
+};
+
 // Opciones de periodos predefinidos
 const opcionesPeriodo = [
   'Hoy',
@@ -154,7 +187,10 @@ const cargarDatos = async (empresaId, inicio, fin) => {
 
   empresasStore.currentEmpresa = empresa;
   centrosTrabajo.value = centros;
-  centroSeleccionado.value = centros.length > 0 ? centros[0].nombreCentro : 'Todos';
+  
+  // Cargar y validar el centro seleccionado desde localStorage
+  const centroGuardado = cargarCentroSeleccionado();
+  centroSeleccionado.value = validarCentroSeleccionado(centroGuardado, centros);
 
   // 2. Info para el dashboard (en paralelo)
   if (centros.length > 0) {
@@ -177,6 +213,11 @@ watch(
   },
   { immediate: true }
 );
+
+// Watcher para guardar el centro seleccionado en localStorage cuando cambie
+watch(centroSeleccionado, (nuevoCentro) => {
+  guardarCentroSeleccionado(nuevoCentro);
+});
 
 watch([fechaInicio, fechaFin], ([inicio, fin]) => {
   if (inicio && fin && new Date(inicio) > new Date(fin)) {

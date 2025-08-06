@@ -555,9 +555,9 @@ const toggleColumnasOcultas = () => {
                 <i class="fas fa-map-marker-alt text-emerald-600 text-lg xl:text-xl transition-all duration-500 ease-in-out"></i>
                 {{ centrosTrabajo.currentCentroTrabajo?.nombreCentro }}
               </h2>
-              <p v-if="empresas.currentEmpresa?.nombreComercial" class="text-sm text-gray-600 mt-1 truncate flex items-center gap-2 transition-all duration-500 ease-in-out">
+              <p v-if="empresas.currentEmpresa?.nombreComercial" class="text-sm text-gray-600 mt-1 truncate flex items-center transition-all duration-500 ease-in-out">
                 <i class="fas fa-building text-gray-500 text-sm transition-all duration-500 ease-in-out"></i>
-                {{ empresas.currentEmpresa?.nombreComercial }}
+                &nbsp;&nbsp;&nbsp;{{ empresas.currentEmpresa?.nombreComercial }}&nbsp;
                 <span class="hidden xl:inline transition-all duration-500 ease-in-out"> - {{ empresas.currentEmpresa?.razonSocial }}</span>
               </p>
             </div>
