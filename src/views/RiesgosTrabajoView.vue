@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick, watch, inject, provide } from 'vue';
+import { ref, onMounted, computed, nextTick, watch, inject, provide, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
@@ -35,9 +35,10 @@ const showDeleteModal = ref(false);
 const toast = inject('toast') as any; // Inyectamos el servicio de toast para notificaciones
 
 /* =====================
-   Filtros Reactivos
+   Filtros Reactivos Mejorados
 ===================== */
 const mostrarFiltros = ref(false);
+const filtrosAplicados = reactive(new Set<string>());
 const centroSeleccionado = ref<string>('todos');
 const sexoSeleccionado = ref<string>('todos');
 const puestoSeleccionado = ref<string>('todos');
@@ -55,6 +56,64 @@ const secuelasSeleccionadas = ref<string>('todos');
 const busquedaTexto = ref<string>("");
 const riesgosOriginales = ref<RiesgoTrabajo[]>([]);
 const inputBusqueda = ref<HTMLInputElement | null>(null);
+
+// Función para actualizar el estado de los filtros
+function actualizarEstadoFiltro(id: string, valor: string) {
+  if (valor === 'todos' || valor === '') {
+    filtrosAplicados.delete(id);
+  } else {
+    filtrosAplicados.add(id);
+  }
+}
+
+// Función para actualizar filtro y guardar en localStorage
+function actualizarFiltroYGuardar(id: string) {
+  let valor = '';
+  switch (id) {
+    case 'sexo':
+      valor = sexoSeleccionado.value;
+      break;
+    case 'puesto':
+      valor = puestoSeleccionado.value;
+      break;
+    case 'periodo':
+      valor = periodoSeleccionado.value;
+      break;
+    case 'edad':
+      valor = edadSeleccionada.value;
+      break;
+    case 'antiguedad':
+      valor = antiguedadSeleccionada.value;
+      break;
+    case 'naturaleza':
+      valor = naturalezaSeleccionada.value;
+      break;
+    case 'parteCuerpo':
+      valor = parteCuerpoSeleccionada.value;
+      break;
+    case 'recaida':
+      valor = recaidaSeleccionada.value;
+      break;
+    case 'tipoRiesgo':
+      valor = tipoRiesgoSeleccionado.value;
+      break;
+    case 'manejo':
+      valor = manejoSeleccionado.value;
+      break;
+    case 'alta':
+      valor = altaSeleccionada.value;
+      break;
+    case 'diasIncapacidad':
+      valor = diasIncapacidadSeleccionados.value;
+      break;
+    case 'secuelas':
+      valor = secuelasSeleccionadas.value;
+      break;
+  }
+  
+  actualizarEstadoFiltro(id, valor);
+  localStorage.setItem(`filtro-rt-${id}`, valor);
+}
 
 /* =====================
    Computed: Filtros Dinámicos
@@ -376,6 +435,7 @@ function toggleCentro(centroId: string) {
 }
 
 function limpiarFiltros() {
+  // Resetear todos los valores de filtros
   sexoSeleccionado.value = 'todos';
   puestoSeleccionado.value = 'todos';
   periodoSeleccionado.value = 'todos';
@@ -389,6 +449,24 @@ function limpiarFiltros() {
   altaSeleccionada.value = 'todos';
   diasIncapacidadSeleccionados.value = 'todos';
   secuelasSeleccionadas.value = 'todos';
+  
+  // Limpiar el conjunto de filtros aplicados
+  filtrosAplicados.clear();
+  
+  // Limpiar localStorage
+  localStorage.removeItem('filtro-rt-sexo');
+  localStorage.removeItem('filtro-rt-puesto');
+  localStorage.removeItem('filtro-rt-periodo');
+  localStorage.removeItem('filtro-rt-edad');
+  localStorage.removeItem('filtro-rt-antiguedad');
+  localStorage.removeItem('filtro-rt-naturaleza');
+  localStorage.removeItem('filtro-rt-parteCuerpo');
+  localStorage.removeItem('filtro-rt-recaida');
+  localStorage.removeItem('filtro-rt-tipoRiesgo');
+  localStorage.removeItem('filtro-rt-manejo');
+  localStorage.removeItem('filtro-rt-alta');
+  localStorage.removeItem('filtro-rt-diasIncapacidad');
+  localStorage.removeItem('filtro-rt-secuelas');
 }
 
 function exportarFiltrados() {
@@ -669,26 +747,381 @@ async function eliminarRTDesdeVista(trabajadorId: string, riesgoTrabajoId: strin
         </div>
 
         <!-- =======================
-          Toggle Filtros + Indicador
+             Panel de controles y filtros
         ======================= -->
-        <div class="flex justify-between items-center gap-3 my-4">
-          <div class="w-32"></div> <!-- Spacer para alinear el toggle al centro -->
-          
-          <div class="flex items-center gap-3">
-            <button
-              @click="mostrarFiltros = !mostrarFiltros"
-              class="text-sm px-3 py-1.5 rounded-md text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-300 transition duration-200 flex items-center gap-2"
-            >
-              <i :class="mostrarFiltros ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-              {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
-            </button>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3">
+          <!-- Controles principales -->
+          <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <!-- Toggle filtros -->
+              <button
+                @click="mostrarFiltros = !mostrarFiltros"
+                :class="[
+                  'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 border',
+                  mostrarFiltros 
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' 
+                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300'
+                ]"
+                :title="mostrarFiltros ? 'Ocultar panel de filtros' : 'Mostrar opciones de filtrado avanzado'"
+              >
+                <i :class="mostrarFiltros ? 'fa-solid fa-filter-circle-xmark' : 'fa-solid fa-filter'"></i>
+                {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
+              </button>
 
-            <div v-if="hayFiltrosActivos" class="flex items-center gap-1 text-xs text-emerald-600 font-medium">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Filtros activos
+              <!-- Indicador de filtros activos -->
+              <div v-if="hayFiltrosActivos" 
+                   class="inline-flex items-center gap-1.5 px-2 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg"
+                   title="Filtros aplicados actualmente">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-xs font-medium text-emerald-700">{{ filtrosAplicados.size }} filtro{{ filtrosAplicados.size > 1 ? 's' : '' }} activo{{ filtrosAplicados.size > 1 ? 's' : '' }}</span>
+              </div>
             </div>
+
+            <!-- Botón reset filtros -->
+            <button
+              v-if="hayFiltrosActivos"
+              @click="limpiarFiltros"
+              class="inline-flex items-center gap-1.5 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-lg border border-red-200 transition-all duration-200 hover:border-red-300 hover:shadow-sm"
+              title="Eliminar todos los filtros aplicados"
+            >
+              <i class="fa-solid fa-rotate-left text-xs"></i>
+              Limpiar filtros
+            </button>
           </div>
 
+          <!-- Sección de filtros -->
+          <Transition name="desplegar-filtros" mode="out-in">
+            <div v-if="mostrarFiltros" class="border-t border-gray-100 pt-4">
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+                <!-- Filtro por Sexo -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Sexo</label>
+                  <div class="relative">
+                    <select
+                      v-model="sexoSeleccionado"
+                      @change="actualizarFiltroYGuardar('sexo')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('sexo') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option value="Masculino">Masculino</option>
+                      <option value="Femenino">Femenino</option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('sexo')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+
+                <!-- Filtro por Puesto -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Puesto</label>
+                  <div class="relative">
+                    <select
+                      v-model="puestoSeleccionado"
+                      @change="actualizarFiltroYGuardar('puesto')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('puesto') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option v-for="puesto in puestosDisponibles" :key="puesto" :value="puesto">
+                        {{ puesto }}
+                      </option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('puesto')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+
+                <!-- Filtro por Periodo -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Periodo</label>
+                  <div class="relative">
+                    <select
+                      v-model="periodoSeleccionado"
+                      @change="actualizarFiltroYGuardar('periodo')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('periodo') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option v-for="opcion in opcionesPeriodo" :key="opcion" :value="opcion">
+                        {{ opcion }}
+                      </option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('periodo')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+
+                <!-- Filtro por Edad -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Edad</label>
+                  <div class="relative">
+                    <select
+                      v-model="edadSeleccionada"
+                      @change="actualizarFiltroYGuardar('edad')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('edad') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option v-for="rango in opcionesEdad" :key="rango" :value="rango">
+                        {{ rango }}
+                      </option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('edad')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+
+                <!-- Filtro por Antigüedad -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Antigüedad</label>
+                  <div class="relative">
+                    <select
+                      v-model="antiguedadSeleccionada"
+                      @change="actualizarFiltroYGuardar('antiguedad')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('antiguedad') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option v-for="rango in opcionesAntiguedad" :key="rango" :value="rango">
+                        {{ rango }}
+                      </option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('antiguedad')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+
+                <!-- Filtro por Naturaleza de la Lesión -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Naturaleza de la Lesión</label>
+                  <div class="relative">
+                    <select
+                      v-model="naturalezaSeleccionada"
+                      @change="actualizarFiltroYGuardar('naturaleza')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('naturaleza') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option v-for="naturaleza in naturalezasDisponibles" :key="naturaleza" :value="naturaleza">
+                        {{ naturaleza }}
+                      </option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('naturaleza')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+
+                <!-- Filtro por Parte del Cuerpo Afectada -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Parte del Cuerpo Afectada</label>
+                  <div class="relative">
+                    <select
+                      v-model="parteCuerpoSeleccionada"
+                      @change="actualizarFiltroYGuardar('parteCuerpo')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('parteCuerpo') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option v-for="parte in parteCuerpoDisponibles" :key="parte" :value="parte">
+                        {{ parte }}
+                      </option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('parteCuerpo')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+
+                <!-- Filtro por Recaída -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Recaída</label>
+                  <div class="relative">
+                    <select
+                      v-model="recaidaSeleccionada"
+                      @change="actualizarFiltroYGuardar('recaida')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('recaida') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option value="Si">Sí</option>
+                      <option value="No">No</option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('recaida')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+                
+                <!-- Filtro por Tipo de Riesgo -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Tipo de Riesgo</label>
+                  <div class="relative">
+                    <select
+                      v-model="tipoRiesgoSeleccionado"
+                      @change="actualizarFiltroYGuardar('tipoRiesgo')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('tipoRiesgo') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option value="Accidente de Trabajo">Accidente de Trabajo</option>
+                      <option value="Accidente de Trayecto">Accidente de Trayecto</option>
+                      <option value="Enfermedad de Trabajo">Enfermedad de Trabajo</option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('tipoRiesgo')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+                
+                <!-- Filtro por Manejo -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Manejo</label>
+                  <div class="relative">
+                    <select
+                      v-model="manejoSeleccionado"
+                      @change="actualizarFiltroYGuardar('manejo')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('manejo') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option value="IMSS">IMSS</option>
+                      <option value="Interno">Interno</option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('manejo')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+
+                <!-- Filtro por Alta -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Alta</label>
+                  <div class="relative">
+                    <select
+                      v-model="altaSeleccionada"
+                      @change="actualizarFiltroYGuardar('alta')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('alta') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option value="Incapacidad Activa">Incapacidad Activa</option>
+                      <option value="Alta ST2">Alta ST2</option>
+                      <option value="Alta Interna">Alta Interna</option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('alta')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+
+                <!-- Filtro por Días de Incapacidad -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Días de Incapacidad</label>
+                  <div class="relative">
+                    <select
+                      v-model="diasIncapacidadSeleccionados"
+                      @change="actualizarFiltroYGuardar('diasIncapacidad')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('diasIncapacidad') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option v-for="rango in opcionesDiasIncapacidad" :key="rango" :value="rango">
+                        {{ rango }}
+                      </option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('diasIncapacidad')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+
+                <!-- Filtro por Secuelas -->
+                <div class="space-y-1">
+                  <label class="block text-xs font-medium text-gray-700">Secuelas</label>
+                  <div class="relative">
+                    <select
+                      v-model="secuelasSeleccionadas"
+                      @change="actualizarFiltroYGuardar('secuelas')"
+                      :class="[
+                        'w-full px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-emerald-500/20',
+                        filtrosAplicados.has('secuelas') 
+                          ? 'border-emerald-300 bg-emerald-50 text-emerald-900 font-medium' 
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 focus:border-emerald-400'
+                      ]"
+                    >
+                      <option value="todos">Todos</option>
+                      <option value="Si">Si</option>
+                      <option value="No">No</option>
+                    </select>
+                    <!-- Indicador de filtro activo -->
+                    <div v-if="filtrosAplicados.has('secuelas')" 
+                         class="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white shadow-sm"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Transition>
+        </div>
+
+        <!-- =======================
+             Campo de búsqueda
+        ======================= -->
+        <div class="flex justify-center my-4">
           <div class="relative w-40 md:w-60 lg:w-80">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <i class="fa-solid fa-magnifying-glass text-gray-500 focus:text-emerald-500"></i>
@@ -702,344 +1135,6 @@ async function eliminarRTDesdeVista(trabajadorId: string, riesgoTrabajoId: strin
             />
           </div>
         </div>
-
-
-        <!-- =======================
-             Filtros Desplegables (Con Toggle)
-        ======================= -->
-        <Transition name="desplegar" mode="out-in">
-          <div v-if="mostrarFiltros" class="flex flex-wrap gap-4 my-6 justify-center">
-            <!-- Filtro por Sexo -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Sexo</label>
-              <select
-                v-model="sexoSeleccionado"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  sexoSeleccionado !== 'todos' 
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Femenino">Femenino</option>
-              </select>
-              <!-- Testigo de Filtro Aplicado (Sexo) -->
-              <div v-if="sexoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-        
-            <!-- Filtro por Puesto -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Puesto</label>
-              <select
-                v-model="puestoSeleccionado"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  puestoSeleccionado !== 'todos' 
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option v-for="puesto in puestosDisponibles" :key="puesto" :value="puesto">
-                  {{ puesto }}
-                </option>
-              </select>
-              <!-- Testigo de Filtro Aplicado (Puesto) -->
-              <div v-if="puestoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-
-            <!-- Filtro por Periodo -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Periodo</label>
-              <select
-                v-model="periodoSeleccionado"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  periodoSeleccionado !== 'todos' 
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option v-for="opcion in opcionesPeriodo" :key="opcion" :value="opcion">
-                  {{ opcion }}
-                </option>
-              </select>
-
-              <!-- Testigo de Filtro Aplicado (Periodo) -->
-              <div v-if="periodoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-
-            <!-- Filtro por Edad -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Edad</label>
-              <select
-                v-model="edadSeleccionada"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  edadSeleccionada !== 'todos' 
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option v-for="rango in opcionesEdad" :key="rango" :value="rango">
-                  {{ rango }}
-                </option>
-              </select>
-
-              <!-- Testigo de Filtro Aplicado (Edad) -->
-              <div v-if="edadSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-
-            <!-- Filtro por Antigüedad -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Antigüedad</label>
-              <select
-                v-model="antiguedadSeleccionada"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  antiguedadSeleccionada !== 'todos' 
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option v-for="rango in opcionesAntiguedad" :key="rango" :value="rango">
-                  {{ rango }}
-                </option>
-              </select>
-
-              <!-- Testigo de Filtro Aplicado (Antigüedad) -->
-              <div v-if="antiguedadSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-
-            <!-- Filtro por Naturaleza de la Lesión -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Naturaleza de la Lesión</label>
-              <select
-                v-model="naturalezaSeleccionada"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  naturalezaSeleccionada !== 'todos' 
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option v-for="naturaleza in naturalezasDisponibles" :key="naturaleza" :value="naturaleza">
-                  {{ naturaleza }}
-                </option>
-              </select>
-              <!-- Testigo de Filtro Aplicado (Naturaleza) -->
-              <div v-if="naturalezaSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-
-            <!-- Filtro por Parte del Cuerpo Afectada -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Parte del Cuerpo Afectada</label>
-              <select
-                v-model="parteCuerpoSeleccionada"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  parteCuerpoSeleccionada !== 'todos' 
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option v-for="parte in parteCuerpoDisponibles" :key="parte" :value="parte">
-                  {{ parte }}
-                </option>
-              </select>
-
-              <!-- Testigo de Filtro Aplicado (Parte del Cuerpo) -->
-              <div v-if="parteCuerpoSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-
-            <!-- Filtro por Recaída -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Recaída</label>
-              <select
-                v-model="recaidaSeleccionada"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  recaidaSeleccionada !== 'todos' 
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option value="Si">Sí</option>
-                <option value="No">No</option>
-              </select>
-
-              <!-- Testigo de Filtro Aplicado (Recaída) -->
-              <div v-if="recaidaSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-            
-            <!-- Filtro por Tipo de Riesgo -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Tipo de Riesgo</label>
-              <select
-                v-model="tipoRiesgoSeleccionado"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  tipoRiesgoSeleccionado !== 'todos' 
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option value="Accidente de Trabajo">Accidente de Trabajo</option>
-                <option value="Accidente de Trayecto">Accidente de Trayecto</option>
-                <option value="Enfermedad de Trabajo">Enfermedad de Trabajo</option>
-              </select>
-
-              <!-- Testigo de Filtro Aplicado (Tipo de Riesgo) -->
-              <div v-if="tipoRiesgoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-            
-            <!-- Filtro por Manejo -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Manejo</label>
-              <select
-                v-model="manejoSeleccionado"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  manejoSeleccionado !== 'todos'
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option value="IMSS">IMSS</option>
-                <option value="Interno">Interno</option>
-              </select>
-
-              <!-- Testigo de Filtro Aplicado (Manejo) -->
-              <div v-if="manejoSeleccionado !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-
-            <!-- Filtro por Alta -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Alta</label>
-              <select
-                v-model="altaSeleccionada"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  altaSeleccionada !== 'todos'
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option value="Incapacidad Activa">Incapacidad Activa</option>
-                <option value="Alta ST2">Alta ST2</option>
-                <option value="Alta Interna">Alta Interna</option>
-              </select>
-
-              <!-- Testigo de Filtro Aplicado (Alta) -->
-              <div v-if="altaSeleccionada !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-
-            <!-- Filtro por Días de Incapacidad -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Días de Incapacidad</label>
-              <select
-                v-model="diasIncapacidadSeleccionados"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  diasIncapacidadSeleccionados !== 'todos' 
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100' 
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option v-for="rango in opcionesDiasIncapacidad" :key="rango" :value="rango">
-                  {{ rango }}
-                </option>
-              </select>
-
-              <!-- Testigo de Filtro Aplicado (Días de Incapacidad) -->
-              <div v-if="diasIncapacidadSeleccionados !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-
-            <!-- Filtro por Secuelas -->
-            <div class="ml-4 items-center gap-2">
-              <label class="block text-xs md:text-sm font-medium text-gray-700">Secuelas</label>
-              <select
-                v-model="secuelasSeleccionadas"
-                :class="[
-                  'border px-2 py-1 rounded-md shadow-sm text-sm text-gray-700 bg-white transition duration-150 ease-in-out',
-                  secuelasSeleccionadas !== 'todos'
-                    ? 'border-emerald-500 bg-emerald-50 font-semibold shadow-emerald-100'
-                    : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500'
-                ]"
-              >
-                <option value="todos">Todos</option>
-                <option value="Si">Si</option>
-                <option value="No">No</option>
-              </select>
-
-              <!-- Testigo de Filtro Aplicado (secuelas) -->
-              <div v-if="secuelasSeleccionadas !== 'todos'" class="flex items-center gap-1 mt-1">
-                <i class="fas fa-filter text-xs text-emerald-500"></i>
-                <span class="text-emerald-600 text-xs">Filtro aplicado</span>
-              </div>
-            </div>
-
-            <!-- Botón para limpiar filtros -->
-            <div class="text-xs ml-4 items-center gap-2">
-              <label class="block text-xs font-medium text-gray-100 mb-0.5">Filtros</label>
-              <button
-                @click="limpiarFiltros"
-                class="bg-red-50 hover:bg-red-100 text-red-600 font-medium py-1.5 px-3 rounded-lg border-2 border-red-200 shadow-sm hover:shadow-md transition-all duration-300 ease-in-out flex items-center justify-center gap-2"
-              >
-                <i class="fa-solid fa-filter-circle-xmark"></i>
-                Quitar Filtros
-              </button>
-            </div>
-          </div>
-        </Transition>
 
         <!-- =======================
              Lista de Riesgos Agrupados por Centro
@@ -1268,4 +1363,23 @@ async function eliminarRTDesdeVista(trabajadorId: string, riesgoTrabajoId: strin
   transform: translateY(0);
 }
 
+.desplegar-filtros-enter-active,
+.desplegar-filtros-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.desplegar-filtros-enter-from,
+.desplegar-filtros-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.desplegar-filtros-enter-to,
+.desplegar-filtros-leave-from {
+  opacity: 1;
+  max-height: 1000px;
+  transform: translateY(0);
+}
 </style>
