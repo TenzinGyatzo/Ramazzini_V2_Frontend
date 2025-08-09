@@ -37,7 +37,7 @@ const emit = defineEmits(['click']);
       'inline-flex items-center justify-center gap-2 font-normal rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
       // Tamaños
       size === 'small' && 'px-4 py-2 text-sm min-w-32',
-      size === 'medium' && 'px-6 py-3 text-base min-w-40',
+      size === 'medium' && 'px-6 py-3 text-xs md:text-sm lg:text-base min-w-40',
       size === 'large' && 'px-8 py-4 text-lg min-w-48',
       // Variantes
       variant === 'primary' && 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl',

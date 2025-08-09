@@ -13,6 +13,7 @@ import GreenButton from '@/components/GreenButton.vue';
 import { exportarRiesgosTrabajoDesdeFrontend } from '@/helpers/exportarExcel';
 import ModalRTs from '@/components/ModalRTs.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
+import RiesgosTrabajoDataTable from '@/components/RiesgosTrabajoDataTable.vue';
 
 /* =====================
    Variables y Stores
@@ -31,6 +32,11 @@ const centrosAbiertos = ref<Record<string, boolean>>({});
 
 const showRTsModal = ref(false);
 const showDeleteModal = ref(false);
+
+// Toggle para cambiar entre vista de tarjetas y tabla
+const vistaActual = ref<'tarjetas' | 'tabla'>('tarjetas');
+const mostrarTipScroll = ref(false)
+const esRestauracionLocalStorage = ref(false)
 
 const toast = inject('toast') as any; // Inyectamos el servicio de toast para notificaciones
 
@@ -135,6 +141,11 @@ const hayFiltrosActivos = computed(() => {
     secuelasSeleccionadas.value !== 'todos' ||
     busquedaTexto.value.trim() !== ''
   );
+});
+
+// Computed para determinar si el buscador está en uso
+const buscadorEnUso = computed(() => {
+  return busquedaTexto.value.trim() !== '';
 });
 
 // Computed para determinar si un grupo tenía riesgos originalmente
@@ -466,9 +477,26 @@ function verificarOverflowTodas() {
 }
 
 // Llamar a la inicialización después del montaje
-onMounted(() => {
-  verificarOverflowTodas();
-});
+onMounted(async () => {
+  const vistaGuardada = localStorage.getItem('riesgosTrabajoVista')
+  if (vistaGuardada === 'tarjetas' || vistaGuardada === 'tabla') {
+    esRestauracionLocalStorage.value = true
+    vistaActual.value = vistaGuardada
+    await nextTick()
+    esRestauracionLocalStorage.value = false
+  }
+})
+
+// Guardar la vista en localStorage cuando cambie
+watch(vistaActual, (nuevaVista, vistaAnterior) => {
+  localStorage.setItem('riesgosTrabajoVista', nuevaVista)
+  
+  // Solo mostrar el tip si cambiamos específicamente de tarjetas a tabla
+  // y NO es una restauración desde localStorage
+  if (vistaAnterior === 'tarjetas' && nuevaVista === 'tabla' && !esRestauracionLocalStorage.value) {
+    mostrarTipScrollLateral()
+  }
+})
 
 /* =====================
    Funciones de Utilidad
@@ -523,20 +551,34 @@ function exportarFiltrados() {
 
   // Extraer todos los riesgos filtrados de los grupos
   const riesgosFiltrados: any[] = riesgosAgrupados.value.flatMap(grupo => grupo.riesgos).map((riesgo) => ({
-    NombreTrabajador: riesgo.nombreTrabajador || '-',
-    Sexo: riesgo.sexoTrabajador || '-',
-    Edad: riesgo.fechaNacimiento ? calcularEdad(riesgo.fechaNacimiento) : '-',
-    Puesto: riesgo.puestoTrabajador || '-',
+    // 1. INDICADORES CRÍTICOS Y TEMPORALES
     FechaRiesgo: riesgo.fechaRiesgo ? new Date(riesgo.fechaRiesgo).toLocaleDateString('es-MX', { timeZone: 'UTC' }) : '-',
+    PorcentajeIPP: riesgo.porcentajeIPP || '-',
+    DíasIncapacidad: riesgo.diasIncapacidad || '-',
+    
+    // 2. IDENTIFICACIÓN DEL TRABAJADOR
+    NombreTrabajador: riesgo.nombreTrabajador || '-',
+    Puesto: riesgo.puestoTrabajador || '-',
+    CentroTrabajo: centrosStore.centrosTrabajo.find(c => c._id === riesgo.idCentroTrabajo)?.nombreCentro || '-',
+    
+    // 3. DATOS DEL EVENTO
     Naturaleza: riesgo.naturalezaLesion || '-',
     ParteCuerpo: riesgo.parteCuerpoAfectada || '-',
     TipoRiesgo: riesgo.tipoRiesgo || '-',
+    
+    // 4. ESTADO Y SEGUIMIENTO
+    Recaída: riesgo.recaida || '-',
+    FechaAlta: riesgo.fechaAlta ? new Date(riesgo.fechaAlta).toLocaleDateString('es-MX', { timeZone: 'UTC' }) : '-',
     Manejo: riesgo.manejo || '-',
     Alta: riesgo.alta || '-',
-    DíasIncapacidad: riesgo.diasIncapacidad || '-',
-    Recaída: riesgo.recaida || '-',
     Secuelas: riesgo.secuelas || '-',
-    PorcentajeIPP: riesgo.porcentajeIPP || '-',
+    
+    // 5. DATOS ADICIONALES
+    NumeroEmpleado: riesgo.numeroEmpleado || '-',
+    Sexo: riesgo.sexoTrabajador || '-',
+    Edad: riesgo.fechaNacimiento ? calcularEdad(riesgo.fechaNacimiento) + ' años' : '-',
+    Antigüedad: riesgo.fechaIngreso ? calcularAntiguedad(riesgo.fechaIngreso) : '-',
+    NSS: riesgo.NSS || '-',
     Notas: riesgo.notas || '-',
   }));
 
@@ -716,6 +758,32 @@ async function eliminarRTDesdeVista(trabajadorId: string, riesgoTrabajoId: strin
   }
 }
 
+/* =====================
+   Funciones para el componente de tabla
+===================== */
+function handleEditarDesdeTabla(riesgo: RiesgoTrabajo) {
+  openRTsModal(empresaId, riesgo.idCentroTrabajo, riesgo.idTrabajador);
+}
+
+function handleEliminarDesdeTabla(payload: { id: string; descripcion: string }) {
+  const riesgo = riesgosEmpresa.value.find(r => r._id === payload.id);
+  if (riesgo) {
+    solicitarEliminacion(
+      'Riesgo de Trabajo',
+      riesgo._id,
+      payload.descripcion,
+      () => eliminarRTDesdeVista(riesgo.idTrabajador, riesgo._id)
+    );
+  }
+}
+
+// Función para mostrar el tip de scroll lateral
+const mostrarTipScrollLateral = () => {
+  mostrarTipScroll.value = true
+  setTimeout(() => {
+    mostrarTipScroll.value = false
+  }, 10000)
+}
 </script>
 
 <template>
@@ -773,8 +841,21 @@ async function eliminarRTDesdeVista(trabajadorId: string, riesgoTrabajoId: strin
             </h2>
           </div>
 
-          <div class="ml-auto">
-            <GreenButton text="Exportar Trabajadores" @click="exportarFiltrados" />
+          <div class="ml-auto flex items-center gap-3">
+            <button
+              type="button"
+              @click="router.push({ name: 'dashboard-rt', params: { idEmpresa: empresasStore.currentEmpresaId } })"
+              class="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white text-xs md:text-sm lg:text-base font-normal rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-200 min-w-40"
+            >
+              <i class="fas fa-chart-line text-xs md:text-sm lg:text-base"></i>
+              <span class="hidden xl:inline">Estadísticas RTs</span>
+              <span class="xl:hidden">Estadísticas</span>
+            </button>
+            <GreenButton text="Exportar RTs" @click="exportarFiltrados">
+              <template #icon>
+                <i class="fas fa-file-excel text-sm xl:text-base group-hover:scale-110 transition-transform duration-200"></i>
+              </template>
+            </GreenButton>
           </div>
 
           <!-- Filtro por Centro de Trabajo -->
@@ -815,12 +896,22 @@ async function eliminarRTDesdeVista(trabajadorId: string, riesgoTrabajoId: strin
               </button>
 
               <!-- Indicador de filtros activos -->
-              <div v-if="hayFiltrosActivos" 
+              <div v-if="hayFiltrosActivos && filtrosAplicados.size > 0" 
                    class="inline-flex items-center gap-1.5 px-2 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg"
                    title="Filtros aplicados actualmente">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span class="text-xs font-medium text-emerald-700">{{ filtrosAplicados.size }} filtro{{ filtrosAplicados.size > 1 ? 's' : '' }} activo{{ filtrosAplicados.size > 1 ? 's' : '' }}</span>
               </div>
+
+              <!-- Indicador "Búsqueda activa" -->
+              <Transition name="fade" mode="out-in">
+                <div v-if="buscadorEnUso" 
+                     class="inline-flex items-center gap-1.5 px-2 py-1.5 bg-blue-50 border border-blue-200 rounded-lg"
+                     title="Buscador activo">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                  <span class="text-xs font-medium text-blue-700">Búsqueda activa</span>
+                </div>
+              </Transition>
             </div>
 
             <!-- Botón reset filtros -->
@@ -1165,10 +1256,55 @@ async function eliminarRTDesdeVista(trabajadorId: string, riesgoTrabajoId: strin
         </div>
 
         <!-- =======================
-             Campo de búsqueda
+             Campo de búsqueda y Toggle de Vista
         ======================= -->
-        <div class="flex justify-center my-6">
-          <div class="relative w-full max-w-md">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 my-6">
+          <!-- Toggle de Vista -->
+          <div class="bg-gray-100 rounded-xl p-1 inline-flex">
+            <button
+              @click="vistaActual = 'tarjetas'"
+              :class="[
+                'px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-2',
+                vistaActual === 'tarjetas'
+                  ? 'bg-white text-emerald-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              ]"
+            >
+              <i class="fas fa-th-large"></i>
+              Vista de Tarjetas
+            </button>
+            <button
+              @click="vistaActual = 'tabla'"
+              :class="[
+                'px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-2',
+                vistaActual === 'tabla'
+                  ? 'bg-white text-emerald-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              ]"
+            >
+              <i class="fas fa-table"></i>
+              Vista de Tabla
+            </button>
+          </div>
+
+          <!-- Tip de scroll lateral (solo visible en vista de tabla) -->
+          <Transition name="fade" mode="out-in">
+            <div v-if="mostrarTipScroll && vistaActual === 'tabla'" class="flex-shrink-0">
+              <div class="bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 flex items-center gap-3 shadow-sm">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-info-circle text-blue-500 text-lg"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-blue-700 text-sm font-normal">
+                    Mantén presionado <kbd class="px-2 py-1 bg-blue-100 border border-blue-200 rounded text-xs font-mono">Shift</kbd> para hacer scroll lateralmente
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Transition>
+
+          <!-- Campo de búsqueda (solo visible en vista de tarjetas) -->
+          <div v-if="vistaActual === 'tarjetas'" class="relative w-full sm:w-96">
             <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
             </span>
@@ -1192,413 +1328,416 @@ async function eliminarRTDesdeVista(trabajadorId: string, riesgoTrabajoId: strin
         </div>
 
         <!-- =======================
-             Lista de Riesgos Agrupados por Centro
+             Vista de Tabla
         ======================= -->
-        <div class="space-y-6">
-          <div v-for="grupo in riesgosAgrupados" :key="grupo.centroId" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <!-- Encabezado del Centro -->
-            <button
-              class="w-full text-left p-6 hover:bg-gray-50 transition-all duration-200 border-b border-gray-100"
-              @click="toggleCentro(grupo.centroId)"
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                  <div class="flex-shrink-0">
-                    <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                      <i class="fas fa-building text-white text-lg"></i>
-                    </div>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h2 class="text-xl font-bold text-gray-900 truncate">
-                      {{ grupo.centroNombre }}
-                    </h2>
-                    <p class="text-sm text-gray-500 mt-1 truncate">
-                      <i class="fas fa-map-marker-alt mr-1"></i>
-                      {{ grupo.centroDireccion }}
-                    </p>
-                  </div>
-                </div>
-                
-                <div class="flex items-center gap-4">
-                  <!-- Contador de RTs -->
-                  <div class="flex items-center gap-2">
-                    <span
-                      :class="[
-                        'inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold',
-                        grupo.riesgos.length === 0
-                          ? 'bg-gray-100 text-gray-600'
-                          : grupo.riesgos.length <= 5
-                          ? 'bg-amber-100 text-amber-700'
-                          : grupo.riesgos.length <= 10
-                          ? 'bg-orange-100 text-orange-700'
-                          : 'bg-red-100 text-red-700'
-                      ]"
-                    >
-                      <i class="fas fa-exclamation-triangle mr-1"></i>
-                      {{ grupo.riesgos.length }} RT{{ grupo.riesgos.length === 1 ? '' : 's' }}
-                    </span>
-                  </div>
-                  
-                  <!-- Icono de expansión -->
-                  <div class="flex-shrink-0">
-                    <i 
-                      :class="[
-                        'fas transition-transform duration-200 text-gray-400',
-                        centrosAbiertos[grupo.centroId] ? 'fa-chevron-up' : 'fa-chevron-down'
-                      ]"
-                    ></i>
-                  </div>
-                </div>
-              </div>
-            </button>
-            
-            <!-- Contenido del Centro -->
-            <Transition name="desplegar" mode="out-in">
-              <div v-if="centrosAbiertos[grupo.centroId]" class="p-6">
-                <!-- Mensaje cuando no hay riesgos -->
-                <div v-if="grupo.riesgos.length === 0" class="text-center py-12">
-                  <!-- Mostrar "No se encontraron riesgos" solo si el grupo tenía riesgos originalmente Y hay filtros activos -->
-                  <div v-if="hayFiltrosActivos && grupoTeníaRiesgosOriginalmente(grupo.centroId)" class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-search text-gray-400 text-2xl"></i>
-                  </div>
-                  <!-- Mostrar "Sin riesgos registrados" si el grupo no tenía riesgos originalmente O no hay filtros activos -->
-                  <div v-else class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-check-circle text-gray-400 text-2xl"></i>
-                  </div>
-                  <h3 v-if="hayFiltrosActivos && grupoTeníaRiesgosOriginalmente(grupo.centroId)" class="text-lg font-medium text-gray-900 mb-2">No se encontraron riesgos</h3>
-                  <h3 v-else class="text-lg font-medium text-gray-900 mb-2">Sin riesgos registrados</h3>
-                  <p v-if="hayFiltrosActivos && grupoTeníaRiesgosOriginalmente(grupo.centroId)" class="text-gray-500 mb-4">No hay riesgos de trabajo que coincidan con los filtros aplicados.</p>
-                  <p v-else class="text-gray-500">Este centro de trabajo no tiene riesgos de trabajo registrados.</p>
-                  <button
-                    v-if="hayFiltrosActivos && grupoTeníaRiesgosOriginalmente(grupo.centroId)"
-                    @click="limpiarFiltros"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors duration-200"
-                  >
-                    <i class="fas fa-times"></i>
-                    Limpiar filtros
-                  </button>
-                </div>
-                
-                <!-- Grid de Riesgos -->
-                <div v-else class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
-                  <div
-                    v-for="riesgo in grupo.riesgos"
-                    :key="riesgo._id"
-                    class="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-emerald-300 transition-all duration-300"
-                  >
-                    <!-- Encabezado del Riesgo -->
-                    <div class="flex items-start justify-between mb-0">
-                      <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-2">
-                          <h3 class="text-xl font-semibold text-gray-900 truncate">
-                            {{ riesgo.nombreTrabajador }}
-                          </h3>
-                        </div>
-                        <div class="flex items-center gap-3 mb-2">
-                          <div class="text-base text-gray-600 font-medium group relative inline-block">
-                            <i class="fas fa-briefcase mr-1"></i>
-                            {{ riesgo.puestoTrabajador }}
-                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                              Puesto
-                              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                            </div>
-                          </div>
-                          <div v-if="riesgo.sexoTrabajador" class="flex items-center gap-1 group relative">
-                            <i v-if="riesgo.sexoTrabajador === 'Masculino'" class="fas fa-mars text-sky-600 text-sm"></i>
-                            <i v-else class="fas fa-venus text-rose-600 text-sm"></i>
-                              <span class="text-sm sm:text-base text-gray-600">
-                                <span class="hidden sm:block">{{ riesgo.sexoTrabajador }}</span>
-                              </span>
-                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                              {{ riesgo.sexoTrabajador === 'Masculino' ? 'Masculino' : 'Femenino' }}
-                              <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <!-- Fecha del Riesgo -->
-                      <div class="flex-shrink-0 text-right">
-                        <div class="text-xs text-gray-500 mb-1">Fecha del Riesgo</div>
-                        <div class="text-sm font-semibold text-gray-700">
-                          {{ riesgo.fechaRiesgo ? new Date(riesgo.fechaRiesgo).toLocaleDateString('es-MX', {
-                            timeZone: 'UTC',
-                            year: 'numeric', 
-                            month: 'short', 
-                            day: 'numeric' 
-                          }) : 'Fecha no registrada' }}
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Información del Trabajador -->
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
-                      <!-- Número de Empleado -->
-                      <div v-if="riesgo.numeroEmpleado && riesgo.numeroEmpleado !== '-'" class="flex items-center gap-2 group relative">
-                        <i class="fas fa-id-badge text-purple-500 text-sm"></i>
-                        <span class="text-sm text-gray-600">
-                          No. {{ riesgo.numeroEmpleado }}
-                        </span>
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Número de empleado
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </div>
-                      
-                      <!-- Edad -->
-                      <div class="flex items-center gap-2 group relative">
-                        <i class="fas fa-birthday-cake text-emerald-500 text-sm"></i>
-                        <span class="text-sm text-gray-600">
-                          {{ riesgo.fechaNacimiento ? calcularEdad(riesgo.fechaNacimiento) + ' años' : 'Edad desconocida' }}
-                        </span>
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Edad
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </div>
-                      
-                      <!-- Antigüedad -->
-                      <div class="flex items-center gap-2 group relative">
-                        <i class="fas fa-clock text-cyan-500 text-sm"></i>
-                        <span class="text-sm text-gray-600">
-                          {{ riesgo.fechaIngreso ? calcularAntiguedad(riesgo.fechaIngreso) : 'Antigüedad desconocida' }}
-                        </span>
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Antigüedad
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </div>
-                      
-                      <!-- NSS -->
-                      <div v-if="riesgo.NSS" class="flex items-center gap-2 group relative">
-                        <i class="fas fa-id-card text-blue-500 text-sm"></i>
-                        <span class="text-sm text-gray-600">
-                          {{ riesgo.NSS }}
-                        </span>
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          NSS
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <!-- Naturaleza y Parte Afectada -->
-                    <div class="mb-4">
-                      <div class="text-xl font-medium text-emerald-700 mb-1 mr-3 group relative inline-block">
-                        {{ riesgo.naturalezaLesion || 'Sin descripción de lesión' }}
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Naturaleza de la lesión
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </div>
-                      <div v-if="riesgo.parteCuerpoAfectada" class="text-base text-gray-600 group relative inline-block">
-                        <i class="fas fa-user-injured mr-1"></i>
-                        {{ riesgo.parteCuerpoAfectada }}
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Parte afectada
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Badges de Estado -->
-                    <div class="flex flex-wrap gap-2 mb-4">
-                      <!-- Recaída -->
-                      <span
-                        v-if="riesgo.recaida === 'Si'"
-                        class="inline-flex items-center px-3 py-1 rounded-full bg-purple-100 text-purple-700 border border-purple-200 text-xs font-normal"
-                      >
-                        <i class="fas fa-redo mr-1"></i>
-                        Recaída
-                      </span>
-
-                      <!-- Tipo de Riesgo -->
-                      <span
-                        v-if="riesgo.tipoRiesgo"
-                        :class="{
-                          'bg-red-100 text-red-700 border-red-200': riesgo.tipoRiesgo === 'Accidente de Trabajo',
-                          'bg-orange-100 text-orange-700 border-orange-200': riesgo.tipoRiesgo === 'Accidente de Trayecto',
-                          'bg-pink-100 text-pink-700 border-pink-200': riesgo.tipoRiesgo === 'Enfermedad de Trabajo'
-                        }"
-                        class="inline-flex items-center px-3 py-1 rounded-full border text-xs font-normal group relative"
-                      >
-                        <i class="mr-1">
-                          <template v-if="riesgo.tipoRiesgo === 'Accidente de Trayecto'">
-                            <i class="fas fa-motorcycle"></i>
-                          </template>
-                          <template v-if="riesgo.tipoRiesgo === 'Accidente de Trabajo'">
-                            <i class="fas fa-tools"></i>
-                          </template>
-                          <template v-if="riesgo.tipoRiesgo === 'Enfermedad de Trabajo'">
-                            <i class="fas fa-virus"></i>
-                          </template>
-                        </i>
-                        {{ riesgo.tipoRiesgo }}
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Tipo de riesgo
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </span>
-
-                      <!-- Manejo -->
-                      <span
-                        v-if="riesgo.manejo"
-                        :class="riesgo.manejo === 'IMSS'
-                          ? 'bg-blue-100 text-blue-700 border-blue-200'
-                          : 'bg-purple-100 text-purple-700 border-purple-200'"
-                        class="inline-flex items-center px-3 py-1 rounded-full border text-xs font-normal group relative"
-                      >
-                        <i class="fas fa-hospital mr-1"></i>
-                        {{ riesgo.manejo === 'IMSS' ? 'IMSS' : 'Interno' }}
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Manejo del caso
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </span>
-
-                      <!-- Alta / Incapacidad -->
-                      <span 
-                        v-if="riesgo.alta === 'Incapacidad Activa'" 
-                        class="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-700 border border-red-200 text-xs font-normal group relative"
-                      >
-                        <i class="fas fa-clock mr-1"></i>
-                        Incapacidad Activa
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Estatus de alta
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </span>
-                      <span
-                        v-else-if="riesgo.alta"
-                        class="inline-flex items-center px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 border border-cyan-200 text-xs font-normal group relative"
-                      >
-                        <i class="fas fa-check-circle mr-1"></i>
-                        Alta: {{ riesgo.fechaAlta ? new Date(riesgo.fechaAlta).toLocaleDateString('es-MX', { timeZone: 'UTC' }) : 'Fecha no registrada' }}
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Estatus de alta
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </span>
-                      
-                      <!-- Días de Incapacidad -->
-                      <span 
-                        v-if="riesgo.diasIncapacidad" 
-                        class="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-normal group relative"
-                      >
-                        <i class="fas fa-calendar-day mr-1"></i>
-                        {{ riesgo.diasIncapacidad }} días
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Días de incapacidad
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </span>
-                      
-                      <!-- Estatus ST2 -->
-                      <span 
-                        v-if="riesgo.manejo === 'IMSS' && riesgo.alta === 'Alta ST2'" 
-                        class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-700 border border-green-200 text-xs font-normal group relative"
-                      >
-                        <i class="fas fa-file-medical mr-1"></i>
-                        ST2 Recibida
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Estatus ST2
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </span>
-                      <span 
-                        v-else-if="riesgo.manejo === 'IMSS' && riesgo.alta !== 'Alta ST2'" 
-                        class="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-700 border border-red-200 text-xs font-normal group relative"
-                      >
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                        ST2 Pendiente
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Estatus ST2
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </span>
-                      
-                      <!-- Secuelas e IPP -->
-                      <span
-                        v-if="riesgo.secuelas === 'Si'"
-                        class="inline-flex items-center px-3 py-1 rounded-full bg-pink-100 text-pink-700 border border-pink-200 text-xs font-normal group relative"
-                      >
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
-                        {{ riesgo.porcentajeIPP || 0 }}% IPP
-                        <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Secuelas
-                          <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
-                        </div>
-                      </span>
-                    </div>
-
-                    <!-- Notas -->
-                    <div
-                      v-if="riesgo.notas"
-                      class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 relative"
-                    >
-                      <div class="flex items-center gap-2 mb-2">
-                        <i class="fas fa-sticky-note text-gray-500"></i>
-                        <span class="text-sm font-medium text-gray-700">Notas</span>
-                      </div>
-                      <div
-                        :ref="el => asignarRefNota(riesgo._id, el)"
-                        :class="{
-                          'line-clamp-2': !notasExpandibles[riesgo._id],
-                          'whitespace-pre-wrap text-sm text-gray-700 leading-relaxed': true
-                        }"
-                      >
-                        {{ riesgo.notas }}
-                      </div>
-                      <button
-                        v-if="notasConOverflow[riesgo._id]"
-                        @click="toggleNota(riesgo._id)"
-                        class="mt-2 text-xs text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
-                      >
-                        {{ notasExpandibles[riesgo._id] ? 'Ver menos' : 'Leer más' }}
-                        <i :class="notasExpandibles[riesgo._id] ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" class="ml-1"></i>
-                      </button>
-                    </div>
-
-                    <!-- Acciones -->
-                    <div class="flex justify-end gap-3 mt-1">
-                      <button 
-                        @click="openRTsModal(empresaId, riesgo.idCentroTrabajo, riesgo.idTrabajador)" 
-                        class="text-blue-600 hover:underline text-xs"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        @click="solicitarEliminacion(
-                          'Riesgo de Trabajo',
-                          riesgo._id,
-                          riesgo.naturalezaLesion || 'Sin descripción',
-                          () => eliminarRTDesdeVista(riesgo.idTrabajador, riesgo._id)
-                        )"
-                        class="text-red-600 hover:underline text-xs"
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Transition>
+        <Transition name="fade" mode="out-in">
+          <div v-if="vistaActual === 'tabla'" class="space-y-6">
+            <RiesgosTrabajoDataTable
+              :rows="riesgosEmpresa"
+              @editar="handleEditarDesdeTabla"
+              @eliminar="handleEliminarDesdeTabla"
+            />
           </div>
-        </div>
+        </Transition>
 
         <!-- =======================
-             Botones de Acción
+             Vista de Tarjetas (Lista de Riesgos Agrupados por Centro)
         ======================= -->
-        <div class="flex flex-col sm:flex-row justify-center gap-4 mt-12 mb-8">
-          <button
-            type="button"
-            @click="router.push({ name: 'dashboard-rt', params: { idEmpresa: empresasStore.currentEmpresaId } })"
-            class="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-200"
-          >
-            <i class="fas fa-chart-line text-lg"></i>
-            Ver Estadísticas de RTs
-          </button>
-        </div>
+        <Transition name="fade" mode="out-in">
+          <div v-if="vistaActual === 'tarjetas'" class="space-y-6">
+            <div v-for="grupo in riesgosAgrupados" :key="grupo.centroId" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <!-- Encabezado del Centro -->
+              <button
+                class="w-full text-left p-6 hover:bg-gray-50 transition-all duration-200 border-b border-gray-100"
+                @click="toggleCentro(grupo.centroId)"
+              >
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-4">
+                    <div class="flex-shrink-0">
+                      <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-building text-white text-lg"></i>
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <h2 class="text-xl font-bold text-gray-900 truncate">
+                        {{ grupo.centroNombre }}
+                      </h2>
+                      <p class="text-sm text-gray-500 mt-1 truncate">
+                        <i class="fas fa-map-marker-alt mr-1"></i>
+                        {{ grupo.centroDireccion }}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div class="flex items-center gap-4">
+                    <!-- Contador de RTs -->
+                    <div class="flex items-center gap-2">
+                      <span
+                        :class="[
+                          'inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold',
+                          grupo.riesgos.length === 0
+                            ? 'bg-gray-100 text-gray-600'
+                            : grupo.riesgos.length <= 5
+                            ? 'bg-amber-100 text-amber-700'
+                            : grupo.riesgos.length <= 10
+                            ? 'bg-orange-100 text-orange-700'
+                            : 'bg-red-100 text-red-700'
+                        ]"
+                      >
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        {{ grupo.riesgos.length }} RT{{ grupo.riesgos.length === 1 ? '' : 's' }}
+                      </span>
+                    </div>
+                    
+                    <!-- Icono de expansión -->
+                    <div class="flex-shrink-0">
+                      <i 
+                        :class="[
+                          'fas transition-transform duration-200 text-gray-400',
+                          centrosAbiertos[grupo.centroId] ? 'fa-chevron-up' : 'fa-chevron-down'
+                        ]"
+                      ></i>
+                    </div>
+                  </div>
+                </div>
+              </button>
+              
+              <!-- Contenido del Centro -->
+              <Transition name="desplegar" mode="out-in">
+                <div v-if="centrosAbiertos[grupo.centroId]" class="p-6">
+                  <!-- Mensaje cuando no hay riesgos -->
+                  <div v-if="grupo.riesgos.length === 0" class="text-center py-12">
+                    <!-- Mostrar "No se encontraron riesgos" solo si el grupo tenía riesgos originalmente Y hay filtros activos -->
+                    <div v-if="hayFiltrosActivos && grupoTeníaRiesgosOriginalmente(grupo.centroId)" class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <i class="fas fa-search text-gray-400 text-2xl"></i>
+                    </div>
+                    <!-- Mostrar "Sin riesgos registrados" si el grupo no tenía riesgos originalmente O no hay filtros activos -->
+                    <div v-else class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <i class="fas fa-check-circle text-gray-400 text-2xl"></i>
+                    </div>
+                    <h3 v-if="hayFiltrosActivos && grupoTeníaRiesgosOriginalmente(grupo.centroId)" class="text-lg font-medium text-gray-900 mb-2">No se encontraron riesgos</h3>
+                    <h3 v-else class="text-lg font-medium text-gray-900 mb-2">Sin riesgos registrados</h3>
+                    <p v-if="hayFiltrosActivos && grupoTeníaRiesgosOriginalmente(grupo.centroId)" class="text-gray-500 mb-4">No hay riesgos de trabajo que coincidan con los filtros aplicados.</p>
+                    <p v-else class="text-gray-500">Este centro de trabajo no tiene riesgos de trabajo registrados.</p>
+                    <button
+                      v-if="hayFiltrosActivos && grupoTeníaRiesgosOriginalmente(grupo.centroId)"
+                      @click="limpiarFiltros"
+                      class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors duration-200"
+                    >
+                      <i class="fas fa-times"></i>
+                      Limpiar filtros
+                    </button>
+                  </div>
+                  
+                  <!-- Grid de Riesgos -->
+                  <div v-else class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
+                    <div
+                      v-for="riesgo in grupo.riesgos"
+                      :key="riesgo._id"
+                      class="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-emerald-300 transition-all duration-300"
+                    >
+                      <!-- Encabezado del Riesgo -->
+                      <div class="flex items-start justify-between mb-0">
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2 mb-2">
+                            <h3 class="text-xl font-semibold text-gray-900 truncate">
+                              {{ riesgo.nombreTrabajador }}
+                            </h3>
+                          </div>
+                          <div class="flex items-center gap-3 mb-2">
+                            <div class="text-base text-gray-600 font-medium group relative inline-block">
+                              <i class="fas fa-briefcase mr-1"></i>
+                              {{ riesgo.puestoTrabajador }}
+                              <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                Puesto
+                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                              </div>
+                            </div>
+                            <div v-if="riesgo.sexoTrabajador" class="flex items-center gap-1 group relative">
+                              <i v-if="riesgo.sexoTrabajador === 'Masculino'" class="fas fa-mars text-sky-600 text-sm"></i>
+                              <i v-else class="fas fa-venus text-rose-600 text-sm"></i>
+                                <span class="text-sm sm:text-base text-gray-600">
+                                  <span class="hidden sm:block">{{ riesgo.sexoTrabajador }}</span>
+                                </span>
+                              <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                {{ riesgo.sexoTrabajador === 'Masculino' ? 'Masculino' : 'Femenino' }}
+                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Fecha del Riesgo -->
+                        <div class="flex-shrink-0 text-right">
+                          <div class="text-xs text-gray-500 mb-1">Fecha del Riesgo</div>
+                          <div class="text-sm font-semibold text-gray-700">
+                            {{ riesgo.fechaRiesgo ? new Date(riesgo.fechaRiesgo).toLocaleDateString('es-MX', {
+                              timeZone: 'UTC',
+                              year: 'numeric', 
+                              month: 'short', 
+                              day: 'numeric' 
+                            }) : 'Fecha no registrada' }}
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Información del Trabajador -->
+                      <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4">
+                        <!-- Número de Empleado -->
+                        <div v-if="riesgo.numeroEmpleado && riesgo.numeroEmpleado !== '-'" class="flex items-center gap-2 group relative">
+                          <i class="fas fa-id-badge text-purple-500 text-sm"></i>
+                          <span class="text-sm text-gray-600">
+                            No. {{ riesgo.numeroEmpleado }}
+                          </span>
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Número de empleado
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </div>
+                        
+                        <!-- Edad -->
+                        <div class="flex items-center gap-2 group relative">
+                          <i class="fas fa-birthday-cake text-emerald-500 text-sm"></i>
+                          <span class="text-sm text-gray-600">
+                            {{ riesgo.fechaNacimiento ? calcularEdad(riesgo.fechaNacimiento) + ' años' : 'Edad desconocida' }}
+                          </span>
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Edad
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </div>
+                        
+                        <!-- Antigüedad -->
+                        <div class="flex items-center gap-2 group relative">
+                          <i class="fas fa-clock text-cyan-500 text-sm"></i>
+                          <span class="text-sm text-gray-600">
+                            {{ riesgo.fechaIngreso ? calcularAntiguedad(riesgo.fechaIngreso) : 'Antigüedad desconocida' }}
+                          </span>
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Antigüedad
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </div>
+                        
+                        <!-- NSS -->
+                        <div v-if="riesgo.NSS" class="flex items-center gap-2 group relative">
+                          <i class="fas fa-id-card text-blue-500 text-sm"></i>
+                          <span class="text-sm text-gray-600">
+                            {{ riesgo.NSS }}
+                          </span>
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            NSS
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Naturaleza y Parte Afectada -->
+                      <div class="mb-4">
+                        <div class="text-xl font-medium text-emerald-700 mb-1 mr-3 group relative inline-block">
+                          {{ riesgo.naturalezaLesion || 'Sin descripción de lesión' }}
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Naturaleza de la lesión
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </div>
+                        <div v-if="riesgo.parteCuerpoAfectada" class="text-base text-gray-600 group relative inline-block">
+                          <i class="fas fa-user-injured mr-1"></i>
+                          {{ riesgo.parteCuerpoAfectada }}
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Parte afectada
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Badges de Estado -->
+                      <div class="flex flex-wrap gap-2 mb-4">
+                        <!-- Recaída -->
+                        <span
+                          v-if="riesgo.recaida === 'Si'"
+                          class="inline-flex items-center px-3 py-1 rounded-full bg-purple-100 text-purple-700 border border-purple-200 text-xs font-normal"
+                        >
+                          <i class="fas fa-redo mr-1"></i>
+                          Recaída
+                        </span>
+
+                        <!-- Tipo de Riesgo -->
+                        <span
+                          v-if="riesgo.tipoRiesgo"
+                          :class="{
+                            'bg-red-100 text-red-700 border-red-200': riesgo.tipoRiesgo === 'Accidente de Trabajo',
+                            'bg-orange-100 text-orange-700 border-orange-200': riesgo.tipoRiesgo === 'Accidente de Trayecto',
+                            'bg-pink-100 text-pink-700 border-pink-200': riesgo.tipoRiesgo === 'Enfermedad de Trabajo'
+                          }"
+                          class="inline-flex items-center px-3 py-1 rounded-full border text-xs font-normal group relative"
+                        >
+                          <i class="mr-1">
+                            <template v-if="riesgo.tipoRiesgo === 'Accidente de Trayecto'">
+                              <i class="fas fa-motorcycle"></i>
+                            </template>
+                            <template v-if="riesgo.tipoRiesgo === 'Accidente de Trabajo'">
+                              <i class="fas fa-tools"></i>
+                            </template>
+                            <template v-if="riesgo.tipoRiesgo === 'Enfermedad de Trabajo'">
+                              <i class="fas fa-virus"></i>
+                            </template>
+                          </i>
+                          {{ riesgo.tipoRiesgo }}
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Tipo de riesgo
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </span>
+
+                        <!-- Manejo -->
+                        <span
+                          v-if="riesgo.manejo"
+                          :class="riesgo.manejo === 'IMSS'
+                            ? 'bg-blue-100 text-blue-700 border-blue-200'
+                            : 'bg-purple-100 text-purple-700 border-purple-200'"
+                          class="inline-flex items-center px-3 py-1 rounded-full border text-xs font-normal group relative"
+                        >
+                          <i class="fas fa-hospital mr-1"></i>
+                          {{ riesgo.manejo === 'IMSS' ? 'IMSS' : 'Interno' }}
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Manejo del caso
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </span>
+
+                        <!-- Alta / Incapacidad -->
+                        <span 
+                          v-if="riesgo.alta === 'Incapacidad Activa'" 
+                          class="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-700 border border-red-200 text-xs font-normal group relative"
+                        >
+                          <i class="fas fa-clock mr-1"></i>
+                          Incapacidad Activa
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Estatus de alta
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </span>
+                        <span
+                          v-else-if="riesgo.alta"
+                          class="inline-flex items-center px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 border border-cyan-200 text-xs font-normal group relative"
+                        >
+                          <i class="fas fa-check-circle mr-1"></i>
+                          Alta: {{ riesgo.fechaAlta ? new Date(riesgo.fechaAlta).toLocaleDateString('es-MX', { timeZone: 'UTC' }) : 'Fecha no registrada' }}
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Estatus de alta
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </span>
+                        
+                        <!-- Días de Incapacidad -->
+                        <span 
+                          v-if="riesgo.diasIncapacidad" 
+                          class="inline-flex items-center px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-normal group relative"
+                        >
+                          <i class="fas fa-calendar-day mr-1"></i>
+                          {{ riesgo.diasIncapacidad }} días
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Días de incapacidad
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </span>
+                        
+                        <!-- Estatus ST2 -->
+                        <span 
+                          v-if="riesgo.manejo === 'IMSS' && riesgo.alta === 'Alta ST2'" 
+                          class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-700 border border-green-200 text-xs font-normal group relative"
+                        >
+                          <i class="fas fa-file-medical mr-1"></i>
+                          ST2 Recibida
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Estatus ST2
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </span>
+                        <span 
+                          v-else-if="riesgo.manejo === 'IMSS' && riesgo.alta !== 'Alta ST2'" 
+                          class="inline-flex items-center px-3 py-1 rounded-full bg-red-100 text-red-700 border border-red-200 text-xs font-normal group relative"
+                        >
+                          <i class="fas fa-exclamation-triangle mr-1"></i>
+                          ST2 Pendiente
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Estatus ST2
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </span>
+                        
+                        <!-- Secuelas e IPP -->
+                        <span
+                          v-if="riesgo.secuelas === 'Si'"
+                          class="inline-flex items-center px-3 py-1 rounded-full bg-pink-100 text-pink-700 border border-pink-200 text-xs font-normal group relative"
+                        >
+                          <i class="fas fa-exclamation-triangle mr-1"></i>
+                          {{ riesgo.porcentajeIPP || 0 }}% IPP
+                          <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Secuelas
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-800"></div>
+                          </div>
+                        </span>
+                      </div>
+
+                      <!-- Notas -->
+                      <div
+                        v-if="riesgo.notas"
+                        class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 relative"
+                      >
+                        <div class="flex items-center gap-2 mb-2">
+                          <i class="fas fa-sticky-note text-gray-500"></i>
+                          <span class="text-sm font-medium text-gray-700">Notas</span>
+                        </div>
+                        <div
+                          :ref="el => asignarRefNota(riesgo._id, el)"
+                          :class="{
+                            'line-clamp-2': !notasExpandibles[riesgo._id],
+                            'whitespace-pre-wrap text-sm text-gray-700 leading-relaxed': true
+                          }"
+                        >
+                          {{ riesgo.notas }}
+                        </div>
+                        <button
+                          v-if="notasConOverflow[riesgo._id]"
+                          @click="toggleNota(riesgo._id)"
+                          class="mt-2 text-xs text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+                        >
+                          {{ notasExpandibles[riesgo._id] ? 'Ver menos' : 'Leer más' }}
+                          <i :class="notasExpandibles[riesgo._id] ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" class="ml-1"></i>
+                        </button>
+                      </div>
+
+                      <!-- Acciones -->
+                      <div class="flex justify-end gap-3 mt-1">
+                        <button 
+                          @click="openRTsModal(empresaId, riesgo.idCentroTrabajo, riesgo.idTrabajador)" 
+                          class="text-blue-600 hover:underline text-xs"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          @click="solicitarEliminacion(
+                            'Riesgo de Trabajo',
+                            riesgo._id,
+                            riesgo.naturalezaLesion || 'Sin descripción',
+                            () => eliminarRTDesdeVista(riesgo.idTrabajador, riesgo._id)
+                          )"
+                          class="text-red-600 hover:underline text-xs"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Transition>
+            </div>
+          </div>
+        </Transition>
+
+
 
         <!-- =======================
              Botón de Regreso
@@ -1656,5 +1795,18 @@ async function eliminarRTDesdeVista(trabajadorId: string, riesgoTrabajoId: strin
   opacity: 1;
   max-height: 1000px;
   transform: translateY(0);
+}
+
+/* =======================
+   Estilos para transición fade
+====================== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

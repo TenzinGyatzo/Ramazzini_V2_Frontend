@@ -3081,12 +3081,18 @@ const tablaCintura = computed(() => {
 
           </div>
 
-          <button
-            @click="$router.back()"
-            class="inline-block text-gray-700 hover:text-emerald-500 font-medium"
-          >
-            ← Regresar
-          </button>
+          <!-- =======================
+              Botón de Regreso
+          ======================= -->
+          <div class="text-center">
+            <button 
+              @click="$router.back()" 
+              class="inline-flex items-center gap-2 text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200"
+            >
+              <i class="fas fa-arrow-left"></i>
+              Regresar
+            </button>
+          </div>
         </div>
       </div>
     </div>
