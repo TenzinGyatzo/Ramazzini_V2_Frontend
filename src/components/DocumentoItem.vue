@@ -486,6 +486,10 @@ const descargarPdfActual = async () => {
                     documento = props.notaMedica;
                     tipoDocumento = 'Nota Medica';
                     break;
+                case 'receta':
+                    documento = props.receta;
+                    tipoDocumento = 'Receta Medica';
+                    break;
                 case 'documentoexterno':
                     documento = props.documentoExterno;
                     tipoDocumento = 'Documento Externo';
@@ -605,6 +609,7 @@ const props = defineProps({
     exploracionFisica: [Object, String],
     historiaClinica: [Object, String],
     notaMedica: [Object, String],
+    receta: [Object, String],
 });
 
 const { antidoping } = props; // Desestructuración para acceder a antidoping
@@ -801,6 +806,7 @@ const construirRutaYNombrePDF = () => {
     'exploracionfisica': props.exploracionFisica,
     'historiaclinica': props.historiaClinica,
     'notamedica': props.notaMedica,
+    'receta': props.receta,
   }[tipoSinEspacios];
 
   const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaCertificado || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica;
@@ -812,7 +818,8 @@ const construirRutaYNombrePDF = () => {
     'examenvista': 'Examen Vista', 
     'exploracionfisica': 'Exploracion Fisica',
     'historiaclinica': 'Historia Clinica',
-    'notamedica': 'Nota Medica'
+    'notamedica': 'Nota Medica',
+    'receta': 'Receta Medica'
   };
 
   const tipoDocumentoFormateado = tiposDocumentos[tipoSinEspacios];
@@ -920,7 +927,7 @@ onMounted(() => {
 });
 
 // Watcher para verificar disponibilidad cuando cambien las props
-watch(() => [props.antidoping, props.aptitud, props.certificado, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica], () => {
+watch(() => [props.antidoping, props.aptitud, props.certificado, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.receta], () => {
   verificarDisponibilidadPDF();
 }, { deep: true });
 
@@ -1470,6 +1477,51 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         </div>
                     </div>
                 </div>
+
+                <div v-if="typeof receta === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, receta, 'Receta Medica')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${receta.rutaPDF}`,
+                        `Receta Medica ${convertirFechaISOaDDMMYYYY(receta.fechaReceta)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-cyan-100 rounded-lg mr-4 group-hover:bg-cyan-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-stethoscope text-cyan-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Receta Médica
+                                </h3>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(receta.fechaReceta) }}
+                            </p>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div v-if="receta.diagnostico" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Medicamentos</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ receta.medicamentos[0] }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Botones de acción -->
@@ -1483,7 +1535,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     'Examen Vista': examenVista,
                     'Exploracion Fisica': exploracionFisica,
                     'Historia Clinica': historiaClinica,
-                    'Nota Medica': notaMedica
+                    'Nota Medica': notaMedica,
+                    'Receta Medica': receta
                 }" :key="key">
                     <button v-if="documento && documento.rutaDocumento" @click="descargarArchivo(documento, key)"
                         type="button"

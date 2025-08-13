@@ -16,6 +16,7 @@ import VisualizadorExamenVista from '@/components/steps/VisualizadorExamenVista.
 import VisualizadorExploracionFisica from '@/components/steps/VisualizadorExploracionFisica.vue';
 import VisualizadorHistoriaClinica from '@/components/steps/VisualizadorHistoriaClinica.vue';
 import VisualizadorNotaMedica from '@/components/steps/VisualizadorNotaMedica.vue';
+import VisualizadorReceta from '@/components/steps/VisualizadorReceta.vue';
 
 const route = useRoute();
 const empresas = useEmpresasStore();
@@ -91,6 +92,7 @@ watchEffect(async () => {
       exploracionFisica: formData.formDataExploracionFisica,
       historiaClinica: formData.formDataHistoriaClinica,
       notaMedica: formData.formDataNotaMedica,
+      recetaMedica: formData.formDataReceta,
     };
 
     const documentoForm = documentoMap[tipoDocumento.value];
@@ -354,6 +356,18 @@ const marcarSinHallazgos = () => {
           </div>
           <div class="w-full xl:w-2/3 max-w-3xl mx-auto">
             <VisualizadorNotaMedica />
+          </div>
+        </div>
+      </Transition>
+
+      <Transition appear mode="out-in" name="slide-up">  
+        <div v-if="documentos.currentTypeOfDocument === 'recetaMedica'"
+          class="max-w-6xl mx-auto flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/3">
+            <FormStepper />
+          </div>
+          <div class="w-full xl:w-2/3 max-w-3xl mx-auto">
+            <VisualizadorReceta />
           </div>
         </div>
       </Transition>

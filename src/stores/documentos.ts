@@ -10,6 +10,7 @@ import type {
   ExploracionFisica,
   HistoriaClinica,
   NotaMedica,
+  Receta
 } from "@/interfaces/documentos.inteface";
 
 export type DocumentsByYear = {
@@ -22,6 +23,7 @@ export type DocumentsByYear = {
     exploracionesFisicas?: ExploracionFisica[];
     historiasClinicas?: HistoriaClinica[];
     notasMedicas?: NotaMedica[];
+    recetas?: Receta[];
   };
 };
 
@@ -57,7 +59,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
         examenesVista,
         exploracionesFisicas,
         historiasClinicas,
-        notasMedicas
+        notasMedicas,
+        recetas
       ] = await Promise.all([
         DocumentosAPI.getAntidopings(trabajadorId).catch(error => {
           console.error("Error al obtener antidopings", error);
@@ -90,6 +93,10 @@ export const useDocumentosStore = defineStore("documentos", () => {
         DocumentosAPI.getNotasMedicas(trabajadorId).catch(error => {
           console.error("Error al obtener notasMedicas", error);
           return { data: [] };
+        }),
+        DocumentosAPI.getRecetas(trabajadorId).catch(error => {
+          console.error("Error al obtener recetas", error);
+          return { data: [] };
         })
       ]);
 
@@ -102,7 +109,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
         examenesVista: Array.isArray(examenesVista.data) ? examenesVista.data : [],
         exploracionesFisicas: Array.isArray(exploracionesFisicas.data) ? exploracionesFisicas.data : [],
         historiasClinicas: Array.isArray(historiasClinicas.data) ? historiasClinicas.data : [],
-        notasMedicas: Array.isArray(notasMedicas.data) ? notasMedicas.data : []
+        notasMedicas: Array.isArray(notasMedicas.data) ? notasMedicas.data : [],
+        recetas: Array.isArray(recetas.data) ? recetas.data : []
       };
 
       // Procesar documentos y agrupar por año
@@ -142,7 +150,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
       examenesVista: "fechaExamenVista",
       exploracionesFisicas: "fechaExploracionFisica",
       historiasClinicas: "fechaHistoriaClinica",
-      notasMedicas: "fechaNotaMedica"
+      notasMedicas: "fechaNotaMedica",
+      recetas: "fechaReceta"
     };
 
     return documento?.[fechaCampos[tipoDocumento]] || "";

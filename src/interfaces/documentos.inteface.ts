@@ -255,3 +255,13 @@ export interface NotaMedica {
     createdBy: string;
     updatedBy: string;
 }
+
+export interface Receta {
+    _id: string;
+    fechaReceta: string;
+    medicamentos: string[];
+    idTrabajador: string;
+    rutaPDF: string;
+    createdBy: string;
+    updatedBy: string;
+}

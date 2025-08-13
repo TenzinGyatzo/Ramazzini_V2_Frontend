@@ -33,6 +33,10 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/notaMedica`);
     },
 
+    getRecetas(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/receta`);
+    },
+
     createDocument(documentType: string, trabajadorId: string, data: any) {
         return api.post(`/expedientes/${trabajadorId}/documentos/${documentType}/crear`, data);
     },

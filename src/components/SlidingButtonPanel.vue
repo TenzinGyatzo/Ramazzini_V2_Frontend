@@ -20,6 +20,7 @@ const documentOrder = {
   Certificado: 6,
   "Documento Externo": 7,
   "Nota Medica": 8,
+  "Receta Medica": 9,
 };
 
 const getDocumentType = (route) => {
@@ -30,6 +31,7 @@ const getDocumentType = (route) => {
   if (route.includes("Antidoping")) return "Antidoping";
   if (route.includes("Certificado")) return "Certificado";
   if (route.includes("Nota Medica")) return "Nota Medica";
+  if (route.includes("Receta Medica")) return "Receta Medica";
   return "Documento Externo"; // Para cualquier otro caso
 };
 

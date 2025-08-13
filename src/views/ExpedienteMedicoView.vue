@@ -145,6 +145,7 @@ const documentTypeLabels = {
   certificado: "Certificado",
   documentoExterno: "Documento Externo",
   notaMedica: "Nota Médica",
+  recetaMedica: "Receta Médica",
 };
 
 const fetchData = async () => {
@@ -160,6 +161,8 @@ const fetchData = async () => {
       trabajadores.fetchTrabajadorById(empresaId, centroTrabajoId, trabajadorId)
     ]);
 
+    console.log(documentos.documentsByYear);
+    
     empresas.currentEmpresaId = empresaId;
     centrosTrabajo.currentCentroTrabajoId = centroTrabajoId;
     trabajadores.currentTrabajadorId = trabajadorId;
@@ -694,6 +697,21 @@ const añoMasReciente = computed(() => {
                   </div>
                   <h3 class="font-semibold text-gray-900 text-sm mb-1">Nota Médica</h3>
                   <p class="text-xs text-gray-600">Consultas</p>
+                </div>
+              </button>
+
+              <!-- Receta Médica -->
+              <button @click="navigateTo('crear-documento', {
+                idEmpresa: empresas.currentEmpresaId,
+                idTrabajador: trabajadores.currentTrabajadorId,
+                tipoDocumento: 'recetaMedica'
+              })" class="group relative bg-gradient-to-br from-cyan-50 to-cyan-100 hover:from-cyan-100 hover:to-cyan-200 border-2 border-cyan-200 hover:border-cyan-400 rounded-xl p-4 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+                <div class="text-center">
+                  <div class="w-12 h-12 bg-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-cyan-600 transition-colors">
+                    <i class="fas fa-stethoscope text-white text-lg"></i>
+                  </div>
+                  <h3 class="font-semibold text-gray-900 text-sm mb-1">Receta Médica</h3>
+                  <p class="text-xs text-gray-600">Medicamentos</p>
                 </div>
               </button>
             </div>

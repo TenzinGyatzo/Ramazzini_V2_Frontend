@@ -49,7 +49,8 @@ const totalDocumentos = computed(() => {
            (props.documents.antidopings?.length || 0) +
            (props.documents.certificados?.length || 0) +
            (props.documents.documentosExternos?.length || 0) +
-           (props.documents.notasMedicas?.length || 0);
+           (props.documents.notasMedicas?.length || 0) +
+           (props.documents.recetas?.length || 0);
 });
 
 // Obtener todas las rutas de documentos de este grupo específico
@@ -131,6 +132,16 @@ const rutasDelGrupo = computed(() => {
             const rutaBase = obtenerRutaDocumento(notaMedica, 'Nota Medica');
             const fecha = obtenerFechaDocumento(notaMedica) || 'SinFecha';
             const nombreArchivo = obtenerNombreArchivo(notaMedica, 'Nota Medica', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            rutas.push(ruta);
+        });
+    }
+
+    if (props.documents.recetas) {
+        props.documents.recetas.forEach(receta => {
+            const rutaBase = obtenerRutaDocumento(receta, 'Receta Medica');
+            const fecha = obtenerFechaDocumento(receta) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(receta, 'Receta Medica', fecha);
             const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
             rutas.push(ruta);
         });
@@ -460,6 +471,30 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', notaMedica._id, convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica), 'notaMedica')" 
+                        @openSubscriptionModal="emit('openSubscriptionModal')"
+                    />
+                </div>
+            </div>
+
+            <!-- Recetas Medicas -->
+            <div v-if="documents.recetas && documents.recetas.length > 0">
+                <div v-for="(receta, index) in documents.recetas" :key="receta._id"
+                     class="transition-all duration-200 hover:bg-gray-50"
+                     :style="{ animationDelay: `${index * 50}ms` }">
+                    <DocumentoItem 
+                        :receta="receta" 
+                        :documentoId="receta._id" 
+                        :documentoTipo="'receta'" 
+                        :toggleRouteSelection="toggleRouteSelection"
+                        :isDeletionMode="isDeletionMode"
+                        :isSelected="(() => {
+                            const rutaBase = obtenerRutaDocumento(receta, 'Receta Medica');
+                            const fecha = obtenerFechaDocumento(receta) || 'SinFecha';
+                            const nombreArchivo = obtenerNombreArchivo(receta, 'Receta Medica', fecha);
+                            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                            return props.selectedRoutes.includes(ruta);
+                        })()"
+                        @eliminarDocumento="$emit('eliminarDocumento', receta._id, convertirFechaISOaDDMMYYYY(receta.fechaReceta), 'receta')" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
                     />
                 </div>
