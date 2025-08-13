@@ -4,6 +4,7 @@ import { ref, reactive, nextTick, onMounted, inject, watch, computed, provide } 
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { useModalResumenImportacionStore } from '@/stores/modalResumenImportacion';
 import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from 'vue-router';
 import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad, determinarVistaCorregida } from '@/helpers/dates';
 import { exportarTrabajadoresDesdeFrontend } from '@/helpers/exportarExcel';
@@ -17,6 +18,7 @@ import ModalCargaMasiva from '@/components/ModalCargaMasiva.vue';
 import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
 import ModalRiesgos from '@/components/ModalRiesgos.vue';
 import ModalRTs from '@/components/ModalRTs.vue';
+import ModalResumenImportacion from '@/components/ModalResumenImportacion.vue';
 
 import type { Empresa } from '@/interfaces/empresa.interface';
 import type { CentroTrabajo } from '@/interfaces/centro-trabajo.interface';
@@ -27,6 +29,7 @@ const toast: any = inject('toast');
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
+const modalResumenImportacion = useModalResumenImportacionStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -48,6 +51,7 @@ const showImportModal = ref(false);
 const showSubscriptionModal = ref(false);
 const showRTsModal = ref(false);
 const showRisksModal = ref(false);
+
 const selectedTrabajadorId = ref<string | null>(null);
 const selectedTrabajadorNombre = ref<string | null>(null);
 const dataTableRef = ref();
@@ -303,6 +307,7 @@ const openRisksModal = async (empresa: Empresa | null, centro: CentroTrabajo | n
 
 const closeRisksModal = () => showRisksModal.value = false;
 
+
 // 7. Funciones de negocio
 const exportTrabajadores = async () => {
   try {
@@ -521,6 +526,15 @@ const toggleColumnasOcultas = () => {
 
       <Transition appear name="fade">
         <ModalCargaMasiva v-if="showImportModal" @openSubscriptionModal="showSubscriptionModal = true" @closeModal="toggleImportModal" />
+      </Transition>
+
+      <Transition appear name="fade">
+        <ModalResumenImportacion 
+          v-if="modalResumenImportacion.isVisible" 
+          :isVisible="modalResumenImportacion.isVisible"
+          :resumen="modalResumenImportacion.resumen || { message: '', data: [], totalProcessed: 0, successful: 0, failed: 0 }"
+          @close="modalResumenImportacion.hideModal" 
+        />
       </Transition>
 
       <Transition appear name="fade">

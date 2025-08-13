@@ -5,6 +5,8 @@ import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useCurrentUser } from '@/composables/useCurrentUser';
+import { useImportacionTrabajadores } from '@/composables/useImportacionTrabajadores';
+import { useModalResumenImportacionStore } from '@/stores/modalResumenImportacion';
 
 const toast = inject('toast');
 
@@ -13,12 +15,13 @@ const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const { ensureUserLoaded } = useCurrentUser();
+const { importarTrabajadores, isImporting, importProgress } = useImportacionTrabajadores();
+const modalStore = useModalResumenImportacionStore();
 const emit = defineEmits(['closeModal', 'openSubscriptionModal']);
 
 // Propiedades reactivas para el archivo
 const selectedFile = ref(null);
 const isDragOver = ref(false);
-const isUploading = ref(false);
 
 const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado;
 const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
@@ -144,25 +147,29 @@ const handleSubmit = async () => {
     return;
   }
 
-  isUploading.value = true;
-
-  const formData = new FormData();
-  formData.append('file', selectedFile.value);
-  formData.append('idCentroTrabajo', centrosTrabajo.currentCentroTrabajoId);
-  formData.append('createdBy', currentUserId);
-  formData.append('updatedBy', currentUserId);
-  
   try {
-    await trabajadores.importTrabajadores(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId, formData);
+    toast.open({ 
+      message: `Importando trabajadores, por favor espere...`, 
+      type: "info" 
+    });
+    
+    // Usar el composable en lugar del store directo
+    await importarTrabajadores(
+      selectedFile.value, 
+      centrosTrabajo.currentCentroTrabajoId,
+      empresas.currentEmpresaId,
+    );
+    
+    // El modal de resumen se mostrará automáticamente desde el composable
     emit('closeModal');
-    toast.open({ message: 'Trabajadores importados con éxito' });	
-    trabajadores.fetchTrabajadores(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId);
+    
+    // Actualizar la lista de trabajadores
+    await trabajadores.fetchTrabajadores(empresas.currentEmpresaId, centrosTrabajo.currentCentroTrabajoId);
+    
   } catch (error) {
     console.log('Error en la petición:', error.response?.data || error.message);
     const errorMessage = error.response?.data?.message || 'Hubo un error, por favor utilice la plantilla.';
     toast.open({ message: errorMessage, type: 'error' });
-  } finally {
-    isUploading.value = false;
   }
 };
 
@@ -170,13 +177,30 @@ const handleSubmit = async () => {
 const closeModal = () => {
   selectedFile.value = null;
   isDragOver.value = false;
-  isUploading.value = false;
   emit('closeModal');
+};
+
+// Función para probar el resumen mixto (opcional, solo para desarrollo)
+const testResumenMixto = async () => {
+  try {
+    toast.open({ message: 'Mostrando resumen mixto de prueba...', type: 'info' });
+    
+    // Usar el store para crear y mostrar un resumen mixto de prueba
+    const testResumen = modalStore.createTestResumen();
+    modalStore.showModal(testResumen);
+    
+    // Cerrar el modal de carga masiva
+    emit('closeModal');
+    
+  } catch (error) {
+    console.error('Error al mostrar resumen de prueba:', error);
+    toast.open({ message: 'Error al mostrar resumen de prueba', type: 'error' });
+  }
 };
 </script>
 
 <template>
-  <div class="modal fixed top-0 left-0 z-20 p-8 h-screen w-full grid place-items-center">
+  <div class="modal fixed top-0 left-0 z-20 p-4 sm:p-8 h-screen w-full flex items-center justify-center">
     <!-- Fondo oscuro transparente -->
     <div class="absolute top-0 left-0 w-full h-full bg-emerald-900 bg-opacity-50 backdrop-blur-sm" @click="closeModal">
     </div>
@@ -215,7 +239,7 @@ const closeModal = () => {
               accept=".xlsx,.xls,.csv"
               @change="handleFileSelect"
               class="hidden"
-              :disabled="isUploading"
+              :disabled="isImporting"
             />
             
             <div class="text-gray-600">
@@ -263,7 +287,7 @@ const closeModal = () => {
             <button
               @click="removeFile"
               class="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors p-1 rounded"
-              :disabled="isUploading"
+              :disabled="isImporting"
             >
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -284,8 +308,8 @@ const closeModal = () => {
             <li>• Descarga la plantilla: incluye ejemplos ficticios que te guiarán en el llenado.</li>
             <li>• Sustituye los datos ficticios por la información real de tus trabajadores.</li>
             <li>• No elimines columnas, ni cambies los nombres de los encabezados.</li>
-            <li>• No modifiques el formato de las celdas (especialmente al copiar y pegar desde otras hojas).</li>
-            <li>• La columna "Número de empleado" es opcional: puedes dejarla vacía o llenarla si lo deseas.</li>
+            <li>• El sistema intentará normalizar los datos para que sean consistentes con el sistema.</li>
+            <li>• Las columnas "Número de empleado" y "Teléfono" son opcionales. De no requerirse, dejarlas vacías.</li>
             <li>• Guarda los cambios y sube el archivo completo.</li>
             <li>• Los trabajadores se importarán automáticamente al sistema.</li>
             <li>• Si requieres asistencia, no dudes en contactarnos vía <span class="text-emerald-600">WhatsApp</span> al número <span class="text-emerald-600">(668) 170 28 50</span>.</li>
@@ -296,22 +320,33 @@ const closeModal = () => {
         <div class="flex space-x-3 mb-4">
           <button
             @click="handleSubmit"
-            :disabled="!selectedFile || isUploading"
+            :disabled="!selectedFile || isImporting"
             class="flex-1 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
           >
-            <svg v-if="isUploading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+            <svg v-if="isImporting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span v-if="!isUploading">Importar Trabajadores</span>
+            <span v-if="!isImporting">Importar Trabajadores</span>
             <span v-else>Importando...</span>
           </button>
           <button
             @click="closeModal"
-            :disabled="isUploading"
+            :disabled="isImporting"
             class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Cancelar
+          </button>
+        </div>
+
+        <!-- ✅ BOTÓN DE PRUEBA: Para probar el resumen mixto -->
+        <div class="mb-4">
+          <button
+            @click="testResumenMixto"
+            :disabled="isImporting"
+            class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            🧪 Probar Resumen Mixto (Testing)
           </button>
         </div>
 
@@ -321,7 +356,7 @@ const closeModal = () => {
             download="Plantilla para Importar Trabajadores.xlsx">
             <button
               class="w-full bg-white text-gray-800 px-4 py-2 rounded-lg border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-colors flex items-center justify-center"
-              :disabled="isUploading"
+              :disabled="isImporting"
             >
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
