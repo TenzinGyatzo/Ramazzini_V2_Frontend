@@ -340,7 +340,7 @@ const testResumenMixto = async () => {
         </div>
 
         <!-- ✅ BOTÓN DE PRUEBA: Para probar el resumen mixto -->
-        <div class="mb-4">
+        <!-- <div class="mb-4">
           <button
             @click="testResumenMixto"
             :disabled="isImporting"
@@ -348,7 +348,7 @@ const testResumenMixto = async () => {
           >
             🧪 Probar Resumen Mixto (Testing)
           </button>
-        </div>
+        </div> -->
 
         <!-- Botón de descarga de plantilla -->
         <div class="text-center">
