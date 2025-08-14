@@ -1,13 +1,13 @@
 <template>
   <div v-if="isVisible" class="fixed inset-0 z-50 overflow-y-auto">
     <!-- Overlay de fondo -->
-    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="flex items-center justify-center min-h-screen px-4 text-center">
       <div class="fixed inset-0 transition-opacity" aria-hidden="true">
         <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
       </div>
 
       <!-- Modal -->
-      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+      <div class="relative inline-block w-full max-w-2xl bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all">
         <!-- Header -->
         <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
           <div class="flex items-center justify-between mb-4">
@@ -25,7 +25,7 @@
           </div>
 
           <!-- Estadísticas Generales -->
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
               <div class="text-2xl font-bold text-green-600">{{ resumen.totalProcessed }}</div>
               <div class="text-sm text-green-700">Total Procesados</div>
@@ -45,7 +45,7 @@
           </div>
 
           <!-- Mensaje Principal -->
-          <div class="mb-6">
+          <div class="mb-2">
             <div v-if="resumen.successful === resumen.totalProcessed" class="bg-green-50 border border-green-200 rounded-lg p-4">
               <div class="flex items-center">
                 <svg class="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -69,14 +69,14 @@
         <div class="bg-gray-50 px-4 py-3 sm:px-6">
           <!-- Tabs -->
           <div class="border-b border-gray-200 mb-4">
-            <nav class="-mb-px flex space-x-8">
+            <nav class="grid grid-cols-2 md:grid-cols-4 gap-1 md:gap-4">
               <button
                 @click="activeTab = 'resumen'"
                 :class="[
                   activeTab === 'resumen'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                  'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'
+                    ? 'border-blue-500 text-blue-600 bg-blue-50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50',
+                  'whitespace-nowrap py-3 px-3 border-2 rounded-lg font-medium text-sm transition-all duration-200 text-center'
                 ]"
               >
                 Resumen General
@@ -86,9 +86,9 @@
                 @click="activeTab = 'errores'"
                 :class="[
                   activeTab === 'errores'
-                    ? 'border-red-500 text-red-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                  'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'
+                    ? 'border-red-500 text-red-600 bg-red-50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50',
+                  'whitespace-nowrap py-3 px-3 border-2 rounded-lg font-medium text-sm transition-all duration-200 text-center'
                 ]"
               >
                 Errores ({{ resumen.failed }})
@@ -98,9 +98,9 @@
                 @click="activeTab = 'exitosos'"
                 :class="[
                   activeTab === 'exitosos'
-                    ? 'border-green-500 text-green-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                  'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'
+                    ? 'border-green-500 text-green-600 bg-green-50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50',
+                  'whitespace-nowrap py-3 px-3 border-2 rounded-lg font-medium text-sm transition-all duration-200 text-center'
                 ]"
               >
                 Exitosos ({{ resumen.successful }})
@@ -110,9 +110,9 @@
                 @click="activeTab = 'normalizaciones'"
                 :class="[
                   activeTab === 'normalizaciones'
-                    ? 'border-purple-500 text-purple-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                  'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm'
+                    ? 'border-purple-500 text-purple-600 bg-purple-50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50',
+                  'whitespace-nowrap py-3 px-3 border-2 rounded-lg font-medium text-sm transition-all duration-200 text-center'
                 ]"
               >
                 Normalizaciones ({{ trabajadoresConNormalizaciones.length }})
@@ -124,9 +124,9 @@
           <div v-if="activeTab === 'resumen'" class="space-y-4">
             <div class="bg-white rounded-lg border border-gray-200 p-4">
               <h4 class="text-lg font-medium text-gray-900 mb-3">Detalles de la Importación</h4>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:w-3/5 gap-0">
                 <div>
-                  <span class="text-sm font-medium text-gray-500">Total de registros procesados:</span>
+                  <span class="text-sm font-medium text-gray-500">Total procesados:</span>
                   <span class="ml-2 text-sm text-gray-900">{{ resumen.totalProcessed }}</span>
                 </div>
                 <div>
@@ -151,7 +151,7 @@
               </p>
             </div>
 
-            <div v-if="resumen.successful > 0" class="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div v-if="resumen.successful > 0" class="bg-green-50 border border-green-300 rounded-lg p-4">
               <h4 class="text-lg font-medium text-green-800 mb-2">✅ Éxito</h4>
               <p class="text-green-700 text-sm">
                 Se importaron exitosamente {{ resumen.successful }} trabajadores.
@@ -178,7 +178,7 @@
                       <p class="text-sm text-red-700 mb-2">{{ error.error }}</p>
                       
                       <!-- Datos del trabajador que falló -->
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-600">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600">
                         <div v-if="error.worker?.fechaNacimiento">
                           <span class="font-medium">Fecha Nacimiento:</span> {{ formatDate(error.worker.fechaNacimiento) }}
                         </div>
@@ -264,7 +264,7 @@
                       <h5 class="text-sm font-medium text-green-800">
                         {{ success.worker?.nombre || 'Sin nombre' }}
                       </h5>
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-600 mt-2">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 mt-2">
                         <div v-if="success.worker?.fechaNacimiento">
                           <span class="font-medium">Fecha Nacimiento:</span> {{ formatDate(success.worker.fechaNacimiento) }}
                         </div>
@@ -375,7 +375,7 @@
                       </div>
                       
                       <!-- Información adicional del trabajador -->
-                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-600 mt-3 pt-2 border-t border-purple-200">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 mt-3 pt-2 border-t border-purple-200">
                         <div v-if="trabajador.worker?.numeroEmpleado">
                           <span class="font-medium">Número Empleado:</span> {{ trabajador.worker.numeroEmpleado }}
                         </div>
@@ -409,14 +409,14 @@
             @click="downloadErrorReport"
             class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
           >
-            📊 Descargar Reporte de Errores (Excel)
+            📊 Descargar Reporte de Errores
           </button>
           <button
             v-if="trabajadoresConNormalizaciones.length > 0"
             @click="downloadNormalizationReport"
             class="mt-3 w-full inline-flex justify-center rounded-md border border-purple-300 shadow-sm px-4 py-2 bg-purple-50 text-base font-medium text-purple-700 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
           >
-            🔄 Descargar Reporte de Normalizaciones (Excel)
+            🔄 Descargar Reporte de Normalizaciones
           </button>
         </div>
       </div>
