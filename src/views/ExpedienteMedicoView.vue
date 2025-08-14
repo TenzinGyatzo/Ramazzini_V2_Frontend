@@ -637,21 +637,6 @@ const añoMasReciente = computed(() => {
                 </div>
               </button>
 
-              <!-- Antidoping -->
-              <button @click="navigateTo('crear-documento', {
-                idEmpresa: empresas.currentEmpresaId,
-                idTrabajador: trabajadores.currentTrabajadorId,
-                tipoDocumento: 'antidoping'
-              })" class="group relative bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 border-2 border-red-200 hover:border-red-400 rounded-xl p-4 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
-                <div class="text-center">
-                  <div class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-red-600 transition-colors">
-                    <i class="fas fa-flask text-white text-lg"></i>
-                  </div>
-                  <h3 class="font-semibold text-gray-900 text-sm mb-1">Antidoping</h3>
-                  <p class="text-xs text-gray-600">Prueba de sustancias</p>
-                </div>
-              </button>
-
               <!-- Aptitud -->
               <button @click="navigateTo('crear-documento', {
                 idEmpresa: empresas.currentEmpresaId,
@@ -679,6 +664,21 @@ const añoMasReciente = computed(() => {
                   </div>
                   <h3 class="font-semibold text-gray-900 text-sm mb-1">Certificado</h3>
                   <p class="text-xs text-gray-600">Certificación médica</p>
+                </div>
+              </button>
+
+              <!-- Antidoping -->
+              <button @click="navigateTo('crear-documento', {
+                idEmpresa: empresas.currentEmpresaId,
+                idTrabajador: trabajadores.currentTrabajadorId,
+                tipoDocumento: 'antidoping'
+              })" class="group relative bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 border-2 border-red-200 hover:border-red-400 rounded-xl p-4 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+                <div class="text-center">
+                  <div class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-red-600 transition-colors">
+                    <i class="fas fa-flask text-white text-lg"></i>
+                  </div>
+                  <h3 class="font-semibold text-gray-900 text-sm mb-1">Antidoping</h3>
+                  <p class="text-xs text-gray-600">Prueba de sustancias</p>
                 </div>
               </button>
 

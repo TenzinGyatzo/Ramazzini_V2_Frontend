@@ -723,8 +723,12 @@ const toggleColumnasOcultas = () => {
 
       <!-- Tabla o mensaje de carga -->
       <Transition appear mode="out-in" name="slide-up">
-        <div v-if="trabajadores.loading">
-          <h1 class="text-3xl sm:text-4xl md:text-6xl py-20 text-center font-semibold text-gray-700">Cargando...</h1>
+        <div v-if="trabajadores.loading" class="text-center py-20">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4 animate-pulse">
+            <i class="fas fa-spinner fa-spin text-2xl text-emerald-600"></i>
+          </div>
+          <h2 class="text-xl font-semibold text-gray-700 mb-2">Cargando Trabajadores...</h2>
+          <p class="text-gray-500">Obteniendo los trabajadores del centro de trabajo</p>
         </div>
         <div v-else>
           <!-- DataTable (siempre visible, pero vacía si no hay trabajadores) -->
