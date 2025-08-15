@@ -431,7 +431,7 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
           <!-- Notas -->
           <div class="sm:col-span-2">
             <label class="block text-sm font-medium text-gray-700">Notas u observaciones</label>
-            <textarea v-model="rtEnEdicion.notas" rows="3" class="w-full p-3 border border-gray-300 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></textarea>
+            <textarea v-model="rtEnEdicion.notas" rows="3" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"></textarea>
           </div>
 
           <!-- Campos ocultos -->
