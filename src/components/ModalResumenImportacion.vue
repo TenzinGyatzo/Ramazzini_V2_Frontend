@@ -172,19 +172,14 @@
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
                       <h5 class="text-sm font-medium text-red-800 mb-1">
-                        {{ error.worker?.nombre || 'Sin nombre' }}
+                        {{ error.worker?.primerApellido + ' ' + error.worker?.segundoApellido + ' ' + error.worker?.nombre || 'Sin nombre' }}
+                        <span class="text-xs text-gray-600 font-normal">({{ error.worker.sexo }})</span> 
                       </h5>
 
                       <p class="text-sm text-red-700 mb-2">{{ error.error }}</p>
                       
                       <!-- Datos del trabajador que falló -->
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600">
-                        <div v-if="error.worker?.primerApellido">
-                          <span class="font-medium">Primer Apellido:</span> {{ error.worker.primerApellido }}
-                        </div>
-                        <div v-if="error.worker?.segundoApellido">
-                          <span class="font-medium">Segundo Apellido:</span> {{ error.worker.segundoApellido }}
-                        </div>
                         <div v-if="error.worker?.fechaNacimiento">
                           <span class="font-medium">Fecha Nacimiento:</span> {{ formatDate(error.worker.fechaNacimiento) }}
                         </div>
@@ -196,12 +191,6 @@
                         </div>
                         <div v-else>
                           <span class="font-medium">Fecha Ingreso:</span>
-                        </div>
-                        <div v-if="error.worker?.sexo">
-                          <span class="font-medium">Sexo:</span> {{ error.worker.sexo }}
-                        </div>
-                        <div v-else>
-                          <span class="font-medium">Sexo:</span>
                         </div>
                         <div v-if="error.worker?.escolaridad">
                           <span class="font-medium">Escolaridad:</span> {{ error.worker.escolaridad }}
@@ -231,7 +220,13 @@
                           <span class="font-medium">Teléfono:</span> {{ error.worker.telefono }}
                         </div>
                         <div v-else>
-                          <span class="font-medium">Teléfono:</span> 
+                          <span class="font-medium">Teléfono:</span> -
+                        </div>
+                        <div v-if="error.worker?.nss">
+                          <span class="font-medium">NSS:</span> {{ error.worker.nss }}
+                        </div>
+                        <div v-else>
+                          <span class="font-medium">NSS:</span> -
                         </div>
                       </div>
 
@@ -268,23 +263,15 @@
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
                       <h5 class="text-sm font-medium text-green-800">
-                        {{ success.worker?.nombre || 'Sin nombre' }}
+                        {{ success.worker?.primerApellido + ' ' + success.worker?.segundoApellido + ' ' + success.worker?.nombre || 'Sin nombre' }} 
+                        <span class="text-xs text-gray-600 font-normal">({{ success.worker.sexo }})</span> 
                       </h5>
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 mt-2">
-                        <div v-if="success.worker?.primerApellido">
-                          <span class="font-medium">Primer Apellido:</span> {{ success.worker.primerApellido }}
-                        </div>
-                        <div v-if="success.worker?.segundoApellido">
-                          <span class="font-medium">Segundo Apellido:</span> {{ success.worker.segundoApellido }}
-                        </div>
                         <div v-if="success.worker?.fechaNacimiento">
                           <span class="font-medium">Fecha Nacimiento:</span> {{ formatDate(success.worker.fechaNacimiento) }}
                         </div>
                         <div v-if="success.worker?.fechaIngreso">
                           <span class="font-medium">Fecha Ingreso:</span> {{ formatDate(success.worker.fechaIngreso) }}
-                        </div>
-                        <div v-if="success.worker?.sexo">
-                          <span class="font-medium">Sexo:</span> {{ success.worker.sexo }}
                         </div>
                         <div v-if="success.worker?.escolaridad">
                           <span class="font-medium">Escolaridad:</span> {{ success.worker.escolaridad }}
@@ -298,8 +285,20 @@
                         <div v-if="success.worker?.numeroEmpleado">
                           <span class="font-medium">Número Empleado:</span> {{ success.worker.numeroEmpleado }}
                         </div>
+                        <div v-else>
+                          <span class="font-medium">Número Empleado:</span> -
+                        </div>
                         <div v-if="success.worker?.telefono">
                           <span class="font-medium">Teléfono:</span> {{ success.worker.telefono }}
+                        </div>
+                        <div v-else>
+                          <span class="font-medium">Teléfono:</span> -
+                        </div>
+                        <div v-if="success.worker?.nss">
+                          <span class="font-medium">NSS:</span> {{ success.worker.nss }}
+                        </div>
+                        <div v-else>
+                          <span class="font-medium">NSS:</span> -
                         </div>
                       </div>
                     </div>
@@ -342,7 +341,7 @@
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
                       <h5 class="text-sm font-medium text-purple-800 mb-2">
-                        {{ trabajador.worker?.nombre || 'Sin nombre' }}
+                        {{ trabajador.worker?.primerApellido + ' ' + trabajador.worker?.segundoApellido + ' ' + trabajador.worker?.nombre || 'Sin nombre' }}
                       </h5>
                       
                       <!-- Campos normalizados -->
@@ -374,8 +373,6 @@
                           <span class="text-purple-700 font-medium">{{ trabajador.worker.estadoCivil }}</span>
                         </div>
                         
-                        <!-- ✅ ELIMINADO: No se muestra estado laboral en normalizaciones -->
-                        
                         <div v-if="trabajador.worker?.telefonoOriginal && trabajador.worker?.telefono && trabajador.worker.telefonoOriginal !== trabajador.worker.telefono" class="flex items-center text-xs">
                           <span class="font-medium text-purple-700 w-20">Teléfono:</span>
                           <span class="text-gray-500 line-through mr-2">{{ trabajador.worker.telefonoOriginal }}</span>
@@ -383,6 +380,24 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16m-7-7l7 7-7 7"></path>
                           </svg>
                           <span class="text-purple-700 font-medium">{{ trabajador.worker.telefono }}</span>
+                        </div>
+                        
+                        <div v-if="trabajador.worker?.numeroEmpleadoOriginal && trabajador.worker?.numeroEmpleado && trabajador.worker.numeroEmpleadoOriginal !== trabajador.worker.numeroEmpleado" class="flex items-center text-xs">
+                          <span class="font-medium text-purple-700 w-20">Número Empleado:</span>
+                          <span class="text-gray-500 line-through mr-2">{{ trabajador.worker.numeroEmpleadoOriginal }}</span>
+                          <svg class="w-3 h-3 text-purple-500 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16m-7-7l7 7-7 7"></path>
+                          </svg>
+                          <span class="text-purple-700 font-medium">{{ trabajador.worker.numeroEmpleado }}</span>
+                        </div>
+                        
+                        <div v-if="trabajador.worker?.nssOriginal && trabajador.worker?.nss && trabajador.worker.nssOriginal !== trabajador.worker.nss" class="flex items-center text-xs">
+                          <span class="font-medium text-purple-700 w-20">NSS:</span>
+                          <span class="text-gray-500 line-through mr-2">{{ trabajador.worker.nssOriginal }}</span>
+                          <svg class="w-3 h-3 text-purple-500 mx-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16m-7-7l7 7-7 7"></path>
+                          </svg>
+                          <span class="text-purple-700 font-medium">{{ trabajador.worker.nss }}</span>
                         </div>
                       </div>
                       
@@ -397,8 +412,8 @@
                       </div>
                     </div>
                     <div class="ml-4">
-                      <svg class="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" clip-rule="evenodd"></path>
+                      <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
                       </svg>
                     </div>
                   </div>
@@ -412,7 +427,7 @@
         <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
           <button
             @click="closeModal"
-            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+            class="w-full flex items-center justify-center text-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-normal text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
           >
             Cerrar
           </button>
@@ -470,7 +485,9 @@ interface TrabajadorConNormalizacion {
     estadoLaboral?: string
     telefonoOriginal?: string
     telefono?: string
+    numeroEmpleadoOriginal?: string
     numeroEmpleado?: string
+    nssOriginal?: string
     nss?: string
     puesto?: string
   }
@@ -506,7 +523,9 @@ const trabajadoresConNormalizaciones = computed((): TrabajadorConNormalizacion[]
       (worker?.escolaridadOriginal && worker?.escolaridad && worker.escolaridadOriginal !== worker.escolaridad) ||
       (worker?.estadoCivilOriginal && worker?.estadoCivil && worker.estadoCivilOriginal !== worker.estadoCivil) ||
       // ✅ ELIMINADO: No se considera estado laboral en normalizaciones
-      (worker?.telefonoOriginal && worker?.telefono && worker.telefonoOriginal !== worker.telefono)
+      (worker?.telefonoOriginal && worker?.telefono && worker.telefonoOriginal !== worker.telefono) ||
+      (worker?.numeroEmpleadoOriginal && worker?.numeroEmpleado && worker.numeroEmpleadoOriginal !== worker.numeroEmpleado) ||
+      (worker?.nssOriginal && worker?.nss && worker.nssOriginal !== worker.nss)
     );
     
     return tieneCambios;
@@ -517,6 +536,7 @@ const trabajadoresConNormalizaciones = computed((): TrabajadorConNormalizacion[]
       primerApellido: r.worker?.primerApellido,
       segundoApellido: r.worker?.segundoApellido,
       nombre: r.worker?.nombre,
+      numeroEmpleadoOriginal: r.worker?.numeroEmpleadoOriginal,
       numeroEmpleado: r.worker?.numeroEmpleado,
       sexoOriginal: r.worker?.sexoOriginal,
       sexo: r.worker?.sexo,
@@ -527,6 +547,8 @@ const trabajadoresConNormalizaciones = computed((): TrabajadorConNormalizacion[]
       // ✅ ELIMINADO: No se incluyen campos de estado laboral
       telefonoOriginal: r.worker?.telefonoOriginal,
       telefono: r.worker?.telefono,
+      nssOriginal: r.worker?.nssOriginal,
+      nss: r.worker?.nss,
       puesto: r.worker?.puesto
     }
   }))
@@ -569,6 +591,7 @@ const downloadErrorReport = () => {
       'Fecha Ingreso': worker.fechaIngreso ? formatDate(worker.fechaIngreso) : '',
       'Teléfono': worker.telefono || '',
       'Estado Civil': worker.estadoCivil || '',
+      'NSS': worker.nss || '',
       'Errores de Validación': error.validationErrors ? error.validationErrors.join('; ') : ''
     }
   })
@@ -639,10 +662,12 @@ const downloadNormalizationReport = () => {
       'Escolaridad Normalizado': worker.escolaridad || '',
       'Estado Civil Original': worker.estadoCivilOriginal || '',
       'Estado Civil Normalizado': worker.estadoCivil || '',
-      'Estado Laboral Original': worker.estadoLaboralOriginal || '',
-      'Estado Laboral Normalizado': worker.estadoLaboral || '',
       'Teléfono Original': worker.telefonoOriginal || '',
-      'Teléfono Normalizado': worker.telefono || ''
+      'Teléfono Normalizado': worker.telefono || '',
+      'Número Empleado Original': worker.numeroEmpleadoOriginal || '',
+      'Número Empleado Normalizado': worker.numeroEmpleado || '',
+      'NSS Original': worker.nssOriginal || '',
+      'NSS Normalizado': worker.nss || ''
     }
   })
 
@@ -650,7 +675,7 @@ const downloadNormalizationReport = () => {
     SheetNames: ['Normalizaciones'],
     Sheets: {
       'Normalizaciones': {
-        '!ref': `A1:L${normalizationData.length + 1}`, // 12 columnas
+        '!ref': `A1:N${normalizationData.length + 1}`, // 14 columnas
         'A1': { v: 'Nombre', t: 's' },
         'B1': { v: 'Número Empleado', t: 's' },
         'C1': { v: 'Sexo Original', t: 's' },
@@ -659,10 +684,12 @@ const downloadNormalizationReport = () => {
         'F1': { v: 'Escolaridad Normalizado', t: 's' },
         'G1': { v: 'Estado Civil Original', t: 's' },
         'H1': { v: 'Estado Civil Normalizado', t: 's' },
-        'I1': { v: 'Estado Laboral Original', t: 's' },
-        'J1': { v: 'Estado Laboral Normalizado', t: 's' },
-        'K1': { v: 'Teléfono Original', t: 's' },
-        'L1': { v: 'Teléfono Normalizado', t: 's' }
+        'I1': { v: 'Teléfono Original', t: 's' },
+        'J1': { v: 'Teléfono Normalizado', t: 's' },
+        'K1': { v: 'Número Empleado Original', t: 's' },
+        'L1': { v: 'Número Empleado Normalizado', t: 's' },
+        'M1': { v: 'NSS Original', t: 's' },
+        'N1': { v: 'NSS Normalizado', t: 's' }
       }
     }
   }
@@ -677,10 +704,12 @@ const downloadNormalizationReport = () => {
     workbook.Sheets['Normalizaciones'][`F${rowNum}`] = { v: row['Escolaridad Normalizado'], t: 's' }
     workbook.Sheets['Normalizaciones'][`G${rowNum}`] = { v: row['Estado Civil Original'], t: 's' }
     workbook.Sheets['Normalizaciones'][`H${rowNum}`] = { v: row['Estado Civil Normalizado'], t: 's' }
-    workbook.Sheets['Normalizaciones'][`I${rowNum}`] = { v: row['Estado Laboral Original'], t: 's' }
-    workbook.Sheets['Normalizaciones'][`J${rowNum}`] = { v: row['Estado Laboral Normalizado'], t: 's' }
-    workbook.Sheets['Normalizaciones'][`K${rowNum}`] = { v: row['Teléfono Original'], t: 's' }
-    workbook.Sheets['Normalizaciones'][`L${rowNum}`] = { v: row['Teléfono Normalizado'], t: 's' }
+    workbook.Sheets['Normalizaciones'][`I${rowNum}`] = { v: row['Teléfono Original'], t: 's' }
+    workbook.Sheets['Normalizaciones'][`J${rowNum}`] = { v: row['Teléfono Normalizado'], t: 's' }
+    workbook.Sheets['Normalizaciones'][`K${rowNum}`] = { v: row['Número Empleado Original'], t: 's' }
+    workbook.Sheets['Normalizaciones'][`L${rowNum}`] = { v: row['Número Empleado Normalizado'], t: 's' }
+    workbook.Sheets['Normalizaciones'][`M${rowNum}`] = { v: row['NSS Original'], t: 's' }
+    workbook.Sheets['Normalizaciones'][`N${rowNum}`] = { v: row['NSS Normalizado'], t: 's' }
   })
 
   const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })

@@ -42,11 +42,19 @@ const config = {
   config: {
     classes: generateClasses({
       global: {
-        wrapper: "space-y-1 mb-1",
-        message: "text-red-700 text-sm mb-3",
-        label: "block mt-4 font-medium text-lg text-gray-700",
+        wrapper: "space-y-0 mb-0",
+        message: "text-red-700 text-sm mb-0",
+        label: "block mt-3 font-medium text-lg text-gray-700",
         input:
-         "w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500",
+         "w-full h-15 p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500",
+      },
+      select: {
+        input:
+          "w-full h-15 p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500",
+      },
+      date: {
+        input:
+          "w-full h-15 p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500",
       },
       submit: {
         input:

@@ -214,8 +214,8 @@ const closeModal = () => {
               :value="empresas.currentEmpresa?.giroDeEmpresa || ''" />
 
             <!-- Área de arrastrar y soltar para el logotipo -->
-            <div class="mb-6">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Logotipo</label>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mt-4 mb-2">Logotipo</label>
               <div 
                 class="border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 cursor-pointer"
                 :class="[

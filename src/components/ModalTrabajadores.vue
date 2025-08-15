@@ -308,27 +308,27 @@ const cancelarTransferencia = () => {
 
           <FormKit type="form" :actions="false" incomplete-message="Por favor complete todos los campos"
             @submit="handleSubmit">
-            <div class="lg:grid gap-4 lg:grid-cols-2">
-              <FormKit type="text" label="Primer Apellido*" name="primerApellido" placeholder="Primer Apellido"
+            <div class="lg:grid gap-3 lg:grid-cols-2">
+              <FormKit type="text" label="Primer Apellido*" name="primerApellido" placeholder="Apellido paterno"
                   validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
                   :value="trabajadores.currentTrabajador?.primerApellido || ''" />
-              <FormKit type="text" label="Segundo Apellido" name="segundoApellido" placeholder="Segundo Apellido"
+              <FormKit type="text" label="Segundo Apellido" name="segundoApellido" placeholder="Apellido materno"
                   :value="trabajadores.currentTrabajador?.segundoApellido || ''" />
-              <FormKit type="text" label="Nombre(S)*" name="nombre" placeholder="Nombre"
+              <FormKit type="text" label="Nombre(s)*" name="nombre" placeholder="Nombres del trabajador"
                   validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
                   :value="trabajadores.currentTrabajador?.nombre || ''" />
               <FormKit type="date" label="Fecha de Nacimiento*" name="fechaNacimiento" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                 :value="convertirFechaISOaYYYYMMDD(trabajadores.currentTrabajador?.fechaNacimiento) || ''" />
-              <FormKit type="select" label="Sexo*" name="sexo" placeholder="Seleccione un sexo"
+              <FormKit type="select" label="Sexo*" name="sexo" placeholder="-Seleccione un sexo-"
                 :options="['Masculino', 'Femenino']" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                 :value="trabajadores.currentTrabajador?.sexo || ''" />
               <FormKit type="select" label="Escolaridad*" name="escolaridad"
-                placeholder="Último nivel de escolaridad concluida" :options="nivelesEscolaridad" validation="required"
+                placeholder="-Seleccione último concluido-" :options="nivelesEscolaridad" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                 :value="trabajadores.currentTrabajador?.escolaridad || ''" />
-              <FormKit type="text" label="Puesto*" name="puesto" placeholder="Puesto Laboral" validation="required"
+              <FormKit type="text" label="Puesto*" name="puesto" placeholder="Puesto al que aspira o desempeña" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                 :value="trabajadores.currentTrabajador?.puesto || ''" />
               <FormKit type="date" label="Fecha de Ingreso*" name="fechaIngreso" validation="required"
@@ -337,11 +337,11 @@ const cancelarTransferencia = () => {
               <FormKit type="text" label="Teléfono" name="telefono" placeholder="10 dígitos"
                 validation="optional|length:10|matches:/^[0-9]*$/" :validation-messages="{ length: 'El teléfono debe tener 10 dígitos', matches: 'Solo se permiten números' }"
                 maxlength="10" :value="trabajadores.currentTrabajador?.telefono || ''" />
-              <FormKit type="select" label="Estado Cívil*" name="estadoCivil" placeholder="Seleccione un estado civil"
+              <FormKit type="select" label="Estado Cívil*" name="estadoCivil" placeholder="-Seleccione un estado civil-"
                 :options="estadosCiviles" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                 :value="trabajadores.currentTrabajador?.estadoCivil || ''" />
-              <FormKit type="text" label="Número de Empleado" name="numeroEmpleado" placeholder="(Opcional) Sólo números"
+              <FormKit type="text" label="Número de Empleado" name="numeroEmpleado" placeholder="Sólo números"
                 validation="optional|matches:/^[0-9]*$/" 
                 :validation-messages="{ 
                   matches: 'El número de empleado debe estar vacío o contener solo números entre 1 y 7 dígitos' 

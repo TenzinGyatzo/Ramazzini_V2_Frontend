@@ -7,6 +7,7 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useRiesgoTrabajoStore } from '@/stores/riesgosTrabajo';
 import type { RiesgoTrabajo } from '@/interfaces/riesgo-trabajo.interface';
 import { calcularEdad, calcularAntiguedad } from '@/helpers/dates';
+import { formatNombreCompletoRiesgo } from '@/helpers/formatNombreCompleto';
 import type { ComponentPublicInstance } from 'vue';
 import { startOfMonth, endOfMonth, subMonths, subDays, startOfYear, endOfYear, subYears } from 'date-fns';
 import GreenButton from '@/components/GreenButton.vue';
@@ -557,7 +558,10 @@ function exportarFiltrados() {
     DíasIncapacidad: riesgo.diasIncapacidad || '-',
     
     // 2. IDENTIFICACIÓN DEL TRABAJADOR
-    NombreTrabajador: riesgo.nombreTrabajador || '-',
+    NSS: riesgo.nss || '-',
+    PrimerApellido: riesgo.primerApellidoTrabajador || '-',
+    SegundoApellido: riesgo.segundoApellidoTrabajador || '-',
+    Nombre: riesgo.nombreTrabajador || '-',
     Puesto: riesgo.puestoTrabajador || '-',
     CentroTrabajo: centrosStore.centrosTrabajo.find(c => c._id === riesgo.idCentroTrabajo)?.nombreCentro || '-',
     
@@ -578,7 +582,6 @@ function exportarFiltrados() {
     Sexo: riesgo.sexoTrabajador || '-',
     Edad: riesgo.fechaNacimiento ? calcularEdad(riesgo.fechaNacimiento) + ' años' : '-',
     Antigüedad: riesgo.fechaIngreso ? calcularAntiguedad(riesgo.fechaIngreso) : '-',
-    NSS: riesgo.nss || '-',
     Notas: riesgo.notas || '-',
   }));
 
@@ -1442,7 +1445,7 @@ const mostrarTipScrollLateral = () => {
                         <div class="flex-1 min-w-0">
                           <div class="flex items-center gap-2 mb-2">
                             <h3 class="text-xl font-semibold text-gray-900 truncate">
-                              {{ riesgo.nombreTrabajador || 'Sin nombre' }}
+                              {{ formatNombreCompletoRiesgo(riesgo) || 'Sin nombre' }}
                             </h3>
                           </div>
                           <div class="flex items-center gap-3 mb-2">

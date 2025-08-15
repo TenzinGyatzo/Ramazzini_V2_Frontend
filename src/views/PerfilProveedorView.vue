@@ -400,7 +400,7 @@ const logoSrc = computed(() => {
             </div>
 
             <!-- Área de arrastrar y soltar para el logotipo -->
-            <div class="mb-6">
+            <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700 mb-2">Logotipo (Asegura que sea .png sin fondo, cuadrada, de al menos 500 x 500px, con el menor espacio posible entre el logo y el borde de la imagen)</label>
               <div 
                 class="border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 cursor-pointer"
