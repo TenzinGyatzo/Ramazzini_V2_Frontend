@@ -14,7 +14,7 @@ export const useRiesgoTrabajoStore = defineStore("riesgos-trabajo", () => {
       _id: "",
       fechaRiesgo: "",
       recaida: "",
-      NSS: "",
+      nss: "",
       tipoRiesgo: "",
       naturalezaLesion: "",
       parteCuerpoAfectada: "",

@@ -17,7 +17,10 @@ export function exportarTrabajadoresDesdeFrontend(trabajadoresFiltrados: any[], 
     if (tieneNumerosEmpleadoValidos) {
       baseData['Num. Trab.'] = trabajador.numeroEmpleado;
     }
+    baseData['Primer Apellido'] = trabajador.primerApellido;
+    baseData['Segundo Apellido'] = trabajador.segundoApellido;
     baseData.Nombre = trabajador.nombre;
+    baseData['NSS'] = trabajador.nss;
     baseData.Edad = trabajador.edad;
     baseData.Sexo = trabajador.sexo;
     baseData.Escolaridad = trabajador.escolaridad;

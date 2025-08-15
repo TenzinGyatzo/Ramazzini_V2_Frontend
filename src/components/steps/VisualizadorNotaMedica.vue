@@ -4,6 +4,7 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
 import { calcularEdad, calcularAntiguedad, formatDateDDMMYYYY } from '@/helpers/dates';
+import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
@@ -50,7 +51,7 @@ const goToStep = (stepNumber) => {
     <!-- Nombre y teléfono de trabajador -->
     <div class="w-full flex justify-between items-center">
       <p class="text-justify text-2xl font-medium">
-      {{ trabajadores.currentTrabajador.nombre }}
+                      {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
       </p>
       <p class="text-justify font-light">
       Teléfono: <span class="font-medium">{{ trabajadores.currentTrabajador.telefono || 'No Disponible' }}</span>

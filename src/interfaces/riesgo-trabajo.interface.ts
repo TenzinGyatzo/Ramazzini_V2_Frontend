@@ -2,6 +2,8 @@ export interface RiesgoTrabajo {
   _id: string;
   idTrabajador: string;
   nombreTrabajador: string;
+  primerApellidoTrabajador?: string;
+  segundoApellidoTrabajador?: string;
   sexoTrabajador: string;
   puestoTrabajador: string;
   fechaNacimiento: string;
@@ -9,6 +11,7 @@ export interface RiesgoTrabajo {
   numeroEmpleado?: string;
   recaida?: string;
   NSS?: string;
+  nss?: string; // NSS del trabajador
   idCentroTrabajo: string;
   tipoRiesgo?: string;
   fechaRiesgo?: string;
@@ -25,7 +28,6 @@ export interface RiesgoTrabajo {
   updatedBy: string;
   createdAt: string;
   updatedAt: string;
-  
 }
 
   

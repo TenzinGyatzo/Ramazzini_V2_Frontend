@@ -263,7 +263,7 @@ function formatearCampo(campo) {
      <div v-if="formData.formDataCertificado.fechaCertificado" class="w-full mb-4">
         <p class="text-justify">
           Que, habiendo practicado reconocimiento médico en esta fecha, al C. 
-          <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> 
+          <strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong> 
           de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad.
 
           <template v-if="nearestExploracionFisica">
@@ -301,7 +301,7 @@ function formatearCampo(campo) {
      <div v-else class="w-full mb-4">
         <p class="text-justify">
           Que, habiendo practicado reconocimiento médico en esta fecha, al C. 
-          <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> 
+          <strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong> 
           de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad.
 
           &nbsp; <span :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }">[DESCRIPCIÓN DE LA EXPLORACIÓN DE LA FECHA MÁS CERCANA]</span>
@@ -311,13 +311,13 @@ function formatearCampo(campo) {
 
      <div class="w-full mb-4">
         <p class="text-justify">
-            Por lo anterior, se establece que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el' : 'la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> <span class="cursor-pointer" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }" @click="goToStep(2)">{{ formData.formDataCertificado.impedimentosFisicos ? formData.formDataCertificado.impedimentosFisicos : '[DESCRIPCIÓN DE IMPEDIMENTOS FÍSICOS]' }}.</span> Este certificado de salud no implica ningún tipo de garantía de que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el trabajador' : 'la trabajadora' }}</span> no se lesionará o enfermará en el futuro.
+            Por lo anterior, se establece que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el' : 'la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong> <span class="cursor-pointer" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }" @click="goToStep(2)">{{ formData.formDataCertificado.impedimentosFisicos ? formData.formDataCertificado.impedimentosFisicos : '[DESCRIPCIÓN DE IMPEDIMENTOS FÍSICOS]' }}.</span> Este certificado de salud no implica ningún tipo de garantía de que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el trabajador' : 'la trabajadora' }}</span> no se lesionará o enfermará en el futuro.
         </p>
      </div>
      
      <div class="w-full mb-4">
         <p class="text-justify">
-            Expido el presente certificado médico a petición <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'del' : 'de la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre }}</strong> para los usos legales a que haya lugar, en el municipio de {{ proveedorSalud.municipio }}, {{ proveedorSalud.estado }}, en la fecha mencionada al inicio de este certificado.
+            Expido el presente certificado médico a petición <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'del' : 'de la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong> para los usos legales a que haya lugar, en el municipio de {{ proveedorSalud.municipio }}, {{ proveedorSalud.estado }}, en la fecha mencionada al inicio de este certificado.
         </p>
      </div>
 

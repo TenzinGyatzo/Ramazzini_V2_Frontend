@@ -391,7 +391,10 @@ const exportarFiltrados = () => {
 
   const trabajadoresFiltrados: any[] = rowData.map((row: any) => ({
     numeroEmpleado: row.numeroEmpleado,
+    primerApellido: row.primerApellido || '',
+    segundoApellido: row.segundoApellido || '',
     nombre: row.nombre,
+    nss: row.nss || '',
     edad: calcularEdad(row.fechaNacimiento),
     sexo: row.sexo,
     escolaridad: row.escolaridad,

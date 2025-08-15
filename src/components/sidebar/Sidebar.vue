@@ -8,6 +8,7 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
 import { useRoute } from 'vue-router';
 import { useRiesgoTrabajoStore } from '@/stores/riesgosTrabajo';
+import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 
 const route = useRoute();
 const sidebar = useSidebarStore();
@@ -233,7 +234,7 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
             :tooltip="`Expediente Médico`"
             class="leading-5" 
             @click.stop>
-            <p>{{ trabajadores.currentTrabajador?.nombre }}</p>
+            <p>{{ formatNombreCompleto(trabajadores.currentTrabajador) }}</p>
             <p class="font-light text-xs">Expediente Médico</p>
           </SidebarLink>
         </div>

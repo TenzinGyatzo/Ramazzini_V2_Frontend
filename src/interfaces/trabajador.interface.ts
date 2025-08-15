@@ -1,5 +1,7 @@
 export interface Trabajador {
   _id: string;
+  primerApellido: string;
+  segundoApellido: string;
   nombre: string;
   fechaNacimiento: string;
   sexo: string;
@@ -9,6 +11,7 @@ export interface Trabajador {
   telefono: string;
   estadoCivil: string;
   numeroEmpleado: string;
+  nss: string;
   estadoLaboral: string;
   idCentroTrabajo: string;
   createdBy: string;

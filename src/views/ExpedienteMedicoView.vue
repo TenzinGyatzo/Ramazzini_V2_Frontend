@@ -15,6 +15,7 @@ import GrupoDocumentos from '@/components/GrupoDocumentos.vue';
 import SlidingButtonPanel from '@/components/SlidingButtonPanel.vue';
 import DeletionButtonPanel from '@/components/DeletionButtonPanel.vue';
 import { calcularEdad, calcularAntiguedad } from '@/helpers/dates';
+import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento } from '@/helpers/rutas';
 import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
@@ -472,7 +473,7 @@ const añoMasReciente = computed(() => {
                     <div class="flex-1 min-w-0">
                       <h1 class="text-xl sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 flex items-center gap-3">
                         <i class="fas fa-user text-emerald-600 text-md sm:text-lg lg:text-xl xl:text-2xl"></i>
-                        {{ trabajadores.currentTrabajador?.nombre }}
+                        {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
                       </h1>
                       <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
                         <div v-if="trabajadores.currentTrabajador?.sexo" class="flex items-center gap-2 group relative">

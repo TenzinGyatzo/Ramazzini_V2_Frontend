@@ -6,6 +6,7 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useCurrentUser } from '@/composables/useCurrentUser';
 import { convertirFechaISOaYYYYMMDD, calcularEdad, calcularAntiguedad } from '@/helpers/dates';
+import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 import TrabajadoresAPI from '@/api/TrabajadoresAPI';
 
 // Método para formatear la dirección (igual que en CentroTrabajoItem.vue)
@@ -127,6 +128,8 @@ const handleSubmit = async (data) => {
   }
 
   const trabajadorData = {
+    primerApellido: data.primerApellido,
+    segundoApellido: data.segundoApellido,
     nombre: data.nombre,
     fechaNacimiento: data.fechaNacimiento,
     sexo: data.sexo,
@@ -136,6 +139,7 @@ const handleSubmit = async (data) => {
     telefono: data.telefono,
     estadoCivil: data.estadoCivil,
     numeroEmpleado: data.numeroEmpleado,
+    nss: data.nss,
     idCentroTrabajo: data.idCentroTrabajo,
     createdBy: currentUserId,
     updatedBy: currentUserId
@@ -305,12 +309,14 @@ const cancelarTransferencia = () => {
           <FormKit type="form" :actions="false" incomplete-message="Por favor complete todos los campos"
             @submit="handleSubmit">
             <div class="lg:grid gap-4 lg:grid-cols-2">
-              <div class="col-span-2">
-                <FormKit type="text" label="Nombre completo del trabajador*" name="nombre" placeholder="Nombre completo"
+              <FormKit type="text" label="Primer Apellido*" name="primerApellido" placeholder="Primer Apellido"
+                  validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
+                  :value="trabajadores.currentTrabajador?.primerApellido || ''" />
+              <FormKit type="text" label="Segundo Apellido" name="segundoApellido" placeholder="Segundo Apellido"
+                  :value="trabajadores.currentTrabajador?.segundoApellido || ''" />
+              <FormKit type="text" label="Nombre(S)*" name="nombre" placeholder="Nombre"
                   validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
                   :value="trabajadores.currentTrabajador?.nombre || ''" />
-              </div>
-
               <FormKit type="date" label="Fecha de Nacimiento*" name="fechaNacimiento" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                 :value="convertirFechaISOaYYYYMMDD(trabajadores.currentTrabajador?.fechaNacimiento) || ''" />
@@ -336,9 +342,17 @@ const cancelarTransferencia = () => {
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                 :value="trabajadores.currentTrabajador?.estadoCivil || ''" />
               <FormKit type="text" label="Número de Empleado" name="numeroEmpleado" placeholder="(Opcional) Sólo números"
-                validation="optional|length:1,7|matches:/^[0-9]*$/"
-                :validation-messages="{ length: 'El número debe tener entre 1 y 7 dígitos', matches: 'Solo se permiten números' }"
+                validation="optional|matches:/^[0-9]*$/" 
+                :validation-messages="{ 
+                  matches: 'El número de empleado debe estar vacío o contener solo números entre 1 y 7 dígitos' 
+                }"
                 maxlength="7" :value="trabajadores.currentTrabajador?.numeroEmpleado || ''" />
+              <FormKit type="text" label="NSS" name="nss" placeholder="Número de Seguro Social"
+                validation="optional|matches:/^[0-9]{11}$/" 
+                :validation-messages="{ 
+                  matches: 'El NSS debe contener exactamente 11 números' 
+                }"
+                maxlength="11" :value="trabajadores.currentTrabajador?.nss || ''" />
             </div>
 
             <!-- Campos ocultos y botón de enviar -->
@@ -382,7 +396,7 @@ const cancelarTransferencia = () => {
             <!-- Información principal -->
             <div class="mb-3 flex gap-3">
               <p class="text-xl font-semibold text-emerald-700">
-                {{ trabajadores.currentTrabajador?.nombre }}
+                                 {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
                 <!-- Número de empleado -->
               </p>
               <div v-if="trabajadores.currentTrabajador?.numeroEmpleado" class="flex items-center gap-2 text-sm">

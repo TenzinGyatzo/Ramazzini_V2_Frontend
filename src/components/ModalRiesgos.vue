@@ -4,6 +4,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { calcularAntiguedad } from '@/helpers/dates';
+import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 
 const toast = inject('toast');
 const emit = defineEmits(['closeModal']);
@@ -66,7 +67,7 @@ const handleSubmit = async () => {
           <div class="grid grid-cols-2 gap-4">
             <div>
               <p class="text-sm font-medium text-gray-600">Nombre del trabajador</p>
-              <p class="text-lg font-semibold text-gray-800">{{ trabajadores.currentTrabajador?.nombre }}</p>
+              <p class="text-lg font-semibold text-gray-800">{{ formatNombreCompleto(trabajadores.currentTrabajador) }}</p>
             </div>
             <div>
               <p class="text-sm font-medium text-gray-600">Puesto</p>

@@ -5,6 +5,7 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
 import { calcularEdad, calcularAntiguedad, convertirFechaISOaDDMMYYYY, formatDateDDMMYYYY } from '@/helpers/dates';
+import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 import DocumentosAPI from '@/api/DocumentosAPI';
 import { findNearestDocument } from '@/helpers/findNearestDocuments';
 
@@ -193,7 +194,7 @@ const antidopingResumen = computed(() => {
               NOMBRE
             </td>
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
-              {{ trabajadores.currentTrabajador.nombre }}
+                              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
             </td>
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NACIMIENTO

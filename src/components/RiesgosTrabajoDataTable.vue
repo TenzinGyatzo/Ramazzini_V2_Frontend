@@ -37,7 +37,7 @@ function truncarTexto(texto: string, maxLength: number = 50): string {
 onMounted(() => {
   if (!dataTableInstance) {
     // Definir las columnas que se ocultan por defecto (vacío por ahora)
-    const columnasOcultas = [20]; // Mantener notas ocultas
+    const columnasOcultas = [20]; // Mantener notas ocultas (posición 20)
 
     dataTableInstance = new DataTablesCore('#riesgosTrabajoTable', {
       data: props.rows,
@@ -75,9 +75,35 @@ onMounted(() => {
         }, // 2
         { data: 'diasIncapacidad', title: 'Días Incapacidad', defaultContent: '-' }, // 3
         
+        // NSS del trabajador (movido aquí)
+        { 
+          data: null, 
+          title: 'NSS', 
+          defaultContent: '-',
+          render: function(data, type, row) {
+            // Mostrar el NSS del trabajador, no del riesgo de trabajo
+            return row.nss || '-';
+          }
+        }, // 4
+        
         // 2. IDENTIFICACIÓN DEL TRABAJADOR
-        { data: 'nombreTrabajador', title: 'Nombre del Trabajador' }, // 4
-        { data: 'puestoTrabajador', title: 'Puesto' }, // 5
+        { 
+          data: null, 
+          title: 'Nombre del Trabajador',
+          render: function(data, type, row) {
+            const primerApellido = row.primerApellidoTrabajador || '';
+            const segundoApellido = row.segundoApellidoTrabajador || '';
+            const nombre = row.nombreTrabajador || '';
+            
+            let nombreCompleto = '';
+            if (primerApellido) nombreCompleto += primerApellido;
+            if (segundoApellido) nombreCompleto += segundoApellido ? ' ' + segundoApellido : '';
+            if (nombre) nombreCompleto += nombreCompleto ? ' ' + nombre : nombre;
+            
+            return nombreCompleto || 'Sin nombre';
+          }
+        }, // 5
+        { data: 'puestoTrabajador', title: 'Puesto' }, // 6
         {
           data: null,
           title: 'Centro de Trabajo',
@@ -85,41 +111,40 @@ onMounted(() => {
             const centro = centrosTrabajo.centrosTrabajo.find(c => c._id === row.idCentroTrabajo);
             return centro ? centro.nombreCentro : '-';
           }
-        }, // 6
+        }, // 7
         
         // 3. DATOS DEL EVENTO
-        { data: 'naturalezaLesion', title: 'Tipo de Lesión', defaultContent: '-' }, // 7
-        { data: 'parteCuerpoAfectada', title: 'Parte Afectada', defaultContent: '-' }, // 8
-        { data: 'tipoRiesgo', title: 'Tipo de Riesgo', defaultContent: '-' }, // 9
+        { data: 'naturalezaLesion', title: 'Tipo de Lesión', defaultContent: '-' }, // 8
+        { data: 'parteCuerpoAfectada', title: 'Parte Afectada', defaultContent: '-' }, // 9
+        { data: 'tipoRiesgo', title: 'Tipo de Riesgo', defaultContent: '-' }, // 10
         
         // 4. ESTADO Y SEGUIMIENTO
-        { data: 'recaida', title: 'Recaída', render: d => d === 'Si' ? 'Sí' : 'No', defaultContent: '-' }, // 10
+        { data: 'recaida', title: 'Recaída', render: d => d === 'Si' ? 'Sí' : 'No', defaultContent: '-' }, // 11
         { 
           data: 'fechaAlta', 
           title: 'Fecha Alta', 
           render: d => d ? new Date(d).toLocaleDateString('es-MX', { timeZone: 'UTC' }) : '-',
           defaultContent: '-'
-        }, // 11
-        { data: 'manejo', title: 'Manejo', defaultContent: '-' }, // 12
-        { data: 'alta', title: 'Alta', defaultContent: '-' }, // 13
-        { data: 'secuelas', title: 'Secuelas', render: d => d === 'Si' ? 'Sí' : 'No', defaultContent: '-' }, // 14
+        }, // 12
+        { data: 'manejo', title: 'Manejo', defaultContent: '-' }, // 13
+        { data: 'alta', title: 'Alta', defaultContent: '-' }, // 14
+        { data: 'secuelas', title: 'Secuelas', render: d => d === 'Si' ? 'Sí' : 'No', defaultContent: '-' }, // 15
         
         // 5. DATOS ADICIONALES (menos críticos para vista rápida)
-        { data: 'numeroEmpleado', title: 'No. Empleado', defaultContent: '-' }, // 15
-        { data: 'sexoTrabajador', title: 'Sexo' }, // 16
+        { data: 'numeroEmpleado', title: 'No. Empleado', defaultContent: '-' }, // 16
+        { data: 'sexoTrabajador', title: 'Sexo' }, // 17
         { 
           data: 'fechaNacimiento', 
           title: 'Edad', 
           render: d => d ? calcularEdad(d) + ' años' : '-',
           defaultContent: '-'
-        }, // 17
+        }, // 18
         { 
           data: 'fechaIngreso', 
           title: 'Antigüedad', 
           render: d => d ? calcularAntiguedad(d) : '-',
           defaultContent: '-'
-        }, // 18
-        { data: 'NSS', title: 'NSS', defaultContent: '-' }, // 19
+        }, // 19
         { 
           data: 'notas', 
           title: 'Notas', 
@@ -182,7 +207,7 @@ onMounted(() => {
         { targets: props.mostrarColumnasOcultas ? [] : columnasOcultas, visible: props.mostrarColumnasOcultas ? true : false },
         // Solo los anchos más importantes, similar a DataTableDT.vue
         { targets: 0, width: '60px', className: 'text-center' }, // #
-        { targets: 21, width: '160px' } // Acciones
+        { targets: 21, width: '160px' } // Acciones (posición 21, no 22)
       ]
     });
 
@@ -283,13 +308,13 @@ watch(() => props.rows, (newRows) => {
   text-align: center;
 }
 
-:deep(table.dataTable td:nth-child(11)),
-:deep(table.dataTable th:nth-child(11)) {
+:deep(table.dataTable td:nth-child(5)),
+:deep(table.dataTable th:nth-child(5)) {
   text-align: center;
 }
 
-:deep(table.dataTable td:nth-child(14)),
-:deep(table.dataTable th:nth-child(14)) {
+:deep(table.dataTable td:nth-child(12)),
+:deep(table.dataTable th:nth-child(12)) {
   text-align: center;
 }
 
@@ -298,8 +323,8 @@ watch(() => props.rows, (newRows) => {
   text-align: center;
 }
 
-:deep(table.dataTable td:nth-child(17)),
-:deep(table.dataTable th:nth-child(17)) {
+:deep(table.dataTable td:nth-child(16)),
+:deep(table.dataTable th:nth-child(16)) {
   text-align: center;
 }
 
@@ -310,6 +335,11 @@ watch(() => props.rows, (newRows) => {
 
 :deep(table.dataTable td:nth-child(19)),
 :deep(table.dataTable th:nth-child(19)) {
+  text-align: center;
+}
+
+:deep(table.dataTable td:nth-child(20)),
+:deep(table.dataTable th:nth-child(20)) {
   text-align: center;
 }
 
@@ -330,15 +360,16 @@ watch(() => props.rows, (newRows) => {
 
 :deep(table.dataTable th:nth-child(4)),
 :deep(table.dataTable td:nth-child(4)) {
-  width: 130px !important;
-  min-width: 130px !important;
-  max-width: 130px !important;
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
 }
 
 :deep(table.dataTable th:nth-child(5)),
 :deep(table.dataTable td:nth-child(5)) {
-  width: 210px !important;
-  min-width: 210px !important;
+  width: 110px !important;
+  min-width: 110px !important;
+  max-width: 110px !important;
 }
 
 :deep(table.dataTable th:nth-child(6)),
@@ -371,20 +402,14 @@ watch(() => props.rows, (newRows) => {
   min-width: 200px !important;
 }
 
-/* Columnas de notas (21) y acciones (22) */
+/* Columnas de notas (20) y acciones (21) */
 :deep(table.dataTable th:nth-child(21)),
 :deep(table.dataTable td:nth-child(21)) {
-  width: 250px !important;
-  min-width: 250px !important;
-  max-width: 250px !important;
+  width: 170px !important;
+  min-width: 170px !important;
+  max-width: 170px !important;
 }
 
-:deep(table.dataTable th:nth-child(22)),
-:deep(table.dataTable td:nth-child(22)) {
-  width: 160px !important;
-  min-width: 160px !important;
-  max-width: 160px !important;
-}
 </style>
 
 <style>

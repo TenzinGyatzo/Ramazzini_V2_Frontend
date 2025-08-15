@@ -337,7 +337,7 @@ function filtrarPorBusqueda() {
         (riesgo.secuelas && riesgo.secuelas.toLowerCase().includes(texto)) ||
         (riesgo.recaida && riesgo.recaida.toLowerCase().includes(texto)) ||
         (riesgo.notas && riesgo.notas.toLowerCase().includes(texto)) ||
-        (riesgo.NSS && riesgo.NSS.toLowerCase().includes(texto)) ||
+        (riesgo.nss && riesgo.nss.toLowerCase().includes(texto)) ||
         fechaContieneTexto(riesgo.fechaRiesgo) ||
         fechaContieneTexto(riesgo.fechaAlta) ||
         (riesgo.diasIncapacidad && String(riesgo.diasIncapacidad).includes(texto)) ||
@@ -578,7 +578,7 @@ function exportarFiltrados() {
     Sexo: riesgo.sexoTrabajador || '-',
     Edad: riesgo.fechaNacimiento ? calcularEdad(riesgo.fechaNacimiento) + ' años' : '-',
     Antigüedad: riesgo.fechaIngreso ? calcularAntiguedad(riesgo.fechaIngreso) : '-',
-    NSS: riesgo.NSS || '-',
+    NSS: riesgo.nss || '-',
     Notas: riesgo.notas || '-',
   }));
 
@@ -663,6 +663,7 @@ function agregarRiesgoLocalmente(nuevaRT: RiesgoTrabajo) {
     nuevaRT.fechaNacimiento = trabajador.fechaNacimiento;
     nuevaRT.fechaIngreso = trabajador.fechaIngreso;
     nuevaRT.puestoTrabajador = trabajador.puesto;
+    nuevaRT.nss = trabajador.nss;
   }
 
   // Evitar duplicados y forzar reactividad
@@ -1441,7 +1442,7 @@ const mostrarTipScrollLateral = () => {
                         <div class="flex-1 min-w-0">
                           <div class="flex items-center gap-2 mb-2">
                             <h3 class="text-xl font-semibold text-gray-900 truncate">
-                              {{ riesgo.nombreTrabajador }}
+                              {{ riesgo.nombreTrabajador || 'Sin nombre' }}
                             </h3>
                           </div>
                           <div class="flex items-center gap-3 mb-2">
@@ -1520,10 +1521,10 @@ const mostrarTipScrollLateral = () => {
                         </div>
                         
                         <!-- NSS -->
-                        <div v-if="riesgo.NSS" class="flex items-center gap-2 group relative">
+                        <div v-if="riesgo.nss" class="flex items-center gap-2 group relative">
                           <i class="fas fa-id-card text-blue-500 text-sm"></i>
                           <span class="text-sm text-gray-600">
-                            {{ riesgo.NSS }}
+                            {{ riesgo.nss }}
                           </span>
                           <div class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
                             NSS

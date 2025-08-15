@@ -6,6 +6,7 @@ import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useRiesgoTrabajoStore } from '@/stores/riesgosTrabajo';
 import { calcularAntiguedad, calcularEdad } from '@/helpers/dates';
+import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 
 const toast = inject('toast');
 const emit = defineEmits(['closeModal', 'riesgoCreado','riesgoActualizado']);
@@ -22,10 +23,7 @@ const modo = ref('listado');
 const rtEnEdicion = ref(null); // ser√° un objeto con los datos del RT si se edita
 const userId = userStore.user._id;
 
-const nssError = computed(() => {
-  if (!rtEnEdicion.value?.NSS) return '';
-  return rtEnEdicion.value.NSS.length !== 11 ? 'El NSS debe tener exactamente 11 caracteres.' : '';
-});
+
 
 const closeModal = () => {
   emit('closeModal');
@@ -45,10 +43,6 @@ const toggleDeleteModal = (id, rt) => {
 
 const handleSubmit = async () => {
   try {
-    if (nssError.value) {
-      toast.open({ message: nssError.value, type: 'error' });
-      return;
-    }
 
     const trabajadorId = trabajadoresStore.currentTrabajador?._id;
     if (!trabajadorId) return;
@@ -198,7 +192,11 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
           <div class="grid grid-cols-2 gap-4">
             <div>
               <p class="text-sm font-medium text-gray-600">Nombre del trabajador</p>
-              <p class="text-lg font-semibold text-gray-800">{{ trabajadoresStore.currentTrabajador?.nombre }}</p>
+              <p class="text-lg font-semibold text-gray-800">{{ formatNombreCompleto(trabajadoresStore.currentTrabajador) }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600">Puesto</p>
+              <p class="text-lg font-semibold text-gray-800">{{ trabajadoresStore.currentTrabajador?.puesto }}</p>
             </div>
             <div>
               <p class="text-sm font-medium text-gray-600">N√∫mero de Empleado</p>
@@ -207,12 +205,8 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
               </p>
             </div>
             <div>
-              <p class="text-sm font-medium text-gray-600">Empresa</p>
-              <p class="text-lg font-semibold text-gray-800">{{ empresasStore.currentEmpresa?.nombreComercial }}</p>
-            </div>
-            <div>
-              <p class="text-sm font-medium text-gray-600">Puesto</p>
-              <p class="text-lg font-semibold text-gray-800">{{ trabajadoresStore.currentTrabajador?.puesto }}</p>
+              <p class="text-sm font-medium text-gray-600">NSS</p>
+              <p class="text-lg font-semibold text-gray-800">{{ trabajadoresStore.currentTrabajador?.nss }}</p>
             </div>
             <div>
               <p class="text-sm font-medium text-gray-600">Edad</p>
@@ -258,9 +252,6 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
                 </span>
                 <span v-if="rt.manejo">
                   <strong>Manejo:</strong> {{ rt.manejo }}
-                </span>
-                <span v-if="rt.NSS">
-                  <strong>NSS:</strong> {{ rt.NSS }}
                 </span>
               </div>
 
@@ -318,15 +309,15 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
           </h2>
           
           <!-- Primera fila -->
-          <div class="grid grid-cols-1 lg:grid-cols-9 gap-4 items-start">
+          <div class="grid md:grid-cols-2 gap-4">
             <!-- Columna 1: Fecha del Riesgo -->
-            <div class="col-span-3">
+            <div>
               <label class="block text-sm font-medium text-gray-600">Fecha del Riesgo</label>
               <input type="date" v-model="rtEnEdicion.fechaRiesgo" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
             </div>
 
             <!-- Columna 2: Reca√≠da (Etiqueta e Input separados) -->
-            <div class="col-span-1 lg:col-span-2">
+            <div>
               <label class="block text-sm font-medium text-gray-600">Reca√≠da</label>
               <select v-model="rtEnEdicion.recaida" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
                 <option disabled value="">Selecciona</option>
@@ -334,9 +325,12 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
                 <option>No</option>
               </select>
             </div>
+          </div>
 
-            <!-- Columna 3: Tipo de Riesgo -->
-            <div class="col-span-4">
+          <!-- Segunda fila -->
+          <div class="grid md:grid-cols-2 gap-4">
+
+            <div>
               <label class="block text-sm font-medium text-gray-600">Tipo de Riesgo</label>
               <select v-model="rtEnEdicion.tipoRiesgo" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
                 <option disabled value="">Selecciona un tipo</option>
@@ -345,10 +339,7 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
                 <option>Enfermedad de Trabajo</option>
               </select>
             </div>
-          </div>
 
-          <!-- Segunda fila -->
-          <div class="grid md:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-600">Naturaleza de la lesi√≥n</label>
               <input type="text" v-model="rtEnEdicion.naturalezaLesion" placeholder="Descripci√≥n de la lesi√≥n" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" list="nat-lesion-sugerencias" />
@@ -356,6 +347,10 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
                 <option v-for="sugerencia in sugerenciasNatLesion" :key="sugerencia" :value="sugerencia">{{ sugerencia }}</option>
               </datalist>
             </div>
+          </div>
+
+          <!-- Tercera fila -->
+          <div class="grid grid-cols-2 gap-4">
 
             <div>
               <label class="block text-sm font-medium text-gray-600">Parte afectada</label>
@@ -364,10 +359,7 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
                 <option v-for="sugerencia in sugerenciasParteCuerpo" :key="sugerencia" :value="sugerencia">{{ sugerencia }}</option>
               </datalist>
             </div>
-          </div>
 
-          <!-- Tercera fila -->
-          <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-600">Manejo</label>
               <select v-model="rtEnEdicion.manejo" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500">
@@ -377,11 +369,6 @@ const sugerenciasNatLesion = [ "Contusi√≥n", "Traumatismo", "Fractura", "Luxaci√
               </select>
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-600">NSS</label>
-              <input type="text" v-model="rtEnEdicion.NSS" placeholder="N√∫mero de Seguridad Social" class="w-full p-3 border rounded-lg focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" />
-              <p v-if="nssError" class="text-red-500 text-sm mt-1">{{ nssError }}</p>
-            </div>
           </div>
 
           <!-- Cuarta fila -->

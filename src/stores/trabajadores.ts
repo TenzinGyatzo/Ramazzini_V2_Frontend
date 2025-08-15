@@ -6,6 +6,8 @@ import EmpresasAPI from "@/api/EmpresasAPI";
 
 interface Trabajador {
   _id: string;
+  primerApellido: string;
+  segundoApellido: string;
   nombre: string;
   fechaNacimiento: string;
   sexo: string;
@@ -15,6 +17,7 @@ interface Trabajador {
   telefono: string;
   estadoCivil: string;
   numeroEmpleado: string;
+  nss: string;
   agentesRiesgoActuales: string[];
   estadoLaboral: string;
   idCentroTrabajo: string;
@@ -67,6 +70,8 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
   function resetCurrentTrabajador() {
     currentTrabajador.value = {
       _id: "",
+      primerApellido: "",
+      segundoApellido: "",
       nombre: "",
       fechaNacimiento: "",
       sexo: "",
@@ -76,6 +81,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
       telefono: "",
       estadoCivil: "",
       numeroEmpleado: "",
+      nss: "",
       agentesRiesgoActuales: [],
       estadoLaboral: "",
       idCentroTrabajo: "",

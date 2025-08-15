@@ -179,6 +179,12 @@
                       
                       <!-- Datos del trabajador que falló -->
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600">
+                        <div v-if="error.worker?.primerApellido">
+                          <span class="font-medium">Primer Apellido:</span> {{ error.worker.primerApellido }}
+                        </div>
+                        <div v-if="error.worker?.segundoApellido">
+                          <span class="font-medium">Segundo Apellido:</span> {{ error.worker.segundoApellido }}
+                        </div>
                         <div v-if="error.worker?.fechaNacimiento">
                           <span class="font-medium">Fecha Nacimiento:</span> {{ formatDate(error.worker.fechaNacimiento) }}
                         </div>
@@ -265,6 +271,12 @@
                         {{ success.worker?.nombre || 'Sin nombre' }}
                       </h5>
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 mt-2">
+                        <div v-if="success.worker?.primerApellido">
+                          <span class="font-medium">Primer Apellido:</span> {{ success.worker.primerApellido }}
+                        </div>
+                        <div v-if="success.worker?.segundoApellido">
+                          <span class="font-medium">Segundo Apellido:</span> {{ success.worker.segundoApellido }}
+                        </div>
                         <div v-if="success.worker?.fechaNacimiento">
                           <span class="font-medium">Fecha Nacimiento:</span> {{ formatDate(success.worker.fechaNacimiento) }}
                         </div>
@@ -445,6 +457,8 @@ interface ImportResumen {
 
 interface TrabajadorConNormalizacion {
   worker: {
+    primerApellido?: string
+    segundoApellido?: string
     nombre?: string
     sexoOriginal?: string
     sexo?: string
@@ -457,6 +471,7 @@ interface TrabajadorConNormalizacion {
     telefonoOriginal?: string
     telefono?: string
     numeroEmpleado?: string
+    nss?: string
     puesto?: string
   }
 }
@@ -499,6 +514,8 @@ const trabajadoresConNormalizaciones = computed((): TrabajadorConNormalizacion[]
         
   return trabajadoresConCambios.map(r => ({ 
     worker: {
+      primerApellido: r.worker?.primerApellido,
+      segundoApellido: r.worker?.segundoApellido,
       nombre: r.worker?.nombre,
       numeroEmpleado: r.worker?.numeroEmpleado,
       sexoOriginal: r.worker?.sexoOriginal,
@@ -542,6 +559,8 @@ const downloadErrorReport = () => {
     return {
       'Error': error.error || '',
       'Número Empleado': worker.numeroEmpleado || '',
+      'Primer Apellido': worker.primerApellido || '',
+      'Segundo Apellido': worker.segundoApellido || '',
       'Nombre': worker.nombre || 'Sin nombre',
       'Fecha Nacimiento': worker.fechaNacimiento ? formatDate(worker.fechaNacimiento) : '',
       'Sexo': worker.sexo || '',
@@ -559,18 +578,20 @@ const downloadErrorReport = () => {
     SheetNames: ['Errores de Importación'],
     Sheets: {
       'Errores de Importación': {
-        '!ref': `A1:K${excelData.length + 1}`, // 11 columnas
+        '!ref': `A1:N${excelData.length + 1}`, // 14 columnas
         'A1': { v: 'Error', t: 's' },
         'B1': { v: 'Número Empleado', t: 's' },
-        'C1': { v: 'Nombre', t: 's' },
-        'D1': { v: 'Fecha Nacimiento', t: 's' },
-        'E1': { v: 'Sexo', t: 's' },
-        'F1': { v: 'Escolaridad', t: 's' },
-        'G1': { v: 'Puesto', t: 's' },
-        'H1': { v: 'Fecha Ingreso', t: 's' },
-        'I1': { v: 'Teléfono', t: 's' },
-        'J1': { v: 'Estado Civil', t: 's' },
-        'K1': { v: 'Errores de Validación', t: 's' }
+        'C1': { v: 'Primer Apellido', t: 's' },
+        'D1': { v: 'Segundo Apellido', t: 's' },
+        'E1': { v: 'Nombre', t: 's' },
+        'F1': { v: 'Fecha Nacimiento', t: 's' },
+        'G1': { v: 'Sexo', t: 's' },
+        'H1': { v: 'Escolaridad', t: 's' },
+        'I1': { v: 'Puesto', t: 's' },
+        'J1': { v: 'Fecha Ingreso', t: 's' },
+        'K1': { v: 'Teléfono', t: 's' },
+        'L1': { v: 'Estado Civil', t: 's' },
+        'M1': { v: 'Errores de Validación', t: 's' }
       }
     }
   }
@@ -580,15 +601,17 @@ const downloadErrorReport = () => {
     const rowNum = index + 2
     workbook.Sheets['Errores de Importación'][`A${rowNum}`] = { v: row.Error, t: 's' }
     workbook.Sheets['Errores de Importación'][`B${rowNum}`] = { v: row['Número Empleado'], t: 's' }
-    workbook.Sheets['Errores de Importación'][`C${rowNum}`] = { v: row.Nombre, t: 's' }
-    workbook.Sheets['Errores de Importación'][`D${rowNum}`] = { v: row['Fecha Nacimiento'], t: 's' }
-    workbook.Sheets['Errores de Importación'][`E${rowNum}`] = { v: row.Sexo, t: 's' }
-    workbook.Sheets['Errores de Importación'][`F${rowNum}`] = { v: row.Escolaridad, t: 's' }
-    workbook.Sheets['Errores de Importación'][`G${rowNum}`] = { v: row.Puesto, t: 's' }
-    workbook.Sheets['Errores de Importación'][`H${rowNum}`] = { v: row['Fecha Ingreso'], t: 's' }
-    workbook.Sheets['Errores de Importación'][`I${rowNum}`] = { v: row.Teléfono, t: 's' }
-    workbook.Sheets['Errores de Importación'][`J${rowNum}`] = { v: row['Estado Civil'], t: 's' }
-    workbook.Sheets['Errores de Importación'][`K${rowNum}`] = { v: row['Errores de Validación'], t: 's' }
+    workbook.Sheets['Errores de Importación'][`C${rowNum}`] = { v: row['Primer Apellido'], t: 's' }
+    workbook.Sheets['Errores de Importación'][`D${rowNum}`] = { v: row['Segundo Apellido'], t: 's' }
+    workbook.Sheets['Errores de Importación'][`E${rowNum}`] = { v: row.Nombre, t: 's' }
+    workbook.Sheets['Errores de Importación'][`F${rowNum}`] = { v: row['Fecha Nacimiento'], t: 's' }
+    workbook.Sheets['Errores de Importación'][`G${rowNum}`] = { v: row.Sexo, t: 's' }
+    workbook.Sheets['Errores de Importación'][`H${rowNum}`] = { v: row.Escolaridad, t: 's' }
+    workbook.Sheets['Errores de Importación'][`I${rowNum}`] = { v: row.Puesto, t: 's' }
+    workbook.Sheets['Errores de Importación'][`J${rowNum}`] = { v: row['Fecha Ingreso'], t: 's' }
+    workbook.Sheets['Errores de Importación'][`K${rowNum}`] = { v: row.Teléfono, t: 's' }
+    workbook.Sheets['Errores de Importación'][`L${rowNum}`] = { v: row['Estado Civil'], t: 's' }
+    workbook.Sheets['Errores de Importación'][`M${rowNum}`] = { v: row['Errores de Validación'], t: 's' }
   })
   
   // Convertir a buffer y descargar
