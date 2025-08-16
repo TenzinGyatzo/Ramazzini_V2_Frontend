@@ -18,6 +18,7 @@ import { calcularEdad, calcularAntiguedad } from '@/helpers/dates';
 import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento } from '@/helpers/rutas';
 import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
+import ModalCuestionarios from '@/components/ModalCuestionarios.vue';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 
@@ -37,6 +38,7 @@ const showDocumentoExternoModal = ref(false);
 const showDocumentoExternoUpdateModal = ref(false);
 const showSubscriptionModal = ref(false);
 const showDeleteModal = ref(false);
+const showCuestionariosModal = ref(false);
 const selectedDocumentId = ref<string | null>(null);
 const selectedDocumentName = ref<string>('');
 const selectedDocumentType = ref<string | null>(null);
@@ -97,6 +99,24 @@ const toggleDocumentoExternoUpdateModal = () => {
   }
 
   showDocumentoExternoUpdateModal.value = !showDocumentoExternoUpdateModal.value;
+};
+
+const toggleCuestionariosModal = () => {
+  if (!proveedorSaludStore.proveedorSalud) return;
+
+  if (periodoDePruebaFinalizado.value) {
+    if (!estadoSuscripcion.value || estadoSuscripcion.value === 'inactive') {
+      showSubscriptionModal.value = true;
+      return;
+    }
+
+    if (estadoSuscripcion.value === 'cancelled' && finDeSuscripcion.value && new Date() > finDeSuscripcion.value) {
+      showSubscriptionModal.value = true;
+      return;
+    }
+  }
+
+  showCuestionariosModal.value = !showCuestionariosModal.value;
 };
 
 const toggleDeleteModal = (
@@ -440,11 +460,15 @@ const añoMasReciente = computed(() => {
           @closeModalUpdate="toggleDocumentoExternoUpdateModal" @updateData="fetchData"/>
       </Transition>
 
-      <Transition appear name="fade">
-        <ModalEliminar v-if="showDeleteModal && selectedDocumentId && selectedDocumentType" :idRegistro="selectedDocumentId"
-          :identificacion="selectedDocumentName" :tipoRegistro="documentTypeLabels[selectedDocumentType]"
-          @closeModal="toggleDeleteModal" @confirmDelete="handleDeleteDocument" />
-      </Transition>
+             <Transition appear name="fade">
+         <ModalEliminar v-if="showDeleteModal && selectedDocumentId && selectedDocumentType" :idRegistro="selectedDocumentId"
+           :identificacion="selectedDocumentName" :tipoRegistro="documentTypeLabels[selectedDocumentType]"
+           @closeModal="toggleDeleteModal" @confirmDelete="handleDeleteDocument" />
+       </Transition>
+
+       <Transition appear name="fade">
+         <ModalCuestionarios v-if="showCuestionariosModal" @closeModal="toggleCuestionariosModal" />
+       </Transition>
 
       <div class="grid gap-5">
 
@@ -573,7 +597,7 @@ const añoMasReciente = computed(() => {
         </Transition>
 
         <!-- Panel de creación de documentos -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
           <!-- Header del panel -->
           <div class="bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 px-6 py-4">
             <div class="flex items-center justify-between">
@@ -699,14 +723,28 @@ const añoMasReciente = computed(() => {
               </button>
             </div>
 
-            <!-- Documento Externo -->
-            <div class="mt-6 flex justify-center">
-              <SliderButton 
-                class="w-full max-w-md" 
-                text="Documento Externo" 
-                @click="toggleDocumentoExternoModal"
-                @closeModal="toggleDocumentoExternoModal" 
-              />
+            <div class="flex justify-center gap-4">
+              <!-- Documento Externo -->
+              <div class="mt-6 flex justify-center">
+                <SliderButton 
+                  class="w-full max-w-md" 
+                  text="Documento Externo" 
+                  @click="toggleDocumentoExternoModal"
+                  @closeModal="toggleDocumentoExternoModal" 
+                />
+              </div>
+  
+              <!-- Botón para Cuestionarios de Vigilancia Médica -->
+              <div class="mt-6 flex justify-center">
+                <button
+                  @click="toggleCuestionariosModal"
+                  class="relative w-[232px] h-[50px] rounded-lg cursor-pointer flex items-center border-2 border-emerald-600 bg-white overflow-hidden transition-all duration-200 hover:bg-emerald-50 hover:shadow-lg"
+                >
+                  <i class="fas fa-file-alt text-emerald-600 text-lg ml-4"></i>
+                  <span class="flex-1 text-center text-emerald-600 text-lg ml-3">Cuestionarios</span>
+                  <i class="fas fa-arrow-right text-emerald-600 text-sm mr-4 transition-transform duration-200 hover:translate-x-1"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
