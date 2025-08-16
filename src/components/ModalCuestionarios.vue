@@ -7,9 +7,12 @@ const closeModal = () => {
 
 // Función para manejar la selección de cuestionarios
 const handleQuestionnaireSelect = (questionnaireType) => {
-  console.log('Cuestionario seleccionado:', questionnaireType);
-  // Aquí puedes agregar la lógica para manejar la selección del cuestionario
-  // Por ejemplo, navegar a una nueva página, abrir otro modal, etc.
+  // Solo permitir cuestionarios habilitados
+  if (questionnaireType === 'embarazo-lactancia') {
+    console.log('Cuestionario seleccionado:', questionnaireType);
+    // Aquí puedes agregar la lógica para manejar la selección del cuestionario
+    // Por ejemplo, navegar a una nueva página, abrir otro modal, etc.
+  }
 };
 </script>
 
@@ -51,14 +54,16 @@ const handleQuestionnaireSelect = (questionnaireType) => {
               </button>
               <button 
                 @click="handleQuestionnaireSelect('enfermedades-cronicas')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-heartbeat text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Enfermedades Crónicas
               </button>
               <button 
                 @click="handleQuestionnaireSelect('condiciones-muscoesqueleticas')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-bone text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Condiciones muscoesqueléticas
@@ -75,35 +80,40 @@ const handleQuestionnaireSelect = (questionnaireType) => {
             <div class="space-y-2">
               <button 
                 @click="handleQuestionnaireSelect('trabajos-altura')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-warning text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Control de salud para POE a Trabajos en Altura
               </button>
               <button 
                 @click="handleQuestionnaireSelect('espacios-confinados')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-box text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Control de salud para POE a Espacios Confinados
               </button>
               <button 
                 @click="handleQuestionnaireSelect('temperaturas-extremas')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-thermometer-half text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Control de Salud para POE a Temperaturas Extremas
               </button>
               <button 
                 @click="handleQuestionnaireSelect('sustancias-peligrosas')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-flask text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Control de salud para POE a Manipulación de Sustancias Peligrosas
               </button>
               <button 
                 @click="handleQuestionnaireSelect('maquinaria-pesada')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-truck text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Control para POE a Conducción y Operación de Maquinaria Pesada
@@ -120,28 +130,32 @@ const handleQuestionnaireSelect = (questionnaireType) => {
             <div class="space-y-2">
               <button 
                 @click="handleQuestionnaireSelect('salud-auditiva')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-deaf text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Monitoreo de la Salud Auditiva
               </button>
               <button 
                 @click="handleQuestionnaireSelect('salud-respiratoria')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-lungs text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Monitoreo de la Salud Respiratoria
               </button>
               <button 
                 @click="handleQuestionnaireSelect('agentes-quimicos')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-atom text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Monitoreo por Exposición a Agentes Químicos
               </button>
               <button 
                 @click="handleQuestionnaireSelect('agentes-biologicos')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-bacteria text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Seguimiento Médico por Contacto con Agentes Biológicos
@@ -158,14 +172,16 @@ const handleQuestionnaireSelect = (questionnaireType) => {
             <div class="space-y-2">
               <button 
                 @click="handleQuestionnaireSelect('riesgos-ergonomicos')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-user-injured text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Riesgos por Posturas Prolongadas y Movimientos Repetitivos
               </button>
               <button 
                 @click="handleQuestionnaireSelect('manipulacion-cargas')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-dumbbell text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Riesgos por Manipulación Manual de Cargas
@@ -182,14 +198,16 @@ const handleQuestionnaireSelect = (questionnaireType) => {
             <div class="space-y-2">
               <button 
                 @click="handleQuestionnaireSelect('riesgo-psicosocial')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-chart-line text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Evaluación de Factores de Riesgo Psicosocial
               </button>
               <button 
                 @click="handleQuestionnaireSelect('estres-laboral')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
               >
                 <i class="fas fa-tired text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Seguimiento de Estrés Laboral y Fatiga Mental
@@ -223,7 +241,7 @@ const handleQuestionnaireSelect = (questionnaireType) => {
 }
 
 /* Efectos de hover mejorados para los botones */
-button:hover {
+button:hover:not(.disabled) {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
 }
@@ -234,11 +252,36 @@ button {
 }
 
 /* Efecto de escala en hover */
-button:hover i {
+button:hover:not(.disabled) i {
   transform: scale(1.1);
 }
 
 button i {
   transition: transform 0.2s ease-in-out;
+}
+
+/* Estilos para botones deshabilitados */
+button.disabled {
+  opacity: 0.8;
+  /* cursor: not-allowed; */
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  border-color: #d1d5db;
+}
+
+button.disabled:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+  transform: none;
+  box-shadow: none;
+}
+
+button.disabled i {
+  color: #9ca3af;
+}
+
+button.disabled:hover i {
+  transform: none;
+  color: #9ca3af;
 }
 </style>
