@@ -712,9 +712,9 @@ const añoMasReciente = computed(() => {
                 idEmpresa: empresas.currentEmpresaId,
                 idTrabajador: trabajadores.currentTrabajadorId,
                 tipoDocumento: 'notaMedica'
-              })" class="group relative bg-gradient-to-br from-pink-50 to-pink-100 hover:from-pink-100 hover:to-pink-200 border-2 border-pink-200 hover:border-pink-400 rounded-xl p-4 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+              })" class="group relative bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 border-2 border-orange-200 hover:border-orange-400 rounded-xl p-4 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
                 <div class="text-center">
-                  <div class="w-12 h-12 bg-pink-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-pink-600 transition-colors">
+                  <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-orange-600 transition-colors">
                     <i class="fas fa-stethoscope text-white text-lg"></i>
                   </div>
                   <h3 class="font-semibold text-gray-900 text-sm mb-1">Nota Médica</h3>

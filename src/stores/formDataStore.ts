@@ -10,6 +10,7 @@ export const useFormDataStore = defineStore('formData', () => {
   const formDataExploracionFisica = ref({}); // Estado compartido
   const formDataHistoriaClinica = ref({}); // Estado compartido
   const formDataNotaMedica = ref({}); // Estado compartido
+  const formDataControlPrenatal = ref({}); // Estado compartido
 
   const setFormDataFromDocument = (documento, tipoDocumento) => {
     if (!documento) {
@@ -42,6 +43,9 @@ export const useFormDataStore = defineStore('formData', () => {
       case 'notaMedica':
         formDataNotaMedica.value = { ...documento };
         break;
+      case 'controlPrenatal':
+        formDataControlPrenatal.value = { ...documento };
+        break;
       default:
         console.error('Tipo de documento no reconocido:', tipoDocumento);
         break;
@@ -58,6 +62,7 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataExploracionFisica.value = {};
     formDataHistoriaClinica.value = {};
     formDataNotaMedica.value = {};
+    formDataControlPrenatal.value = {};
   };
 
   return { 
@@ -69,6 +74,7 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataExploracionFisica,
     formDataHistoriaClinica, 
     formDataNotaMedica,
+    formDataControlPrenatal,
     setFormDataFromDocument,
     resetFormData 
   };

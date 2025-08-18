@@ -49,7 +49,8 @@ const totalDocumentos = computed(() => {
            (props.documents.antidopings?.length || 0) +
            (props.documents.certificados?.length || 0) +
            (props.documents.documentosExternos?.length || 0) +
-           (props.documents.notasMedicas?.length || 0);
+           (props.documents.notasMedicas?.length || 0) +
+           (props.documents.controlPrenatal?.length || 0);
 });
 
 // Obtener todas las rutas de documentos de este grupo específico
@@ -131,6 +132,16 @@ const rutasDelGrupo = computed(() => {
             const rutaBase = obtenerRutaDocumento(notaMedica, 'Nota Medica');
             const fecha = obtenerFechaDocumento(notaMedica) || 'SinFecha';
             const nombreArchivo = obtenerNombreArchivo(notaMedica, 'Nota Medica', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            rutas.push(ruta);
+        });
+    }
+
+    if (props.documents.controlPrenatal) {
+        props.documents.controlPrenatal.forEach(controlPrenatal => {
+            const rutaBase = obtenerRutaDocumento(controlPrenatal, 'Control Prenatal');
+            const fecha = obtenerFechaDocumento(controlPrenatal) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(controlPrenatal, 'Control Prenatal', fecha);
             const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
             rutas.push(ruta);
         });
@@ -460,6 +471,30 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', notaMedica._id, convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica), 'notaMedica')" 
+                        @openSubscriptionModal="emit('openSubscriptionModal')"
+                    />
+                </div>
+            </div>
+
+            <!-- Control Prenatal -->
+            <div v-if="documents.controlPrenatal && documents.controlPrenatal.length > 0">
+                <div v-for="(controlPrenatal, index) in documents.controlPrenatal" :key="controlPrenatal._id"
+                     class="transition-all duration-200 hover:bg-gray-50"
+                     :style="{ animationDelay: `${index * 50}ms` }">
+                    <DocumentoItem 
+                        :controlPrenatal="controlPrenatal" 
+                        :documentoId="controlPrenatal._id" 
+                        :documentoTipo="'controlPrenatal'" 
+                        :toggleRouteSelection="toggleRouteSelection"
+                        :isDeletionMode="isDeletionMode"
+                        :isSelected="(() => {
+                            const rutaBase = obtenerRutaDocumento(controlPrenatal, 'Control Prenatal');
+                            const fecha = obtenerFechaDocumento(controlPrenatal) || 'SinFecha';
+                            const nombreArchivo = obtenerNombreArchivo(controlPrenatal, 'Control Prenatal', fecha);
+                            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                            return props.selectedRoutes.includes(ruta);
+                        })()"
+                        @eliminarDocumento="$emit('eliminarDocumento', controlPrenatal._id, convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal), 'controlPrenatal')" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
                     />
                 </div>

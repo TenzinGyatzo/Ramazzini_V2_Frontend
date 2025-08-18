@@ -1,5 +1,12 @@
 <script setup>
+import { useRouter } from 'vue-router';
+import { useEmpresasStore } from '@/stores/empresas';
+import { useTrabajadoresStore } from '@/stores/trabajadores';
+
 const emit = defineEmits(['closeModal']);
+const router = useRouter();
+const empresas = useEmpresasStore();
+const trabajadores = useTrabajadoresStore();
 
 const closeModal = () => {
   emit('closeModal');
@@ -8,10 +15,21 @@ const closeModal = () => {
 // Función para manejar la selección de cuestionarios
 const handleQuestionnaireSelect = (questionnaireType) => {
   // Solo permitir cuestionarios habilitados
-  if (questionnaireType === 'embarazo-lactancia') {
+  if (questionnaireType === 'control-prenatal') {
     console.log('Cuestionario seleccionado:', questionnaireType);
-    // Aquí puedes agregar la lógica para manejar la selección del cuestionario
-    // Por ejemplo, navegar a una nueva página, abrir otro modal, etc.
+    
+    // Navegar a la vista crear-documento con el tipo controlPrenatal
+    router.push({
+      name: 'crear-documento',
+      params: {
+        idEmpresa: empresas.currentEmpresaId,
+        idTrabajador: trabajadores.currentTrabajadorId,
+        tipoDocumento: 'controlPrenatal'
+      }
+    });
+    
+    // Cerrar el modal después de navegar
+    closeModal();
   }
 };
 </script>
@@ -46,11 +64,11 @@ const handleQuestionnaireSelect = (questionnaireType) => {
             </div>
             <div class="space-y-2">
               <button 
-                @click="handleQuestionnaireSelect('embarazo-lactancia')"
+                @click="handleQuestionnaireSelect('control-prenatal')"
                 class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
               >
                 <i class="fas fa-baby text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
-                Embarazo y Lactancia
+                Control Prenatal (Embarazo y Lactancia)
               </button>
               <button 
                 @click="handleQuestionnaireSelect('enfermedades-cronicas')"

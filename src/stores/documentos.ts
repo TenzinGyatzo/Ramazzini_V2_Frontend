@@ -10,6 +10,7 @@ import type {
   ExploracionFisica,
   HistoriaClinica,
   NotaMedica,
+  ControlPrenatal,
 } from "@/interfaces/documentos.inteface";
 
 export type DocumentsByYear = {
@@ -22,6 +23,7 @@ export type DocumentsByYear = {
     exploracionesFisicas?: ExploracionFisica[];
     historiasClinicas?: HistoriaClinica[];
     notasMedicas?: NotaMedica[];
+    controlPrenatal?: ControlPrenatal[];
   };
 };
 
@@ -57,7 +59,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
         examenesVista,
         exploracionesFisicas,
         historiasClinicas,
-        notasMedicas
+        notasMedicas,
+        controlPrenatal
       ] = await Promise.all([
         DocumentosAPI.getAntidopings(trabajadorId).catch(error => {
           console.error("Error al obtener antidopings", error);
@@ -90,6 +93,10 @@ export const useDocumentosStore = defineStore("documentos", () => {
         DocumentosAPI.getNotasMedicas(trabajadorId).catch(error => {
           console.error("Error al obtener notasMedicas", error);
           return { data: [] };
+        }),
+        DocumentosAPI.getControlPrenatal(trabajadorId).catch(error => {
+          console.error("Error al obtener controlPrenatal", error);
+          return { data: [] };
         })
       ]);
 
@@ -102,7 +109,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
         examenesVista: Array.isArray(examenesVista.data) ? examenesVista.data : [],
         exploracionesFisicas: Array.isArray(exploracionesFisicas.data) ? exploracionesFisicas.data : [],
         historiasClinicas: Array.isArray(historiasClinicas.data) ? historiasClinicas.data : [],
-        notasMedicas: Array.isArray(notasMedicas.data) ? notasMedicas.data : []
+        notasMedicas: Array.isArray(notasMedicas.data) ? notasMedicas.data : [],
+        controlPrenatal: Array.isArray(controlPrenatal.data) ? controlPrenatal.data : []
       };
 
       // Procesar documentos y agrupar por año
@@ -142,7 +150,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
       examenesVista: "fechaExamenVista",
       exploracionesFisicas: "fechaExploracionFisica",
       historiasClinicas: "fechaHistoriaClinica",
-      notasMedicas: "fechaNotaMedica"
+      notasMedicas: "fechaNotaMedica",
+      controlPrenatal: "fechaInicioControlPrenatal"
     };
 
     return documento?.[fechaCampos[tipoDocumento]] || "";

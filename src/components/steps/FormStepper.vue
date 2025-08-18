@@ -115,10 +115,12 @@ import Step6NotaMedica from '../steps/notaMedicaSteps/Step6.vue';
 import Step7NotaMedica from '../steps/notaMedicaSteps/Step7.vue';
 import Step8NotaMedica from '../steps/notaMedicaSteps/Step8.vue';
 import Step9NotaMedica from '../steps/notaMedicaSteps/Step9.vue';
+import Step1ControlPrenatal from '../steps/controlPrenatalSteps/Step1.vue';
+import Step2ControlPrenatal from '../steps/controlPrenatalSteps/Step2.vue';
 import ModalFaltanCampos from '../ModalFaltanCampos.vue';
 
 export default {
-  components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Certificado, Step2Certificado, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica, Step1NotaMedica, Step2NotaMedica, Step3NotaMedica, Step4NotaMedica, Step5NotaMedica, Step6NotaMedica, Step7NotaMedica, Step8NotaMedica, Step9NotaMedica, ModalFaltanCampos },
+  components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Certificado, Step2Certificado, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica, Step1NotaMedica, Step2NotaMedica, Step3NotaMedica, Step4NotaMedica, Step5NotaMedica, Step6NotaMedica, Step7NotaMedica, Step8NotaMedica, Step9NotaMedica, Step1ControlPrenatal, Step2ControlPrenatal, ModalFaltanCampos },
   setup() {
     const empresas = useEmpresasStore();
     const trabajadores = useTrabajadoresStore();
@@ -285,6 +287,11 @@ export default {
           { component: Step8NotaMedica, name: 'Paso 8' },
           { component: Step9NotaMedica, name: 'Paso 9' },
         ]);
+      } else if (documentos.currentTypeOfDocument === 'controlPrenatal') {
+        stepsStore.setSteps([
+          { component: Step1ControlPrenatal, name: 'Paso 1' },
+          { component: Step2ControlPrenatal, name: 'Paso 2' },
+        ]);
       } else {
         console.error(`Tipo de documento no reconocido: ${documentos.currentTypeOfDocument}`);
       }
@@ -373,6 +380,8 @@ export default {
         datosLimpios = limpiarValoresUndefined(formData.formDataHistoriaClinica);
       } else if (documentos.currentTypeOfDocument === 'notaMedica') {
         datosLimpios = limpiarValoresUndefined(formData.formDataNotaMedica);
+      } else if (documentos.currentTypeOfDocument === 'controlPrenatal') {
+        datosLimpios = limpiarValoresUndefined(formData.formDataControlPrenatal);
       } else {
         console.error(`Tipo de documento no reconocido: ${documentos.currentTypeOfDocument}`);
         return; // Salir si el tipo de documento no es válido
@@ -457,7 +466,7 @@ export default {
     <!-- Barra de progreso mejorada -->
     <div class="relative w-full h-2 mb-4 bg-gray-200 rounded-full overflow-hidden">
       <div class="progress-bar absolute top-0 left-0 h-full bg-emerald-600 transition-all duration-300"
-        :style="{ width: (stepsStore.currentStep / stepsStore.steps.length) * 100 + '%' }"></div>
+        :style="{ width: ((stepsStore.currentStep - 1) / stepsStore.steps.length) * 100 + '%' }"></div>
     </div>
 
     <!-- Indicador sutil de progreso -->

@@ -486,6 +486,10 @@ const descargarPdfActual = async () => {
                     documento = props.notaMedica;
                     tipoDocumento = 'Nota Medica';
                     break;
+                case 'controlprenatal':
+                    documento = props.controlPrenatal;
+                    tipoDocumento = 'Control Prenatal';
+                    break;
                 case 'documentoexterno':
                     documento = props.documentoExterno;
                     tipoDocumento = 'Documento Externo';
@@ -605,6 +609,7 @@ const props = defineProps({
     exploracionFisica: [Object, String],
     historiaClinica: [Object, String],
     notaMedica: [Object, String],
+    controlPrenatal: [Object, String],
 });
 
 const { antidoping } = props; // Desestructuración para acceder a antidoping
@@ -801,6 +806,7 @@ const construirRutaYNombrePDF = () => {
     'exploracionfisica': props.exploracionFisica,
     'historiaclinica': props.historiaClinica,
     'notamedica': props.notaMedica,
+    'controlprenatal': props.controlPrenatal,
   }[tipoSinEspacios];
 
   const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaCertificado || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica;
@@ -812,7 +818,8 @@ const construirRutaYNombrePDF = () => {
     'examenvista': 'Examen Vista', 
     'exploracionfisica': 'Exploracion Fisica',
     'historiaclinica': 'Historia Clinica',
-    'notamedica': 'Nota Medica'
+    'notamedica': 'Nota Medica',
+    'controlprenatal': 'Control Prenatal'
   };
 
   const tipoDocumentoFormateado = tiposDocumentos[tipoSinEspacios];
@@ -920,7 +927,7 @@ onMounted(() => {
 });
 
 // Watcher para verificar disponibilidad cuando cambien las props
-watch(() => [props.antidoping, props.aptitud, props.certificado, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica], () => {
+watch(() => [props.antidoping, props.aptitud, props.certificado, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal], () => {
   verificarDisponibilidadPDF();
 }, { deep: true });
 
@@ -1439,8 +1446,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         `Nota Medica ${convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica)}.pdf`)">
                         
                         <!-- Icono del documento -->
-                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-pink-100 rounded-lg mr-4 group-hover:bg-pink-200 transition-colors duration-200 flex-shrink-0">
-                            <i class="fas fa-stethoscope text-pink-600 text-lg"></i>
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-orange-100 rounded-lg mr-4 group-hover:bg-orange-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-stethoscope text-orange-600 text-lg"></i>
                         </div>
                         
                         <!-- Información del documento -->
@@ -1470,6 +1477,54 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         </div>
                     </div>
                 </div>
+
+                <div v-if="typeof controlPrenatal === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, controlPrenatal, 'Control Prenatal')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${controlPrenatal.rutaPDF}`,
+                        `Control Prenatal ${convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-pink-100 rounded-lg mr-4 group-hover:bg-pink-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-baby text-pink-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Control Prenatal
+                                </h3>
+                                <span v-if="controlPrenatal.sdg" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                    {{ controlPrenatal.sdg }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal) }}
+                            </p>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div v-if="controlPrenatal.sdg" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Semanas de Gestación</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.sdg }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Botones de acción -->
@@ -1483,7 +1538,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     'Examen Vista': examenVista,
                     'Exploracion Fisica': exploracionFisica,
                     'Historia Clinica': historiaClinica,
-                    'Nota Medica': notaMedica
+                    'Nota Medica': notaMedica,
+                    'Control Prenatal': controlPrenatal
                 }" :key="key">
                     <button v-if="documento && documento.rutaDocumento" @click="descargarArchivo(documento, key)"
                         type="button"
