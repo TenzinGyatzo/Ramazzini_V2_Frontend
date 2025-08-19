@@ -124,7 +124,7 @@ const goToStep = (stepNumber) => {
       <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Gineco Obstétricos</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 28 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(28)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 28 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(2)">
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               MENARCA
             </td>
@@ -138,40 +138,40 @@ const goToStep = (stepNumber) => {
               {{ formData.formDataControlPrenatal.ciclos || '-' }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 31 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(31)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 31 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(3)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               GESTAS
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
-              {{ formData.formDataControlPrenatal.gestas || '-' }}
+              {{ formData.formDataControlPrenatal.gestas === 0 ? 0 : (formData.formDataControlPrenatal.gestas || '-') }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              FECHA DE ÚLTIMA MENSTRUACIÓN
+              F. U. M.
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
               {{ formData.formDataControlPrenatal.fum ? convertirFechaISOaDDMMYYYY(formData.formDataControlPrenatal.fum) : '-' }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 32 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(32)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 32 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(4)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               PARTOS
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
-              {{ formData.formDataControlPrenatal.partos || '-' }}
+              {{ formData.formDataControlPrenatal.partos === 0 ? 0 : (formData.formDataControlPrenatal.partos || '-') }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              INICIO DE VIDA SEXUAL ACTIVA
+              I. V. S. A.
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
               {{ formData.formDataControlPrenatal.ivsa ? formData.formDataControlPrenatal.ivsa + ' años' : '-' }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 33 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(33)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 33 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(5)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               CESÁREAS
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
-              {{ formData.formDataControlPrenatal.cesareas || '-' }}
+              {{ formData.formDataControlPrenatal.cesareas === 0 ? 0 : (formData.formDataControlPrenatal.cesareas || '-') }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               PLANIFICACIÓN FAMILIAR
@@ -180,15 +180,15 @@ const goToStep = (stepNumber) => {
               {{ formData.formDataControlPrenatal.metodoPlanificacionFamiliar || '-' }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 34 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(34)">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 34 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(6)">
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ABORTOS
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
-              {{ formData.formDataControlPrenatal.abortos || '-' }}
+              {{ formData.formDataControlPrenatal.abortos === 0 ? 0 : (formData.formDataControlPrenatal.abortos || '-') }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              FECHA PROBABLE DE PARTO
+              F. P. P.
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
               {{ formData.formDataControlPrenatal.fpp ? convertirFechaISOaDDMMYYYY(formData.formDataControlPrenatal.fpp) : '-' }}
