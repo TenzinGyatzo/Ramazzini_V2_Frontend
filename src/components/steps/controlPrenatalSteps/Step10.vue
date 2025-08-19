@@ -13,7 +13,7 @@ const metodoOtro = ref('');
 
 onMounted(() => {
     // Verificar si formDataControlPrenatal.metodoPlanificacionFamiliar tiene un valor y establecerlo
-    if (formDataControlPrenatal.metodoPlanificacionFamiliar) {
+    if (formDataControlPrenatal.metodoPlanificacionFamiliar && formDataControlPrenatal.metodoPlanificacionFamiliar !== 'Ninguno') {
         const valor = formDataControlPrenatal.metodoPlanificacionFamiliar;
         // Verificar si el valor está en los presets
         const presetEncontrado = presetsMetodos.find(preset => preset.valor === valor);
@@ -22,10 +22,14 @@ onMounted(() => {
             metodoPlanificacionFamiliarPregunta.value = 'Si';
         } else {
             // Si no está en presets, usar "Otro..."
-            metodoSeleccionado.value = 'otro';
+            metodoSeleccionado.value = 'otro';  
             metodoOtro.value = valor;
             metodoPlanificacionFamiliarPregunta.value = 'Si';
         }
+    } else if (formDataControlPrenatal.metodoPlanificacionFamiliar === 'Ninguno') {
+        // Si el valor es 'Ninguno', establecer la pregunta como 'No'
+        metodoSeleccionado.value = 'Ninguno';
+        metodoPlanificacionFamiliarPregunta.value = 'No';
     }
 });
 
@@ -39,7 +43,7 @@ onUnmounted(() => {
 // Presets de métodos de planificación familiar comunes
 const presetsMetodos = [
     { valor: 'Ninguno', descripcion: 'Ninguno', texto: 'No utiliza métodos' },
-    { valor: 'Condón', descripcion: 'Condón', texto: 'Condón masculino/femenino' },
+    { valor: 'Condón', descripcion: 'Condón', texto: 'Condón' },
     { valor: 'DIU', descripcion: 'DIU', texto: 'Dispositivo Intrauterino' },
     { valor: 'Píldora', descripcion: 'Píldora', texto: 'Anticonceptivos orales' },
     { valor: 'Implante', descripcion: 'Implante', texto: 'Implante subdérmico' },
@@ -52,10 +56,11 @@ const presetsMetodos = [
 // Sincronizar metodoSeleccionado y metodoOtro con formData
 watch([metodoSeleccionado, metodoOtro], ([newMetodo, newOtro]) => {
     if (newMetodo === 'otro') {
-        formDataControlPrenatal.metodoPlanificacionFamiliar = newOtro;
-    } else {
+        formDataControlPrenatal.metodoPlanificacionFamiliar = newOtro || '';
+    } else if (newMetodo !== 'Ninguno') {
         formDataControlPrenatal.metodoPlanificacionFamiliar = newMetodo;
     }
+    // Si es 'Ninguno', se maneja en el watcher de metodoPlanificacionFamiliarPregunta
 });
 
 // Función para seleccionar un preset
@@ -67,8 +72,10 @@ const seleccionarPreset = (valor) => {
     // Si se selecciona "Ninguno", cambiar la pregunta a "No"
     if (valor === 'Ninguno') {
         metodoPlanificacionFamiliarPregunta.value = 'No';
+        formDataControlPrenatal.metodoPlanificacionFamiliar = 'Ninguno';
     } else {
         metodoPlanificacionFamiliarPregunta.value = 'Si';
+        formDataControlPrenatal.metodoPlanificacionFamiliar = valor;
     }
 };
 
@@ -76,6 +83,7 @@ const seleccionarPreset = (valor) => {
 const manejarOtro = () => {
     metodoSeleccionado.value = 'otro';
     metodoPlanificacionFamiliarPregunta.value = 'Si';
+    // No establecer formData aquí, se hará en el watcher cuando se escriba en el input
 };
 
 // Texto descriptivo para mostrar
@@ -97,12 +105,11 @@ watch(metodoPlanificacionFamiliarPregunta, (newValue) => {
     if (newValue === 'No') {
         metodoSeleccionado.value = 'Ninguno';
         formDataControlPrenatal.metodoPlanificacionFamiliar = 'Ninguno';
-    } else {
-        // Si cambia a "Si" y no hay método seleccionado, usar "Condón" por defecto
-        if (metodoSeleccionado.value === 'Ninguno') {
-            metodoSeleccionado.value = 'Condón';
-            formDataControlPrenatal.metodoPlanificacionFamiliar = 'Condón';
-        }
+    }
+    // No forzar cambio a "Condón" cuando cambia a "Si"
+    // Solo sincronizar el valor actual
+    if (newValue === 'Si' && metodoSeleccionado.value !== 'Ninguno') {
+        formDataControlPrenatal.metodoPlanificacionFamiliar = metodoSeleccionado.value;
     }
 });
 </script>
@@ -209,10 +216,12 @@ watch(metodoPlanificacionFamiliarPregunta, (newValue) => {
             </div>
 
             <!-- Resumen de selección -->
-            <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p class="text-sm text-gray-700">
-                    <span class="font-medium">Método seleccionado: </span> 
-                    <span class="text-emerald-700 font-semibold">{{ textoMetodo }}</span>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                <p class="text-sm text-emerald-800 mb-2">
+                    <span class="font-medium">✅ Método a registrar:</span>
+                </p>
+                <p class="text-2xl font-bold text-emerald-700 text-center">
+                    {{ textoMetodo }}
                 </p>
             </div>
         </div>

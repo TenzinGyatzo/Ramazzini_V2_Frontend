@@ -173,10 +173,12 @@ const valorInputOtro = computed(() => {
             </div>
 
             <!-- Resumen de selección -->
-            <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p class="text-sm text-gray-700">
-                    <span class="font-medium">Selección actual: </span> 
-                    <span class="text-emerald-700 font-semibold"> {{ textoGestas }}</span>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                <p class="text-sm text-emerald-800 mb-2">
+                    <span class="font-medium">✅ Gestas a registrar:</span>
+                </p>
+                <p class="text-2xl font-bold text-emerald-700 text-center">
+                    {{ textoGestas }}
                 </p>
             </div>
         </div>

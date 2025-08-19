@@ -1,8 +1,10 @@
 import { defineStore } from "pinia";
 import { ref, markRaw } from "vue";
 import { useTrabajadoresStore } from "./trabajadores";
+import { useDocumentosStore } from "./documentos";
 
 const trabajadores = useTrabajadoresStore();
+const documentos = useDocumentosStore();
 
 // Evento personalizado para campos faltantes
 const showMissingFieldsModal = ref(false);
@@ -102,8 +104,8 @@ export const useStepsStore = defineStore("steps", () => {
     if (
       redirectionMap[stepNumber] &&
       trabajadores.currentTrabajador?.sexo !== 'Femenino' &&
-      // Verificar que sea Historia Clínica (tiene más de 40 pasos)
-      steps.value.length > 40
+      // Verificar que sea Historia Clínica usando el tipo de documento actual
+      documentos.currentTypeOfDocument === 'historiaClinica'
     ) {
       stepNumber = redirectionMap[stepNumber];
     }

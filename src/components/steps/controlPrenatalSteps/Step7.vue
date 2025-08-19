@@ -183,10 +183,12 @@ watch(conoceCiclo, (newValue) => {
             </div>
 
             <!-- Resumen de selección -->
-            <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p class="text-sm text-gray-700">
-                    <span class="font-medium">Ciclo seleccionado: </span> 
-                    <span class="text-emerald-700 font-semibold">{{ textoCiclo }}</span>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                <p class="text-sm text-emerald-800 mb-2">
+                    <span class="font-medium">✅ Ciclo a registrar:</span>
+                </p>
+                <p class="text-2xl font-bold text-emerald-700 text-center">
+                    {{ textoCiclo }}
                 </p>
             </div>
         </div>

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import DocumentosAPI from '@/api/DocumentosAPI';
 
 export const useFormDataStore = defineStore('formData', () => {
   const formDataAntidoping = ref({}); // Estado compartido
@@ -65,6 +66,26 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataControlPrenatal.value = {};
   };
 
+  const consultarAlturaDisponible = async (trabajadorId: string) => {
+    try {
+      const response = await DocumentosAPI.getAlturaDisponible(trabajadorId);
+      const { altura, fuente } = response.data.data;
+      
+      if (altura) {
+        if (fuente === 'exploracionFisica') {
+          (formDataExploracionFisica.value as any).altura = altura;
+        } else if (fuente === 'controlPrenatal') {
+          (formDataControlPrenatal.value as any).altura = altura;
+        }
+      }
+      
+      return { altura, fuente };
+    } catch (error) {
+      console.log('No se pudo obtener altura de BD:', error);
+      return { altura: null, fuente: null };
+    }
+  };
+
   return { 
     formDataAntidoping,
     formDataAptitud,
@@ -76,6 +97,7 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataNotaMedica,
     formDataControlPrenatal,
     setFormDataFromDocument,
-    resetFormData 
+    resetFormData,
+    consultarAlturaDisponible
   };
 });

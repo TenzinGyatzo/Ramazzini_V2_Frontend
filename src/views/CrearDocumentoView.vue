@@ -64,6 +64,17 @@ onMounted(() => {
       })
       .catch(error => console.error('Error al cargar los datos del documento:', error));
   }
+
+  // Consultar altura disponible para control prenatal (una sola vez al iniciar)
+  if (tipoDocumento.value === 'controlPrenatal') {
+    formData.consultarAlturaDisponible(trabajadorId.value)
+      .then(({ altura, fuente }) => {
+        if (altura) {
+          console.log(`Altura obtenida de ${fuente}: ${altura}m para control prenatal`);
+        }
+      })
+      .catch(error => console.log('No se pudo consultar altura disponible:', error));
+  }
 });
 
 // Verificar cuando los datos se hayan cargado completamente

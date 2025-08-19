@@ -37,6 +37,10 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/controlPrenatal`);
     },
 
+    getAlturaDisponible(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/altura-disponible`);
+    },
+
     createDocument(documentType: string, trabajadorId: string, data: any) {
         return api.post(`/expedientes/${trabajadorId}/documentos/${documentType}/crear`, data);
     },

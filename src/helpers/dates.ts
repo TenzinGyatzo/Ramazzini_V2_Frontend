@@ -1,8 +1,14 @@
 function convertirFechaISOaDDMMYYYY(dateString: string): string {
+  // Si la fecha está vacía o es null/undefined, retornar string vacío
+  if (!dateString || dateString === '' || dateString === 'No recuerda') {
+    return '';
+  }
+
   const fecha = new Date(dateString);
 
   if (isNaN(fecha.getTime())) {
-    throw new Error("La fecha proporcionada no es válida.");
+    // En lugar de lanzar error, retornar string vacío
+    return '';
   }
 
   const dia = String(fecha.getUTCDate()).padStart(2, "0"); // Obtiene el día en UTC

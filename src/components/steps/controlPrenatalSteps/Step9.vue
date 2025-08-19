@@ -2,6 +2,7 @@
 import { watch, ref, onMounted, onUnmounted } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
+
 const { formDataControlPrenatal } = useFormDataStore();
 
 // Valor local para la pregunta principal
@@ -73,7 +74,7 @@ watch(ivsaPregunta, (newValue) => {
         </div>
 
         <!-- Opciones adicionales, solo visibles si el resultado es "Sí" -->
-        <div v-if="ivsaPregunta === 'Si'" class="mt-4">
+        <div v-if="ivsaPregunta === 'Si'" class="my-4">
             <p class="font-medium mb-2 text-gray-800">En caso afirmativo, ¿a qué edad comenzó su vida sexual activa?</p>
             <div class="font-light">
                 <div class="flex items-center gap-3">
@@ -93,12 +94,16 @@ watch(ivsaPregunta, (newValue) => {
         </div>
 
         <!-- Resumen de selección -->
-        <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <p class="text-sm text-gray-700">
-                <span class="font-medium">Estado: </span> 
-                <span v-if="ivsaPregunta === 'No'" class="text-red-600 font-semibold">No ha iniciado vida sexual activa</span>
-                <span v-else-if="ivsaPregunta === 'Si' && ivsa" class="text-emerald-700 font-semibold">Inició a los {{ ivsa }} años</span>
-                <span v-else class="text-orange-600 font-semibold">Pendiente de especificar edad</span>
+        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <p class="text-sm text-emerald-800 mb-2">
+                <span v-if="ivsaPregunta === 'No'" class="font-medium">Estado actual:</span>
+                <span v-else-if="ivsaPregunta === 'Si' && ivsa" class="font-medium">✅ Edad de inicio de vida sexual activa:</span>
+                <span v-else class="font-medium">⚠️ Estado pendiente:</span>
+            </p>
+            <p class="text-2xl font-bold text-emerald-700 text-center">
+                <span v-if="ivsaPregunta === 'No'" class="text-xl text-red-600 font-semibold">No ha iniciado vida sexual activa</span>
+                <span v-else-if="ivsaPregunta === 'Si' && ivsa" class="text-emerald-700 font-semibold">{{ ivsa }} años</span>
+                <span v-else class="text-orange-600 font-semibold">Fecha no especificada</span>
             </p>
         </div>
     </div>

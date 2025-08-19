@@ -122,7 +122,7 @@ const valorInputOtro = computed(() => {
 
             <hr class="my-4">
             <!-- Campo "Otro" para valores ≥4 -->
-            <div class="flex items-center justify-center space-x-3">
+            <div class="mb-4 flex items-center justify-center space-x-3">
                 <button
                     @click="manejarOtro"
                     type="button"
@@ -148,10 +148,12 @@ const valorInputOtro = computed(() => {
             </div>
 
             <!-- Resumen de selección -->
-            <div class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p class="text-sm text-gray-700">
-                    <span class="font-medium">Selección actual: </span> 
-                    <span class="text-emerald-700 font-semibold"> {{ textoCesareas }}</span>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                <p class="text-sm text-emerald-800 mb-2">
+                    <span class="font-medium">✅ Cesáreas a registrar:</span>
+                </p>
+                <p class="text-2xl font-bold text-emerald-700 text-center">
+                    {{ textoCesareas }}
                 </p>
             </div>
         </div>

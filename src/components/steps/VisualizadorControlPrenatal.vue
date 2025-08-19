@@ -186,7 +186,7 @@ const goToStep = (stepNumber) => {
               F. U. M.
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
-              {{ formData.formDataControlPrenatal.fum ? convertirFechaISOaDDMMYYYY(formData.formDataControlPrenatal.fum) : '-' }}
+              {{ (formData.formDataControlPrenatal.fum && convertirFechaISOaDDMMYYYY(formData.formDataControlPrenatal.fum)) || '-' }}
             </td>
           </tr>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 9 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(9)">
@@ -210,12 +210,242 @@ const goToStep = (stepNumber) => {
               F. P. P.
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300">
-              {{ formData.formDataControlPrenatal.fpp ? convertirFechaISOaDDMMYYYY(formData.formDataControlPrenatal.fpp) : '-' }}
+              {{ (formData.formDataControlPrenatal.fpp && convertirFechaISOaDDMMYYYY(formData.formDataControlPrenatal.fpp)) || '-' }}
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <!-- Tabla de Control Prenatal Enero a Junio -->
+    <div class="w-full">
+      <h2 class="text-lg font-semibold mb-1 text-center">Control Prenatal - Enero a Junio</h2>
+      <div class="overflow-x-auto">
+        <table class="table-auto w-full border-collapse border border-gray-300 text-xs">
+          <!-- Encabezado de meses -->
+          <thead>
+            <tr>
+              <th class="w-44 bg-gray-700 text-white px-2 py-2 border border-gray-300 text-center font-semibold">
+                MES
+              </th>
+              <th v-for="mes in ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN']" 
+                  :key="mes" 
+                  class="w-20 bg-gray-700 text-white px-2 py-2 border border-gray-300 text-center font-semibold">
+                {{ mes }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Fila: FECHA -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                FECHA
+              </td>
+              <td v-for="(mes, index) in ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio']" :key="`fecha-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (12 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(12 + (index * 7))">
+                {{ (formData.formDataControlPrenatal[`${mes}Fecha`] && convertirFechaISOaDDMMYYYY(formData.formDataControlPrenatal[`${mes}Fecha`])) || '-' }}
+              </td>
+            </tr>
+            
+            <!-- Fila: PESO (Kg) -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                PESO (Kg)
+              </td>
+              <td v-for="(mes, index) in ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio']" :key="`peso-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (13 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(13 + (index * 7))">
+                {{ formData.formDataControlPrenatal[`${mes}Peso`] || '-' }}
+              </td>
+            </tr>
+            
+            <!-- Fila: ÍNDICE DE MASA CORPORAL -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                ÍNDICE DE MASA CORPORAL
+              </td>
+              <td v-for="(mes, index) in ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio']" :key="`imc-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (13 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(13 + (index * 7))">
+                {{ formData.formDataControlPrenatal[`${mes}Imc`] || '-' }}
+              </td>
+            </tr>
+            
+            <!-- Fila: TENSIÓN ARTERIAL (mmHg) -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                TENSIÓN ARTERIAL (mmHg)
+              </td>
+              <td v-for="(mes, index) in ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio']" :key="`tension-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (14 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(14 + (index * 7))">
+                {{ formData.formDataControlPrenatal[`${mes}Tia`] || '-' }}
+              </td>
+            </tr>
+            
+            <!-- Fila: F. C. FETAL (lat/min) -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                F. C. FETAL (lat/min)
+              </td>
+              <td v-for="(mes, index) in ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio']" :key="`fcf-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (15 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(15 + (index * 7))">
+                {{ formData.formDataControlPrenatal[`${mes}Fcf`] || '-' }}
+              </td>
+            </tr>
+            
+            <!-- Fila: SEMANAS DE GESTACIÓN -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                SEMANAS DE GESTACIÓN
+              </td>
+              <td v-for="(mes, index) in ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio']" :key="`semanas-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (16 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(16 + (index * 7))">
+                {{ formData.formDataControlPrenatal[`${mes}Sdg`] || '-' }}
+              </td>
+            </tr>
+            
+            <!-- Fila: FONDO UTERINO (cm) -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                FONDO UTERINO (cm)
+              </td>
+              <td v-for="(mes, index) in ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio']" :key="`fondo-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (17 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(17 + (index * 7))">
+                {{ formData.formDataControlPrenatal[`${mes}FondoUterino`] || '-' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabla de Control Prenatal Julio a Diciembre -->
+    <div class="w-full">
+      <h2 class="text-lg font-semibold mb-1 text-center">Control Prenatal - Julio a Diciembre</h2>
+      <div class="overflow-x-auto">
+        <table class="table-auto w-full border-collapse border border-gray-300 text-xs">
+          <!-- Encabezado de meses -->
+          <thead>
+            <tr>
+              <th class="w-44 bg-gray-700 text-white px-2 py-2 border border-gray-300 text-center font-semibold">
+                MES
+              </th>
+              <th v-for="mes in ['JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']" 
+                  :key="mes" 
+                  class="w-20 bg-gray-700 text-white px-2 py-2 border border-gray-300 text-center font-semibold">
+                {{ mes }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Fila: FECHA -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                FECHA
+              </td>
+              <td v-for="(mes, index) in ['julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']" :key="`fecha-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (19 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(19 + (index * 7))">
+                {{ (formData.formDataControlPrenatal[`${mes}Fecha`] && convertirFechaISOaDDMMYYYY(formData.formDataControlPrenatal[`${mes}Fecha`])) || '-' }}
+              </td>
+            </tr>
+            
+            <!-- Fila: PESO (Kg) -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                PESO (Kg)
+              </td>
+              <td v-for="(mes, index) in ['julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']" :key="`peso-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (20 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(20 + (index * 7))">
+                {{ formData.formDataControlPrenatal[`${mes}Peso`] || '-' }}
+              </td>
+            </tr>
+            
+            <!-- Fila: ÍNDICE DE MASA CORPORAL -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                ÍNDICE DE MASA CORPORAL
+              </td>
+              <td v-for="(mes, index) in ['julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']" :key="`imc-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (20 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(20 + (index * 7))">
+                {{ formData.formDataControlPrenatal[`${mes}Imc`] || '-' }}
+              </td>
+            </tr>
+            
+            <!-- Fila: TENSIÓN ARTERIAL (mmHg) -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                TENSIÓN ARTERIAL (mmHg)
+              </td>
+              <td v-for="(mes, index) in ['julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']" :key="`tension-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (21 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(21 + (index * 7))">
+                {{ formData.formDataControlPrenatal[`${mes}Tia`] || '-' }}
+              </td>
+            </tr>
+            
+            <!-- Fila: F. C. FETAL (lat/min) -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                F. C. FETAL (lat/min)
+              </td>
+              <td v-for="(mes, index) in ['julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']" :key="`fcf-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (22 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(22 + (index * 7))">
+                {{ formData.formDataControlPrenatal[`${mes}Fcf`] || '-' }}
+              </td>
+            </tr>
+            
+            <!-- Fila: SEMANAS DE GESTACIÓN -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                SEMANAS DE GESTACIÓN
+              </td>
+              <td v-for="(mes, index) in ['julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']" :key="`semanas-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (23 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(23 + (index * 7))">
+                {{ formData.formDataControlPrenatal[`${mes}Sdg`] || '-' }}
+              </td>
+            </tr>
+            
+            <!-- Fila: FONDO UTERINO (cm) -->
+            <tr>
+              <td class="bg-gray-100 px-2 py-1 border border-gray-300 font-medium text-center">
+                FONDO UTERINO (cm)
+              </td>
+              <td v-for="(mes, index) in ['julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']" :key="`fondo-${mes}`" 
+                  class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
+                  :class="steps.currentStep === (24 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(24 + (index * 7))">
+                {{ formData.formDataControlPrenatal[`${mes}FondoUterino`] || '-' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    
 
   </div>
 </template>
