@@ -48,7 +48,7 @@ watch(vidaSexualActiva, (newValue) => {
         <!-- Pregunta principal -->
         <div class="mb-4">
             <p class="font-medium mb-1 text-gray-800 leading-5">
-                ¿La trabajadora actualmente es sexualmente activa?
+                ¿La trabajadora ha inicado vida sexual?
             </p>
             <div class="flex items-center space-x-6 font-light">
                 <label class="flex items-center space-x-2">

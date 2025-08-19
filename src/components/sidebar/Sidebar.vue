@@ -90,6 +90,7 @@ const documentTypeLabels = {
   antidoping: "Antidoping",
   certificado: "Certificado",
   notaMedica: "Nota Médica",
+  controlPrenatal: "Control Prenatal",
 };
 
 // Computed properties para mejorar la legibilidad

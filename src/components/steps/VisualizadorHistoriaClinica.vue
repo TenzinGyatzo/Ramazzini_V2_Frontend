@@ -377,7 +377,7 @@ const antecedentesLaborales = ref([
         <tbody>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 35 }" @click="goToStep(35)">
             <td class="w-1/2 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
-              FECHA ULTIMA REGLA
+              F. U. MENSTRUACIÓN
             </td>
             <td class="w-1/2 text-xs sm:text-sm px-2 py-0 border border-gray-300">
               {{ formData.formDataHistoriaClinica.fechaUltimaRegla }}

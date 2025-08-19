@@ -88,7 +88,7 @@ export const useStepsStore = defineStore("steps", () => {
   // Ir a un paso específico
   const goToStep = (stepNumber: number) => {
     // Se usa el mapa de redirección para compensar la diferencia de pasos entre los trabajadores masculinos y femeninos
-    // debido a los antecedentes Gineco Obstétricos
+    // debido a los antecedentes Gineco Obstétricos - SOLO para Historia Clínica
     const redirectionMap: Record<number, number> = {
       42: 28,
       43: 29,
@@ -97,10 +97,13 @@ export const useStepsStore = defineStore("steps", () => {
       46: 32,
     };
   
-    // Si el paso solicitado está en el mapa de redirección y el trabajador no es femenino
+    // Solo aplicar redirección si el paso solicitado está en el mapa Y es Historia Clínica
+    // Para otros documentos como Control Prenatal, no aplicar redirección
     if (
       redirectionMap[stepNumber] &&
-      trabajadores.currentTrabajador?.sexo !== 'Femenino'
+      trabajadores.currentTrabajador?.sexo !== 'Femenino' &&
+      // Verificar que sea Historia Clínica (tiene más de 40 pasos)
+      steps.value.length > 40
     ) {
       stepNumber = redirectionMap[stepNumber];
     }

@@ -44,7 +44,7 @@ watch(fechaUltimaRegla, (newValue) => {
 <template>
     <div>
         <h1 class="font-bold mb-4 text-gray-800 leading-5">Antecedentes Gineco Obstétricos</h1>
-        <h2>FECHA DE ÚLTIMA REGLA</h2>
+        <h2>FECHA DE ÚLTIMA MENSTRUACIÓN</h2>
         <!-- Pregunta principal -->
         <div class="mb-4">
             <p class="font-medium mb-1 text-gray-800 leading-5">¿La trabajadora recuerda la fecha del primer día de su última menstruación?
