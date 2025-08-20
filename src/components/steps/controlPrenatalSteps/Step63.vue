@@ -1,14 +1,14 @@
 <template>
   <div class="step-container">
-    <h2 class="step-title">Control Prenatal - Octubre - Frecuencia Cardíaca Fetal</h2>
+    <h2 class="step-title">Control Prenatal - Septiembre - Frecuencia Cardíaca Fetal</h2>
     
     <div class="form-section">
       <div class="input-group">
-        <label for="octubreFcf" class="form-label">Frecuencia Cardíaca Fetal (FCF) - Octubre</label>
+        <label for="septiembreFcf" class="form-label">Frecuencia Cardíaca Fetal (FCF) - Septiembre</label>
         <div class="input-with-unit">
           <input
-            id="octubreFcf"
-            v-model="octubreFcf"
+            id="septiembreFcf"
+            v-model="septiembreFcf"
             type="number"
             min="60"
             max="250"
@@ -56,7 +56,7 @@ import { useFormDataStore } from '@/stores/formDataStore'
 const formDataStore = useFormDataStore()
 
 // Variables reactivas
-const octubreFcf = ref('')
+const septiembreFcf = ref('')
 const categoriaFcf = ref('')
 
 // Presets comunes de FCF
@@ -72,18 +72,18 @@ const determinarCategoriaFcf = (fcf: number): string => {
 // Cargar datos guardados al montar el componente
 onMounted(() => {
   const savedData = (formDataStore.formDataControlPrenatal as any).value
-  if (savedData.octubreFcf) {
-    octubreFcf.value = savedData.octubreFcf
-    categoriaFcf.value = determinarCategoriaFcf(Number(savedData.octubreFcf))
+  if (savedData.septiembreFcf) {
+    septiembreFcf.value = savedData.septiembreFcf
+    categoriaFcf.value = determinarCategoriaFcf(Number(savedData.septiembreFcf))
   }
 })
 
 // Guardar datos cuando cambien
-watch([octubreFcf], (newValue) => {
+watch([septiembreFcf], (newValue) => {
   if (newValue && !mensajeErrorFcf.value) {
     (formDataStore.formDataControlPrenatal as any).value = {
       ...(formDataStore.formDataControlPrenatal as any).value,
-      octubreFcf: newValue
+      septiembreFcf: newValue
     }
     categoriaFcf.value = determinarCategoriaFcf(Number(newValue))
   }
@@ -91,8 +91,8 @@ watch([octubreFcf], (newValue) => {
 
 // Computed para la categoría
 const categoriaFcfComputed = computed(() => {
-  const fcf = Number(octubreFcf.value)
-  if (!octubreFcf.value) return { text: 'No especificado', class: 'text-gray-500' }
+  const fcf = Number(septiembreFcf.value)
+  if (!septiembreFcf.value) return { text: 'No especificado', class: 'text-gray-500' }
   
   const categoria = determinarCategoriaFcf(fcf)
   switch (categoria) {
@@ -109,8 +109,8 @@ const categoriaFcfComputed = computed(() => {
 
 // Validación
 const mensajeErrorFcf = computed(() => {
-  if (!octubreFcf.value) return 'La FCF es requerida'
-  const fcf = Number(octubreFcf.value)
+  if (!septiembreFcf.value) return 'La FCF es requerida'
+  const fcf = Number(septiembreFcf.value)
   if (fcf < 60) return 'La FCF debe ser mayor o igual a 60 lpm'
   if (fcf > 250) return 'La FCF debe ser menor o igual a 250 lpm'
   return ''
@@ -118,7 +118,7 @@ const mensajeErrorFcf = computed(() => {
 
 // Función para seleccionar preset
 const seleccionarPreset = (valor: number) => {
-  octubreFcf.value = valor.toString()
+  septiembreFcf.value = valor.toString()
 }
 </script>
 

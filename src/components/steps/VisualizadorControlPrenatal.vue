@@ -357,8 +357,8 @@ const goToStep = (stepNumber) => {
               </td>
               <td v-for="(mes, index) in ['julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']" :key="`fecha-${mes}`" 
                   class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
-                  :class="steps.currentStep === (19 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
-                  @click="goToStep(19 + (index * 7))">
+                  :class="steps.currentStep === (18 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(18 + (index * 7))">
                 {{ (formData.formDataControlPrenatal[`${mes}Fecha`] && convertirFechaISOaDDMMYYYY(formData.formDataControlPrenatal[`${mes}Fecha`])) || '-' }}
               </td>
             </tr>
@@ -370,8 +370,8 @@ const goToStep = (stepNumber) => {
               </td>
               <td v-for="(mes, index) in ['julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']" :key="`peso-${mes}`" 
                   class="px-2 py-1 border border-gray-300 text-center cursor-pointer hover:bg-yellow-100"
-                  :class="steps.currentStep === (20 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
-                  @click="goToStep(20 + (index * 7))">
+                  :class="steps.currentStep === (19 + (index * 7)) ? 'outline outline-2 outline-yellow-500 rounded' : ''"
+                  @click="goToStep(19 + (index * 7))">
                 {{ formData.formDataControlPrenatal[`${mes}Peso`] || '-' }}
               </td>
             </tr>

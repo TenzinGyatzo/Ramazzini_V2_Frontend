@@ -1,282 +1,236 @@
-<script setup>
-import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
-import { useFormDataStore } from '@/stores/formDataStore';
+<script setup lang="ts">
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
+import { useFormDataStore } from '@/stores/formDataStore'
 
-const { formDataControlPrenatal, formDataExploracionFisica } = useFormDataStore();
+const formDataStore = useFormDataStore()
 
-// Valores locales
-const marzoPeso = ref('');
-const marzoImc = ref('');
-const alturaLocal = ref('');
+// Variables reactivas
+const marzoFcf = ref('')
+const categoriaFcf = ref('')
 
-// Computed para determinar la altura disponible y su fuente
-const alturaDisponible = computed(() => {
-  return formDataExploracionFisica.altura || formDataControlPrenatal.altura || alturaLocal.value;
-});
+// Presets comunes de FCF
+const presets = [120, 140, 160, 180]
 
-const alturaParaIMC = computed(() => {
-  return formDataExploracionFisica.altura || formDataControlPrenatal.altura || alturaLocal.value;
-});
+// Función para determinar la categoría de FCF
+const determinarCategoriaFcf = (fcf: number): string => {
+  if (fcf < 110) return 'Bradicardia'
+  if (fcf >= 110 && fcf <= 160) return 'Normal'
+  return 'Taquicardia'
+}
 
-const fuenteAltura = computed(() => {
-  if (formDataExploracionFisica.altura) return 'exploracion';
-  if (formDataControlPrenatal.altura) return 'controlPrenatal';
-  if (alturaLocal.value) return 'local';
-  return null;
-});
-
-// Función para calcular IMC
-const calcularIMC = (peso, altura) => {
-  if (!peso || !altura) return '';
-  
-  const pesoNum = parseFloat(peso);
-  const alturaMetros = parseFloat(altura); // Ya está en metros
-  
-  if (isNaN(pesoNum) || isNaN(alturaMetros) || alturaMetros <= 0) return '';
-  
-  const imc = pesoNum / (alturaMetros * alturaMetros);
-  return imc.toFixed(1);
-};
-
+// Cargar datos guardados al montar el componente
 onMounted(() => {
-  // Verificar si formDataControlPrenatal tiene valores y establecerlos
-  if (formDataControlPrenatal.marzoPeso) {
-    marzoPeso.value = formDataControlPrenatal.marzoPeso;
+  if ((formDataStore.formDataControlPrenatal as any).marzoFcf) {
+    marzoFcf.value = (formDataStore.formDataControlPrenatal as any).marzoFcf
+    categoriaFcf.value = determinarCategoriaFcf(Number((formDataStore.formDataControlPrenatal as any).marzoFcf))
   }
-  if (formDataControlPrenatal.marzoImc) {
-    marzoImc.value = formDataControlPrenatal.marzoImc;
+})
+
+// Guardar datos cuando cambien
+watch([marzoFcf], (newValue) => {
+  if (newValue && !mensajeErrorFcf.value) {
+    (formDataStore.formDataControlPrenatal as any).marzoFcf = newValue
+    categoriaFcf.value = determinarCategoriaFcf(Number(newValue))
   }
-  if (formDataControlPrenatal.altura) {
-    alturaLocal.value = formDataControlPrenatal.altura;
+}, { deep: true })
+
+// Computed para la categoría
+const categoriaFcfComputed = computed(() => {
+  const fcf = Number(marzoFcf.value)
+  if (!marzoFcf.value) return { text: 'No especificado', class: 'text-gray-500' }
+  
+  const categoria = determinarCategoriaFcf(fcf)
+  switch (categoria) {
+    case 'Bradicardia':
+      return { text: 'Bradicardia', class: 'text-red-600 font-semibold' }
+    case 'Normal':
+      return { text: 'Normal', class: 'text-green-600 font-semibold' }
+    case 'Taquicardia':
+      return { text: 'Taquicardia', class: 'text-orange-600 font-semibold' }
+    default:
+      return { text: 'No especificado', class: 'text-gray-500' }
   }
-});
+})
 
-onUnmounted(() => {
-  // Asegurar que formData tenga los valores
-  formDataControlPrenatal.marzoPeso = marzoPeso.value || '';
-  formDataControlPrenatal.marzoImc = marzoImc.value || '';
-  if (alturaLocal.value) {
-    formDataControlPrenatal.altura = alturaLocal.value;
-  }
-});
+// Validación
+const mensajeErrorFcf = computed(() => {
+  if (!marzoFcf.value) return 'La FCF es requerida'
+  const fcf = Number(marzoFcf.value)
+  if (fcf < 60) return 'La FCF debe ser mayor o igual a 60 lpm'
+  if (fcf > 250) return 'La FCF debe ser menor o igual a 250 lpm'
+  return ''
+})
 
-// Sincronizar marzoPeso con formData
-watch(marzoPeso, (newValue) => {
-  formDataControlPrenatal.marzoPeso = newValue;
-  
-  // Calcular IMC automáticamente cuando cambie el peso
-  if (newValue && alturaDisponible.value) {
-    const imcCalculado = calcularIMC(newValue, alturaDisponible.value);
-    marzoImc.value = imcCalculado;
-    formDataControlPrenatal.marzoImc = imcCalculado;
-  } else {
-    marzoImc.value = '';
-    formDataControlPrenatal.marzoImc = '';
-  }
-});
-
-// Watch para recalcular IMC cuando cambie la altura
-watch(alturaLocal, (newAltura) => {
-  if (newAltura) {
-    formDataControlPrenatal.altura = newAltura;
-    
-    // Recalcular IMC si ya existe peso
-    if (marzoPeso.value) {
-      const imcCalculado = calcularIMC(marzoPeso.value, newAltura);
-      marzoImc.value = imcCalculado;
-      formDataControlPrenatal.marzoImc = imcCalculado;
-    }
-  }
-});
-
-// Watch para recalcular IMC cuando cambie la altura de exploración física
-watch(() => formDataExploracionFisica.altura, (newAltura) => {
-  if (newAltura && marzoPeso.value) {
-    const imcCalculado = calcularIMC(marzoPeso.value, newAltura);
-    marzoImc.value = imcCalculado;
-    formDataControlPrenatal.marzoImc = imcCalculado;
-  }
-});
-
-// Computed para determinar si se puede calcular IMC
-const puedeCalcularIMC = computed(() => {
-  return marzoPeso.value && alturaDisponible.value;
-});
-
-// Validaciones reactivas similares a Step2.vue
-const mensajeErrorPeso = computed(() => {
-  if (!marzoPeso.value || marzoPeso.value === '') return '';
-  
-  const peso = parseFloat(marzoPeso.value);
-  if (isNaN(peso)) return 'El peso debe ser un número válido';
-  
-  if (peso < 45) return 'Debe ser mínimo 45 kg';
-  if (peso > 200) return 'Debe ser máximo 200 kg';
-  
-  return '';
-});
-
-const mensajeErrorAltura = computed(() => {
-  if (!alturaLocal.value || alturaLocal.value === '') return '';
-  
-  const altura = parseFloat(alturaLocal.value);
-  if (isNaN(altura)) return 'La altura debe ser un número válido';
-  
-  if (altura < 1.4) return 'Debe ser mínimo 1.40 m';
-  if (altura > 2.2) return 'Debe ser máximo 2.20 m';
-  
-  return '';
-});
+// Función para seleccionar preset
+const seleccionarPreset = (valor: number) => {
+  marzoFcf.value = valor.toString()
+}
 </script>
 
 <template>
-  <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Marzo</h1>
+  <div class="step-container">
+    <h2 class="step-title">Control Prenatal - Marzo - Frecuencia Cardíaca Fetal</h2>
     
-    <!-- ALTURA -->
-    <div class="mb-6">
-      
-      <!-- Si no hay altura disponible en ninguna fuente -->
-      <div v-if="!formDataExploracionFisica.altura && !formDataControlPrenatal.altura && !alturaLocal" class="mb-4">
-        <p class="font-medium mb-2 text-gray-800 leading-5">
-          <span class="font-semibold mb-3 text-gray-700">ALTURA (m) - </span>
-          <span class="text-orange-600 font-semibold">No se encontró altura previa registrada en la exploración física.</span>
-          <br>
-          Registre la altura de la trabajadora. 
-        </p>
-      </div>
-      
-      <!-- Si hay altura disponible pero se puede modificar -->
-      <div v-else-if="formDataExploracionFisica.altura || formDataControlPrenatal.altura" class="mb-4">
-        <p class="font-semibold mb-3 text-gray-700">
-          ALTURA (m) - 
-          <span class="font-semibold text-green-700">
-            {{ formDataExploracionFisica.altura || formDataControlPrenatal.altura }} m
-          </span>
-          <span v-if="formDataExploracionFisica.altura" class="text-xs text-gray-600 ml-2">(de exploración física)</span>
-          <span v-else class="text-xs text-gray-600 ml-2">(del control prenatal)</span>
-        </p>
-      </div>
-      
-      <!-- Campo de altura siempre visible cuando no hay en exploración física -->
-      <input 
-        v-if="!formDataExploracionFisica.altura"
-        type="number" 
-        name="altura" 
-        placeholder="Ej: 1.65" 
-        v-model="alturaLocal"
-        step="0.01"
-        min="1.4"
-        max="2.2"
-        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-      />
-      
-      <!-- Mensaje de error para altura -->
-      <p v-if="mensajeErrorAltura" class="text-red-500 text-sm mt-1">{{ mensajeErrorAltura }}</p>
-    </div>
-    
-    <!-- PESO -->
-    <div class="mb-6">
-      <h2 class="font-semibold mb-3 text-gray-700">PESO (Kg)</h2>
-      <p class="font-medium mb-2 text-gray-800 leading-5">¿Cuál fue el peso registrado durante el control prenatal del mes de marzo?</p>
-      
-      <input 
-        type="number" 
-        name="marzoPeso" 
-        placeholder="Ej: 65.5" 
-        v-model="marzoPeso"
-        step="0.1"
-        min="45"
-        max="200"
-        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-      />
-      
-      <!-- Mensaje de error para peso -->
-      <p v-if="mensajeErrorPeso" class="text-red-500 text-sm mt-1">{{ mensajeErrorPeso }}</p>
-    </div>
-
-    <!-- IMC -->
-    <div class="mb-6">
-      <h2 class="font-semibold mb-3 text-gray-700">ÍNDICE DE MASA CORPORAL (IMC)</h2>
-      
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2">
-        <p class="text-sm text-blue-800 mb-2">
-          <strong>Fórmula IMC:</strong> Peso (kg) / Altura² (m²)
-        </p>
-        <p class="text-sm text-blue-700">
-          <span v-if="alturaDisponible">
-            Altura registrada: <span class="font-semibold text-green-700">{{ alturaParaIMC }} m</span>
-            <span v-if="fuenteAltura === 'exploracion'" class="text-xs text-gray-600 ml-2">(de exploración física)</span>
-            <span v-else class="text-xs text-gray-600 ml-2">(del control prenatal)</span>
-          </span>
-          <span v-else class="text-orange-600 font-semibold">No hay altura registrada</span>
-        </p>
-      </div>
-      <div v-if="!alturaDisponible" class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-        <p class="text-sm text-orange-700">
-          ⚠️ Para calcular el IMC, debe ingresar una altura en el campo superior.
-        </p>
-      </div>
-      <div v-else-if="marzoImc" class="mt-1 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-          <p class="text-sm text-emerald-700">
-              ✅ IMC calculado: <span class="font-semibold">{{ marzoImc }}</span>
-          </p>
+    <div class="form-section">
+      <div class="input-group">
+        <label for="marzoFcf" class="form-label">Frecuencia Cardíaca Fetal (FCF) - Marzo</label>
+        <div class="input-with-unit">
+          <input
+            id="marzoFcf"
+            v-model="marzoFcf"
+            type="number"
+            min="60"
+            max="250"
+            step="1"
+            class="form-input"
+            placeholder="Ingrese la FCF"
+            :class="{ 'error': mensajeErrorFcf }"
+          />
+          <span class="unit">lpm</span>
+        </div>
+        <div v-if="mensajeErrorFcf" class="error-message">
+          {{ mensajeErrorFcf }}
+        </div>
       </div>
 
-      <p class="font-medium my-4 text-gray-800">Índice de Masa Corporal (IMC):</p>
-      <div class="font-light mt-2">
-        <input type="number"
-            class="w-full p-3 border bg-gray-100 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-            v-model="marzoImc"
-            step="0.1"
-            min="10"
-            max="60"
-            :placeholder="'IMC calculado automáticamente'"
-            :disabled="!marzoPeso || !alturaDisponible"
-            readonly>
+      <div class="fcf-info">
+        <div class="fcf-category">
+          <strong>Categoría:</strong> 
+          <span :class="categoriaFcfComputed.class">{{ categoriaFcfComputed.text }}</span>
+        </div>
+        
+        <div class="fcf-presets">
+          <strong>Valores comunes:</strong>
+          <div class="preset-buttons">
+            <button 
+              v-for="preset in presets" 
+              :key="preset"
+              @click="seleccionarPreset(preset)"
+              class="preset-btn"
+              type="button"
+            >
+              {{ preset }} lpm
+            </button>
+          </div>
+        </div>
       </div>
-      
     </div>
-
   </div>
 </template>
 
 <style scoped>
 .step-container {
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
-  padding: 2rem;
-}
-
-.step-header {
-  text-align: center;
-  margin-bottom: 2rem;
+  padding: 20px;
 }
 
 .step-title {
-  font-size: 1.875rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 600;
   color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.step-description {
-  color: #6b7280;
-  font-size: 1.125rem;
-}
-
-.step-content {
   margin-bottom: 2rem;
+  text-align: center;
 }
 
-.form-group {
+.form-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.input-group {
   margin-bottom: 1.5rem;
 }
 
 .form-label {
   display: block;
-  font-weight: 600;
+  font-weight: 500;
   color: #374151;
   margin-bottom: 0.5rem;
+}
+
+.input-with-unit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input.error {
+  border-color: #ef4444;
+}
+
+.unit {
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-width: 40px;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.fcf-info {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+.fcf-category {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 4px;
+  border-left: 4px solid #3b82f6;
+}
+
+.fcf-presets {
+  margin-top: 1rem;
+}
+
+.preset-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.preset-btn {
+  padding: 0.5rem 1rem;
+  background: #e5e7eb;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.preset-btn:hover {
+  background: #d1d5db;
+  border-color: #9ca3af;
+}
+
+.preset-btn:active {
+  transform: translateY(1px);
 }
 </style>

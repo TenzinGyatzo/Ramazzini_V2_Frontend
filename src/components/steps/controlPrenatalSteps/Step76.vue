@@ -1,241 +1,254 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
+import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
 
-const { formDataControlPrenatal, formDataExploracionFisica } = useFormDataStore();
+const { formDataControlPrenatal } = useFormDataStore();
 
 // Valores locales
-const octubrePeso = ref('');
-const octubreImc = ref('');
-const alturaLocal = ref('');
+const noviembreSdg = ref('');
 
-// Computed para determinar la altura disponible y su fuente
-const alturaDisponible = computed(() => {
-  return formDataExploracionFisica.altura || formDataControlPrenatal.altura || alturaLocal.value;
-});
-
-const alturaParaIMC = computed(() => {
-  return formDataExploracionFisica.altura || formDataControlPrenatal.altura || alturaLocal.value;
-});
-
-const fuenteAltura = computed(() => {
-  if (formDataExploracionFisica.altura) return 'exploracion';
-  if (formDataControlPrenatal.altura) return 'controlPrenatal';
-  if (alturaLocal.value) return 'local';
-  return null;
-});
-
-// Función para calcular IMC
-const calcularIMC = (peso, altura) => {
-  if (!peso || !altura) return '';
+// Función para determinar categoría de semana de gestación
+const determinarCategoriaGestacion = (semana) => {
+  if (!semana || semana === '') return '';
   
-  const pesoNum = parseFloat(peso);
-  const alturaMetros = parseFloat(altura); // Ya está en metros
+  const semanaNum = parseInt(semana);
+  if (isNaN(semanaNum)) return '';
   
-  if (isNaN(pesoNum) || isNaN(alturaMetros) || alturaMetros <= 0) return '';
+  let categoria = '';
+  let color = '';
+  let bgColor = '';
+  let borderColor = '';
   
-  const imc = pesoNum / (alturaMetros * alturaMetros);
-  return imc.toFixed(1);
+  // Clasificación según estándares médicos
+  if (semanaNum < 20) {
+    categoria = 'Primer trimestre';
+    color = 'text-blue-600';
+    bgColor = 'bg-blue-50';
+    borderColor = 'border-blue-200';
+  } else if (semanaNum >= 20 && semanaNum <= 36) {
+    categoria = 'Segundo trimestre';
+    color = 'text-green-600';
+    bgColor = 'bg-green-50';
+    borderColor = 'border-green-200';
+  } else if (semanaNum >= 37 && semanaNum <= 40) {
+    categoria = 'Tercer trimestre';
+    color = 'text-orange-600';
+    bgColor = 'bg-orange-50';
+    borderColor = 'border-orange-200';
+  } else if (semanaNum > 40) {
+    categoria = 'Postérmino';
+    color = 'text-red-600';
+    bgColor = 'bg-red-50';
+    borderColor = 'border-red-200';
+  }
+  
+  return { categoria, color, bgColor, borderColor };
+};
+
+// Función para calcular la edad gestacional en semanas y días
+const calcularEdadGestacional = (fum) => {
+  if (!fum || fum === 'No recuerda') return null;
+  
+  const fechaFUM = new Date(fum);
+  const fechaActual = new Date();
+  
+  if (isNaN(fechaFUM.getTime())) return null;
+  
+  const diferenciaTiempo = fechaActual.getTime() - fechaFUM.getTime();
+  const diferenciaDias = Math.floor(diferenciaTiempo / (1000 * 3600 * 24));
+  const semanas = Math.floor(diferenciaDias / 7);
+  const dias = diferenciaDias % 7;
+  
+  return { semanas, dias };
 };
 
 onMounted(() => {
-  // Verificar si formDataControlPrenatal tiene valores y establecerlos
-  if (formDataControlPrenatal.octubrePeso) {
-    octubrePeso.value = formDataControlPrenatal.octubrePeso;
-  }
-  if (formDataControlPrenatal.octubreImc) {
-    octubreImc.value = formDataControlPrenatal.octubreImc;
-  }
-  if (formDataControlPrenatal.altura) {
-    alturaLocal.value = formDataControlPrenatal.altura;
+  // Verificar si formDataControlPrenatal.noviembreSdg tiene un valor y establecerlo
+  if (formDataControlPrenatal.noviembreSdg) {
+    noviembreSdg.value = formDataControlPrenatal.noviembreSdg.toString();
   }
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga los valores
-  formDataControlPrenatal.octubrePeso = octubrePeso.value || '';
-  formDataControlPrenatal.octubreImc = octubreImc.value || '';
-  if (alturaLocal.value) {
-    formDataControlPrenatal.altura = alturaLocal.value;
+  // Asegurar que formData tenga un valor inicial para noviembreSdg
+  if (!formDataControlPrenatal.noviembreSdg) {
+    formDataControlPrenatal.noviembreSdg = noviembreSdg.value ? parseInt(noviembreSdg.value) : undefined;
   }
 });
 
-// Sincronizar octubrePeso con formData
-watch(octubrePeso, (newValue) => {
-  formDataControlPrenatal.octubrePeso = newValue;
-  
-  // Calcular IMC automáticamente cuando cambie el peso
-  if (newValue && alturaDisponible.value) {
-    const imcCalculado = calcularIMC(newValue, alturaDisponible.value);
-    octubreImc.value = imcCalculado;
-    formDataControlPrenatal.octubreImc = imcCalculado;
+// Sincronizar noviembreSdg con formData
+watch(noviembreSdg, (newValue) => {
+  if (newValue && newValue !== '') {
+    formDataControlPrenatal.noviembreSdg = parseInt(newValue);
   } else {
-    octubreImc.value = '';
-    formDataControlPrenatal.octubreImc = '';
+    formDataControlPrenatal.noviembreSdg = undefined;
   }
 });
 
-// Watch para recalcular IMC cuando cambie la altura
-watch(alturaLocal, (newAltura) => {
-  if (newAltura) {
-    formDataControlPrenatal.altura = newAltura;
-    
-    // Recalcular IMC si ya existe peso
-    if (octubrePeso.value) {
-      const imcCalculado = calcularIMC(octubrePeso.value, newAltura);
-      octubreImc.value = imcCalculado;
-      formDataControlPrenatal.octubreImc = imcCalculado;
-    }
-  }
+// Computed para la categoría de gestación
+const categoriaGestacionComputed = computed(() => {
+  return determinarCategoriaGestacion(noviembreSdg.value);
 });
 
-// Watch para recalcular IMC cuando cambie la altura de exploración física
-watch(() => formDataExploracionFisica.altura, (newAltura) => {
-  if (newAltura && octubrePeso.value) {
-    const imcCalculado = calcularIMC(octubrePeso.value, newAltura);
-    octubreImc.value = imcCalculado;
-    formDataControlPrenatal.octubreImc = imcCalculado;
-  }
+// Computed para la edad gestacional calculada
+const edadGestacionalCalculada = computed(() => {
+  return calcularEdadGestacional(formDataControlPrenatal.fum);
 });
 
-// Computed para determinar si se puede calcular IMC
-const puedeCalcularIMC = computed(() => {
-  return octubrePeso.value && alturaDisponible.value;
-});
-
-// Validaciones reactivas similares a Step2.vue
-const mensajeErrorPeso = computed(() => {
-  if (!octubrePeso.value || octubrePeso.value === '') return '';
+// Validaciones reactivas
+const mensajeErrorSemana = computed(() => {
+  if (!noviembreSdg.value || noviembreSdg.value === '') return '';
   
-  const peso = parseFloat(octubrePeso.value);
-  if (isNaN(peso)) return 'El peso debe ser un número válido';
+  const semana = parseInt(noviembreSdg.value);
+  if (isNaN(semana)) return 'La semana de gestación debe ser un número válido';
   
-  if (peso < 45) return 'Debe ser mínimo 45 kg';
-  if (peso > 200) return 'Debe ser máximo 200 kg';
+  if (semana < 1) return 'Debe ser mínimo 1 semana';
+  if (semana > 45) return 'Debe ser máximo 45 semanas';
   
   return '';
 });
 
-const mensajeErrorAltura = computed(() => {
-  if (!alturaLocal.value || alturaLocal.value === '') return '';
-  
-  const altura = parseFloat(alturaLocal.value);
-  if (isNaN(altura)) return 'La altura debe ser un número válido';
-  
-  if (altura < 1.4) return 'Debe ser mínimo 1.40 m';
-  if (altura > 2.2) return 'Debe ser máximo 2.20 m';
-  
-  return '';
-});
+// Función para seleccionar un preset común
+const seleccionarPreset = (valor) => {
+  noviembreSdg.value = valor.toString();
+};
+
+// Presets de semanas de gestación comunes
+const presetsSemanas = [
+  { valor: 12, descripcion: '12 semanas', texto: '12 semanas (3 meses)' },
+  { valor: 20, descripcion: '20 semanas', texto: '20 semanas (5 meses)' },
+  { valor: 24, descripcion: '24 semanas', texto: '24 semanas (6 meses)' },
+  { valor: 28, descripcion: '28 semanas', texto: '28 semanas (7 meses)' },
+  { valor: 32, descripcion: '32 semanas', texto: '32 semanas (8 meses)' },
+  { valor: 36, descripcion: '36 semanas', texto: '36 semanas (9 meses)' },
+  { valor: 38, descripcion: '38 semanas', texto: '38 semanas (9.5 meses)' },
+  { valor: 40, descripcion: '40 semanas', texto: '40 semanas (10 meses)' }
+];
 </script>
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Octubre</h1>
+    <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Noviembre</h1>
     
-    <!-- ALTURA -->
+    <!-- SEMANA DE GESTACIÓN -->
     <div class="mb-6">
+      <h2 class="font-semibold mb-3 text-gray-700">SEMANA DE GESTACIÓN</h2>
       
-      <!-- Si no hay altura disponible en ninguna fuente -->
-      <div v-if="!formDataExploracionFisica.altura && !formDataControlPrenatal.altura && !alturaLocal" class="mb-4">
-        <p class="font-medium mb-2 text-gray-800 leading-5">
-          <span class="font-semibold mb-3 text-gray-700">ALTURA (m) - </span>
-          <span class="text-orange-600 font-semibold">No se encontró altura previa registrada en la exploración física.</span>
-          <br>
-          Registre la altura de la trabajadora. 
-        </p>
-      </div>
-      
-      <!-- Si hay altura disponible pero se puede modificar -->
-      <div v-else-if="formDataExploracionFisica.altura || formDataControlPrenatal.altura" class="mb-4">
-        <p class="font-semibold mb-3 text-gray-700">
-          ALTURA (m) - 
-          <span class="font-semibold text-green-700">
-            {{ formDataExploracionFisica.altura || formDataControlPrenatal.altura }} m
-          </span>
-          <span v-if="formDataExploracionFisica.altura" class="text-xs text-gray-600 ml-2">(de exploración física)</span>
-          <span v-else class="text-xs text-gray-600 ml-2">(del control prenatal)</span>
-        </p>
-      </div>
-      
-      <!-- Campo de altura siempre visible cuando no hay en exploración física -->
-      <input 
-        v-if="!formDataExploracionFisica.altura"
-        type="number" 
-        name="altura" 
-        placeholder="Ej: 1.65" 
-        v-model="alturaLocal"
-        step="0.01"
-        min="1.4"
-        max="2.2"
-        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-      />
-      
-      <!-- Mensaje de error para altura -->
-      <p v-if="mensajeErrorAltura" class="text-red-500 text-sm mt-1">{{ mensajeErrorAltura }}</p>
-    </div>
-    
-    <!-- PESO -->
-    <div class="mb-6">
-      <h2 class="font-semibold mb-3 text-gray-700">PESO (Kg)</h2>
-      <p class="font-medium mb-2 text-gray-800 leading-5">¿Cuál fue el peso registrado durante el control prenatal del mes de octubre?</p>
-      
-      <input 
-        type="number" 
-        name="octubrePeso" 
-        placeholder="Ej: 65.5" 
-        v-model="octubrePeso"
-        step="0.1"
-        min="45"
-        max="200"
-        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-      />
-      
-      <!-- Mensaje de error para peso -->
-      <p v-if="mensajeErrorPeso" class="text-red-500 text-sm mt-1">{{ mensajeErrorPeso }}</p>
-    </div>
+      <div class="mb-4">
+        
+        <!-- Presets de semanas comunes -->
+        <div class="mb-4 mt-4">
+          <div class="grid grid-cols-4 gap-3">
+            <button
+              v-for="preset in presetsSemanas"
+              :key="preset.valor"
+              @click="seleccionarPreset(preset.valor)"
+              type="button"
+              class="w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 font-medium text-xs"
+              :class="noviembreSdg === preset.valor.toString() 
+                ? 'border-emerald-500 bg-emerald-100 text-emerald-700' 
+                : 'border-gray-300 bg-white text-gray-600 hover:border-emerald-300 hover:bg-emerald-50'"
+            >
+              {{ preset.descripcion }}
+            </button>
+          </div>
+        </div>
 
-    <!-- IMC -->
-    <div class="mb-6">
-      <h2 class="font-semibold mb-3 text-gray-700">ÍNDICE DE MASA CORPORAL (IMC)</h2>
-      
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2">
-        <p class="text-sm text-blue-800 mb-2">
-          <strong>Fórmula IMC:</strong> Peso (kg) / Altura² (m²)
-        </p>
-        <p class="text-sm text-blue-700">
-          <span v-if="alturaDisponible">
-            Altura registrada: <span class="font-semibold text-green-700">{{ alturaParaIMC }} m</span>
-            <span v-if="fuenteAltura === 'exploracion'" class="text-xs text-gray-600 ml-2">(de exploración física)</span>
-            <span v-else class="text-xs text-gray-600 ml-2">(del control prenatal)</span>
-          </span>
-          <span v-else class="text-orange-600 font-semibold">No hay altura registrada</span>
-        </p>
-      </div>
-      <div v-if="!alturaDisponible" class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-        <p class="text-sm text-orange-700">
-          ⚠️ Para calcular el IMC, debe ingresar una altura en el campo superior.
-        </p>
-      </div>
-      <div v-else-if="octubreImc" class="mt-1 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-          <p class="text-sm text-emerald-700">
-              ✅ IMC calculado: <span class="font-semibold">{{ octubreImc }}</span>
+        <hr class="my-4 border-gray-300">
+
+        <!-- Input personalizado -->
+        <div class="mb-4">
+          <div class="flex items-center justify-center gap-3">
+            <label for="noviembreSdg" class="font-medium text-gray-700">Personalizar:</label>
+            <input
+              id="noviembreSdg"
+              v-model="noviembreSdg"
+              type="number"
+              min="1"
+              max="45"
+              placeholder="Ej: 25"
+              class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-center"
+            />
+            <span class="text-gray-600 text-sm">semanas</span>
+          </div>
+          
+          <!-- Mensaje de error -->
+          <p v-if="mensajeErrorSemana" class="text-red-500 text-sm mt-2 text-center">
+            ⚠️ {{ mensajeErrorSemana }}
           </p>
+        </div>
       </div>
+    </div>
 
-      <p class="font-medium my-4 text-gray-800">Índice de Masa Corporal (IMC):</p>
-      <div class="font-light mt-2">
-        <input type="number"
-            class="w-full p-3 border bg-gray-100 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-            v-model="octubreImc"
-            step="0.1"
-            min="10"
-            max="60"
-            :placeholder="'IMC calculado automáticamente'"
-            :disabled="!octubrePeso || !alturaDisponible"
-            readonly>
+    <!-- RESULTADO DE SEMANA DE GESTACIÓN -->
+    <div class="mb-6">
+      <div v-if="noviembreSdg && !mensajeErrorSemana" class="mb-4">
+        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+          <p class="text-sm text-emerald-800 mb-2">
+            <span class="font-medium">✅ S.D.G. a registrar:</span>
+          </p>
+          <p class="text-2xl font-bold text-emerald-700 text-center">
+            {{ noviembreSdg }} semanas
+          </p>
+        </div>
+        
+        <!-- Categoría de gestación -->
+        <div v-if="categoriaGestacionComputed.categoria" class="mt-3 p-3 rounded-lg border" 
+             :class="[categoriaGestacionComputed.bgColor, categoriaGestacionComputed.borderColor]">
+          <p class="text-sm text-center" :class="categoriaGestacionComputed.color">
+            <span class="font-medium">{{ categoriaGestacionComputed.categoria }}</span>
+          </p>
+        </div>
       </div>
       
+      <div v-else-if="noviembreSdg && mensajeErrorSemana" class="p-3 bg-red-50 border border-red-200 rounded-lg">
+        <p class="text-sm text-red-700 text-center">
+          ⚠️ {{ mensajeErrorSemana }}
+        </p>
+      </div>
+      
+      <div v-else class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <p class="text-sm text-gray-600 text-center">
+          Ingrese la semana de gestación para ver el resultado
+        </p>
+      </div>
+    </div>
+
+    <!-- CÁLCULO AUTOMÁTICO DE EDAD GESTACIONAL -->
+    <div v-if="edadGestacionalCalculada" class="mb-6">
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 class="font-semibold mb-2 text-blue-800">📅 Cálculo automático de edad gestacional:</h3>
+        <p class="text-sm text-blue-700 mb-2">
+          Basado en la FUM registrada: 
+          <span class="font-semibold">{{ convertirFechaISOaDDMMYYYY(formDataControlPrenatal.fum) || 'No disponible' }}</span>
+        </p>
+        <div class="text-center">
+          <p class="text-lg font-bold text-blue-800">
+            {{ edadGestacionalCalculada.semanas }} semanas y {{ edadGestacionalCalculada.dias }} días
+          </p>
+          <p class="text-sm text-blue-600 mt-1">
+            ({{ Math.floor(edadGestacionalCalculada.semanas / 4) }} meses aproximadamente)
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFORMACIÓN ADICIONAL -->
+    <div class="mb-6">
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h3 class="font-semibold mb-2 text-gray-700">📋 Clasificación por trimestres:</h3>
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <ul class="text-sm text-gray-600 space-y-1">
+              <li><span class="font-normal text-blue-600">Primer trimestre:</span> 1-19 semanas</li>
+              <li><span class="font-normal text-green-600">Segundo trimestre:</span> 20-36 semanas</li>
+              <li><span class="font-normal text-orange-600">Tercer trimestre:</span> 37-40 semanas</li>
+              <li><span class="font-normal text-red-600">Postérmino:</span> &gt;40 semanas</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>

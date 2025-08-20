@@ -6,7 +6,6 @@ const { formDataControlPrenatal } = useFormDataStore();
 
 // Valores locales
 const eneroFondoUterino = ref('');
-const categoriaFondoUterino = ref('');
 
 // Función para determinar categoría del fondo uterino según semana de gestación
 const determinarCategoriaFondoUterino = (fondoUterino, semanaGestacion) => {

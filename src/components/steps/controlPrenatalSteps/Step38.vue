@@ -1,3 +1,63 @@
+<template>
+  <div class="step-container">
+    <h2 class="step-title">Control Prenatal - Mayo - Tensión Arterial</h2>
+    
+    <div class="form-section">
+      <h3 class="section-title">Tensión Arterial (T.A.)</h3>
+      
+      <div class="input-group">
+        <label for="tensionArterialSistolica" class="input-label">
+          Presión Sistólica (mmHg):
+        </label>
+        <input
+          id="tensionArterialSistolica"
+          v-model="tensionArterialSistolica"
+          type="number"
+          min="60"
+          max="200"
+          class="input-field"
+          placeholder="Ej: 120"
+          @input="validarTensionArterial"
+        />
+        <span v-if="mensajeErrorSistolica" class="error-message">
+          {{ mensajeErrorSistolica }}
+        </span>
+      </div>
+
+      <div class="input-group">
+        <label for="tensionArterialDiastolica" class="input-label">
+          Presión Diastólica (mmHg):
+        </label>
+        <input
+          id="tensionArterialDiastolica"
+          v-model="tensionArterialDiastolica"
+          type="number"
+          min="40"
+          max="150"
+          class="input-field"
+          placeholder="Ej: 80"
+          @input="validarTensionArterial"
+        />
+        <span v-if="mensajeErrorDiastolica" class="error-message">
+          {{ mensajeErrorDiastolica }}
+        </span>
+      </div>
+
+      <div class="result-display" v-if="tensionArterialCompleta">
+        <h4 class="result-title">Tensión Arterial:</h4>
+        <p class="result-value">{{ tensionArterialCompleta }}</p>
+        <p class="result-category">
+          Categoría: {{ categoriaTensionArterial }}
+        </p>
+      </div>
+
+      <div v-if="mensajeErrorRelacion" class="error-message">
+        {{ mensajeErrorRelacion }}
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import { useFormDataStore } from '@/stores/formDataStore'
@@ -81,10 +141,10 @@ const categoriaTensionArterial = computed(() => {
 
 // Cargar datos guardados al montar el componente
 onMounted(() => {
-  if ((formDataStore.formDataControlPrenatal as any).febreroTia) {
-    tensionArterialCompleta.value = (formDataStore.formDataControlPrenatal as any).febreroTia
+  if ((formDataStore.formDataControlPrenatal as any).mayoTia) {
+    tensionArterialCompleta.value = (formDataStore.formDataControlPrenatal as any).mayoTia
     // Extraer valores individuales si es necesario
-    const partes = (formDataStore.formDataControlPrenatal as any).febreroTia.split('/')
+    const partes = (formDataStore.formDataControlPrenatal as any).mayoTia.split('/')
     if (partes.length === 2) {
       tensionArterialSistolica.value = partes[0]
       tensionArterialDiastolica.value = partes[1]
@@ -95,7 +155,7 @@ onMounted(() => {
 // Guardar datos cuando cambien
 watch([tensionArterialCompleta], (newValue) => {
   if (newValue && !mensajeErrorRelacion.value) {
-    (formDataStore.formDataControlPrenatal as any).febreroTia = newValue
+    (formDataStore.formDataControlPrenatal as any).mayoTia = newValue
   }
 }, { deep: true })
 
@@ -104,66 +164,6 @@ onUnmounted(() => {
   // Los datos ya se guardan automáticamente en el store
 })
 </script>
-
-<template>
-  <div class="step-container">
-    <h2 class="step-title">Control Prenatal - Febrero - Tensión Arterial</h2>
-    
-    <div class="form-section">
-      <h3 class="section-title">Tensión Arterial (T.A.)</h3>
-      
-      <div class="input-group">
-        <label for="tensionArterialSistolica" class="input-label">
-          Presión Sistólica (mmHg):
-        </label>
-        <input
-          id="tensionArterialSistolica"
-          v-model="tensionArterialSistolica"
-          type="number"
-          min="60"
-          max="200"
-          class="input-field"
-          placeholder="Ej: 120"
-          @input="validarTensionArterial"
-        />
-        <span v-if="mensajeErrorSistolica" class="error-message">
-          {{ mensajeErrorSistolica }}
-        </span>
-      </div>
-
-      <div class="input-group">
-        <label for="tensionArterialDiastolica" class="input-label">
-          Presión Diastólica (mmHg):
-        </label>
-        <input
-          id="tensionArterialDiastolica"
-          v-model="tensionArterialDiastolica"
-          type="number"
-          min="40"
-          max="150"
-          class="input-field"
-          placeholder="Ej: 80"
-          @input="validarTensionArterial"
-        />
-        <span v-if="mensajeErrorDiastolica" class="error-message">
-          {{ mensajeErrorDiastolica }}
-        </span>
-      </div>
-
-      <div class="result-display" v-if="tensionArterialCompleta">
-        <h4 class="result-title">Tensión Arterial:</h4>
-        <p class="result-value">{{ tensionArterialCompleta }}</p>
-        <p class="result-category">
-          Categoría: {{ categoriaTensionArterial }}
-        </p>
-      </div>
-
-      <div v-if="mensajeErrorRelacion" class="error-message">
-        {{ mensajeErrorRelacion }}
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .step-container {

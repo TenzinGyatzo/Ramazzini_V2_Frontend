@@ -1,282 +1,259 @@
-<script setup>
-import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
-import { useFormDataStore } from '@/stores/formDataStore';
-
-const { formDataControlPrenatal, formDataExploracionFisica } = useFormDataStore();
-
-// Valores locales
-const agostoPeso = ref('');
-const agostoImc = ref('');
-const alturaLocal = ref('');
-
-// Computed para determinar la altura disponible y su fuente
-const alturaDisponible = computed(() => {
-  return formDataExploracionFisica.altura || formDataControlPrenatal.altura || alturaLocal.value;
-});
-
-const alturaParaIMC = computed(() => {
-  return formDataExploracionFisica.altura || formDataControlPrenatal.altura || alturaLocal.value;
-});
-
-const fuenteAltura = computed(() => {
-  if (formDataExploracionFisica.altura) return 'exploracion';
-  if (formDataControlPrenatal.altura) return 'controlPrenatal';
-  if (alturaLocal.value) return 'local';
-  return null;
-});
-
-// Función para calcular IMC
-const calcularIMC = (peso, altura) => {
-  if (!peso || !altura) return '';
-  
-  const pesoNum = parseFloat(peso);
-  const alturaMetros = parseFloat(altura); // Ya está en metros
-  
-  if (isNaN(pesoNum) || isNaN(alturaMetros) || alturaMetros <= 0) return '';
-  
-  const imc = pesoNum / (alturaMetros * alturaMetros);
-  return imc.toFixed(1);
-};
-
-onMounted(() => {
-  // Verificar si formDataControlPrenatal tiene valores y establecerlos
-  if (formDataControlPrenatal.agostoPeso) {
-    agostoPeso.value = formDataControlPrenatal.agostoPeso;
-  }
-  if (formDataControlPrenatal.agostoImc) {
-    agostoImc.value = formDataControlPrenatal.agostoImc;
-  }
-  if (formDataControlPrenatal.altura) {
-    alturaLocal.value = formDataControlPrenatal.altura;
-  }
-});
-
-onUnmounted(() => {
-  // Asegurar que formData tenga los valores
-  formDataControlPrenatal.agostoPeso = agostoPeso.value || '';
-  formDataControlPrenatal.agostoImc = agostoImc.value || '';
-  if (alturaLocal.value) {
-    formDataControlPrenatal.altura = alturaLocal.value;
-  }
-});
-
-// Sincronizar agostoPeso con formData
-watch(agostoPeso, (newValue) => {
-  formDataControlPrenatal.agostoPeso = newValue;
-  
-  // Calcular IMC automáticamente cuando cambie el peso
-  if (newValue && alturaDisponible.value) {
-    const imcCalculado = calcularIMC(newValue, alturaDisponible.value);
-    agostoImc.value = imcCalculado;
-    formDataControlPrenatal.agostoImc = imcCalculado;
-  } else {
-    agostoImc.value = '';
-    formDataControlPrenatal.agostoImc = '';
-  }
-});
-
-// Watch para recalcular IMC cuando cambie la altura
-watch(alturaLocal, (newAltura) => {
-  if (newAltura) {
-    formDataControlPrenatal.altura = newAltura;
-    
-    // Recalcular IMC si ya existe peso
-    if (agostoPeso.value) {
-      const imcCalculado = calcularIMC(agostoPeso.value, newAltura);
-      agostoImc.value = imcCalculado;
-      formDataControlPrenatal.agostoImc = imcCalculado;
-    }
-  }
-});
-
-// Watch para recalcular IMC cuando cambie la altura de exploración física
-watch(() => formDataExploracionFisica.altura, (newAltura) => {
-  if (newAltura && agostoPeso.value) {
-    const imcCalculado = calcularIMC(agostoPeso.value, newAltura);
-    agostoImc.value = imcCalculado;
-    formDataControlPrenatal.agostoImc = imcCalculado;
-  }
-});
-
-// Computed para determinar si se puede calcular IMC
-const puedeCalcularIMC = computed(() => {
-  return agostoPeso.value && alturaDisponible.value;
-});
-
-// Validaciones reactivas similares a Step2.vue
-const mensajeErrorPeso = computed(() => {
-  if (!agostoPeso.value || agostoPeso.value === '') return '';
-  
-  const peso = parseFloat(agostoPeso.value);
-  if (isNaN(peso)) return 'El peso debe ser un número válido';
-  
-  if (peso < 45) return 'Debe ser mínimo 45 kg';
-  if (peso > 200) return 'Debe ser máximo 200 kg';
-  
-  return '';
-});
-
-const mensajeErrorAltura = computed(() => {
-  if (!alturaLocal.value || alturaLocal.value === '') return '';
-  
-  const altura = parseFloat(alturaLocal.value);
-  if (isNaN(altura)) return 'La altura debe ser un número válido';
-  
-  if (altura < 1.4) return 'Debe ser mínimo 1.40 m';
-  if (altura > 2.2) return 'Debe ser máximo 2.20 m';
-  
-  return '';
-});
-</script>
-
 <template>
-  <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Agosto</h1>
+  <div class="step-container">
+    <h2 class="step-title">Control Prenatal - Septiembre - Tensión Arterial</h2>
     
-    <!-- ALTURA -->
-    <div class="mb-6">
+    <div class="form-section">
+      <h3 class="section-title">Tensión Arterial (T.A.)</h3>
       
-      <!-- Si no hay altura disponible en ninguna fuente -->
-      <div v-if="!formDataExploracionFisica.altura && !formDataControlPrenatal.altura && !alturaLocal" class="mb-4">
-        <p class="font-medium mb-2 text-gray-800 leading-5">
-          <span class="font-semibold mb-3 text-gray-700">ALTURA (m) - </span>
-          <span class="text-orange-600 font-semibold">No se encontró altura previa registrada en la exploración física.</span>
-          <br>
-          Registre la altura de la trabajadora. 
-        </p>
-      </div>
-      
-      <!-- Si hay altura disponible pero se puede modificar -->
-      <div v-else-if="formDataExploracionFisica.altura || formDataControlPrenatal.altura" class="mb-4">
-        <p class="font-semibold mb-3 text-gray-700">
-          ALTURA (m) - 
-          <span class="font-semibold text-green-700">
-            {{ formDataExploracionFisica.altura || formDataControlPrenatal.altura }} m
-          </span>
-          <span v-if="formDataExploracionFisica.altura" class="text-xs text-gray-600 ml-2">(de exploración física)</span>
-          <span v-else class="text-xs text-gray-600 ml-2">(del control prenatal)</span>
-        </p>
-      </div>
-      
-      <!-- Campo de altura siempre visible cuando no hay en exploración física -->
-      <input 
-        v-if="!formDataExploracionFisica.altura"
-        type="number" 
-        name="altura" 
-        placeholder="Ej: 1.65" 
-        v-model="alturaLocal"
-        step="0.01"
-        min="1.4"
-        max="2.2"
-        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-      />
-      
-      <!-- Mensaje de error para altura -->
-      <p v-if="mensajeErrorAltura" class="text-red-500 text-sm mt-1">{{ mensajeErrorAltura }}</p>
-    </div>
-    
-    <!-- PESO -->
-    <div class="mb-6">
-      <h2 class="font-semibold mb-3 text-gray-700">PESO (Kg)</h2>
-      <p class="font-medium mb-2 text-gray-800 leading-5">¿Cuál fue el peso registrado durante el control prenatal del mes de agosto?</p>
-      
-      <input 
-        type="number" 
-        name="agostoPeso" 
-        placeholder="Ej: 65.5" 
-        v-model="agostoPeso"
-        step="0.1"
-        min="45"
-        max="200"
-        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-      />
-      
-      <!-- Mensaje de error para peso -->
-      <p v-if="mensajeErrorPeso" class="text-red-500 text-sm mt-1">{{ mensajeErrorPeso }}</p>
-    </div>
-
-    <!-- IMC -->
-    <div class="mb-6">
-      <h2 class="font-semibold mb-3 text-gray-700">ÍNDICE DE MASA CORPORAL (IMC)</h2>
-      
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2">
-        <p class="text-sm text-blue-800 mb-2">
-          <strong>Fórmula IMC:</strong> Peso (kg) / Altura² (m²)
-        </p>
-        <p class="text-sm text-blue-700">
-          <span v-if="alturaDisponible">
-            Altura registrada: <span class="font-semibold text-green-700">{{ alturaParaIMC }} m</span>
-            <span v-if="fuenteAltura === 'exploracion'" class="text-xs text-gray-600 ml-2">(de exploración física)</span>
-            <span v-else class="text-xs text-gray-600 ml-2">(del control prenatal)</span>
-          </span>
-          <span v-else class="text-orange-600 font-semibold">No hay altura registrada</span>
-        </p>
-      </div>
-      <div v-if="!alturaDisponible" class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-        <p class="text-sm text-orange-700">
-          ⚠️ Para calcular el IMC, debe ingresar una altura en el campo superior.
-        </p>
-      </div>
-      <div v-else-if="agostoImc" class="mt-1 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-          <p class="text-sm text-emerald-700">
-              ✅ IMC calculado: <span class="font-semibold">{{ agostoImc }}</span>
-          </p>
+      <div class="input-group">
+        <label for="tensionArterialSistolica" class="input-label">
+          Presión Sistólica (mmHg):
+        </label>
+        <input
+          id="tensionArterialSistolica"
+          v-model="tensionArterialSistolica"
+          type="number"
+          min="60"
+          max="200"
+          class="input-field"
+          placeholder="Ej: 120"
+          @input="validarTensionArterial"
+        />
+        <span v-if="mensajeErrorSistolica" class="error-message">
+          {{ mensajeErrorSistolica }}
+        </span>
       </div>
 
-      <p class="font-medium my-4 text-gray-800">Índice de Masa Corporal (IMC):</p>
-      <div class="font-light mt-2">
-        <input type="number"
-            class="w-full p-3 border bg-gray-100 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-            v-model="agostoImc"
-            step="0.1"
-            min="10"
-            max="60"
-            :placeholder="'IMC calculado automáticamente'"
-            :disabled="!agostoPeso || !alturaDisponible"
-            readonly>
+      <div class="input-group">
+        <label for="tensionArterialDiastolica" class="input-label">
+          Presión Diastólica (mmHg):
+        </label>
+        <input
+          id="tensionArterialDiastolica"
+          v-model="tensionArterialDiastolica"
+          type="number"
+          min="40"
+          max="150"
+          class="input-field"
+          placeholder="Ej: 80"
+          @input="validarTensionArterial"
+        />
+        <span v-if="mensajeErrorDiastolica" class="error-message">
+          {{ mensajeErrorDiastolica }}
+        </span>
       </div>
-      
-    </div>
 
+      <div class="result-display" v-if="tensionArterialCompleta">
+        <h4 class="result-title">Tensión Arterial:</h4>
+        <p class="result-value">{{ tensionArterialCompleta }}</p>
+        <p class="result-category">
+          Categoría: {{ categoriaTensionArterial }}
+        </p>
+      </div>
+
+      <div v-if="mensajeErrorRelacion" class="error-message">
+        {{ mensajeErrorRelacion }}
+      </div>
+    </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
+import { useFormDataStore } from '@/stores/formDataStore'
+
+const formDataStore = useFormDataStore()
+
+// Variables reactivas para la tensión arterial
+const tensionArterialSistolica = ref('')
+const tensionArterialDiastolica = ref('')
+const tensionArterialCompleta = ref('')
+
+// Mensajes de error
+const mensajeErrorSistolica = ref('')
+const mensajeErrorDiastolica = ref('')
+const mensajeErrorRelacion = ref('')
+
+// Función para validar la tensión arterial
+const validarTensionArterial = () => {
+  // Limpiar mensajes de error previos
+  mensajeErrorSistolica.value = ''
+  mensajeErrorDiastolica.value = ''
+  mensajeErrorRelacion.value = ''
+
+  // Validar presión sistólica
+  if (tensionArterialSistolica.value) {
+    const sistolica = parseInt(tensionArterialSistolica.value)
+    if (sistolica < 60 || sistolica > 200) {
+      mensajeErrorSistolica.value = 'La presión sistólica debe estar entre 60 y 200 mmHg'
+    }
+  }
+
+  // Validar presión diastólica
+  if (tensionArterialDiastolica.value) {
+    const diastolica = parseInt(tensionArterialDiastolica.value)
+    if (diastolica < 40 || diastolica > 150) {
+      mensajeErrorDiastolica.value = 'La presión diastólica debe estar entre 40 y 150 mmHg'
+    }
+  }
+
+  // Validar relación sistólica > diastólica
+  if (tensionArterialSistolica.value && tensionArterialDiastolica.value) {
+    const sistolica = parseInt(tensionArterialSistolica.value)
+    const diastolica = parseInt(tensionArterialDiastolica.value)
+    
+    if (sistolica <= diastolica) {
+      mensajeErrorRelacion.value = 'La presión sistólica debe ser mayor que la diastólica'
+    }
+  }
+
+  // Formatear la tensión arterial completa
+  if (tensionArterialSistolica.value && tensionArterialDiastolica.value && !mensajeErrorRelacion.value) {
+    tensionArterialCompleta.value = `${tensionArterialSistolica.value}/${tensionArterialDiastolica.value}`
+  } else {
+    tensionArterialCompleta.value = ''
+  }
+}
+
+// Computed para categorizar la tensión arterial
+const categoriaTensionArterial = computed(() => {
+  if (!tensionArterialSistolica.value || !tensionArterialDiastolica.value) {
+    return ''
+  }
+
+  const sistolica = parseInt(tensionArterialSistolica.value)
+  const diastolica = parseInt(tensionArterialDiastolica.value)
+
+  if (sistolica < 120 && diastolica < 80) {
+    return 'Óptima'
+  } else if (sistolica < 130 && diastolica < 85) {
+    return 'Normal'
+  } else if (sistolica < 140 && diastolica < 90) {
+    return 'Normal Alta'
+  } else if (sistolica < 160 && diastolica < 100) {
+    return 'Hipertensión Ligera'
+  } else if (sistolica < 180 && diastolica < 110) {
+    return 'Hipertensión Moderada'
+  } else {
+    return 'Hipertensión Severa'
+  }
+})
+
+// Cargar datos guardados al montar el componente
+onMounted(() => {
+  if ((formDataStore.formDataControlPrenatal as any).septiembreTia) {
+    tensionArterialCompleta.value = (formDataStore.formDataControlPrenatal as any).septiembreTia
+    // Extraer valores individuales si es necesario
+    const partes = (formDataStore.formDataControlPrenatal as any).septiembreTia.split('/')
+    if (partes.length === 2) {
+      tensionArterialSistolica.value = partes[0]
+      tensionArterialDiastolica.value = partes[1]
+    }
+  }
+})
+
+// Guardar datos cuando cambien
+watch([tensionArterialCompleta], (newValue) => {
+  if (newValue && !mensajeErrorRelacion.value) {
+    (formDataStore.formDataControlPrenatal as any).septiembreTia = newValue
+  }
+}, { deep: true })
+
+// Limpiar al desmontar
+onUnmounted(() => {
+  // Los datos ya se guardan automáticamente en el store
+})
+</script>
 
 <style scoped>
 .step-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 2rem;
-}
-
-.step-header {
-  text-align: center;
-  margin-bottom: 2rem;
+  padding: 20px;
 }
 
 .step-title {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  text-align: center;
 }
 
-.step-description {
-  color: #6b7280;
-  font-size: 1.125rem;
+.form-section {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 20px;
 }
 
-.step-content {
-  margin-bottom: 2rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-label {
-  display: block;
+.section-title {
+  font-size: 1.2rem;
   font-weight: 600;
-  color: #374151;
-  margin-bottom: 0.5rem;
+  color: #34495e;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 10px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-label {
+  display: block;
+  font-weight: 500;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.875rem;
+  margin-top: 5px;
+  display: block;
+}
+
+.result-display {
+  background: #e8f5e8;
+  padding: 20px;
+  border-radius: 6px;
+  margin-top: 20px;
+  border-left: 4px solid #27ae60;
+}
+
+.result-title {
+  font-weight: 600;
+  color: #27ae60;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.result-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.result-category {
+  color: #7f8c8d;
+  font-style: italic;
+  margin: 0;
 }
 </style>

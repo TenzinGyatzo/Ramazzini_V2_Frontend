@@ -5,7 +5,7 @@ import { useFormDataStore } from '@/stores/formDataStore';
 const { formDataControlPrenatal } = useFormDataStore();
 
 // Valores locales
-const diciembreFondoUterino = ref('');
+const noviembreFondoUterino = ref('');
 
 // Función para determinar categoría del fondo uterino según semana de gestación
 const determinarCategoriaFondoUterino = (fondoUterino, semanaGestacion) => {
@@ -165,43 +165,43 @@ const calcularFondoUterinoEsperado = (semana) => {
 };
 
 onMounted(() => {
-  // Verificar si formDataControlPrenatal.diciembreFondoUterino tiene un valor y establecerlo
-  if (formDataControlPrenatal.diciembreFondoUterino) {
-    diciembreFondoUterino.value = formDataControlPrenatal.diciembreFondoUterino.toString();
+  // Verificar si formDataControlPrenatal.noviembreFondoUterino tiene un valor y establecerlo
+  if (formDataControlPrenatal.noviembreFondoUterino) {
+    noviembreFondoUterino.value = formDataControlPrenatal.noviembreFondoUterino.toString();
   }
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para diciembreFondoUterino
-  if (!formDataControlPrenatal.diciembreFondoUterino) {
-    formDataControlPrenatal.diciembreFondoUterino = diciembreFondoUterino.value ? parseFloat(diciembreFondoUterino.value) : undefined;
+  // Asegurar que formData tenga un valor inicial para noviembreFondoUterino
+  if (!formDataControlPrenatal.noviembreFondoUterino) {
+    formDataControlPrenatal.noviembreFondoUterino = noviembreFondoUterino.value ? parseFloat(noviembreFondoUterino.value) : undefined;
   }
 });
 
-// Sincronizar diciembreFondoUterino con formData
-watch(diciembreFondoUterino, (newValue) => {
+// Sincronizar noviembreFondoUterino con formData
+watch(noviembreFondoUterino, (newValue) => {
   if (newValue && newValue !== '') {
-    formDataControlPrenatal.diciembreFondoUterino = parseFloat(newValue);
+    formDataControlPrenatal.noviembreFondoUterino = parseFloat(newValue);
   } else {
-    formDataControlPrenatal.diciembreFondoUterino = undefined;
+    formDataControlPrenatal.noviembreFondoUterino = undefined;
   }
 });
 
 // Computed para la categoría del fondo uterino
 const categoriaFondoUterinoComputed = computed(() => {
-  return determinarCategoriaFondoUterino(diciembreFondoUterino.value, formDataControlPrenatal.diciembreSdgl);
+  return determinarCategoriaFondoUterino(noviembreFondoUterino.value, formDataControlPrenatal.noviembreSdg);
 });
 
 // Computed para el fondo uterino esperado
 const fondoUterinoEsperadoComputed = computed(() => {
-  return calcularFondoUterinoEsperado(formDataControlPrenatal.diciembreSdgl);
+  return calcularFondoUterinoEsperado(formDataControlPrenatal.noviembreSdg);
 });
 
 // Validaciones reactivas
 const mensajeErrorFondoUterino = computed(() => {
-  if (!diciembreFondoUterino.value || diciembreFondoUterino.value === '') return '';
+  if (!noviembreFondoUterino.value || noviembreFondoUterino.value === '') return '';
   
-  const fondoUterino = parseFloat(diciembreFondoUterino.value);
+  const fondoUterino = parseFloat(noviembreFondoUterino.value);
   if (isNaN(fondoUterino)) return 'El fondo uterino debe ser un número válido';
   
   if (fondoUterino < 0) return 'Debe ser mínimo 0 centímetros';
@@ -212,7 +212,7 @@ const mensajeErrorFondoUterino = computed(() => {
 
 // Función para seleccionar un preset común
 const seleccionarPreset = (valor) => {
-  diciembreFondoUterino.value = valor.toString();
+  noviembreFondoUterino.value = valor.toString();
 };
 
 // Presets de fondo uterino comunes según semanas de gestación
@@ -228,7 +228,7 @@ const presetsFondoUterino = [
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Diciembre</h1>
+    <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Noviembre</h1>
     
     <!-- FONDO UTERINO -->
     <div class="mb-6">
@@ -245,7 +245,7 @@ const presetsFondoUterino = [
               @click="seleccionarPreset(preset.valor)"
               type="button"
               class="w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 font-medium text-xs"
-              :class="diciembreFondoUterino === preset.valor.toString() 
+              :class="noviembreFondoUterino === preset.valor.toString() 
                 ? 'border-emerald-500 bg-emerald-100 text-emerald-700' 
                 : 'border-gray-300 bg-white text-gray-600 hover:border-emerald-300 hover:bg-emerald-50'"
             >
@@ -259,10 +259,10 @@ const presetsFondoUterino = [
         <!-- Input personalizado -->
         <div class="mb-4">
           <div class="flex items-center justify-center gap-3">
-            <label for="diciembreFondoUterino" class="font-medium text-gray-700">Personalizar:</label>
+            <label for="noviembreFondoUterino" class="font-medium text-gray-700">Personalizar:</label>
             <input
-              id="diciembreFondoUterino"
-              v-model="diciembreFondoUterino"
+              id="noviembreFondoUterino"
+              v-model="noviembreFondoUterino"
               type="number"
               min="0"
               max="50"
@@ -283,13 +283,13 @@ const presetsFondoUterino = [
 
     <!-- RESULTADO DEL FONDO UTERINO -->
     <div class="mb-4">
-      <div v-if="diciembreFondoUterino && !mensajeErrorFondoUterino" class="mb-4">
+      <div v-if="noviembreFondoUterino && !mensajeErrorFondoUterino" class="mb-4">
         <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
           <p class="text-sm text-emerald-800 mb-2">
             <span class="font-medium">✅ F. UT. a registrar:</span>
           </p>
           <p class="text-2xl font-bold text-emerald-700 text-center">
-            {{ diciembreFondoUterino }} cm
+            {{ noviembreFondoUterino }} cm
           </p>
         </div>
         
@@ -302,7 +302,7 @@ const presetsFondoUterino = [
         </div>
       </div>
       
-      <div v-else-if="diciembreFondoUterino && mensajeErrorFondoUterino" class="p-3 bg-red-50 border border-red-200 rounded-lg">
+      <div v-else-if="noviembreFondoUterino && mensajeErrorFondoUterino" class="p-3 bg-red-50 border border-red-200 rounded-lg">
         <p class="text-sm text-red-700 text-center">
           ⚠️ {{ mensajeErrorFondoUterino }}
         </p>
@@ -316,7 +316,7 @@ const presetsFondoUterino = [
     </div>
 
     <!-- CÁLCULO ESPERADO DEL FONDO UTERINO -->
-    <div v-if="fondoUterinoEsperadoComputed && formDataControlPrenatal.diciembreSdgl" class="mb-2">
+    <div v-if="fondoUterinoEsperadoComputed && formDataControlPrenatal.noviembreSdg" class="mb-2">
       <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 class="font-semibold mb-2 text-blue-800">📏 Fondo uterino esperado según SDG:</h3>
         <div class="text-center">

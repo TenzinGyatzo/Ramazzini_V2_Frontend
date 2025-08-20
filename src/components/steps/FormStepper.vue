@@ -132,10 +132,76 @@ import Step14ControlPrenatal from '../steps/controlPrenatalSteps/Step14.vue';
 import Step15ControlPrenatal from '../steps/controlPrenatalSteps/Step15.vue';
 import Step16ControlPrenatal from '../steps/controlPrenatalSteps/Step16.vue';
 import Step17ControlPrenatal from '../steps/controlPrenatalSteps/Step17.vue';
+import Step18ControlPrenatal from '../steps/controlPrenatalSteps/Step18.vue';
+import Step19ControlPrenatal from '../steps/controlPrenatalSteps/Step19.vue';
+import Step20ControlPrenatal from '../steps/controlPrenatalSteps/Step20.vue';
+import Step21ControlPrenatal from '../steps/controlPrenatalSteps/Step21.vue';
+import Step22ControlPrenatal from '../steps/controlPrenatalSteps/Step22.vue';
+import Step23ControlPrenatal from '../steps/controlPrenatalSteps/Step23.vue';
+import Step24ControlPrenatal from '../steps/controlPrenatalSteps/Step24.vue';
+import Step25ControlPrenatal from '../steps/controlPrenatalSteps/Step25.vue';
+import Step26ControlPrenatal from '../steps/controlPrenatalSteps/Step26.vue';
+import Step27ControlPrenatal from '../steps/controlPrenatalSteps/Step27.vue';
+import Step28ControlPrenatal from '../steps/controlPrenatalSteps/Step28.vue';
+import Step29ControlPrenatal from '../steps/controlPrenatalSteps/Step29.vue';
+import Step30ControlPrenatal from '../steps/controlPrenatalSteps/Step30.vue';
+import Step31ControlPrenatal from '../steps/controlPrenatalSteps/Step31.vue';
+import Step32ControlPrenatal from '../steps/controlPrenatalSteps/Step32.vue';
+import Step33ControlPrenatal from '../steps/controlPrenatalSteps/Step33.vue';
+import Step34ControlPrenatal from '../steps/controlPrenatalSteps/Step34.vue';
+import Step35ControlPrenatal from '../steps/controlPrenatalSteps/Step35.vue';
+import Step36ControlPrenatal from '../steps/controlPrenatalSteps/Step36.vue';
+import Step37ControlPrenatal from '../steps/controlPrenatalSteps/Step37.vue';
+import Step38ControlPrenatal from '../steps/controlPrenatalSteps/Step38.vue';
+import Step39ControlPrenatal from '../steps/controlPrenatalSteps/Step39.vue';
+import Step40ControlPrenatal from '../steps/controlPrenatalSteps/Step40.vue';
+import Step41ControlPrenatal from '../steps/controlPrenatalSteps/Step41.vue';
+import Step42ControlPrenatal from '../steps/controlPrenatalSteps/Step42.vue';
+import Step43ControlPrenatal from '../steps/controlPrenatalSteps/Step43.vue';
+import Step44ControlPrenatal from '../steps/controlPrenatalSteps/Step44.vue';
+import Step45ControlPrenatal from '../steps/controlPrenatalSteps/Step45.vue';
+import Step46ControlPrenatal from '../steps/controlPrenatalSteps/Step46.vue';
+import Step47ControlPrenatal from '../steps/controlPrenatalSteps/Step47.vue';
+import Step48ControlPrenatal from '../steps/controlPrenatalSteps/Step48.vue';
+import Step49ControlPrenatal from '../steps/controlPrenatalSteps/Step49.vue';
+import Step50ControlPrenatal from '../steps/controlPrenatalSteps/Step50.vue';
+import Step51ControlPrenatal from '../steps/controlPrenatalSteps/Step51.vue';
+import Step52ControlPrenatal from '../steps/controlPrenatalSteps/Step52.vue';
+import Step53ControlPrenatal from '../steps/controlPrenatalSteps/Step53.vue';
+import Step54ControlPrenatal from '../steps/controlPrenatalSteps/Step54.vue';
+import Step55ControlPrenatal from '../steps/controlPrenatalSteps/Step55.vue';
+import Step56ControlPrenatal from '../steps/controlPrenatalSteps/Step56.vue';
+import Step57ControlPrenatal from '../steps/controlPrenatalSteps/Step57.vue';
+import Step58ControlPrenatal from '../steps/controlPrenatalSteps/Step58.vue';
+import Step59ControlPrenatal from '../steps/controlPrenatalSteps/Step59.vue';
+import Step60ControlPrenatal from '../steps/controlPrenatalSteps/Step60.vue';
+import Step61ControlPrenatal from '../steps/controlPrenatalSteps/Step61.vue';
+import Step62ControlPrenatal from '../steps/controlPrenatalSteps/Step62.vue';
+import Step63ControlPrenatal from '../steps/controlPrenatalSteps/Step63.vue';
+import Step64ControlPrenatal from '../steps/controlPrenatalSteps/Step64.vue';
+import Step65ControlPrenatal from '../steps/controlPrenatalSteps/Step65.vue';
+import Step66ControlPrenatal from '../steps/controlPrenatalSteps/Step66.vue';
+import Step67ControlPrenatal from '../steps/controlPrenatalSteps/Step67.vue';
+import Step68ControlPrenatal from '../steps/controlPrenatalSteps/Step68.vue';
+import Step69ControlPrenatal from '../steps/controlPrenatalSteps/Step69.vue';
+import Step70ControlPrenatal from '../steps/controlPrenatalSteps/Step70.vue';
+import Step71ControlPrenatal from '../steps/controlPrenatalSteps/Step71.vue';
+import Step72ControlPrenatal from '../steps/controlPrenatalSteps/Step72.vue';
+import Step73ControlPrenatal from '../steps/controlPrenatalSteps/Step73.vue';
+import Step74ControlPrenatal from '../steps/controlPrenatalSteps/Step74.vue';
+import Step75ControlPrenatal from '../steps/controlPrenatalSteps/Step75.vue';
+import Step76ControlPrenatal from '../steps/controlPrenatalSteps/Step76.vue';
+import Step77ControlPrenatal from '../steps/controlPrenatalSteps/Step77.vue';
+import Step78ControlPrenatal from '../steps/controlPrenatalSteps/Step78.vue';
+import Step79ControlPrenatal from '../steps/controlPrenatalSteps/Step79.vue';
+import Step80ControlPrenatal from '../steps/controlPrenatalSteps/Step80.vue';
+import Step81ControlPrenatal from '../steps/controlPrenatalSteps/Step81.vue';
+import Step82ControlPrenatal from '../steps/controlPrenatalSteps/Step82.vue';
+import Step83ControlPrenatal from '../steps/controlPrenatalSteps/Step83.vue';
 import ModalFaltanCampos from '../ModalFaltanCampos.vue';
 
 export default {
-  components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Certificado, Step2Certificado, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica, Step1NotaMedica, Step2NotaMedica, Step3NotaMedica, Step4NotaMedica, Step5NotaMedica, Step6NotaMedica, Step7NotaMedica, Step8NotaMedica, Step9NotaMedica, Step1ControlPrenatal, Step2ControlPrenatal, Step3ControlPrenatal, Step4ControlPrenatal, Step5ControlPrenatal, Step6ControlPrenatal, Step7ControlPrenatal, Step8ControlPrenatal, Step9ControlPrenatal, Step10ControlPrenatal, Step11ControlPrenatal, Step12ControlPrenatal, Step13ControlPrenatal, Step14ControlPrenatal, Step15ControlPrenatal, Step16ControlPrenatal, Step17ControlPrenatal, ModalFaltanCampos },
+  components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Certificado, Step2Certificado, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica, Step1NotaMedica, Step2NotaMedica, Step3NotaMedica, Step4NotaMedica, Step5NotaMedica, Step6NotaMedica, Step7NotaMedica, Step8NotaMedica, Step9NotaMedica, Step1ControlPrenatal, Step2ControlPrenatal, Step3ControlPrenatal, Step4ControlPrenatal, Step5ControlPrenatal, Step6ControlPrenatal, Step7ControlPrenatal, Step8ControlPrenatal, Step9ControlPrenatal, Step10ControlPrenatal, Step11ControlPrenatal, Step12ControlPrenatal, Step13ControlPrenatal, Step14ControlPrenatal, Step15ControlPrenatal, Step16ControlPrenatal, Step17ControlPrenatal, Step18ControlPrenatal, Step19ControlPrenatal, Step20ControlPrenatal, Step21ControlPrenatal, Step22ControlPrenatal, Step23ControlPrenatal, Step24ControlPrenatal, Step25ControlPrenatal, Step26ControlPrenatal, Step27ControlPrenatal, Step28ControlPrenatal, Step29ControlPrenatal, Step30ControlPrenatal, Step31ControlPrenatal, Step32ControlPrenatal, Step33ControlPrenatal, Step34ControlPrenatal, Step35ControlPrenatal, Step36ControlPrenatal, Step37ControlPrenatal, Step38ControlPrenatal, Step39ControlPrenatal, Step40ControlPrenatal, Step41ControlPrenatal, Step42ControlPrenatal, Step43ControlPrenatal, Step44ControlPrenatal, Step45ControlPrenatal, Step46ControlPrenatal, Step47ControlPrenatal, Step48ControlPrenatal, Step49ControlPrenatal, Step50ControlPrenatal, Step51ControlPrenatal, Step52ControlPrenatal, Step53ControlPrenatal, Step54ControlPrenatal, Step55ControlPrenatal, Step56ControlPrenatal, Step57ControlPrenatal, Step58ControlPrenatal, Step59ControlPrenatal, Step60ControlPrenatal, Step61ControlPrenatal, Step62ControlPrenatal, Step63ControlPrenatal, Step64ControlPrenatal, Step65ControlPrenatal, Step66ControlPrenatal, Step67ControlPrenatal, Step68ControlPrenatal, Step69ControlPrenatal, Step70ControlPrenatal, Step71ControlPrenatal, Step72ControlPrenatal, Step73ControlPrenatal, Step74ControlPrenatal, Step75ControlPrenatal, Step76ControlPrenatal, Step77ControlPrenatal, Step78ControlPrenatal, Step79ControlPrenatal, Step80ControlPrenatal, Step81ControlPrenatal, Step82ControlPrenatal, Step83ControlPrenatal, ModalFaltanCampos },
   setup() {
     const empresas = useEmpresasStore();
     const trabajadores = useTrabajadoresStore();
@@ -321,6 +387,72 @@ export default {
           { component: Step15ControlPrenatal, name: 'Paso 15' },
           { component: Step16ControlPrenatal, name: 'Paso 16' },
           { component: Step17ControlPrenatal, name: 'Paso 17' },
+          { component: Step18ControlPrenatal, name: 'Paso 18' },
+          { component: Step19ControlPrenatal, name: 'Paso 19' },
+          { component: Step20ControlPrenatal, name: 'Paso 20' },
+          { component: Step21ControlPrenatal, name: 'Paso 21' },
+          { component: Step22ControlPrenatal, name: 'Paso 22' },
+          { component: Step23ControlPrenatal, name: 'Paso 23' },
+          { component: Step24ControlPrenatal, name: 'Paso 24' },
+          { component: Step25ControlPrenatal, name: 'Paso 25' },
+          { component: Step26ControlPrenatal, name: 'Paso 26' },
+          { component: Step27ControlPrenatal, name: 'Paso 27' },
+          { component: Step28ControlPrenatal, name: 'Paso 28' },
+          { component: Step29ControlPrenatal, name: 'Paso 29' },
+          { component: Step30ControlPrenatal, name: 'Paso 30' },
+          { component: Step31ControlPrenatal, name: 'Paso 31' },
+          { component: Step32ControlPrenatal, name: 'Paso 32' },
+          { component: Step33ControlPrenatal, name: 'Paso 33' },
+          { component: Step34ControlPrenatal, name: 'Paso 34' },
+          { component: Step35ControlPrenatal, name: 'Paso 35' },
+          { component: Step36ControlPrenatal, name: 'Paso 36' },
+          { component: Step37ControlPrenatal, name: 'Paso 37' },
+          { component: Step38ControlPrenatal, name: 'Paso 38' },
+          { component: Step39ControlPrenatal, name: 'Paso 39' },
+          { component: Step40ControlPrenatal, name: 'Paso 40' },
+          { component: Step41ControlPrenatal, name: 'Paso 41' },
+          { component: Step42ControlPrenatal, name: 'Paso 42' },
+          { component: Step43ControlPrenatal, name: 'Paso 43' },
+          { component: Step44ControlPrenatal, name: 'Paso 44' },
+          { component: Step45ControlPrenatal, name: 'Paso 45' },
+          { component: Step46ControlPrenatal, name: 'Paso 46' },
+          { component: Step47ControlPrenatal, name: 'Paso 47' },
+          { component: Step48ControlPrenatal, name: 'Paso 48' },
+          { component: Step49ControlPrenatal, name: 'Paso 49' },
+          { component: Step50ControlPrenatal, name: 'Paso 50' },
+          { component: Step51ControlPrenatal, name: 'Paso 51' },
+          { component: Step52ControlPrenatal, name: 'Paso 52' },
+          { component: Step53ControlPrenatal, name: 'Paso 53' },
+          { component: Step54ControlPrenatal, name: 'Paso 54' },
+          { component: Step55ControlPrenatal, name: 'Paso 55' },
+          { component: Step56ControlPrenatal, name: 'Paso 56' },
+          { component: Step57ControlPrenatal, name: 'Paso 57' },
+          { component: Step58ControlPrenatal, name: 'Paso 58' },
+          { component: Step59ControlPrenatal, name: 'Paso 59' },
+          { component: Step60ControlPrenatal, name: 'Paso 60' },
+          { component: Step61ControlPrenatal, name: 'Paso 61' },
+          { component: Step62ControlPrenatal, name: 'Paso 62' },
+          { component: Step63ControlPrenatal, name: 'Paso 63' },
+          { component: Step64ControlPrenatal, name: 'Paso 64' },
+          { component: Step65ControlPrenatal, name: 'Paso 65' },
+          { component: Step66ControlPrenatal, name: 'Paso 66' },
+          { component: Step67ControlPrenatal, name: 'Paso 67' },
+          { component: Step68ControlPrenatal, name: 'Paso 68' },
+          { component: Step69ControlPrenatal, name: 'Paso 69' },
+          { component: Step70ControlPrenatal, name: 'Paso 70' },
+          { component: Step71ControlPrenatal, name: 'Paso 71' },
+          { component: Step72ControlPrenatal, name: 'Paso 72' },
+          { component: Step73ControlPrenatal, name: 'Paso 73' },
+          { component: Step74ControlPrenatal, name: 'Paso 74' },
+          { component: Step75ControlPrenatal, name: 'Paso 75' },
+          { component: Step76ControlPrenatal, name: 'Paso 76' },
+          { component: Step77ControlPrenatal, name: 'Paso 77' },
+          { component: Step78ControlPrenatal, name: 'Paso 78' },
+          { component: Step79ControlPrenatal, name: 'Paso 79' },
+          { component: Step80ControlPrenatal, name: 'Paso 80' },
+          { component: Step81ControlPrenatal, name: 'Paso 81' },
+          { component: Step82ControlPrenatal, name: 'Paso 82' },
+          { component: Step83ControlPrenatal, name: 'Paso 83' },
         ]);
       } else {
         console.error(`Tipo de documento no reconocido: ${documentos.currentTypeOfDocument}`);

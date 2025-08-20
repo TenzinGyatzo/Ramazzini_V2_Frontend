@@ -2,240 +2,358 @@
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
-const { formDataControlPrenatal, formDataExploracionFisica } = useFormDataStore();
+const { formDataControlPrenatal } = useFormDataStore();
 
 // Valores locales
-const mayoPeso = ref('');
-const mayoImc = ref('');
-const alturaLocal = ref('');
+const mayoFondoUterino = ref('');
 
-// Computed para determinar la altura disponible y su fuente
-const alturaDisponible = computed(() => {
-  return formDataExploracionFisica.altura || formDataControlPrenatal.altura || alturaLocal.value;
-});
-
-const alturaParaIMC = computed(() => {
-  return formDataExploracionFisica.altura || formDataControlPrenatal.altura || alturaLocal.value;
-});
-
-const fuenteAltura = computed(() => {
-  if (formDataExploracionFisica.altura) return 'exploracion';
-  if (formDataControlPrenatal.altura) return 'controlPrenatal';
-  if (alturaLocal.value) return 'local';
-  return null;
-});
-
-// Función para calcular IMC
-const calcularIMC = (peso, altura) => {
-  if (!peso || !altura) return '';
+// Función para determinar categoría del fondo uterino según semana de gestación
+const determinarCategoriaFondoUterino = (fondoUterino, semanaGestacion) => {
+  if (!fondoUterino || fondoUterino === '') return '';
   
-  const pesoNum = parseFloat(peso);
-  const alturaMetros = parseFloat(altura); // Ya está en metros
+  const fondoUterinoNum = parseFloat(fondoUterino);
+  if (isNaN(fondoUterinoNum)) return '';
   
-  if (isNaN(pesoNum) || isNaN(alturaMetros) || alturaMetros <= 0) return '';
+  let categoria = '';
+  let color = '';
+  let bgColor = '';
+  let borderColor = '';
   
-  const imc = pesoNum / (alturaMetros * alturaMetros);
-  return imc.toFixed(1);
+  // Si no hay semana de gestación, solo validar rango general
+  if (!semanaGestacion) {
+    if (fondoUterinoNum < 0) {
+      categoria = 'Valor inválido';
+      color = 'text-red-800';
+      bgColor = 'bg-red-100';
+      borderColor = 'border-red-300';
+    } else if (fondoUterinoNum >= 0 && fondoUterinoNum <= 40) {
+      categoria = 'Rango normal';
+      color = 'text-green-600';
+      bgColor = 'bg-green-50';
+      borderColor = 'border-green-200';
+    } else {
+      categoria = 'Fuera de rango';
+      color = 'text-red-600';
+      bgColor = 'bg-red-50';
+      borderColor = 'border-red-200';
+    }
+    return { categoria, color, bgColor, borderColor };
+  }
+  
+  const semanaNum = parseInt(semanaGestacion);
+  if (isNaN(semanaNum)) return '';
+  
+  // Clasificación según estándares médicos por semana de gestación
+  if (semanaNum >= 12 && semanaNum <= 16) {
+    // Primer trimestre
+    if (fondoUterinoNum >= 0 && fondoUterinoNum <= 3) {
+      categoria = 'Normal para 12-16 semanas';
+      color = 'text-green-600';
+      bgColor = 'bg-green-50';
+      borderColor = 'border-green-200';
+    } else if (fondoUterinoNum > 3 && fondoUterinoNum <= 5) {
+      categoria = 'Ligeramente elevado';
+      color = 'text-yellow-600';
+      bgColor = 'bg-yellow-50';
+      borderColor = 'border-yellow-200';
+    } else {
+      categoria = 'Fuera de rango esperado';
+      color = 'text-red-600';
+      bgColor = 'bg-red-50';
+      borderColor = 'border-red-200';
+    }
+  } else if (semanaNum >= 20 && semanaNum <= 24) {
+    // Segundo trimestre temprano
+    if (fondoUterinoNum >= 16 && fondoUterinoNum <= 24) {
+      categoria = 'Normal para 20-24 semanas';
+      color = 'text-green-600';
+      bgColor = 'bg-green-50';
+      borderColor = 'border-green-200';
+    } else if (fondoUterinoNum >= 12 && fondoUterinoNum < 16) {
+      categoria = 'Ligeramente bajo';
+      color = 'text-yellow-600';
+      bgColor = 'bg-yellow-50';
+      borderColor = 'border-yellow-200';
+    } else if (fondoUterinoNum > 24 && fondoUterinoNum <= 28) {
+      categoria = 'Ligeramente elevado';
+      color = 'text-yellow-600';
+      bgColor = 'bg-yellow-50';
+      borderColor = 'border-yellow-200';
+    } else {
+      categoria = 'Fuera de rango esperado';
+      color = 'text-red-600';
+      bgColor = 'bg-red-50';
+      borderColor = 'border-red-200';
+    }
+  } else if (semanaNum >= 28 && semanaNum <= 32) {
+    // Segundo trimestre tardío
+    if (fondoUterinoNum >= 24 && fondoUterinoNum <= 32) {
+      categoria = 'Normal para 28-32 semanas';
+      color = 'text-green-600';
+      bgColor = 'bg-green-50';
+      borderColor = 'border-green-200';
+    } else if (fondoUterinoNum >= 20 && fondoUterinoNum < 24) {
+      categoria = 'Ligeramente bajo';
+      color = 'text-yellow-600';
+      bgColor = 'bg-yellow-50';
+      borderColor = 'border-yellow-200';
+    } else if (fondoUterinoNum > 32 && fondoUterinoNum <= 36) {
+      categoria = 'Ligeramente elevado';
+      color = 'text-yellow-600';
+      bgColor = 'bg-yellow-50';
+      borderColor = 'border-yellow-200';
+    } else {
+      categoria = 'Fuera de rango esperado';
+      color = 'text-red-600';
+      bgColor = 'bg-red-50';
+      borderColor = 'border-red-200';
+    }
+  } else if (semanaNum >= 36 && semanaNum <= 40) {
+    // Tercer trimestre
+    if (fondoUterinoNum >= 32 && fondoUterinoNum <= 40) {
+      categoria = 'Normal para 36-40 semanas';
+      color = 'text-green-600';
+      bgColor = 'bg-green-50';
+      borderColor = 'border-green-200';
+    } else if (fondoUterinoNum >= 28 && fondoUterinoNum < 32) {
+      categoria = 'Ligeramente bajo';
+      color = 'text-yellow-600';
+      bgColor = 'bg-yellow-50';
+      borderColor = 'border-yellow-200';
+    } else if (fondoUterinoNum > 40 && fondoUterinoNum <= 44) {
+      categoria = 'Ligeramente elevado';
+      color = 'text-yellow-600';
+      bgColor = 'bg-yellow-50';
+      borderColor = 'border-yellow-200';
+    } else {
+      categoria = 'Fuera de rango esperado';
+      color = 'text-red-600';
+      bgColor = 'bg-red-50';
+      borderColor = 'border-red-200';
+    }
+  } else {
+    // Otras semanas
+    if (fondoUterinoNum >= 0 && fondoUterinoNum <= 40) {
+      categoria = 'Rango general normal';
+      color = 'text-blue-600';
+      bgColor = 'bg-blue-50';
+      borderColor = 'border-blue-200';
+    } else {
+      categoria = 'Fuera de rango general';
+      color = 'text-red-600';
+      bgColor = 'bg-red-50';
+      borderColor = 'border-red-200';
+    }
+  }
+  
+  return { categoria, color, bgColor, borderColor };
+};
+
+// Función para calcular fondo uterino esperado según semana de gestación
+const calcularFondoUterinoEsperado = (semana) => {
+  if (!semana || semana === '') return null;
+  
+  const semanaNum = parseInt(semana);
+  if (isNaN(semanaNum)) return null;
+  
+  // Fórmula aproximada: fondo uterino ≈ semana de gestación
+  let fondoEsperado = semanaNum;
+  let rangoMin = Math.max(0, semanaNum - 2);
+  let rangoMax = semanaNum + 2;
+  
+  return { fondoEsperado, rangoMin, rangoMax };
 };
 
 onMounted(() => {
-  // Verificar si formDataControlPrenatal tiene valores y establecerlos
-  if (formDataControlPrenatal.mayoPeso) {
-    mayoPeso.value = formDataControlPrenatal.mayoPeso;
-  }
-  if (formDataControlPrenatal.mayoImc) {
-    mayoImc.value = formDataControlPrenatal.mayoImc;
-  }
-  if (formDataControlPrenatal.altura) {
-    alturaLocal.value = formDataControlPrenatal.altura;
+  // Verificar si formDataControlPrenatal.mayoFondoUterino tiene un valor y establecerlo
+  if (formDataControlPrenatal.mayoFondoUterino) {
+    mayoFondoUterino.value = formDataControlPrenatal.mayoFondoUterino.toString();
   }
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga los valores
-  formDataControlPrenatal.mayoPeso = mayoPeso.value || '';
-  formDataControlPrenatal.mayoImc = mayoImc.value || '';
-  if (alturaLocal.value) {
-    formDataControlPrenatal.altura = alturaLocal.value;
+  // Asegurar que formData tenga un valor inicial para mayoFondoUterino
+  if (!formDataControlPrenatal.mayoFondoUterino) {
+    formDataControlPrenatal.mayoFondoUterino = mayoFondoUterino.value ? parseFloat(mayoFondoUterino.value) : undefined;
   }
 });
 
-// Sincronizar mayoPeso con formData
-watch(mayoPeso, (newValue) => {
-  formDataControlPrenatal.mayoPeso = newValue;
-  
-  // Calcular IMC automáticamente cuando cambie el peso
-  if (newValue && alturaDisponible.value) {
-    const imcCalculado = calcularIMC(newValue, alturaDisponible.value);
-    mayoImc.value = imcCalculado;
-    formDataControlPrenatal.mayoImc = imcCalculado;
+// Sincronizar mayoFondoUterino con formData
+watch(mayoFondoUterino, (newValue) => {
+  if (newValue && newValue !== '') {
+    formDataControlPrenatal.mayoFondoUterino = parseFloat(newValue);
   } else {
-    mayoImc.value = '';
-    formDataControlPrenatal.mayoImc = '';
+    formDataControlPrenatal.mayoFondoUterino = undefined;
   }
 });
 
-// Watch para recalcular IMC cuando cambie la altura
-watch(alturaLocal, (newAltura) => {
-  if (newAltura) {
-    formDataControlPrenatal.altura = newAltura;
-    
-    // Recalcular IMC si ya existe peso
-    if (mayoPeso.value) {
-      const imcCalculado = calcularIMC(mayoPeso.value, newAltura);
-      mayoImc.value = imcCalculado;
-      formDataControlPrenatal.mayoImc = imcCalculado;
-    }
-  }
+// Computed para la categoría del fondo uterino
+const categoriaFondoUterinoComputed = computed(() => {
+  return determinarCategoriaFondoUterino(mayoFondoUterino.value, formDataControlPrenatal.mayoSdg);
 });
 
-// Watch para recalcular IMC cuando cambie la altura de exploración física
-watch(() => formDataExploracionFisica.altura, (newAltura) => {
-  if (newAltura && mayoPeso.value) {
-    const imcCalculado = calcularIMC(mayoPeso.value, newAltura);
-    mayoImc.value = imcCalculado;
-    formDataControlPrenatal.mayoImc = imcCalculado;
-  }
+// Computed para el fondo uterino esperado
+const fondoUterinoEsperadoComputed = computed(() => {
+  return calcularFondoUterinoEsperado(formDataControlPrenatal.mayoSdg);
 });
 
-// Computed para determinar si se puede calcular IMC
-const puedeCalcularIMC = computed(() => {
-  return mayoPeso.value && alturaDisponible.value;
-});
-
-// Validaciones reactivas similares a Step2.vue
-const mensajeErrorPeso = computed(() => {
-  if (!mayoPeso.value || mayoPeso.value === '') return '';
+// Validaciones reactivas
+const mensajeErrorFondoUterino = computed(() => {
+  if (!mayoFondoUterino.value || mayoFondoUterino.value === '') return '';
   
-  const peso = parseFloat(mayoPeso.value);
-  if (isNaN(peso)) return 'El peso debe ser un número válido';
+  const fondoUterino = parseFloat(mayoFondoUterino.value);
+  if (isNaN(fondoUterino)) return 'El fondo uterino debe ser un número válido';
   
-  if (peso < 45) return 'Debe ser mínimo 45 kg';
-  if (peso > 200) return 'Debe ser máximo 200 kg';
+  if (fondoUterino < 0) return 'Debe ser mínimo 0 centímetros';
+  if (fondoUterino > 50) return 'Debe ser máximo 50 centímetros';
   
   return '';
 });
 
-const mensajeErrorAltura = computed(() => {
-  if (!alturaLocal.value || alturaLocal.value === '') return '';
-  
-  const altura = parseFloat(alturaLocal.value);
-  if (isNaN(altura)) return 'La altura debe ser un número válido';
-  
-  if (altura < 1.4) return 'Debe ser mínimo 1.40 m';
-  if (altura > 2.2) return 'Debe ser máximo 2.20 m';
-  
-  return '';
-});
+// Función para seleccionar un preset común
+const seleccionarPreset = (valor) => {
+  mayoFondoUterino.value = valor.toString();
+};
+
+// Presets de fondo uterino comunes según semanas de gestación
+const presetsFondoUterino = [
+  { valor: 3, descripcion: '3 cm', texto: '3 cm (12-16 semanas)' },
+  { valor: 20, descripcion: '20 cm', texto: '20 cm (20-24 semanas)' },
+  { valor: 28, descripcion: '28 cm', texto: '28 cm (28-32 semanas)' },
+  { valor: 32, descripcion: '32 cm', texto: '32 cm (32-36 semanas)' },
+  { valor: 36, descripcion: '36 cm', texto: '36 cm (36-40 semanas)' },
+  { valor: 40, descripcion: '40 cm', texto: '40 cm (40+ semanas)' }
+];
 </script>
 
 <template>
   <div>
     <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Mayo</h1>
     
-    <!-- ALTURA -->
+    <!-- FONDO UTERINO -->
     <div class="mb-6">
+      <h2 class="font-semibold mb-3 text-gray-700">FONDO UTERINO</h2>
       
-      <!-- Si no hay altura disponible en ninguna fuente -->
-      <div v-if="!formDataExploracionFisica.altura && !formDataControlPrenatal.altura && !alturaLocal" class="mb-4">
-        <p class="font-medium mb-2 text-gray-800 leading-5">
-          <span class="font-semibold mb-3 text-gray-700">ALTURA (m) - </span>
-          <span class="text-orange-600 font-semibold">No se encontró altura previa registrada en la exploración física.</span>
-          <br>
-          Registre la altura de la trabajadora. 
-        </p>
-      </div>
-      
-      <!-- Si hay altura disponible pero se puede modificar -->
-      <div v-else-if="formDataExploracionFisica.altura || formDataControlPrenatal.altura" class="mb-4">
-        <p class="font-semibold mb-3 text-gray-700">
-          ALTURA (m) - 
-          <span class="font-semibold text-green-700">
-            {{ formDataExploracionFisica.altura || formDataControlPrenatal.altura }} m
-          </span>
-          <span v-if="formDataExploracionFisica.altura" class="text-xs text-gray-600 ml-2">(de exploración física)</span>
-          <span v-else class="text-xs text-gray-600 ml-2">(del control prenatal)</span>
-        </p>
-      </div>
-      
-      <!-- Campo de altura siempre visible cuando no hay en exploración física -->
-      <input 
-        v-if="!formDataExploracionFisica.altura"
-        type="number" 
-        name="altura" 
-        placeholder="Ej: 1.65" 
-        v-model="alturaLocal"
-        step="0.01"
-        min="1.4"
-        max="2.2"
-        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-      />
-      
-      <!-- Mensaje de error para altura -->
-      <p v-if="mensajeErrorAltura" class="text-red-500 text-sm mt-1">{{ mensajeErrorAltura }}</p>
-    </div>
-    
-    <!-- PESO -->
-    <div class="mb-6">
-      <h2 class="font-semibold mb-3 text-gray-700">PESO (Kg)</h2>
-      <p class="font-medium mb-2 text-gray-800 leading-5">¿Cuál fue el peso registrado durante el control prenatal del mes de mayo?</p>
-      
-      <input 
-        type="number" 
-        name="mayoPeso" 
-        placeholder="Ej: 65.5" 
-        v-model="mayoPeso"
-        step="0.1"
-        min="45"
-        max="200"
-        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-      />
-      
-      <!-- Mensaje de error para peso -->
-      <p v-if="mensajeErrorPeso" class="text-red-500 text-sm mt-1">{{ mensajeErrorPeso }}</p>
-    </div>
+      <div class="mb-4">
+        
+        <!-- Presets de fondo uterino comunes -->
+        <div class="mb-4 mt-4">
+          <div class="grid grid-cols-3 gap-3">
+            <button
+              v-for="preset in presetsFondoUterino"
+              :key="preset.valor"
+              @click="seleccionarPreset(preset.valor)"
+              type="button"
+              class="w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 font-medium text-xs"
+              :class="mayoFondoUterino === preset.valor.toString() 
+                ? 'border-emerald-500 bg-emerald-100 text-emerald-700' 
+                : 'border-gray-300 bg-white text-gray-600 hover:border-emerald-300 hover:bg-emerald-50'"
+            >
+              {{ preset.descripcion }}
+            </button>
+          </div>
+        </div>
 
-    <!-- IMC -->
-    <div class="mb-6">
-      <h2 class="font-semibold mb-3 text-gray-700">ÍNDICE DE MASA CORPORAL (IMC)</h2>
-      
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2">
-        <p class="text-sm text-blue-800 mb-2">
-          <strong>Fórmula IMC:</strong> Peso (kg) / Altura² (m²)
-        </p>
-        <p class="text-sm text-blue-700">
-          <span v-if="alturaDisponible">
-            Altura registrada: <span class="font-semibold text-green-700">{{ alturaParaIMC }} m</span>
-            <span v-if="fuenteAltura === 'exploracion'" class="text-xs text-gray-600 ml-2">(de exploración física)</span>
-            <span v-else class="text-xs text-gray-600 ml-2">(del control prenatal)</span>
-          </span>
-          <span v-else class="text-orange-600 font-semibold">No hay altura registrada</span>
-        </p>
-      </div>
-      <div v-if="!alturaDisponible" class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-        <p class="text-sm text-orange-700">
-          ⚠️ Para calcular el IMC, debe ingresar una altura en el campo superior.
-        </p>
-      </div>
-      <div v-else-if="mayoImc" class="mt-1 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-          <p class="text-sm text-emerald-700">
-              ✅ IMC calculado: <span class="font-semibold">{{ mayoImc }}</span>
+        <hr class="my-4 border-gray-300">
+
+        <!-- Input personalizado -->
+        <div class="mb-4">
+          <div class="flex items-center justify-center gap-3">
+            <label for="mayoFondoUterino" class="font-medium text-gray-700">Personalizar:</label>
+            <input
+              id="mayoFondoUterino"
+              v-model="mayoFondoUterino"
+              type="number"
+              min="0"
+              max="50"
+              step="0.5"
+              placeholder="Ej: 25.5"
+              class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-center"
+            />
+            <span class="text-gray-600 text-sm">centímetros</span>
+          </div>
+          
+          <!-- Mensaje de error -->
+          <p v-if="mensajeErrorFondoUterino" class="text-red-500 text-sm mt-2 text-center">
+            ⚠️ {{ mensajeErrorFondoUterino }}
           </p>
+        </div>
       </div>
+    </div>
 
-      <p class="font-medium my-4 text-gray-800">Índice de Masa Corporal (IMC):</p>
-      <div class="font-light mt-2">
-        <input type="number"
-            class="w-full p-3 border bg-gray-100 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-            v-model="mayoImc"
-            step="0.1"
-            min="10"
-            max="60"
-            :placeholder="'IMC calculado automáticamente'"
-            :disabled="!mayoPeso || !alturaDisponible"
-            readonly>
+    <!-- RESULTADO DEL FONDO UTERINO -->
+    <div class="mb-4">
+      <div v-if="mayoFondoUterino && !mensajeErrorFondoUterino" class="mb-4">
+        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+          <p class="text-sm text-emerald-800 mb-2">
+            <span class="font-medium">✅ F. UT. a registrar:</span>
+          </p>
+          <p class="text-2xl font-bold text-emerald-700 text-center">
+            {{ mayoFondoUterino }} cm
+          </p>
+        </div>
+        
+        <!-- Categoría del fondo uterino -->
+        <div v-if="categoriaFondoUterinoComputed.categoria" class="mt-3 p-3 rounded-lg border" 
+             :class="[categoriaFondoUterinoComputed.bgColor, categoriaFondoUterinoComputed.borderColor]">
+          <p class="text-sm text-center" :class="categoriaFondoUterinoComputed.color">
+            <span class="font-medium">{{ categoriaFondoUterinoComputed.categoria }}</span>
+          </p>
+        </div>
       </div>
       
+      <div v-else-if="mayoFondoUterino && mensajeErrorFondoUterino" class="p-3 bg-red-50 border border-red-200 rounded-lg">
+        <p class="text-sm text-red-700 text-center">
+          ⚠️ {{ mensajeErrorFondoUterino }}
+        </p>
+      </div>
+      
+      <div v-else class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <p class="text-sm text-gray-600 text-center">
+          Ingrese la altura del fondo uterino para ver el resultado
+        </p>
+      </div>
+    </div>
+
+    <!-- CÁLCULO ESPERADO DEL FONDO UTERINO -->
+    <div v-if="fondoUterinoEsperadoComputed && formDataControlPrenatal.mayoSdg" class="mb-2">
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 class="font-semibold mb-2 text-blue-800">📏 Fondo uterino esperado según SDG:</h3>
+        <div class="text-center">
+          <p class="text-lg font-bold text-blue-800">
+            {{ fondoUterinoEsperadoComputed.fondoEsperado }} cm
+          </p>
+          <p class="text-sm text-blue-600 mt-1">
+            Rango esperado: {{ fondoUterinoEsperadoComputed.rangoMin }}-{{ fondoUterinoEsperadoComputed.rangoMax }} cm
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFORMACIÓN ADICIONAL -->
+    <div class="mb-6">
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h3 class="font-semibold mb-2 text-gray-700">📋 Clasificación por trimestres:</h3>
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <ul class="text-sm text-gray-600 space-y-1">
+              <li><span class="font-normal text-blue-600">Primer trimestre:</span> 0-3 cm</li>
+              <li><span class="font-normal text-green-600">Segundo trimestre:</span> 12-24 cm</li>
+              <li><span class="font-normal text-orange-600">Tercer trimestre:</span> 32-40 cm</li>
+              <li><span class="font-normal text-purple-600">Postérmino:</span> 40+ cm</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="font-medium text-gray-700 mb-2">Consideraciones:</h4>
+            <ul class="text-sm text-gray-600 space-y-1">
+              <li>• Se mide desde la sínfisis púbica</li>
+              <li>• Generalmente ≈ semana de gestación</li>
+              <li>• Varía según constitución materna</li>
+            </ul>
+          </div>
+        </div>
+        
+      </div>
     </div>
 
   </div>

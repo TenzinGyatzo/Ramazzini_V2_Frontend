@@ -6,7 +6,7 @@ import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
 const { formDataControlPrenatal } = useFormDataStore();
 
 // Valores locales
-const eneroSdg = ref('');
+const junioSdg = ref('');
 
 // Función para determinar categoría de semana de gestación
 const determinarCategoriaGestacion = (semana) => {
@@ -64,31 +64,31 @@ const calcularEdadGestacional = (fum) => {
 };
 
 onMounted(() => {
-  // Verificar si formDataControlPrenatal.eneroSdg tiene un valor y establecerlo
-  if (formDataControlPrenatal.eneroSdg) {
-    eneroSdg.value = formDataControlPrenatal.eneroSdg.toString();
+  // Verificar si formDataControlPrenatal.junioSdg tiene un valor y establecerlo
+  if (formDataControlPrenatal.junioSdg) {
+    junioSdg.value = formDataControlPrenatal.junioSdg.toString();
   }
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para eneroSdg
-  if (!formDataControlPrenatal.eneroSdg) {
-    formDataControlPrenatal.eneroSdg = eneroSdg.value ? parseInt(eneroSdg.value) : undefined;
+  // Asegurar que formData tenga un valor inicial para junioSdg
+  if (!formDataControlPrenatal.junioSdg) {
+    formDataControlPrenatal.junioSdg = junioSdg.value ? parseInt(junioSdg.value) : undefined;
   }
 });
 
-// Sincronizar eneroSdg con formData
-watch(eneroSdg, (newValue) => {
+// Sincronizar junioSdg con formData
+watch(junioSdg, (newValue) => {
   if (newValue && newValue !== '') {
-    formDataControlPrenatal.eneroSdg = parseInt(newValue);
+    formDataControlPrenatal.junioSdg = parseInt(newValue);
   } else {
-    formDataControlPrenatal.eneroSdg = undefined;
+    formDataControlPrenatal.junioSdg = undefined;
   }
 });
 
 // Computed para la categoría de gestación
 const categoriaGestacionComputed = computed(() => {
-  return determinarCategoriaGestacion(eneroSdg.value);
+  return determinarCategoriaGestacion(junioSdg.value);
 });
 
 // Computed para la edad gestacional calculada
@@ -98,9 +98,9 @@ const edadGestacionalCalculada = computed(() => {
 
 // Validaciones reactivas
 const mensajeErrorSemana = computed(() => {
-  if (!eneroSdg.value || eneroSdg.value === '') return '';
+  if (!junioSdg.value || junioSdg.value === '') return '';
   
-  const semana = parseInt(eneroSdg.value);
+  const semana = parseInt(junioSdg.value);
   if (isNaN(semana)) return 'La semana de gestación debe ser un número válido';
   
   if (semana < 1) return 'Debe ser mínimo 1 semana';
@@ -111,7 +111,7 @@ const mensajeErrorSemana = computed(() => {
 
 // Función para seleccionar un preset común
 const seleccionarPreset = (valor) => {
-  eneroSdg.value = valor.toString();
+  junioSdg.value = valor.toString();
 };
 
 // Presets de semanas de gestación comunes
@@ -129,7 +129,7 @@ const presetsSemanas = [
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Enero</h1>
+    <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Junio</h1>
     
     <!-- SEMANA DE GESTACIÓN -->
     <div class="mb-6">
@@ -146,7 +146,7 @@ const presetsSemanas = [
               @click="seleccionarPreset(preset.valor)"
               type="button"
               class="w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 font-medium text-xs"
-              :class="eneroSdg === preset.valor.toString() 
+              :class="junioSdg === preset.valor.toString() 
                 ? 'border-emerald-500 bg-emerald-100 text-emerald-700' 
                 : 'border-gray-300 bg-white text-gray-600 hover:border-emerald-300 hover:bg-emerald-50'"
             >
@@ -160,10 +160,10 @@ const presetsSemanas = [
         <!-- Input personalizado -->
         <div class="mb-4">
           <div class="flex items-center justify-center gap-3">
-            <label for="eneroSdg" class="font-medium text-gray-700">Personalizar:</label>
+            <label for="junioSdg" class="font-medium text-gray-700">Personalizar:</label>
             <input
-              id="eneroSdg"
-              v-model="eneroSdg"
+              id="junioSdg"
+              v-model="junioSdg"
               type="number"
               min="1"
               max="45"
@@ -183,13 +183,13 @@ const presetsSemanas = [
 
     <!-- RESULTADO DE SEMANA DE GESTACIÓN -->
     <div class="mb-6">
-      <div v-if="eneroSdg && !mensajeErrorSemana" class="mb-4">
+      <div v-if="junioSdg && !mensajeErrorSemana" class="mb-4">
         <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
           <p class="text-sm text-emerald-800 mb-2">
             <span class="font-medium">✅ S.D.G. a registrar:</span>
           </p>
           <p class="text-2xl font-bold text-emerald-700 text-center">
-            {{ eneroSdg }} semanas
+            {{ junioSdg }} semanas
           </p>
         </div>
         
@@ -202,7 +202,7 @@ const presetsSemanas = [
         </div>
       </div>
       
-      <div v-else-if="eneroSdg && mensajeErrorSemana" class="p-3 bg-red-50 border border-red-200 rounded-lg">
+      <div v-else-if="junioSdg && mensajeErrorSemana" class="p-3 bg-red-50 border border-red-200 rounded-lg">
         <p class="text-sm text-red-700 text-center">
           ⚠️ {{ mensajeErrorSemana }}
         </p>

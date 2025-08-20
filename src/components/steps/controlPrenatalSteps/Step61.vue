@@ -5,8 +5,8 @@ import { useFormDataStore } from '@/stores/formDataStore';
 const { formDataControlPrenatal, formDataExploracionFisica } = useFormDataStore();
 
 // Valores locales
-const diciembrePeso = ref('');
-const diciembreImc = ref('');
+const septiembrePeso = ref('');
+const septiembreImc = ref('');
 const alturaLocal = ref('');
 
 // Computed para determinar la altura disponible y su fuente
@@ -40,11 +40,11 @@ const calcularIMC = (peso, altura) => {
 
 onMounted(() => {
   // Verificar si formDataControlPrenatal tiene valores y establecerlos
-  if (formDataControlPrenatal.diciembrePeso) {
-    diciembrePeso.value = formDataControlPrenatal.diciembrePeso;
+  if (formDataControlPrenatal.septiembrePeso) {
+    septiembrePeso.value = formDataControlPrenatal.septiembrePeso;
   }
-  if (formDataControlPrenatal.diciembreImc) {
-    diciembreImc.value = formDataControlPrenatal.diciembreImc;
+  if (formDataControlPrenatal.septiembreImc) {
+    septiembreImc.value = formDataControlPrenatal.septiembreImc;
   }
   if (formDataControlPrenatal.altura) {
     alturaLocal.value = formDataControlPrenatal.altura;
@@ -53,25 +53,25 @@ onMounted(() => {
 
 onUnmounted(() => {
   // Asegurar que formData tenga los valores
-  formDataControlPrenatal.diciembrePeso = diciembrePeso.value || '';
-  formDataControlPrenatal.diciembreImc = diciembreImc.value || '';
+  formDataControlPrenatal.septiembrePeso = septiembrePeso.value || '';
+  formDataControlPrenatal.septiembreImc = septiembreImc.value || '';
   if (alturaLocal.value) {
     formDataControlPrenatal.altura = alturaLocal.value;
   }
 });
 
-// Sincronizar diciembrePeso con formData
-watch(diciembrePeso, (newValue) => {
-  formDataControlPrenatal.diciembrePeso = newValue;
+// Sincronizar septiembrePeso con formData
+watch(septiembrePeso, (newValue) => {
+  formDataControlPrenatal.septiembrePeso = newValue;
   
   // Calcular IMC automáticamente cuando cambie el peso
   if (newValue && alturaDisponible.value) {
     const imcCalculado = calcularIMC(newValue, alturaDisponible.value);
-    diciembreImc.value = imcCalculado;
-    formDataControlPrenatal.diciembreImc = imcCalculado;
+    septiembreImc.value = imcCalculado;
+    formDataControlPrenatal.septiembreImc = imcCalculado;
   } else {
-    diciembreImc.value = '';
-    formDataControlPrenatal.diciembreImc = '';
+    septiembreImc.value = '';
+    formDataControlPrenatal.septiembreImc = '';
   }
 });
 
@@ -81,33 +81,33 @@ watch(alturaLocal, (newAltura) => {
     formDataControlPrenatal.altura = newAltura;
     
     // Recalcular IMC si ya existe peso
-    if (diciembrePeso.value) {
-      const imcCalculado = calcularIMC(diciembrePeso.value, newAltura);
-      diciembreImc.value = imcCalculado;
-      formDataControlPrenatal.diciembreImc = imcCalculado;
+    if (septiembrePeso.value) {
+      const imcCalculado = calcularIMC(septiembrePeso.value, newAltura);
+      septiembreImc.value = imcCalculado;
+      formDataControlPrenatal.septiembreImc = imcCalculado;
     }
   }
 });
 
 // Watch para recalcular IMC cuando cambie la altura de exploración física
 watch(() => formDataExploracionFisica.altura, (newAltura) => {
-  if (newAltura && diciembrePeso.value) {
-    const imcCalculado = calcularIMC(diciembrePeso.value, newAltura);
-    diciembreImc.value = imcCalculado;
-    formDataControlPrenatal.diciembreImc = imcCalculado;
+  if (newAltura && septiembrePeso.value) {
+    const imcCalculado = calcularIMC(newAltura, septiembrePeso.value);
+    septiembreImc.value = imcCalculado;
+    formDataControlPrenatal.septiembreImc = imcCalculado;
   }
 });
 
 // Computed para determinar si se puede calcular IMC
 const puedeCalcularIMC = computed(() => {
-  return diciembrePeso.value && alturaDisponible.value;
+  return septiembrePeso.value && alturaDisponible.value;
 });
 
 // Validaciones reactivas similares a Step2.vue
 const mensajeErrorPeso = computed(() => {
-  if (!diciembrePeso.value || diciembrePeso.value === '') return '';
+  if (!septiembrePeso.value || septiembrePeso.value === '') return '';
   
-  const peso = parseFloat(diciembrePeso.value);
+  const peso = parseFloat(septiembrePeso.value);
   if (isNaN(peso)) return 'El peso debe ser un número válido';
   
   if (peso < 45) return 'Debe ser mínimo 45 kg';
@@ -131,7 +131,7 @@ const mensajeErrorAltura = computed(() => {
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Diciembre</h1>
+    <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Septiembre</h1>
     
     <!-- ALTURA -->
     <div class="mb-6">
@@ -150,7 +150,7 @@ const mensajeErrorAltura = computed(() => {
       <div v-else-if="formDataExploracionFisica.altura || formDataControlPrenatal.altura" class="mb-4">
         <p class="font-semibold mb-3 text-gray-700">
           ALTURA (m) - 
-          <span class="font-semibold text-green-700">
+          <span class="text-green-700 font-semibold">
             {{ formDataExploracionFisica.altura || formDataControlPrenatal.altura }} m
           </span>
           <span v-if="formDataExploracionFisica.altura" class="text-xs text-gray-600 ml-2">(de exploración física)</span>
@@ -178,13 +178,12 @@ const mensajeErrorAltura = computed(() => {
     <!-- PESO -->
     <div class="mb-6">
       <h2 class="font-semibold mb-3 text-gray-700">PESO (Kg)</h2>
-      <p class="font-medium mb-2 text-gray-800 leading-5">¿Cuál fue el peso registrado durante el control prenatal del mes de diciembre?</p>
       
       <input 
         type="number" 
-        name="diciembrePeso" 
+        name="septiembrePeso" 
         placeholder="Ej: 65.5" 
-        v-model="diciembrePeso"
+        v-model="septiembrePeso"
         step="0.1"
         min="45"
         max="200"
@@ -212,27 +211,44 @@ const mensajeErrorAltura = computed(() => {
           <span v-else class="text-orange-600 font-semibold">No hay altura registrada</span>
         </p>
       </div>
-      <div v-if="!alturaDisponible" class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-        <p class="text-sm text-orange-700">
-          ⚠️ Para calcular el IMC, debe ingresar una altura en el campo superior.
-        </p>
-      </div>
-      <div v-else-if="diciembreImc" class="mt-1 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-          <p class="text-sm text-emerald-700">
-              ✅ IMC calculado: <span class="font-semibold">{{ diciembreImc }}</span>
-          </p>
+
+      <div class="mb-4 grid grid-cols-2 gap-2">
+        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <p class="text-sm text-emerald-800 mb-2">
+                <span class="font-medium">✅ Peso a registrar:</span>
+            </p>
+            <p class="text-2xl font-bold text-emerald-700 text-center">
+                {{ septiembrePeso }} kg
+            </p>
+        </div>
+        <div>
+          <div v-if="!alturaDisponible" class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+            <p class="text-sm text-orange-700">
+              ⚠️ Para calcular el IMC, debe ingresar una altura en el campo superior.
+            </p>
+          </div>
+          <div v-else-if="septiembreImc" class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+              <p class="text-sm text-emerald-800 mb-2">
+                <span class="font-medium">✅ IMC Calculado:</span>
+              </p>
+              <p class="text-2xl font-bold text-emerald-700 text-center">
+                {{ septiembreImc }}
+              </p>
+          </div>
+        </div>
       </div>
 
-      <p class="font-medium my-4 text-gray-800">Índice de Masa Corporal (IMC):</p>
+
+      <p class="hidden font-medium my-4 text-gray-800">Índice de Masa Corporal (IMC):</p>
       <div class="font-light mt-2">
         <input type="number"
-            class="w-full p-3 border bg-gray-100 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-            v-model="diciembreImc"
+            class="hidden w-full p-3 border bg-gray-100 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+            v-model="septiembreImc"
             step="0.1"
             min="10"
             max="60"
             :placeholder="'IMC calculado automáticamente'"
-            :disabled="!diciembrePeso || !alturaDisponible"
+            :disabled="!septiembrePeso || !alturaDisponible"
             readonly>
       </div>
       

@@ -6,17 +6,17 @@ import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
 const { formDataControlPrenatal } = useFormDataStore();
 
 // Valor local para la fecha
-const julioFecha = ref('');
+const noviembreFecha = ref('');
 
-// Función para validar que la fecha sea del mes de julio
-const validarFechaJulio = (fecha) => {
+// Función para validar que la fecha sea del mes de noviembre
+const validarFechaNoviembre = (fecha) => {
   if (!fecha) return '';
   
   const fechaSeleccionada = new Date(fecha);
   const mes = fechaSeleccionada.getMonth(); // 0 = enero, 1 = febrero, etc.
   
-  if (mes !== 6) { // 6 = julio
-    return 'La fecha debe ser del mes de julio';
+  if (mes !== 10) { // 10 = noviembre
+    return 'La fecha debe ser del mes de noviembre';
   }
   
   return '';
@@ -47,14 +47,14 @@ const validarFechaRequerida = (fecha) => {
 
 // Validación combinada
 const mensajeErrorFecha = computed(() => {
-  const errorRequerida = validarFechaRequerida(julioFecha.value);
+  const errorRequerida = validarFechaRequerida(noviembreFecha.value);
   if (errorRequerida) return errorRequerida;
   
-  const errorNoFutura = validarFechaNoFutura(julioFecha.value);
+  const errorNoFutura = validarFechaNoFutura(noviembreFecha.value);
   if (errorNoFutura) return errorNoFutura;
   
-  const errorJulio = validarFechaJulio(julioFecha.value);
-  if (errorJulio) return errorJulio;
+  const errorNoviembre = validarFechaNoviembre(noviembreFecha.value);
+  if (errorNoviembre) return errorNoviembre;
   
   return '';
 });
@@ -70,54 +70,54 @@ const obtenerAnoAnterior = () => {
 };
 
 onMounted(() => {
-  // Verificar si formDataControlPrenatal.julioFecha tiene un valor y establecerlo
-  if (formDataControlPrenatal.julioFecha) {
-    julioFecha.value = formDataControlPrenatal.julioFecha;
+  // Verificar si formDataControlPrenatal.noviembreFecha tiene un valor y establecerlo
+  if (formDataControlPrenatal.noviembreFecha) {
+    noviembreFecha.value = formDataControlPrenatal.noviembreFecha;
   }
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para julioFecha
-  if (!formDataControlPrenatal.julioFecha) {
-    formDataControlPrenatal.julioFecha = julioFecha.value;
+  // Asegurar que formData tenga un valor inicial para noviembreFecha
+  if (!formDataControlPrenatal.noviembreFecha) {
+    formDataControlPrenatal.noviembreFecha = noviembreFecha.value;
   }
 });
 
-// Sincronizar julioFecha con formData
-watch(julioFecha, (newValue) => {
-  formDataControlPrenatal.julioFecha = newValue;
+// Sincronizar noviembreFecha con formData
+watch(noviembreFecha, (newValue) => {
+  formDataControlPrenatal.noviembreFecha = newValue;
 });
 </script>
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Julio</h1>
+    <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Noviembre</h1>
     <h2 class="font-semibold mb-3 text-gray-700">FECHA</h2>
     
     <div class="mb-4">
-      <p class="font-medium mb-2 text-gray-800 leading-5">¿En qué fecha se realizó el control prenatal durante el mes de julio?</p>
+      <p class="font-medium mb-2 text-gray-800 leading-5">¿En qué fecha se realizó el control prenatal durante el mes de noviembre?</p>
       
       <FormKit 
         type="date" 
-        name="julioFecha" 
+        name="noviembreFecha" 
         placeholder="Seleccione una fecha" 
-        v-model="julioFecha"
-        :min="`${obtenerAnoActual()}-07-01`"
-        :max="`${obtenerAnoActual()}-07-31`"
+        v-model="noviembreFecha"
+        :min="`${obtenerAnoActual()}-11-01`"
+        :max="`${obtenerAnoActual()}-11-30`"
       />
       
     </div>
 
     <!-- Resumen de selección -->
-    <div v-if="julioFecha && !mensajeErrorFecha" class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+    <div v-if="noviembreFecha && !mensajeErrorFecha" class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
       <p class="text-sm text-gray-700">
         <span class="font-medium">Fecha seleccionada: </span> 
-        <span class="text-emerald-700 font-semibold">{{ convertirFechaISOaDDMMYYYY(julioFecha) }}</span>
+        <span class="text-emerald-700 font-semibold">{{ convertirFechaISOaDDMMYYYY(noviembreFecha) }}</span>
       </p>
     </div>
     
     <!-- Mensaje de error en caja roja -->
-    <div v-else-if="julioFecha && mensajeErrorFecha" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+    <div v-else-if="noviembreFecha && mensajeErrorFecha" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
       <p class="text-sm text-red-700 text-center">
         ⚠️ {{ mensajeErrorFecha }}
       </p>
