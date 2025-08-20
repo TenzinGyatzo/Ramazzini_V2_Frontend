@@ -52,39 +52,45 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga los valores
-  formDataControlPrenatal.mayoPeso = mayoPeso.value || '';
-  formDataControlPrenatal.mayoImc = mayoImc.value || '';
+  // Asegurar que formData tenga los valores convertidos a números
+  formDataControlPrenatal.mayoPeso = mayoPeso.value ? parseFloat(mayoPeso.value) : null;
+  formDataControlPrenatal.mayoImc = mayoImc.value ? parseFloat(mayoImc.value) : null;
   if (alturaLocal.value) {
-    formDataControlPrenatal.altura = alturaLocal.value;
+    formDataControlPrenatal.altura = parseFloat(alturaLocal.value);
   }
 });
 
 // Sincronizar mayoPeso con formData
 watch(mayoPeso, (newValue) => {
-  formDataControlPrenatal.mayoPeso = newValue;
+  // Convertir a número antes de almacenar
+  const pesoNum = newValue ? parseFloat(newValue) : null;
+  formDataControlPrenatal.mayoPeso = pesoNum;
   
   // Calcular IMC automáticamente cuando cambie el peso
   if (newValue && alturaDisponible.value) {
     const imcCalculado = calcularIMC(newValue, alturaDisponible.value);
     mayoImc.value = imcCalculado;
-    formDataControlPrenatal.mayoImc = imcCalculado;
+    // Convertir IMC a número también
+    formDataControlPrenatal.mayoImc = imcCalculado ? parseFloat(imcCalculado) : null;
   } else {
     mayoImc.value = '';
-    formDataControlPrenatal.mayoImc = '';
+    formDataControlPrenatal.mayoImc = null;
   }
 });
 
 // Watch para recalcular IMC cuando cambie la altura
 watch(alturaLocal, (newAltura) => {
   if (newAltura) {
-    formDataControlPrenatal.altura = newAltura;
+    // Convertir altura a número
+    const alturaNum = parseFloat(newAltura);
+    formDataControlPrenatal.altura = alturaNum;
     
     // Recalcular IMC si ya existe peso
     if (mayoPeso.value) {
       const imcCalculado = calcularIMC(mayoPeso.value, newAltura);
       mayoImc.value = imcCalculado;
-      formDataControlPrenatal.mayoImc = imcCalculado;
+      // Convertir IMC a número
+      formDataControlPrenatal.mayoImc = imcCalculado ? parseFloat(imcCalculado) : null;
     }
   }
 });
@@ -92,9 +98,10 @@ watch(alturaLocal, (newAltura) => {
 // Watch para recalcular IMC cuando cambie la altura de exploración física
 watch(() => formDataExploracionFisica.altura, (newAltura) => {
   if (newAltura && mayoPeso.value) {
-    const imcCalculado = calcularIMC(newAltura, mayoPeso.value);
+    const imcCalculado = calcularIMC(mayoPeso.value, newAltura);
     mayoImc.value = imcCalculado;
-    formDataControlPrenatal.mayoImc = imcCalculado;
+    // Convertir IMC a número
+    formDataControlPrenatal.mayoImc = imcCalculado ? parseFloat(imcCalculado) : null;
   }
 });
 
@@ -213,13 +220,18 @@ const mensajeErrorAltura = computed(() => {
       </div>
 
       <div class="mb-4 grid grid-cols-2 gap-2">
-        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-            <p class="text-sm text-emerald-800 mb-2">
+        <div v-if="mayoPeso" class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <p class="text-xs text-emerald-800 mb-2">
                 <span class="font-medium">✅ Peso a registrar:</span>
             </p>
             <p class="text-2xl font-bold text-emerald-700 text-center">
                 {{ mayoPeso }} kg
             </p>
+        </div>
+        <div v-else class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+          <p class="text-sm text-gray-600 text-center flex justify-center items-center h-full">
+            Ingrese el peso para ver el resultado
+          </p>
         </div>
         <div>
           <div v-if="!alturaDisponible" class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
@@ -228,12 +240,17 @@ const mensajeErrorAltura = computed(() => {
             </p>
           </div>
           <div v-else-if="mayoImc" class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-              <p class="text-sm text-emerald-800 mb-2">
+              <p class="text-xs text-emerald-800 mb-2">
                 <span class="font-medium">✅ IMC Calculado:</span>
               </p>
               <p class="text-2xl font-bold text-emerald-700 text-center">
                 {{ mayoImc }}
               </p>
+          </div>
+          <div v-else class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <p class="text-sm text-gray-600 text-center flex justify-center items-center h-full">
+              Aquí se mostrará el IMC calculado
+            </p>
           </div>
         </div>
       </div>

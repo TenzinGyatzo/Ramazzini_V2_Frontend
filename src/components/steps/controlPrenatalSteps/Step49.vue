@@ -52,39 +52,45 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga los valores
-  formDataControlPrenatal.julioPeso = julioPeso.value || '';
-  formDataControlPrenatal.julioImc = julioImc.value || '';
+  // Asegurar que formData tenga los valores convertidos a números
+  formDataControlPrenatal.julioPeso = julioPeso.value ? parseFloat(julioPeso.value) : null;
+  formDataControlPrenatal.julioImc = julioImc.value ? parseFloat(julioImc.value) : null;
   if (alturaLocal.value) {
-    formDataControlPrenatal.altura = alturaLocal.value;
+    formDataControlPrenatal.altura = parseFloat(alturaLocal.value);
   }
 });
 
 // Sincronizar julioPeso con formData
 watch(julioPeso, (newValue) => {
-  formDataControlPrenatal.julioPeso = newValue;
+  // Convertir a número antes de almacenar
+  const pesoNum = newValue ? parseFloat(newValue) : null;
+  formDataControlPrenatal.julioPeso = pesoNum;
   
   // Calcular IMC automáticamente cuando cambie el peso
   if (newValue && alturaDisponible.value) {
     const imcCalculado = calcularIMC(newValue, alturaDisponible.value);
     julioImc.value = imcCalculado;
-    formDataControlPrenatal.julioImc = imcCalculado;
+    // Convertir IMC a número también
+    formDataControlPrenatal.julioImc = imcCalculado ? parseFloat(imcCalculado) : null;
   } else {
     julioImc.value = '';
-    formDataControlPrenatal.julioImc = '';
+    formDataControlPrenatal.julioImc = null;
   }
 });
 
 // Watch para recalcular IMC cuando cambie la altura
 watch(alturaLocal, (newAltura) => {
   if (newAltura) {
-    formDataControlPrenatal.altura = newAltura;
+    // Convertir altura a número
+    const alturaNum = parseFloat(newAltura);
+    formDataControlPrenatal.altura = alturaNum;
     
     // Recalcular IMC si ya existe peso
     if (julioPeso.value) {
       const imcCalculado = calcularIMC(julioPeso.value, newAltura);
       julioImc.value = imcCalculado;
-      formDataControlPrenatal.julioImc = imcCalculado;
+      // Convertir IMC a número
+      formDataControlPrenatal.julioImc = imcCalculado ? parseFloat(imcCalculado) : null;
     }
   }
 });
@@ -92,9 +98,10 @@ watch(alturaLocal, (newAltura) => {
 // Watch para recalcular IMC cuando cambie la altura de exploración física
 watch(() => formDataExploracionFisica.altura, (newAltura) => {
   if (newAltura && julioPeso.value) {
-    const imcCalculado = calcularIMC(newAltura, julioPeso.value);
+    const imcCalculado = calcularIMC(julioPeso.value, newAltura);
     julioImc.value = imcCalculado;
-    formDataControlPrenatal.julioImc = imcCalculado;
+    // Convertir IMC a número
+    formDataControlPrenatal.julioImc = imcCalculado ? parseFloat(imcCalculado) : null;
   }
 });
 
@@ -213,13 +220,18 @@ const mensajeErrorAltura = computed(() => {
       </div>
 
       <div class="mb-4 grid grid-cols-2 gap-2">
-        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-            <p class="text-sm text-emerald-800 mb-2">
+        <div v-if="julioPeso" class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <p class="text-xs text-emerald-800 mb-2">
                 <span class="font-medium">✅ Peso a registrar:</span>
             </p>
             <p class="text-2xl font-bold text-emerald-700 text-center">
                 {{ julioPeso }} kg
             </p>
+        </div>
+        <div v-else class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+          <p class="text-sm text-gray-600 text-center flex justify-center items-center h-full">
+            Ingrese el peso para ver el resultado
+          </p>
         </div>
         <div>
           <div v-if="!alturaDisponible" class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
@@ -228,12 +240,17 @@ const mensajeErrorAltura = computed(() => {
             </p>
           </div>
           <div v-else-if="julioImc" class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-              <p class="text-sm text-emerald-800 mb-2">
+              <p class="text-xs text-emerald-800 mb-2">
                 <span class="font-medium">✅ IMC Calculado:</span>
               </p>
               <p class="text-2xl font-bold text-emerald-700 text-center">
                 {{ julioImc }}
               </p>
+          </div>
+          <div v-else class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <p class="text-sm text-gray-600 text-center flex justify-center items-center h-full">
+              Aquí se mostrará el IMC calculado
+            </p>
           </div>
         </div>
       </div>

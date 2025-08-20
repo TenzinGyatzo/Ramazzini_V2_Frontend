@@ -52,39 +52,45 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga los valores
-  formDataControlPrenatal.eneroPeso = eneroPeso.value || '';
-  formDataControlPrenatal.eneroImc = eneroImc.value || '';
+  // Asegurar que formData tenga los valores convertidos a números
+  formDataControlPrenatal.eneroPeso = eneroPeso.value ? parseFloat(eneroPeso.value) : null;
+  formDataControlPrenatal.eneroImc = eneroImc.value ? parseFloat(eneroImc.value) : null;
   if (alturaLocal.value) {
-    formDataControlPrenatal.altura = alturaLocal.value;
+    formDataControlPrenatal.altura = parseFloat(alturaLocal.value);
   }
 });
 
 // Sincronizar eneroPeso con formData
 watch(eneroPeso, (newValue) => {
-  formDataControlPrenatal.eneroPeso = newValue;
+  // Convertir a número antes de almacenar
+  const pesoNum = newValue ? parseFloat(newValue) : null;
+  formDataControlPrenatal.eneroPeso = pesoNum;
   
   // Calcular IMC automáticamente cuando cambie el peso
   if (newValue && alturaDisponible.value) {
     const imcCalculado = calcularIMC(newValue, alturaDisponible.value);
     eneroImc.value = imcCalculado;
-    formDataControlPrenatal.eneroImc = imcCalculado;
+    // Convertir IMC a número también
+    formDataControlPrenatal.eneroImc = imcCalculado ? parseFloat(imcCalculado) : null;
   } else {
     eneroImc.value = '';
-    formDataControlPrenatal.eneroImc = '';
+    formDataControlPrenatal.eneroImc = null;
   }
 });
 
 // Watch para recalcular IMC cuando cambie la altura
 watch(alturaLocal, (newAltura) => {
   if (newAltura) {
-    formDataControlPrenatal.altura = newAltura;
+    // Convertir altura a número
+    const alturaNum = parseFloat(newAltura);
+    formDataControlPrenatal.altura = alturaNum;
     
     // Recalcular IMC si ya existe peso
     if (eneroPeso.value) {
       const imcCalculado = calcularIMC(eneroPeso.value, newAltura);
       eneroImc.value = imcCalculado;
-      formDataControlPrenatal.eneroImc = imcCalculado;
+      // Convertir IMC a número
+      formDataControlPrenatal.eneroImc = imcCalculado ? parseFloat(imcCalculado) : null;
     }
   }
 });
@@ -94,7 +100,8 @@ watch(() => formDataExploracionFisica.altura, (newAltura) => {
   if (newAltura && eneroPeso.value) {
     const imcCalculado = calcularIMC(eneroPeso.value, newAltura);
     eneroImc.value = imcCalculado;
-    formDataControlPrenatal.eneroImc = imcCalculado;
+    // Convertir IMC a número
+    formDataControlPrenatal.eneroImc = imcCalculado ? parseFloat(imcCalculado) : null;
   }
 });
 
@@ -213,13 +220,18 @@ const mensajeErrorAltura = computed(() => {
       </div>
 
       <div class="mb-4 grid grid-cols-2 gap-2">
-        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-            <p class="text-sm text-emerald-800 mb-2">
+        <div v-if="eneroPeso" class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <p class="text-xs text-emerald-800 mb-2">
                 <span class="font-medium">✅ Peso a registrar:</span>
             </p>
             <p class="text-2xl font-bold text-emerald-700 text-center">
                 {{ eneroPeso }} kg
             </p>
+        </div>
+        <div v-else class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+          <p class="text-sm text-gray-600 text-center flex justify-center items-center h-full">
+            Ingrese el peso para ver el resultado
+          </p>
         </div>
         <div>
           <div v-if="!alturaDisponible" class="p-3 bg-orange-50 border border-orange-200 rounded-lg">
@@ -228,12 +240,17 @@ const mensajeErrorAltura = computed(() => {
             </p>
           </div>
           <div v-else-if="eneroImc" class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-              <p class="text-sm text-emerald-800 mb-2">
+              <p class="text-xs text-emerald-800 mb-2">
                 <span class="font-medium">✅ IMC Calculado:</span>
               </p>
               <p class="text-2xl font-bold text-emerald-700 text-center">
                 {{ eneroImc }}
               </p>
+          </div>
+          <div v-else class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <p class="text-sm text-gray-600 text-center flex justify-center items-center h-full">
+              Aquí se mostrará el IMC calculado
+            </p>
           </div>
         </div>
       </div>

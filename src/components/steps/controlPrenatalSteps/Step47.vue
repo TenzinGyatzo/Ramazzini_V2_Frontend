@@ -294,7 +294,7 @@ const presetsFondoUterino = [
         </div>
         
         <!-- Categoría del fondo uterino -->
-        <div v-if="categoriaFondoUterinoComputed.categoria" class="mt-3 p-3 rounded-lg border" 
+        <div v-if="categoriaFondoUterinoComputed.categoria" class="mt-2 p-3 rounded-lg border" 
              :class="[categoriaFondoUterinoComputed.bgColor, categoriaFondoUterinoComputed.borderColor]">
           <p class="text-sm text-center" :class="categoriaFondoUterinoComputed.color">
             <span class="font-medium">{{ categoriaFondoUterinoComputed.categoria }}</span>

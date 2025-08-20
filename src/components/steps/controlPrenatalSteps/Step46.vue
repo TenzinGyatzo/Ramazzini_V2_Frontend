@@ -194,7 +194,7 @@ const presetsSemanas = [
         </div>
         
         <!-- Categoría de gestación -->
-        <div v-if="categoriaGestacionComputed.categoria" class="mt-3 p-3 rounded-lg border" 
+        <div v-if="categoriaGestacionComputed.categoria" class="mt-2 p-3 rounded-lg border" 
              :class="[categoriaGestacionComputed.bgColor, categoriaGestacionComputed.borderColor]">
           <p class="text-sm text-center" :class="categoriaGestacionComputed.color">
             <span class="font-medium">{{ categoriaGestacionComputed.categoria }}</span>

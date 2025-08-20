@@ -144,6 +144,32 @@ function calcularAntiguedad(dateString: string): string {
     return fecha.toISOString(); // Convertimos la fecha a formato ISO
   }
 
+  function convertirFechaISOaDDMesYYYY(dateString: string): string {
+    // Si la fecha está vacía o es null/undefined, retornar string vacío
+    if (!dateString || dateString === '' || dateString === 'No recuerda') {
+      return '';
+    }
+
+    const fecha = new Date(dateString);
+
+    if (isNaN(fecha.getTime())) {
+      // En lugar de lanzar error, retornar string vacío
+      return '';
+    }
+
+    // Array con abreviaciones de meses en español
+    const mesesAbreviados = [
+      'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+      'jul', 'ago', 'sep', 'oct', 'nov', 'dic'
+    ];
+
+    const dia = String(fecha.getUTCDate()).padStart(2, "0"); // Obtiene el día en UTC
+    const mes = mesesAbreviados[fecha.getUTCMonth()]; // Obtiene la abreviación del mes
+    const año = fecha.getUTCFullYear(); // Año en UTC
+
+    return `${dia}-${mes}-${año}`;
+  }
+
   const determinarVistaCorregida = (
     requiereLentesUsoGeneral?: string | null,
     ojoIzquierdoLejanaConCorreccion?: number | null,
@@ -161,6 +187,7 @@ function calcularAntiguedad(dateString: string): string {
 export {
   convertirFechaISOaDDMMYYYY,
   convertirFechaISOaYYYYMMDD,
+  convertirFechaISOaDDMesYYYY,
   calcularEdad,
   calcularAntiguedad,
   formatDateDDMMYYYY,

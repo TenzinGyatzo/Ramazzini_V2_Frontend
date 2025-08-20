@@ -376,6 +376,111 @@ const marcarSinHallazgos = () => {
           class="max-w-6xl mx-auto flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
           <div class="w-full xl:w-1/3">
             <FormStepper />
+            <div class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
+              <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-calendar-days w-5 h-5"></i>
+                <span>Mes de control</span>
+              </p>
+              <div class="grid grid-cols-6 gap-2 mt-4">
+                <button 
+                  type="button"
+                  @click="() => { goToStep(12); }"
+                  class="w-full px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+                  :class="steps.currentStep >= 12 && steps.currentStep < 18 ? 'from-teal-500 to-teal-600' : 'from-sky-500 to-sky-600'"
+                  >
+                  <span>ENE</span>
+                </button>
+                <button 
+                  type="button"
+                  @click="() => { goToStep(18); }"
+                  class="w-full px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+                  :class="steps.currentStep >= 18 && steps.currentStep < 24 ? 'from-teal-500 to-teal-600' : 'from-sky-500 to-sky-600'"
+                  >
+                  <span>FEB</span>
+                </button>
+                <button 
+                  type="button"
+                  @click="() => { goToStep(24); }"
+                  class="w-full px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+                  :class="steps.currentStep >= 24 && steps.currentStep < 30 ? 'from-teal-500 to-teal-600' : 'from-sky-500 to-sky-600'"
+                  >
+                  <span>MAR</span>
+                </button>
+                <button 
+                  type="button"
+                  @click="() => { goToStep(30); }"
+                  class="w-full px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+                  :class="steps.currentStep >= 30 && steps.currentStep < 36 ? 'from-teal-500 to-teal-600' : 'from-sky-500 to-sky-600'"
+                  >
+                  <span>ABR</span>
+                </button>
+                <button 
+                  type="button"
+                  @click="() => { goToStep(36); }"
+                  class="w-full px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+                  :class="steps.currentStep >= 36 && steps.currentStep < 42 ? 'from-teal-500 to-teal-600' : 'from-sky-500 to-sky-600'"
+                  >
+                  <span>MAY</span>
+                </button>
+                <button 
+                  type="button"
+                  @click="() => { goToStep(42); }"
+                  class="w-full px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+                  :class="steps.currentStep >= 42 && steps.currentStep < 48 ? 'from-teal-500 to-teal-600' : 'from-sky-500 to-sky-600'"
+                  >
+                  <span>JUN</span>
+                </button>
+                
+                <button 
+                  type="button"
+                  @click="() => { goToStep(48); }"
+                  class="w-full px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+                  :class="steps.currentStep >= 48 && steps.currentStep < 54 ? 'from-teal-500 to-teal-600' : 'from-sky-500 to-sky-600'"
+                  >
+                  <span>JUL</span>
+                </button>
+                <button 
+                  type="button"
+                  @click="() => { goToStep(54); }"
+                  class="w-full px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+                  :class="steps.currentStep >= 54 && steps.currentStep < 60 ? 'from-teal-500 to-teal-600' : 'from-sky-500 to-sky-600'"
+                  >
+                  <span>AGO</span>
+                </button>
+                <button 
+                  type="button"
+                  @click="() => { goToStep(60); }"
+                  class="w-full px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+                  :class="steps.currentStep >= 60 && steps.currentStep < 66 ? 'from-teal-500 to-teal-600' : 'from-sky-500 to-sky-600'"
+                  >
+                  <span>SEP</span>
+                </button>
+                <button 
+                  type="button"
+                  @click="() => { goToStep(66); }"
+                  class="w-full px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+                  :class="steps.currentStep >= 66 && steps.currentStep < 72 ? 'from-teal-500 to-teal-600' : 'from-sky-500 to-sky-600'"
+                  >
+                  <span>OCT</span>
+                </button>
+                <button 
+                  type="button"
+                  @click="() => { goToStep(72); }"
+                  class="w-full px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+                  :class="steps.currentStep >= 72 && steps.currentStep < 78 ? 'from-teal-500 to-teal-600' : 'from-sky-500 to-sky-600'"
+                  >
+                  <span>NOV</span>
+                </button>
+                <button 
+                  type="button"
+                  @click="() => { goToStep(78); }"
+                  class="w-full px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+                  :class="steps.currentStep >= 78 && steps.currentStep < 84 ? 'from-teal-500 to-teal-600' : 'from-sky-500 to-sky-600'"
+                  >
+                  <span>DIC</span>
+                </button>
+              </div>
+            </div>
           </div>
           <div class="w-full xl:w-2/3 max-w-3xl mx-auto">
             <VisualizadorControlPrenatal />

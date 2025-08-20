@@ -260,7 +260,7 @@ const mensajeErrorRelacion = computed(() => {
         </div>
         
         <!-- Categoría de tensión arterial -->
-        <div v-if="categoriaTensionArterial.categoria" class="mt-3 p-3 rounded-lg border" 
+        <div v-if="categoriaTensionArterial.categoria" class="mt-2 p-3 rounded-lg border" 
              :class="[categoriaTensionArterial.bgColor, categoriaTensionArterial.borderColor]">
           <p class="text-sm text-center" :class="categoriaTensionArterial.color">
             <span class="font-medium">{{ categoriaTensionArterial.categoria }}</span>

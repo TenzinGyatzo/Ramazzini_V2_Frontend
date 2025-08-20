@@ -169,7 +169,7 @@ const presetsFcf = [
         </div>
         
         <!-- Categoría de FCF -->
-        <div v-if="categoriaFcfComputed.categoria" class="mt-3 p-3 rounded-lg border" 
+        <div v-if="categoriaFcfComputed.categoria" class="mt-2 p-3 rounded-lg border" 
              :class="[categoriaFcfComputed.bgColor, categoriaFcfComputed.borderColor]">
           <p class="text-sm text-center" :class="categoriaFcfComputed.color">
             <span class="font-medium">{{ categoriaFcfComputed.categoria }}</span>

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
-import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
+import { convertirFechaISOaDDMesYYYY } from '@/helpers/dates';
 
 const { formDataControlPrenatal } = useFormDataStore();
 
@@ -12,9 +12,10 @@ const febreroFecha = ref('');
 const validarFechaFebrero = (fecha) => {
   if (!fecha) return '';
   
-  const fechaSeleccionada = new Date(fecha);
+  // Crear la fecha y asegurar que se interprete correctamente
+  const fechaSeleccionada = new Date(fecha + 'T00:00:00');
   const mes = fechaSeleccionada.getMonth(); // 0 = enero, 1 = febrero, etc.
-  
+    
   if (mes !== 1) { // 1 = febrero
     return 'La fecha debe ser del mes de febrero';
   }
@@ -26,8 +27,12 @@ const validarFechaFebrero = (fecha) => {
 const validarFechaNoFutura = (fecha) => {
   if (!fecha) return '';
   
-  const fechaSeleccionada = new Date(fecha);
+  // Crear la fecha y asegurar que se interprete correctamente
+  const fechaSeleccionada = new Date(fecha + 'T00:00:00');
   const fechaActual = new Date();
+  
+  // Resetear la hora de la fecha actual para comparar solo fechas
+  fechaActual.setHours(0, 0, 0, 0);
   
   if (fechaSeleccionada > fechaActual) {
     return 'La fecha no puede ser futura';
@@ -36,20 +41,8 @@ const validarFechaNoFutura = (fecha) => {
   return '';
 };
 
-// Función para validar que la fecha sea requerida
-const validarFechaRequerida = (fecha) => {
-  if (!fecha || fecha === '') {
-    return 'La fecha es requerida';
-  }
-  
-  return '';
-};
-
 // Validación combinada
 const mensajeErrorFecha = computed(() => {
-  const errorRequerida = validarFechaRequerida(febreroFecha.value);
-  if (errorRequerida) return errorRequerida;
-  
   const errorNoFutura = validarFechaNoFutura(febreroFecha.value);
   if (errorNoFutura) return errorNoFutura;
   
@@ -64,9 +57,9 @@ const obtenerAnoActual = () => {
   return new Date().getFullYear();
 };
 
-// Función para obtener el año anterior
-const obtenerAnoAnterior = () => {
-  return new Date().getFullYear() - 1;
+// Función para detectar si un año es bisiesto
+const esAnoBisiesto = (ano) => {
+  return (ano % 4 === 0 && ano % 100 !== 0) || (ano % 400 === 0);
 };
 
 onMounted(() => {
@@ -103,24 +96,23 @@ watch(febreroFecha, (newValue) => {
         placeholder="Seleccione una fecha" 
         v-model="febreroFecha"
         :min="`${obtenerAnoActual()}-02-01`"
-        :max="`${obtenerAnoActual()}-02-29`"
+        :max="`${obtenerAnoActual()}-02-${esAnoBisiesto(obtenerAnoActual()) ? '29' : '28'}`"
       />
       
     </div>
 
     <!-- Resumen de selección -->
-    <div v-if="febreroFecha && !mensajeErrorFecha" class="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-      <p class="text-sm text-gray-700">
-        <span class="font-medium">Fecha seleccionada: </span> 
-        <span class="text-emerald-700 font-semibold">{{ convertirFechaISOaDDMMYYYY(febreroFecha) }}</span>
-      </p>
-    </div>
-    
-    <!-- Mensaje de error en caja roja -->
-    <div v-else-if="febreroFecha && mensajeErrorFecha" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-      <p class="text-sm text-red-700 text-center">
-        ⚠️ {{ mensajeErrorFecha }}
-      </p>
+    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+        <p class="text-sm text-emerald-800 mb-2">
+            <span v-if="mensajeErrorFecha" class="font-medium">❌ Estado actual:</span>
+            <span v-else-if="febreroFecha" class="font-medium">✅ Fecha a registrar:</span>
+            <span v-else class="font-medium">⚠️ Estado pendiente:</span>
+        </p>
+        <p class="text-2xl font-bold text-emerald-700 text-center">
+            <span v-if="mensajeErrorFecha" class="text-red-600 font-semibold">{{ mensajeErrorFecha }}</span>
+            <span v-else-if="febreroFecha" class="text-emerald-700 font-semibold">{{ convertirFechaISOaDDMesYYYY(febreroFecha) }}</span>
+            <span v-else class="text-orange-600 font-semibold">Fecha no especificada</span>
+        </p>
     </div>
     
   </div>
