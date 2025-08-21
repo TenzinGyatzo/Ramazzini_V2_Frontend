@@ -59,26 +59,80 @@ const obtenerAnoActual = () => {
   return new Date().getFullYear();
 };
 
-onMounted(() => {
-  if (documentos.currentDocument && documentos.currentDocument.eneroFecha) {
-    eneroFecha.value = formatDateYYYYMMDD(documentos.currentDocument.eneroFecha);
+// Valor local para la fecha
+const eneroFecha = ref('');
+
+// Computed para sincronización bidireccional
+const fechaSincronizada = computed({
+  get() {
+    // Prioridad 1: Si hay datos locales en formData, usarlos
+    if (formDataControlPrenatal.eneroFecha && formDataControlPrenatal.eneroFecha.trim() !== '') {
+      return formDataControlPrenatal.eneroFecha;
+    }
+    // Prioridad 2: Si no hay datos locales pero sí en BD, usar BD
+    if (documentos.currentDocument && documentos.currentDocument.eneroFecha) {
+      return formatDateYYYYMMDD(documentos.currentDocument.eneroFecha);
+    }
+    // Prioridad 3: Usar valor local (puede ser vacío)
+    return eneroFecha.value;
+  },
+  set(value) {
+    eneroFecha.value = value;
+    
+    // Sincronizar con formData solo si es válida
+    if (value && value.trim() !== '' && value.length === 10) {
+      const fecha = new Date(value + 'T00:00:00');
+      if (!isNaN(fecha.getTime())) {
+        formDataControlPrenatal.eneroFecha = value;
+      } else {
+        formDataControlPrenatal.eneroFecha = null;
+      }
+    } else {
+      formDataControlPrenatal.eneroFecha = null;
+    }
   }
-  // Si no hay fecha en la BD, eneroFecha.value se mantiene como string vacío
+});
+
+// Sincronizar eneroFecha con formData cuando cambie localmente
+watch(eneroFecha, (newValue) => {
+  if (newValue && newValue.trim() !== '' && newValue.length === 10) {
+    const fecha = new Date(newValue + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.eneroFecha = newValue;
+    } else {
+      formDataControlPrenatal.eneroFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.eneroFecha = null;
+  }
+});
+
+// Watch adicional para asegurar sincronización inmediata
+watch(eneroFecha, (newValue) => {
+  // Si el campo está vacío, asignar null inmediatamente al formData
+  if (!newValue || newValue.trim() === '' || newValue.length !== 10) {
+    formDataControlPrenatal.eneroFecha = null;
+  }
+}, { immediate: true });
+
+onMounted(() => {
+  // Inicializar el valor local con la fecha sincronizada
+  eneroFecha.value = fechaSincronizada.value;
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para eneroFecha
-  if (!formDataControlPrenatal.eneroFecha) {
-    formDataControlPrenatal.eneroFecha = eneroFecha.value;
+  // Confirmar el estado final del campo eneroFecha
+  // Ahora que el backend acepta null, usarlo en lugar de delete
+  if (eneroFecha.value && eneroFecha.value.trim() !== '' && eneroFecha.value.length === 10) {
+    const fecha = new Date(eneroFecha.value + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.eneroFecha = eneroFecha.value;
+    } else {
+      formDataControlPrenatal.eneroFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.eneroFecha = null;
   }
-});
-
-// Inicializar la referencia local sincronizada con formData
-const eneroFecha = ref(''); // Inicializar vacío, no con today
-
-// Sincronizar eneroFecha con formData
-watch(eneroFecha, (newValue) => {
-  formDataControlPrenatal.eneroFecha = newValue;
 });
 </script>
 
@@ -94,7 +148,7 @@ watch(eneroFecha, (newValue) => {
         type="date" 
         name="eneroFecha" 
         placeholder="Seleccione una fecha" 
-        v-model="eneroFecha"
+        v-model="fechaSincronizada"
         :min="`${obtenerAnoActual()}-01-01`"
         :max="`${obtenerAnoActual()}-01-31`"
       />

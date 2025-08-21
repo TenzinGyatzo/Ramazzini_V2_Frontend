@@ -71,19 +71,15 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para octubreSdg
-  if (!formDataControlPrenatal.octubreSdg) {
-    formDataControlPrenatal.octubreSdg = octubreSdg.value ? parseInt(octubreSdg.value) : undefined;
-  }
+  // Asegurar que formData tenga los valores convertidos a números
+  formDataControlPrenatal.octubreSdg = octubreSdg.value ? parseInt(octubreSdg.value) : null;
 });
 
 // Sincronizar octubreSdg con formData
 watch(octubreSdg, (newValue) => {
-  if (newValue && newValue !== '') {
-    formDataControlPrenatal.octubreSdg = parseInt(newValue);
-  } else {
-    formDataControlPrenatal.octubreSdg = undefined;
-  }
+  // Convertir a número antes de almacenar
+  const sdgNum = newValue ? parseInt(newValue) : null;
+  formDataControlPrenatal.octubreSdg = sdgNum;
 });
 
 // Computed para la categoría de gestación

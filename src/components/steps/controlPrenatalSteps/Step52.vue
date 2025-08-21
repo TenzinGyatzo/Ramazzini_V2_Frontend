@@ -71,19 +71,15 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para julioSdg
-  if (!formDataControlPrenatal.julioSdg) {
-    formDataControlPrenatal.julioSdg = julioSdg.value ? parseInt(julioSdg.value) : undefined;
-  }
+  // Asegurar que formData tenga los valores convertidos a números
+  formDataControlPrenatal.julioSdg = julioSdg.value ? parseInt(julioSdg.value) : null;
 });
 
 // Sincronizar julioSdg con formData
 watch(julioSdg, (newValue) => {
-  if (newValue && newValue !== '') {
-    formDataControlPrenatal.julioSdg = parseInt(newValue);
-  } else {
-    formDataControlPrenatal.julioSdg = undefined;
-  }
+  // Convertir a número antes de almacenar
+  const sdgNum = newValue ? parseInt(newValue) : null;
+  formDataControlPrenatal.julioSdg = sdgNum;
 });
 
 // Computed para la categoría de gestación

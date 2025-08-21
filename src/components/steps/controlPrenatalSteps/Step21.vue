@@ -54,19 +54,15 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para febreroFcf
-  if (!formDataControlPrenatal.febreroFcf) {
-    formDataControlPrenatal.febreroFcf = febreroFcf.value ? parseInt(febreroFcf.value) : undefined;
-  }
+  // Asegurar que formData tenga los valores convertidos a números
+  formDataControlPrenatal.febreroFcf = febreroFcf.value ? parseInt(febreroFcf.value) : null;
 });
 
 // Sincronizar febreroFcf con formData
 watch(febreroFcf, (newValue) => {
-  if (newValue && newValue !== '') {
-    formDataControlPrenatal.febreroFcf = parseInt(newValue);
-  } else {
-    formDataControlPrenatal.febreroFcf = undefined;
-  }
+  // Convertir a número antes de almacenar
+  const fcfNum = newValue ? parseInt(newValue) : null;
+  formDataControlPrenatal.febreroFcf = fcfNum;
 });
 
 // Computed para la categoría de FCF

@@ -172,19 +172,15 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para julioFondoUterino
-  if (!formDataControlPrenatal.julioFondoUterino) {
-    formDataControlPrenatal.julioFondoUterino = julioFondoUterino.value ? parseFloat(julioFondoUterino.value) : undefined;
-  }
+  // Asegurar que formData tenga los valores convertidos a números
+  formDataControlPrenatal.julioFondoUterino = julioFondoUterino.value ? parseFloat(julioFondoUterino.value) : null;
 });
 
 // Sincronizar julioFondoUterino con formData
 watch(julioFondoUterino, (newValue) => {
-  if (newValue && newValue !== '') {
-    formDataControlPrenatal.julioFondoUterino = parseFloat(newValue);
-  } else {
-    formDataControlPrenatal.julioFondoUterino = undefined;
-  }
+  // Convertir a número antes de almacenar
+  const fondoUterinoNum = newValue ? parseFloat(newValue) : null;
+  formDataControlPrenatal.julioFondoUterino = fondoUterinoNum;
 });
 
 // Computed para la categoría del fondo uterino

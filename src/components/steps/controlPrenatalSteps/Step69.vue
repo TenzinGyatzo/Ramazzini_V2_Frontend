@@ -54,19 +54,15 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para octubreFcf
-  if (!formDataControlPrenatal.octubreFcf) {
-    formDataControlPrenatal.octubreFcf = octubreFcf.value ? parseInt(octubreFcf.value) : undefined;
-  }
+  // Asegurar que formData tenga los valores convertidos a números
+  formDataControlPrenatal.octubreFcf = octubreFcf.value ? parseInt(octubreFcf.value) : null;
 });
 
 // Sincronizar octubreFcf con formData
 watch(octubreFcf, (newValue) => {
-  if (newValue && newValue !== '') {
-    formDataControlPrenatal.octubreFcf = parseInt(newValue);
-  } else {
-    formDataControlPrenatal.octubreFcf = undefined;
-  }
+  // Convertir a número antes de almacenar
+  const fcfNum = newValue ? parseInt(newValue) : null;
+  formDataControlPrenatal.octubreFcf = fcfNum;
 });
 
 // Computed para la categoría de FCF

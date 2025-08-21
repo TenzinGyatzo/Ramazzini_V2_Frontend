@@ -1,12 +1,87 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
-import { convertirFechaISOaDDMesYYYY } from '@/helpers/dates';
+import { useDocumentosStore } from '@/stores/documentos';
+import { convertirFechaISOaDDMesYYYY, formatDateYYYYMMDD } from '@/helpers/dates';
 
 const { formDataControlPrenatal } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la fecha
 const agostoFecha = ref('');
+
+// Computed para sincronización bidireccional
+const fechaSincronizada = computed({
+  get() {
+    // Prioridad 1: Si hay datos locales en formData, usarlos
+    if (formDataControlPrenatal.agostoFecha && formDataControlPrenatal.agostoFecha.trim() !== '') {
+      return formDataControlPrenatal.agostoFecha;
+    }
+    // Prioridad 2: Si no hay datos locales pero sí en BD, usar BD
+    if (documentos.currentDocument && documentos.currentDocument.agostoFecha) {
+      return formatDateYYYYMMDD(documentos.currentDocument.agostoFecha);
+    }
+    // Prioridad 3: Usar valor local (puede ser vacío)
+    return agostoFecha.value;
+  },
+  set(value) {
+    agostoFecha.value = value;
+    
+    // Sincronizar con formData solo si es válida
+    if (value && value.trim() !== '' && value.length === 10) {
+      const fecha = new Date(value + 'T00:00:00');
+      if (!isNaN(fecha.getTime())) {
+        formDataControlPrenatal.agostoFecha = value;
+      } else {
+        formDataControlPrenatal.agostoFecha = null;
+      }
+    } else {
+      formDataControlPrenatal.agostoFecha = null;
+    }
+  }
+});
+
+// Sincronizar agostoFecha con formData cuando cambie localmente
+watch(agostoFecha, (newValue) => {
+  if (newValue && newValue.trim() !== '' && newValue.length === 10) {
+    const fecha = new Date(newValue + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.agostoFecha = newValue;
+    } else {
+      formDataControlPrenatal.agostoFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.agostoFecha = null;
+  }
+});
+
+// Watch adicional para asegurar sincronización inmediata
+watch(agostoFecha, (newValue) => {
+  // Si el campo está vacío, asignar null inmediatamente al formData
+  if (!newValue || newValue.trim() === '' || newValue.length !== 10) {
+    formDataControlPrenatal.agostoFecha = null;
+  }
+}, { immediate: true });
+
+onMounted(() => {
+  // Inicializar el valor local con la fecha sincronizada
+  agostoFecha.value = fechaSincronizada.value;
+});
+
+onUnmounted(() => {
+  // Confirmar el estado final del campo agostoFecha
+  // Ahora que el backend acepta null, usarlo en lugar de delete
+  if (agostoFecha.value && agostoFecha.value.trim() !== '' && agostoFecha.value.length === 10) {
+    const fecha = new Date(agostoFecha.value + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.agostoFecha = agostoFecha.value;
+    } else {
+      formDataControlPrenatal.agostoFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.agostoFecha = null;
+  }
+});
 
 // Función para validar que la fecha sea del mes de agosto
 const validarFechaAgosto = (fecha) => {
@@ -57,24 +132,6 @@ const obtenerAnoActual = () => {
   return new Date().getFullYear();
 };
 
-onMounted(() => {
-  // Verificar si formDataControlPrenatal.agostoFecha tiene un valor y establecerlo
-  if (formDataControlPrenatal.agostoFecha) {
-    agostoFecha.value = formDataControlPrenatal.agostoFecha;
-  }
-});
-
-onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para agostoFecha
-  if (!formDataControlPrenatal.agostoFecha) {
-    formDataControlPrenatal.agostoFecha = agostoFecha.value;
-  }
-});
-
-// Sincronizar agostoFecha con formData
-watch(agostoFecha, (newValue) => {
-  formDataControlPrenatal.agostoFecha = newValue;
-});
 </script>
 
 <template>
@@ -89,7 +146,7 @@ watch(agostoFecha, (newValue) => {
         type="date" 
         name="agostoFecha" 
         placeholder="Seleccione una fecha" 
-        v-model="agostoFecha"
+        v-model="fechaSincronizada"
         :min="`${obtenerAnoActual()}-08-01`"
         :max="`${obtenerAnoActual()}-08-31`"
       />

@@ -1,12 +1,87 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
-import { convertirFechaISOaDDMesYYYY } from '@/helpers/dates';
+import { useDocumentosStore } from '@/stores/documentos';
+import { convertirFechaISOaDDMesYYYY, formatDateYYYYMMDD } from '@/helpers/dates';
 
 const { formDataControlPrenatal } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la fecha
 const abrilFecha = ref('');
+
+// Computed para sincronización bidireccional
+const fechaSincronizada = computed({
+  get() {
+    // Prioridad 1: Si hay datos locales en formData, usarlos
+    if (formDataControlPrenatal.abrilFecha && formDataControlPrenatal.abrilFecha.trim() !== '') {
+      return formDataControlPrenatal.abrilFecha;
+    }
+    // Prioridad 2: Si no hay datos locales pero sí en BD, usar BD
+    if (documentos.currentDocument && documentos.currentDocument.abrilFecha) {
+      return formatDateYYYYMMDD(documentos.currentDocument.abrilFecha);
+    }
+    // Prioridad 3: Usar valor local (puede ser vacío)
+    return abrilFecha.value;
+  },
+  set(value) {
+    abrilFecha.value = value;
+    
+    // Sincronizar con formData solo si es válida
+    if (value && value.trim() !== '' && value.length === 10) {
+      const fecha = new Date(value + 'T00:00:00');
+      if (!isNaN(fecha.getTime())) {
+        formDataControlPrenatal.abrilFecha = value;
+      } else {
+        formDataControlPrenatal.abrilFecha = null;
+      }
+    } else {
+      formDataControlPrenatal.abrilFecha = null;
+    }
+  }
+});
+
+// Sincronizar abrilFecha con formData cuando cambie localmente
+watch(abrilFecha, (newValue) => {
+  if (newValue && newValue.trim() !== '' && newValue.length === 10) {
+    const fecha = new Date(newValue + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.abrilFecha = newValue;
+    } else {
+      formDataControlPrenatal.abrilFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.abrilFecha = null;
+  }
+});
+
+// Watch adicional para asegurar sincronización inmediata
+watch(abrilFecha, (newValue) => {
+  // Si el campo está vacío, asignar null inmediatamente al formData
+  if (!newValue || newValue.trim() === '' || newValue.length !== 10) {
+    formDataControlPrenatal.abrilFecha = null;
+  }
+}, { immediate: true });
+
+onMounted(() => {
+  // Inicializar el valor local con la fecha sincronizada
+  abrilFecha.value = fechaSincronizada.value;
+});
+
+onUnmounted(() => {
+  // Confirmar el estado final del campo abrilFecha
+  // Ahora que el backend acepta null, usarlo en lugar de delete
+  if (abrilFecha.value && abrilFecha.value.trim() !== '' && abrilFecha.value.length === 10) {
+    const fecha = new Date(abrilFecha.value + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.abrilFecha = abrilFecha.value;
+    } else {
+      formDataControlPrenatal.abrilFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.abrilFecha = null;
+  }
+});
 
 // Función para validar que la fecha sea del mes de abril
 const validarFechaAbril = (fecha) => {
@@ -57,24 +132,6 @@ const obtenerAnoActual = () => {
   return new Date().getFullYear();
 };
 
-onMounted(() => {
-  // Verificar si formDataControlPrenatal.abrilFecha tiene un valor y establecerlo
-  if (formDataControlPrenatal.abrilFecha) {
-    abrilFecha.value = formDataControlPrenatal.abrilFecha;
-  }
-});
-
-onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para abrilFecha
-  if (!formDataControlPrenatal.abrilFecha) {
-    formDataControlPrenatal.abrilFecha = abrilFecha.value;
-  }
-});
-
-// Sincronizar abrilFecha con formData
-watch(abrilFecha, (newValue) => {
-  formDataControlPrenatal.abrilFecha = newValue;
-});
 </script>
 
 <template>
@@ -89,7 +146,7 @@ watch(abrilFecha, (newValue) => {
         type="date" 
         name="abrilFecha" 
         placeholder="Seleccione una fecha" 
-        v-model="abrilFecha"
+        v-model="fechaSincronizada"
         :min="`${obtenerAnoActual()}-04-01`"
         :max="`${obtenerAnoActual()}-04-30`"
       />

@@ -71,19 +71,15 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para noviembreSdg
-  if (!formDataControlPrenatal.noviembreSdg) {
-    formDataControlPrenatal.noviembreSdg = noviembreSdg.value ? parseInt(noviembreSdg.value) : undefined;
-  }
+  // Asegurar que formData tenga los valores convertidos a números
+  formDataControlPrenatal.noviembreSdg = noviembreSdg.value ? parseInt(noviembreSdg.value) : null;
 });
 
 // Sincronizar noviembreSdg con formData
 watch(noviembreSdg, (newValue) => {
-  if (newValue && newValue !== '') {
-    formDataControlPrenatal.noviembreSdg = parseInt(newValue);
-  } else {
-    formDataControlPrenatal.noviembreSdg = undefined;
-  }
+  // Convertir a número antes de almacenar
+  const sdgNum = newValue ? parseInt(newValue) : null;
+  formDataControlPrenatal.noviembreSdg = sdgNum;
 });
 
 // Computed para la categoría de gestación

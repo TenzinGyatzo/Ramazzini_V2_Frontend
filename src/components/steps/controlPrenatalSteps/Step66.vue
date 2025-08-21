@@ -1,12 +1,87 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
-import { convertirFechaISOaDDMesYYYY } from '@/helpers/dates';
+import { useDocumentosStore } from '@/stores/documentos';
+import { convertirFechaISOaDDMesYYYY, formatDateYYYYMMDD } from '@/helpers/dates';
 
 const { formDataControlPrenatal } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la fecha
 const octubreFecha = ref('');
+
+// Computed para sincronización bidireccional
+const fechaSincronizada = computed({
+  get() {
+    // Prioridad 1: Si hay datos locales en formData, usarlos
+    if (formDataControlPrenatal.octubreFecha && formDataControlPrenatal.octubreFecha.trim() !== '') {
+      return formDataControlPrenatal.octubreFecha;
+    }
+    // Prioridad 2: Si no hay datos locales pero sí en BD, usar BD
+    if (documentos.currentDocument && documentos.currentDocument.octubreFecha) {
+      return formatDateYYYYMMDD(documentos.currentDocument.octubreFecha);
+    }
+    // Prioridad 3: Usar valor local (puede ser vacío)
+    return octubreFecha.value;
+  },
+  set(value) {
+    octubreFecha.value = value;
+    
+    // Sincronizar con formData solo si es válida
+    if (value && value.trim() !== '' && value.length === 10) {
+      const fecha = new Date(value + 'T00:00:00');
+      if (!isNaN(fecha.getTime())) {
+        formDataControlPrenatal.octubreFecha = value;
+      } else {
+        formDataControlPrenatal.octubreFecha = null;
+      }
+    } else {
+      formDataControlPrenatal.octubreFecha = null;
+    }
+  }
+});
+
+// Sincronizar octubreFecha con formData cuando cambie localmente
+watch(octubreFecha, (newValue) => {
+  if (newValue && newValue.trim() !== '' && newValue.length === 10) {
+    const fecha = new Date(newValue + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.octubreFecha = newValue;
+    } else {
+      formDataControlPrenatal.octubreFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.octubreFecha = null;
+  }
+});
+
+// Watch adicional para asegurar sincronización inmediata
+watch(octubreFecha, (newValue) => {
+  // Si el campo está vacío, asignar null inmediatamente al formData
+  if (!newValue || newValue.trim() === '' || newValue.length !== 10) {
+    formDataControlPrenatal.octubreFecha = null;
+  }
+}, { immediate: true });
+
+onMounted(() => {
+  // Inicializar el valor local con la fecha sincronizada
+  octubreFecha.value = fechaSincronizada.value;
+});
+
+onUnmounted(() => {
+  // Confirmar el estado final del campo octubreFecha
+  // Ahora que el backend acepta null, usarlo en lugar de delete
+  if (octubreFecha.value && octubreFecha.value.trim() !== '' && octubreFecha.value.length === 10) {
+    const fecha = new Date(octubreFecha.value + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.octubreFecha = octubreFecha.value;
+    } else {
+      formDataControlPrenatal.octubreFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.octubreFecha = null;
+  }
+});
 
 // Función para validar que la fecha sea del mes de octubre
 const validarFechaOctubre = (fecha) => {
@@ -57,24 +132,6 @@ const obtenerAnoActual = () => {
   return new Date().getFullYear();
 };
 
-onMounted(() => {
-  // Verificar si formDataControlPrenatal.octubreFecha tiene un valor y establecerlo
-  if (formDataControlPrenatal.octubreFecha) {
-    octubreFecha.value = formDataControlPrenatal.octubreFecha;
-  }
-});
-
-onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para octubreFecha
-  if (!formDataControlPrenatal.octubreFecha) {
-    formDataControlPrenatal.octubreFecha = octubreFecha.value;
-  }
-});
-
-// Sincronizar octubreFecha con formData
-watch(octubreFecha, (newValue) => {
-  formDataControlPrenatal.octubreFecha = newValue;
-});
 </script>
 
 <template>
@@ -89,7 +146,7 @@ watch(octubreFecha, (newValue) => {
         type="date" 
         name="octubreFecha" 
         placeholder="Seleccione una fecha" 
-        v-model="octubreFecha"
+        v-model="fechaSincronizada"
         :min="`${obtenerAnoActual()}-10-01`"
         :max="`${obtenerAnoActual()}-10-31`"
       />

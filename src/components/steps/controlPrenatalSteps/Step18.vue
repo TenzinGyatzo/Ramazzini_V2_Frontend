@@ -1,12 +1,67 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
-import { convertirFechaISOaDDMesYYYY } from '@/helpers/dates';
+import { useDocumentosStore } from '@/stores/documentos';
+import { convertirFechaISOaDDMesYYYY, formatDateYYYYMMDD } from '@/helpers/dates';
 
 const { formDataControlPrenatal } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la fecha
 const febreroFecha = ref('');
+
+// Computed para sincronización bidireccional
+const fechaSincronizada = computed({
+  get() {
+    // Prioridad 1: Si hay datos locales en formData, usarlos
+    if (formDataControlPrenatal.febreroFecha && formDataControlPrenatal.febreroFecha.trim() !== '') {
+      return formDataControlPrenatal.febreroFecha;
+    }
+    // Prioridad 2: Si no hay datos locales pero sí en BD, usar BD
+    if (documentos.currentDocument && documentos.currentDocument.febreroFecha) {
+      return formatDateYYYYMMDD(documentos.currentDocument.febreroFecha);
+    }
+    // Prioridad 3: Usar valor local (puede ser vacío)
+    return febreroFecha.value;
+  },
+  set(value) {
+    febreroFecha.value = value;
+    
+    // Sincronizar con formData solo si es válida
+    if (value && value.trim() !== '' && value.length === 10) {
+      const fecha = new Date(value + 'T00:00:00');
+      if (!isNaN(fecha.getTime())) {
+        formDataControlPrenatal.febreroFecha = value;
+      } else {
+        formDataControlPrenatal.febreroFecha = null;
+      }
+    } else {
+      formDataControlPrenatal.febreroFecha = null;
+    }
+  }
+});
+
+// Sincronizar febreroFecha con formData cuando cambie localmente
+watch(febreroFecha, (newValue) => {
+  if (newValue && newValue.trim() !== '' && newValue.length === 10) {
+    const fecha = new Date(newValue + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.febreroFecha = newValue;
+    } else {
+      formDataControlPrenatal.febreroFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.febreroFecha = null;
+  }
+});
+
+// Watch adicional para asegurar sincronización inmediata
+watch(febreroFecha, (newValue) => {
+  // Si el campo está vacío, asignar null inmediatamente al formData
+  if (!newValue || newValue.trim() === '' || newValue.length !== 10) {
+    formDataControlPrenatal.febreroFecha = null;
+  }
+}, { immediate: true });
 
 // Función para validar que la fecha sea del mes de febrero
 const validarFechaFebrero = (fecha) => {
@@ -63,22 +118,23 @@ const esAnoBisiesto = (ano) => {
 };
 
 onMounted(() => {
-  // Verificar si formDataControlPrenatal.febreroFecha tiene un valor y establecerlo
-  if (formDataControlPrenatal.febreroFecha) {
-    febreroFecha.value = formDataControlPrenatal.febreroFecha;
-  }
+  // Inicializar el valor local con la fecha sincronizada
+  febreroFecha.value = fechaSincronizada.value;
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para febreroFecha
-  if (!formDataControlPrenatal.febreroFecha) {
-    formDataControlPrenatal.febreroFecha = febreroFecha.value;
+  // Confirmar el estado final del campo febreroFecha
+  // Ahora que el backend acepta null, usarlo en lugar de delete
+  if (febreroFecha.value && febreroFecha.value.trim() !== '' && febreroFecha.value.length === 10) {
+    const fecha = new Date(febreroFecha.value + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.febreroFecha = febreroFecha.value;
+    } else {
+      formDataControlPrenatal.febreroFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.febreroFecha = null;
   }
-});
-
-// Sincronizar febreroFecha con formData
-watch(febreroFecha, (newValue) => {
-  formDataControlPrenatal.febreroFecha = newValue;
 });
 </script>
 
@@ -94,7 +150,7 @@ watch(febreroFecha, (newValue) => {
         type="date" 
         name="febreroFecha" 
         placeholder="Seleccione una fecha" 
-        v-model="febreroFecha"
+        v-model="fechaSincronizada"
         :min="`${obtenerAnoActual()}-02-01`"
         :max="`${obtenerAnoActual()}-02-${esAnoBisiesto(obtenerAnoActual()) ? '29' : '28'}`"
       />

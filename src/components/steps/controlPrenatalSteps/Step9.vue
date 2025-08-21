@@ -6,7 +6,7 @@ import { useFormDataStore } from '@/stores/formDataStore';
 const { formDataControlPrenatal } = useFormDataStore();
 
 // Valor local para la pregunta principal
-const ivsaPregunta = ref('No');
+const ivsaPregunta = ref('Si');
 
 const ivsa = ref(''); // Edad de inicio de vida sexual activa
 

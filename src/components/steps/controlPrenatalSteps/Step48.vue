@@ -1,12 +1,87 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
-import { convertirFechaISOaDDMesYYYY } from '@/helpers/dates';
+import { useDocumentosStore } from '@/stores/documentos';
+import { convertirFechaISOaDDMesYYYY, formatDateYYYYMMDD } from '@/helpers/dates';
 
 const { formDataControlPrenatal } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la fecha
 const julioFecha = ref('');
+
+// Computed para sincronización bidireccional
+const fechaSincronizada = computed({
+  get() {
+    // Prioridad 1: Si hay datos locales en formData, usarlos
+    if (formDataControlPrenatal.julioFecha && formDataControlPrenatal.julioFecha.trim() !== '') {
+      return formDataControlPrenatal.julioFecha;
+    }
+    // Prioridad 2: Si no hay datos locales pero sí en BD, usar BD
+    if (documentos.currentDocument && documentos.currentDocument.julioFecha) {
+      return formatDateYYYYMMDD(documentos.currentDocument.julioFecha);
+    }
+    // Prioridad 3: Usar valor local (puede ser vacío)
+    return julioFecha.value;
+  },
+  set(value) {
+    julioFecha.value = value;
+    
+    // Sincronizar con formData solo si es válida
+    if (value && value.trim() !== '' && value.length === 10) {
+      const fecha = new Date(value + 'T00:00:00');
+      if (!isNaN(fecha.getTime())) {
+        formDataControlPrenatal.julioFecha = value;
+      } else {
+        formDataControlPrenatal.julioFecha = null;
+      }
+    } else {
+      formDataControlPrenatal.julioFecha = null;
+    }
+  }
+});
+
+// Sincronizar julioFecha con formData cuando cambie localmente
+watch(julioFecha, (newValue) => {
+  if (newValue && newValue.trim() !== '' && newValue.length === 10) {
+    const fecha = new Date(newValue + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.julioFecha = newValue;
+    } else {
+      formDataControlPrenatal.julioFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.julioFecha = null;
+  }
+});
+
+// Watch adicional para asegurar sincronización inmediata
+watch(julioFecha, (newValue) => {
+  // Si el campo está vacío, asignar null inmediatamente al formData
+  if (!newValue || newValue.trim() === '' || newValue.length !== 10) {
+    formDataControlPrenatal.julioFecha = null;
+  }
+}, { immediate: true });
+
+onMounted(() => {
+  // Inicializar el valor local con la fecha sincronizada
+  julioFecha.value = fechaSincronizada.value;
+});
+
+onUnmounted(() => {
+  // Confirmar el estado final del campo julioFecha
+  // Ahora que el backend acepta null, usarlo en lugar de delete
+  if (julioFecha.value && julioFecha.value.trim() !== '' && julioFecha.value.length === 10) {
+    const fecha = new Date(julioFecha.value + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.julioFecha = julioFecha.value;
+    } else {
+      formDataControlPrenatal.julioFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.julioFecha = null;
+  }
+});
 
 // Función para validar que la fecha sea del mes de julio
 const validarFechaJulio = (fecha) => {
@@ -57,24 +132,6 @@ const obtenerAnoActual = () => {
   return new Date().getFullYear();
 };
 
-onMounted(() => {
-  // Verificar si formDataControlPrenatal.julioFecha tiene un valor y establecerlo
-  if (formDataControlPrenatal.julioFecha) {
-    julioFecha.value = formDataControlPrenatal.julioFecha;
-  }
-});
-
-onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para julioFecha
-  if (!formDataControlPrenatal.julioFecha) {
-    formDataControlPrenatal.julioFecha = julioFecha.value;
-  }
-});
-
-// Sincronizar julioFecha con formData
-watch(julioFecha, (newValue) => {
-  formDataControlPrenatal.julioFecha = newValue;
-});
 </script>
 
 <template>
@@ -89,7 +146,7 @@ watch(julioFecha, (newValue) => {
         type="date" 
         name="julioFecha" 
         placeholder="Seleccione una fecha" 
-        v-model="julioFecha"
+        v-model="fechaSincronizada"
         :min="`${obtenerAnoActual()}-07-01`"
         :max="`${obtenerAnoActual()}-07-31`"
       />

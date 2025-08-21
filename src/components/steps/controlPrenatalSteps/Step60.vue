@@ -1,12 +1,67 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
-import { convertirFechaISOaDDMesYYYY } from '@/helpers/dates';
+import { useDocumentosStore } from '@/stores/documentos';
+import { convertirFechaISOaDDMesYYYY, formatDateYYYYMMDD } from '@/helpers/dates';
 
 const { formDataControlPrenatal } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la fecha
 const septiembreFecha = ref('');
+
+// Computed para sincronización bidireccional
+const fechaSincronizada = computed({
+  get() {
+    // Prioridad 1: Si hay datos locales en formData, usarlos
+    if (formDataControlPrenatal.septiembreFecha && formDataControlPrenatal.septiembreFecha.trim() !== '') {
+      return formDataControlPrenatal.septiembreFecha;
+    }
+    // Prioridad 2: Si no hay datos locales pero sí en BD, usar BD
+    if (documentos.currentDocument && documentos.currentDocument.septiembreFecha) {
+      return formatDateYYYYMMDD(documentos.currentDocument.septiembreFecha);
+    }
+    // Prioridad 3: Usar valor local (puede ser vacío)
+    return septiembreFecha.value;
+  },
+  set(value) {
+    septiembreFecha.value = value;
+    
+    // Sincronizar con formData solo si es válida
+    if (value && value.trim() !== '' && value.length === 10) {
+      const fecha = new Date(value + 'T00:00:00');
+      if (!isNaN(fecha.getTime())) {
+        formDataControlPrenatal.septiembreFecha = value;
+      } else {
+        formDataControlPrenatal.septiembreFecha = null;
+      }
+    } else {
+      formDataControlPrenatal.septiembreFecha = null;
+    }
+  }
+});
+
+// Sincronizar septiembreFecha con formData cuando cambie localmente
+watch(septiembreFecha, (newValue) => {
+  if (newValue && newValue.trim() !== '' && newValue.length === 10) {
+    const fecha = new Date(newValue + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.septiembreFecha = newValue;
+    } else {
+      formDataControlPrenatal.septiembreFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.septiembreFecha = null;
+  }
+});
+
+// Watch adicional para asegurar sincronización inmediata
+watch(septiembreFecha, (newValue) => {
+  // Si el campo está vacío, asignar null inmediatamente al formData
+  if (!newValue || newValue.trim() === '' || newValue.length !== 10) {
+    formDataControlPrenatal.septiembreFecha = null;
+  }
+}, { immediate: true });
 
 // Función para validar que la fecha sea del mes de septiembre
 const validarFechaSeptiembre = (fecha) => {
@@ -58,22 +113,23 @@ const obtenerAnoActual = () => {
 };
 
 onMounted(() => {
-  // Verificar si formDataControlPrenatal.septiembreFecha tiene un valor y establecerlo
-  if (formDataControlPrenatal.septiembreFecha) {
-    septiembreFecha.value = formDataControlPrenatal.septiembreFecha;
-  }
+  // Inicializar el valor local con la fecha sincronizada
+  septiembreFecha.value = fechaSincronizada.value;
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para septiembreFecha
-  if (!formDataControlPrenatal.septiembreFecha) {
-    formDataControlPrenatal.septiembreFecha = septiembreFecha.value;
+  // Confirmar el estado final del campo septiembreFecha
+  // Ahora que el backend acepta null, usarlo en lugar de delete
+  if (septiembreFecha.value && septiembreFecha.value.trim() !== '' && septiembreFecha.value.length === 10) {
+    const fecha = new Date(septiembreFecha.value + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.septiembreFecha = septiembreFecha.value;
+    } else {
+      formDataControlPrenatal.septiembreFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.septiembreFecha = null;
   }
-});
-
-// Sincronizar septiembreFecha con formData
-watch(septiembreFecha, (newValue) => {
-  formDataControlPrenatal.septiembreFecha = newValue;
 });
 </script>
 
@@ -89,7 +145,7 @@ watch(septiembreFecha, (newValue) => {
         type="date" 
         name="septiembreFecha" 
         placeholder="Seleccione una fecha" 
-        v-model="septiembreFecha"
+        v-model="fechaSincronizada"
         :min="`${obtenerAnoActual()}-09-01`"
         :max="`${obtenerAnoActual()}-09-30`"
       />

@@ -71,19 +71,15 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para abrilSdg
-  if (!formDataControlPrenatal.abrilSdg) {
-    formDataControlPrenatal.abrilSdg = abrilSdg.value ? parseInt(abrilSdg.value) : undefined;
-  }
+  // Asegurar que formData tenga los valores convertidos a números
+  formDataControlPrenatal.abrilSdg = abrilSdg.value ? parseInt(abrilSdg.value) : null;
 });
 
 // Sincronizar abrilSdg con formData
 watch(abrilSdg, (newValue) => {
-  if (newValue && newValue !== '') {
-    formDataControlPrenatal.abrilSdg = parseInt(newValue);
-  } else {
-    formDataControlPrenatal.abrilSdg = undefined;
-  }
+  // Convertir a número antes de almacenar
+  const sdgNum = newValue ? parseInt(newValue) : null;
+  formDataControlPrenatal.abrilSdg = sdgNum;
 });
 
 // Computed para la categoría de gestación

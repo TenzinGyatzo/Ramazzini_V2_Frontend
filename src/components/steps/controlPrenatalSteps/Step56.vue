@@ -143,6 +143,8 @@ onUnmounted(() => {
   // Guardar la tensión arterial completa en el campo de agosto
   if (tensionArterialCompleta.value) {
     formDataControlPrenatal.agostoTia = tensionArterialCompleta.value;
+  } else {
+    formDataControlPrenatal.agostoTia = null;
   }
 });
 
@@ -155,6 +157,8 @@ watch([tensionArterialSistolica, tensionArterialDiastolica], ([sistolica, diasto
   // Guardar en el campo de agosto cuando se complete
   if (tensionCompleta) {
     formDataControlPrenatal.agostoTia = tensionCompleta;
+  } else {
+    formDataControlPrenatal.agostoTia = null;
   }
 });
 

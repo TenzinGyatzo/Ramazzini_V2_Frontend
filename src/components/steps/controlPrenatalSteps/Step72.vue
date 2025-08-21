@@ -1,12 +1,87 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
-import { convertirFechaISOaDDMesYYYY } from '@/helpers/dates';
+import { useDocumentosStore } from '@/stores/documentos';
+import { convertirFechaISOaDDMesYYYY, formatDateYYYYMMDD } from '@/helpers/dates';
 
 const { formDataControlPrenatal } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la fecha
 const noviembreFecha = ref('');
+
+// Computed para sincronización bidireccional
+const fechaSincronizada = computed({
+  get() {
+    // Prioridad 1: Si hay datos locales en formData, usarlos
+    if (formDataControlPrenatal.noviembreFecha && formDataControlPrenatal.noviembreFecha.trim() !== '') {
+      return formDataControlPrenatal.noviembreFecha;
+    }
+    // Prioridad 2: Si no hay datos locales pero sí en BD, usar BD
+    if (documentos.currentDocument && documentos.currentDocument.noviembreFecha) {
+      return formatDateYYYYMMDD(documentos.currentDocument.noviembreFecha);
+    }
+    // Prioridad 3: Usar valor local (puede ser vacío)
+    return noviembreFecha.value;
+  },
+  set(value) {
+    noviembreFecha.value = value;
+    
+    // Sincronizar con formData solo si es válida
+    if (value && value.trim() !== '' && value.length === 10) {
+      const fecha = new Date(value + 'T00:00:00');
+      if (!isNaN(fecha.getTime())) {
+        formDataControlPrenatal.noviembreFecha = value;
+      } else {
+        formDataControlPrenatal.noviembreFecha = null;
+      }
+    } else {
+      formDataControlPrenatal.noviembreFecha = null;
+    }
+  }
+});
+
+// Sincronizar noviembreFecha con formData cuando cambie localmente
+watch(noviembreFecha, (newValue) => {
+  if (newValue && newValue.trim() !== '' && newValue.length === 10) {
+    const fecha = new Date(newValue + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.noviembreFecha = newValue;
+    } else {
+      formDataControlPrenatal.noviembreFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.noviembreFecha = null;
+  }
+});
+
+// Watch adicional para asegurar sincronización inmediata
+watch(noviembreFecha, (newValue) => {
+  // Si el campo está vacío, asignar null inmediatamente al formData
+  if (!newValue || newValue.trim() === '' || newValue.length !== 10) {
+    formDataControlPrenatal.noviembreFecha = null;
+  }
+}, { immediate: true });
+
+onMounted(() => {
+  // Inicializar el valor local con la fecha sincronizada
+  noviembreFecha.value = fechaSincronizada.value;
+});
+
+onUnmounted(() => {
+  // Confirmar el estado final del campo noviembreFecha
+  // Ahora que el backend acepta null, usarlo en lugar de delete
+  if (noviembreFecha.value && noviembreFecha.value.trim() !== '' && noviembreFecha.value.length === 10) {
+    const fecha = new Date(noviembreFecha.value + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.noviembreFecha = noviembreFecha.value;
+    } else {
+      formDataControlPrenatal.noviembreFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.noviembreFecha = null;
+  }
+});
 
 // Función para validar que la fecha sea del mes de noviembre
 const validarFechaNoviembre = (fecha) => {
@@ -57,24 +132,6 @@ const obtenerAnoActual = () => {
   return new Date().getFullYear();
 };
 
-onMounted(() => {
-  // Verificar si formDataControlPrenatal.noviembreFecha tiene un valor y establecerlo
-  if (formDataControlPrenatal.noviembreFecha) {
-    noviembreFecha.value = formDataControlPrenatal.noviembreFecha;
-  }
-});
-
-onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para noviembreFecha
-  if (!formDataControlPrenatal.noviembreFecha) {
-    formDataControlPrenatal.noviembreFecha = noviembreFecha.value;
-  }
-});
-
-// Sincronizar noviembreFecha con formData
-watch(noviembreFecha, (newValue) => {
-  formDataControlPrenatal.noviembreFecha = newValue;
-});
 </script>
 
 <template>
@@ -89,7 +146,7 @@ watch(noviembreFecha, (newValue) => {
         type="date" 
         name="noviembreFecha" 
         placeholder="Seleccione una fecha" 
-        v-model="noviembreFecha"
+        v-model="fechaSincronizada"
         :min="`${obtenerAnoActual()}-11-01`"
         :max="`${obtenerAnoActual()}-11-30`"
       />

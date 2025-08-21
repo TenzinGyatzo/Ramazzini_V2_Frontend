@@ -54,19 +54,15 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para julioFcf
-  if (!formDataControlPrenatal.julioFcf) {
-    formDataControlPrenatal.julioFcf = julioFcf.value ? parseInt(julioFcf.value) : undefined;
-  }
+  // Asegurar que formData tenga los valores convertidos a números
+  formDataControlPrenatal.julioFcf = julioFcf.value ? parseInt(julioFcf.value) : null;
 });
 
 // Sincronizar julioFcf con formData
 watch(julioFcf, (newValue) => {
-  if (newValue && newValue !== '') {
-    formDataControlPrenatal.julioFcf = parseInt(newValue);
-  } else {
-    formDataControlPrenatal.julioFcf = undefined;
-  }
+  // Convertir a número antes de almacenar
+  const fcfNum = newValue ? parseInt(newValue) : null;
+  formDataControlPrenatal.julioFcf = fcfNum;
 });
 
 // Computed para la categoría de FCF

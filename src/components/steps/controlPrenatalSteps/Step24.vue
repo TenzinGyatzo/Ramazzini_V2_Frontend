@@ -1,12 +1,87 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
-import { convertirFechaISOaDDMesYYYY } from '@/helpers/dates';
+import { useDocumentosStore } from '@/stores/documentos';
+import { convertirFechaISOaDDMesYYYY, formatDateYYYYMMDD } from '@/helpers/dates';
 
 const { formDataControlPrenatal } = useFormDataStore();
+const documentos = useDocumentosStore();
 
 // Valor local para la fecha
 const marzoFecha = ref('');
+
+// Computed para sincronización bidireccional
+const fechaSincronizada = computed({
+  get() {
+    // Prioridad 1: Si hay datos locales en formData, usarlos
+    if (formDataControlPrenatal.marzoFecha && formDataControlPrenatal.marzoFecha.trim() !== '') {
+      return formDataControlPrenatal.marzoFecha;
+    }
+    // Prioridad 2: Si no hay datos locales pero sí en BD, usar BD
+    if (documentos.currentDocument && documentos.currentDocument.marzoFecha) {
+      return formatDateYYYYMMDD(documentos.currentDocument.marzoFecha);
+    }
+    // Prioridad 3: Usar valor local (puede ser vacío)
+    return marzoFecha.value;
+  },
+  set(value) {
+    marzoFecha.value = value;
+    
+    // Sincronizar con formData solo si es válida
+    if (value && value.trim() !== '' && value.length === 10) {
+      const fecha = new Date(value + 'T00:00:00');
+      if (!isNaN(fecha.getTime())) {
+        formDataControlPrenatal.marzoFecha = value;
+      } else {
+        formDataControlPrenatal.marzoFecha = null;
+      }
+    } else {
+      formDataControlPrenatal.marzoFecha = null;
+    }
+  }
+});
+
+// Sincronizar marzoFecha con formData cuando cambie localmente
+watch(marzoFecha, (newValue) => {
+  if (newValue && newValue.trim() !== '' && newValue.length === 10) {
+    const fecha = new Date(newValue + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.marzoFecha = newValue;
+    } else {
+      formDataControlPrenatal.marzoFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.marzoFecha = null;
+  }
+});
+
+// Watch adicional para asegurar sincronización inmediata
+watch(marzoFecha, (newValue) => {
+  // Si el campo está vacío, asignar null inmediatamente al formData
+  if (!newValue || newValue.trim() === '' || newValue.length !== 10) {
+    formDataControlPrenatal.marzoFecha = null;
+  }
+}, { immediate: true });
+
+onMounted(() => {
+  // Inicializar el valor local con la fecha sincronizada
+  marzoFecha.value = fechaSincronizada.value;
+});
+
+onUnmounted(() => {
+  // Confirmar el estado final del campo marzoFecha
+  // Ahora que el backend acepta null, usarlo en lugar de delete
+  if (marzoFecha.value && marzoFecha.value.trim() !== '' && marzoFecha.value.length === 10) {
+    const fecha = new Date(marzoFecha.value + 'T00:00:00');
+    if (!isNaN(fecha.getTime())) {
+      formDataControlPrenatal.marzoFecha = marzoFecha.value;
+    } else {
+      formDataControlPrenatal.marzoFecha = null;
+    }
+  } else {
+    formDataControlPrenatal.marzoFecha = null;
+  }
+});
 
 // Función para validar que la fecha sea del mes de marzo
 const validarFechaMarzo = (fecha) => {
@@ -57,24 +132,6 @@ const obtenerAnoActual = () => {
   return new Date().getFullYear();
 };
 
-onMounted(() => {
-  // Verificar si formDataControlPrenatal.marzoFecha tiene un valor y establecerlo
-  if (formDataControlPrenatal.marzoFecha) {
-    marzoFecha.value = formDataControlPrenatal.marzoFecha;
-  }
-});
-
-onUnmounted(() => {
-  // Asegurar que formData tenga un valor inicial para marzoFecha
-  if (!formDataControlPrenatal.marzoFecha) {
-    formDataControlPrenatal.marzoFecha = marzoFecha.value;
-  }
-});
-
-// Sincronizar marzoFecha con formData
-watch(marzoFecha, (newValue) => {
-  formDataControlPrenatal.marzoFecha = newValue;
-});
 </script>
 
 <template>
@@ -89,7 +146,7 @@ watch(marzoFecha, (newValue) => {
         type="date" 
         name="marzoFecha" 
         placeholder="Seleccione una fecha" 
-        v-model="marzoFecha"
+        v-model="fechaSincronizada"
         :min="`${obtenerAnoActual()}-03-01`"
         :max="`${obtenerAnoActual()}-03-31`"
       />

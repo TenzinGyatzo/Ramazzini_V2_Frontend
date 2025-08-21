@@ -143,6 +143,8 @@ onUnmounted(() => {
   // Guardar la tensión arterial completa en el campo de diciembre
   if (tensionArterialCompleta.value) {
     formDataControlPrenatal.diciembreTia = tensionArterialCompleta.value;
+  } else {
+    formDataControlPrenatal.diciembreTia = null;
   }
 });
 
@@ -155,6 +157,8 @@ watch([tensionArterialSistolica, tensionArterialDiastolica], ([sistolica, diasto
   // Guardar en el campo de diciembre cuando se complete
   if (tensionCompleta) {
     formDataControlPrenatal.diciembreTia = tensionCompleta;
+  } else {
+    formDataControlPrenatal.diciembreTia = null;
   }
 });
 
