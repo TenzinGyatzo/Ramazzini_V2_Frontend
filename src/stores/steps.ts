@@ -61,10 +61,26 @@ export const useStepsStore = defineStore("steps", () => {
 
     isNavigating.value = true;
 
-    if (currentStep.value < steps.value.length) {
-      currentStep.value++;
+    // Lógica especial para controlPrenatal
+    if (documentos.currentTypeOfDocument === 'controlPrenatal') {
+      const pasosQueSaltanA84 = [17, 23, 29, 35, 41, 47, 53, 59, 65, 71, 77];
+      
+      if (pasosQueSaltanA84.includes(currentStep.value)) {
+        // Saltar directamente al paso 84 para los pasos de fondo uterino mensual
+        currentStep.value = 84;
+      } else if (currentStep.value < steps.value.length) {
+        // Navegación normal para otros pasos
+        currentStep.value++;
+      } else {
+        currentStep.value = steps.value.length + 1;
+      }
     } else {
-      currentStep.value = steps.value.length + 1;
+      // Navegación normal para otros tipos de documento
+      if (currentStep.value < steps.value.length) {
+        currentStep.value++;
+      } else {
+        currentStep.value = steps.value.length + 1;
+      }
     }
 
     setTimeout(() => {

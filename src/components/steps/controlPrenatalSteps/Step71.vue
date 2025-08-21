@@ -26,8 +26,8 @@ const determinarCategoriaFondoUterino = (fondoUterino, semanaGestacion) => {
       color = 'text-red-800';
       bgColor = 'bg-red-100';
       borderColor = 'border-red-300';
-    } else if (fondoUterinoNum >= 0 && fondoUterinoNum <= 40) {
-      categoria = 'Rango normal';
+    } else if (fondoUterinoNum >= 0 && fondoUterinoNum <= 50) {
+      categoria = 'Rango general normal';
       color = 'text-green-600';
       bgColor = 'bg-green-50';
       borderColor = 'border-green-200';
@@ -43,107 +43,32 @@ const determinarCategoriaFondoUterino = (fondoUterino, semanaGestacion) => {
   const semanaNum = parseInt(semanaGestacion);
   if (isNaN(semanaNum)) return '';
   
-  // Clasificación según estándares médicos por semana de gestación
-  if (semanaNum >= 12 && semanaNum <= 16) {
-    // Primer trimestre
-    if (fondoUterinoNum >= 0 && fondoUterinoNum <= 3) {
-      categoria = 'Normal para 12-16 semanas';
-      color = 'text-green-600';
-      bgColor = 'bg-green-50';
-      borderColor = 'border-green-200';
-    } else if (fondoUterinoNum > 3 && fondoUterinoNum <= 5) {
-      categoria = 'Ligeramente elevado';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else {
-      categoria = 'Fuera de rango esperado';
-      color = 'text-red-600';
-      bgColor = 'bg-red-50';
-      borderColor = 'border-red-200';
-    }
-  } else if (semanaNum >= 20 && semanaNum <= 24) {
-    // Segundo trimestre temprano
-    if (fondoUterinoNum >= 16 && fondoUterinoNum <= 24) {
-      categoria = 'Normal para 20-24 semanas';
-      color = 'text-green-600';
-      bgColor = 'bg-green-50';
-      borderColor = 'border-green-200';
-    } else if (fondoUterinoNum >= 12 && fondoUterinoNum < 16) {
-      categoria = 'Ligeramente bajo';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else if (fondoUterinoNum > 24 && fondoUterinoNum <= 28) {
-      categoria = 'Ligeramente elevado';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else {
-      categoria = 'Fuera de rango esperado';
-      color = 'text-red-600';
-      bgColor = 'bg-red-50';
-      borderColor = 'border-red-200';
-    }
-  } else if (semanaNum >= 28 && semanaNum <= 32) {
-    // Segundo trimestre tardío
-    if (fondoUterinoNum >= 24 && fondoUterinoNum <= 32) {
-      categoria = 'Normal para 28-32 semanas';
-      color = 'text-green-600';
-      bgColor = 'bg-green-50';
-      borderColor = 'border-green-200';
-    } else if (fondoUterinoNum >= 20 && fondoUterinoNum < 24) {
-      categoria = 'Ligeramente bajo';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else if (fondoUterinoNum > 32 && fondoUterinoNum <= 36) {
-      categoria = 'Ligeramente elevado';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else {
-      categoria = 'Fuera de rango esperado';
-      color = 'text-red-600';
-      bgColor = 'bg-red-50';
-      borderColor = 'border-red-200';
-    }
-  } else if (semanaNum >= 36 && semanaNum <= 40) {
-    // Tercer trimestre
-    if (fondoUterinoNum >= 32 && fondoUterinoNum <= 40) {
-      categoria = 'Normal para 36-40 semanas';
-      color = 'text-green-600';
-      bgColor = 'bg-green-50';
-      borderColor = 'border-green-200';
-    } else if (fondoUterinoNum >= 28 && fondoUterinoNum < 32) {
-      categoria = 'Ligeramente bajo';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else if (fondoUterinoNum > 40 && fondoUterinoNum <= 44) {
-      categoria = 'Ligeramente elevado';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else {
-      categoria = 'Fuera de rango esperado';
-      color = 'text-red-600';
-      bgColor = 'bg-red-50';
-      borderColor = 'border-red-200';
-    }
+  // Usar la misma lógica que calcularFondoUterinoEsperado para consistencia
+  const fondoEsperado = semanaNum;
+  const rangoMin = Math.max(0, semanaNum - 2);
+  const rangoMax = semanaNum + 2;
+  
+  // Clasificación basada en los rangos calculados
+  if (fondoUterinoNum >= rangoMin && fondoUterinoNum <= rangoMax) {
+    categoria = `Normal para semana ${semanaNum}`;
+    color = 'text-green-600';
+    bgColor = 'bg-green-50';
+    borderColor = 'border-green-200';
+  } else if (fondoUterinoNum >= 0 && fondoUterinoNum < rangoMin) {
+    categoria = 'Ligeramente bajo';
+    color = 'text-yellow-600';
+    bgColor = 'bg-yellow-50';
+    borderColor = 'border-yellow-200';
+  } else if (fondoUterinoNum > rangoMax && fondoUterinoNum <= rangoMax + 4) {
+    categoria = 'Ligeramente elevado';
+    color = 'text-yellow-600';
+    bgColor = 'bg-yellow-50';
+    borderColor = 'border-yellow-200';
   } else {
-    // Otras semanas
-    if (fondoUterinoNum >= 0 && fondoUterinoNum <= 40) {
-      categoria = 'Rango general normal';
-      color = 'text-blue-600';
-      bgColor = 'bg-blue-50';
-      borderColor = 'border-blue-200';
-    } else {
-      categoria = 'Fuera de rango general';
-      color = 'text-red-600';
-      bgColor = 'bg-red-50';
-      borderColor = 'border-red-200';
-    }
+    categoria = 'Fuera de rango esperado';
+    color = 'text-red-600';
+    bgColor = 'bg-red-50';
+    borderColor = 'border-red-200';
   }
   
   return { categoria, color, bgColor, borderColor };

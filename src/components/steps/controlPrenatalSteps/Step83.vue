@@ -26,8 +26,8 @@ const determinarCategoriaFondoUterino = (fondoUterino, semanaGestacion) => {
       color = 'text-red-800';
       bgColor = 'bg-red-100';
       borderColor = 'border-red-300';
-    } else if (fondoUterinoNum >= 0 && fondoUterinoNum <= 40) {
-      categoria = 'Rango normal';
+    } else if (fondoUterinoNum >= 0 && fondoUterinoNum <= 50) {
+      categoria = 'Rango general normal';
       color = 'text-green-600';
       bgColor = 'bg-green-50';
       borderColor = 'border-green-200';
@@ -43,107 +43,32 @@ const determinarCategoriaFondoUterino = (fondoUterino, semanaGestacion) => {
   const semanaNum = parseInt(semanaGestacion);
   if (isNaN(semanaNum)) return '';
   
-  // Clasificación según estándares médicos por semana de gestación
-  if (semanaNum >= 12 && semanaNum <= 16) {
-    // Primer trimestre
-    if (fondoUterinoNum >= 0 && fondoUterinoNum <= 3) {
-      categoria = 'Normal para 12-16 semanas';
-      color = 'text-green-600';
-      bgColor = 'bg-green-50';
-      borderColor = 'border-green-200';
-    } else if (fondoUterinoNum > 3 && fondoUterinoNum <= 5) {
-      categoria = 'Ligeramente elevado';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else {
-      categoria = 'Fuera de rango esperado';
-      color = 'text-red-600';
-      bgColor = 'bg-red-50';
-      borderColor = 'border-red-200';
-    }
-  } else if (semanaNum >= 20 && semanaNum <= 24) {
-    // Segundo trimestre temprano
-    if (fondoUterinoNum >= 16 && fondoUterinoNum <= 24) {
-      categoria = 'Normal para 20-24 semanas';
-      color = 'text-green-600';
-      bgColor = 'bg-green-50';
-      borderColor = 'border-green-200';
-    } else if (fondoUterinoNum >= 12 && fondoUterinoNum < 16) {
-      categoria = 'Ligeramente bajo';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else if (fondoUterinoNum > 24 && fondoUterinoNum <= 28) {
-      categoria = 'Ligeramente elevado';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else {
-      categoria = 'Fuera de rango esperado';
-      color = 'text-red-600';
-      bgColor = 'bg-red-50';
-      borderColor = 'border-red-200';
-    }
-  } else if (semanaNum >= 28 && semanaNum <= 32) {
-    // Segundo trimestre tardío
-    if (fondoUterinoNum >= 24 && fondoUterinoNum <= 32) {
-      categoria = 'Normal para 28-32 semanas';
-      color = 'text-green-600';
-      bgColor = 'bg-green-50';
-      borderColor = 'border-green-200';
-    } else if (fondoUterinoNum >= 20 && fondoUterinoNum < 24) {
-      categoria = 'Ligeramente bajo';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else if (fondoUterinoNum > 32 && fondoUterinoNum <= 36) {
-      categoria = 'Ligeramente elevado';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else {
-      categoria = 'Fuera de rango esperado';
-      color = 'text-red-600';
-      bgColor = 'bg-red-50';
-      borderColor = 'border-red-200';
-    }
-  } else if (semanaNum >= 36 && semanaNum <= 40) {
-    // Tercer trimestre
-    if (fondoUterinoNum >= 32 && fondoUterinoNum <= 40) {
-      categoria = 'Normal para 36-40 semanas';
-      color = 'text-green-600';
-      bgColor = 'bg-green-50';
-      borderColor = 'border-green-200';
-    } else if (fondoUterinoNum >= 28 && fondoUterinoNum < 32) {
-      categoria = 'Ligeramente bajo';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else if (fondoUterinoNum > 40 && fondoUterinoNum <= 44) {
-      categoria = 'Ligeramente elevado';
-      color = 'text-yellow-600';
-      bgColor = 'bg-yellow-50';
-      borderColor = 'border-yellow-200';
-    } else {
-      categoria = 'Fuera de rango esperado';
-      color = 'text-red-600';
-      bgColor = 'bg-red-50';
-      borderColor = 'border-red-200';
-    }
+  // Usar la misma lógica que calcularFondoUterinoEsperado para consistencia
+  const fondoEsperado = semanaNum;
+  const rangoMin = Math.max(0, semanaNum - 2);
+  const rangoMax = semanaNum + 2;
+  
+  // Clasificación basada en los rangos calculados
+  if (fondoUterinoNum >= rangoMin && fondoUterinoNum <= rangoMax) {
+    categoria = `Normal para semana ${semanaNum}`;
+    color = 'text-green-600';
+    bgColor = 'bg-green-50';
+    borderColor = 'border-green-200';
+  } else if (fondoUterinoNum >= 0 && fondoUterinoNum < rangoMin) {
+    categoria = 'Ligeramente bajo';
+    color = 'text-yellow-600';
+    bgColor = 'bg-yellow-50';
+    borderColor = 'border-yellow-200';
+  } else if (fondoUterinoNum > rangoMax && fondoUterinoNum <= rangoMax + 4) {
+    categoria = 'Ligeramente elevado';
+    color = 'text-yellow-600';
+    bgColor = 'bg-yellow-50';
+    borderColor = 'border-yellow-200';
   } else {
-    // Otras semanas
-    if (fondoUterinoNum >= 0 && fondoUterinoNum <= 40) {
-      categoria = 'Rango general normal';
-      color = 'text-blue-600';
-      bgColor = 'bg-blue-50';
-      borderColor = 'border-blue-200';
-    } else {
-      categoria = 'Fuera de rango general';
-      color = 'text-red-600';
-      bgColor = 'bg-red-50';
-      borderColor = 'border-red-200';
-    }
+    categoria = 'Fuera de rango esperado';
+    color = 'text-red-600';
+    bgColor = 'bg-red-50';
+    borderColor = 'border-red-200';
   }
   
   return { categoria, color, bgColor, borderColor };
@@ -151,17 +76,25 @@ const determinarCategoriaFondoUterino = (fondoUterino, semanaGestacion) => {
 
 // Función para calcular fondo uterino esperado según semana de gestación
 const calcularFondoUterinoEsperado = (semana) => {
-  if (!semana || semana === '') return null;
+  
+  if (!semana || semana === '') {
+    return null;
+  }
   
   const semanaNum = parseInt(semana);
-  if (isNaN(semanaNum)) return null;
+  if (isNaN(semanaNum)) {
+    console.log('Semana no es un número válido:', semana);
+    return null;
+  }
   
   // Fórmula aproximada: fondo uterino ≈ semana de gestación
   let fondoEsperado = semanaNum;
   let rangoMin = Math.max(0, semanaNum - 2);
   let rangoMax = semanaNum + 2;
   
-  return { fondoEsperado, rangoMin, rangoMax };
+  const resultado = { fondoEsperado, rangoMin, rangoMax };
+  
+  return resultado;
 };
 
 onMounted(() => {
@@ -185,12 +118,13 @@ watch(diciembreFondoUterino, (newValue) => {
 
 // Computed para la categoría del fondo uterino
 const categoriaFondoUterinoComputed = computed(() => {
-  return determinarCategoriaFondoUterino(diciembreFondoUterino.value, formDataControlPrenatal.diciembreSdgl);
+  return determinarCategoriaFondoUterino(diciembreFondoUterino.value, formDataControlPrenatal.diciembreSdg);
 });
 
 // Computed para el fondo uterino esperado
 const fondoUterinoEsperadoComputed = computed(() => {
-  return calcularFondoUterinoEsperado(formDataControlPrenatal.diciembreSdgl);
+  const resultado = calcularFondoUterinoEsperado(formDataControlPrenatal.diciembreSdg);
+  return resultado;
 });
 
 // Validaciones reactivas
@@ -312,8 +246,8 @@ const presetsFondoUterino = [
     </div>
 
     <!-- CÁLCULO ESPERADO DEL FONDO UTERINO -->
-    <div v-if="fondoUterinoEsperadoComputed && formDataControlPrenatal.diciembreSdgl" class="mb-2">
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div class="mb-2">
+      <div v-if="fondoUterinoEsperadoComputed && formDataControlPrenatal.diciembreSdg" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 class="font-semibold mb-2 text-blue-800">📏 Fondo uterino esperado según SDG:</h3>
         <div class="text-center">
           <p class="text-lg font-bold text-blue-800">
@@ -321,6 +255,18 @@ const presetsFondoUterino = [
           </p>
           <p class="text-sm text-blue-600 mt-1">
             Rango esperado: {{ fondoUterinoEsperadoComputed.rangoMin }}-{{ fondoUterinoEsperadoComputed.rangoMax }} cm
+          </p>
+        </div>
+      </div>
+      
+      <div v-else class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h3 class="font-semibold mb-2 text-gray-700">📏 Fondo uterino esperado según SDG:</h3>
+        <div class="text-center">
+          <p class="text-sm text-gray-600">
+            {{ formDataControlPrenatal.diciembreSdg ? 'Calculando...' : 'No hay semana de gestación disponible' }}
+          </p>
+          <p v-if="formDataControlPrenatal.diciembreSdg" class="text-xs text-gray-500 mt-1">
+            SDG: {{ formDataControlPrenatal.diciembreSdg }} semanas
           </p>
         </div>
       </div>
@@ -332,18 +278,17 @@ const presetsFondoUterino = [
         <h3 class="font-semibold mb-2 text-gray-700">📋 Clasificación por trimestres:</h3>
         <div class="grid grid-cols-1 gap-4">
           <div>
-            <ul class="text-sm text-gray-600 space-y-1">
-              <li><span class="font-normal text-blue-600">Primer trimestre:</span> 0-3 cm</li>
-              <li><span class="font-normal text-green-600">Segundo trimestre:</span> 12-24 cm</li>
-              <li><span class="font-normal text-orange-600">Tercer trimestre:</span> 32-40 cm</li>
-              <li><span class="font-normal text-purple-600">Postérmino:</span> 40+ cm</li>
+            <ul class="text-xs text-gray-600 space-y-1">
+              <li><span class="font-normal text-blue-600">Fórmula general:</span> Fondo uterino ≈ SDG</li>
+              <li><span class="font-normal text-green-600">Rango normal:</span> ±2 cm de la semana</li>
+              <li><span class="font-normal text-yellow-600">Ligeramente bajo/elevado:</span> ±2-6 cm de la semana</li>
+              <li><span class="font-normal text-red-600">Fuera de rango:</span> >6 cm de diferencia</li>
             </ul>
           </div>
           <div>
             <h4 class="font-medium text-gray-700 mb-2">Consideraciones:</h4>
             <ul class="text-sm text-gray-600 space-y-1">
               <li>• Se mide desde la sínfisis púbica</li>
-              <li>• Generalmente ≈ semana de gestación</li>
               <li>• Varía según constitución materna</li>
             </ul>
           </div>

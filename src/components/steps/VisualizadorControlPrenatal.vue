@@ -22,7 +22,7 @@ const goToStep = (stepNumber) => {
   <div
     class="flex flex-wrap justify-start gap-4 border-shadow w-full text-left rounded-lg p-5 transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-6xl mx-auto max-h-[66vh] sm:max-h-[68vh] md:max-h-[67vh] lg:max-h-[67vh] xl:max-h-[81vh] overflow-y-auto">
 
-    <!-- Empresa, Fecha y Motivo del Examen -->
+    <!-- Empresa y Fecha -->
     <div class="flex flex-wrap w-full gap-4">
       <!-- Empresa -->
       <div class="w-full md:w-2/5">
@@ -31,12 +31,12 @@ const goToStep = (stepNumber) => {
         </p>
       </div>
 
-      <!-- Fecha y Motivo del Examen -->
+      <!-- Fecha -->
       <div
         class="w-full md:w-[calc(60%-1rem)] flex flex-wrap gap-2 justify-start md:justify-end text-sm sm:text-base cursor-pointer"
         :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }"
         @click="goToStep(1)">
-        <p class="w-full md:w-auto">Fecha: <span class="font-semibold">{{
+        <p class="w-full md:w-auto">Inicio de Control Prenatal: <span class="font-semibold">{{
           formatDateDDMMYYYY(formData.formDataControlPrenatal.fechaInicioControlPrenatal) }}</span></p>
       </div>
     </div>
@@ -50,7 +50,7 @@ const goToStep = (stepNumber) => {
               NOMBRE
             </td>
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
-                              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
+              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
             </td>
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NACIMIENTO

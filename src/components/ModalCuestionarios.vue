@@ -90,7 +90,7 @@ const handleQuestionnaireSelect = (questionnaireType) => {
           </div>
 
           <!-- Vigilancia médica por tipo de actividad o entorno laboral -->
-          <div class="space-y-3">
+          <!-- <div class="space-y-3">
             <div class="flex items-center text-sm font-semibold text-emerald-700 uppercase tracking-wide mb-3">
               <i class="fas fa-hard-hat text-emerald-500 mr-3"></i>
               Actividad/Entorno Laboral
@@ -137,10 +137,10 @@ const handleQuestionnaireSelect = (questionnaireType) => {
                 Control para POE a Conducción y Operación de Maquinaria Pesada
               </button>
             </div>
-          </div>
+          </div> -->
 
           <!-- Vigilancia médica por riesgo específico -->
-          <div class="space-y-3">
+          <!-- <div class="space-y-3">
             <div class="flex items-center text-sm font-semibold text-emerald-700 uppercase tracking-wide mb-3">
               <i class="fas fa-exclamation-triangle text-emerald-500 mr-3"></i>
               Riesgo Específico
@@ -179,10 +179,10 @@ const handleQuestionnaireSelect = (questionnaireType) => {
                 Seguimiento Médico por Contacto con Agentes Biológicos
               </button>
             </div>
-          </div>
+          </div> -->
 
           <!-- Vigilancia médica por ergonomía y carga física -->
-          <div class="space-y-3">
+          <!-- <div class="space-y-3">
             <div class="flex items-center text-sm font-semibold text-emerald-700 uppercase tracking-wide mb-3">
               <i class="fas fa-running text-emerald-500 mr-3"></i>
               Ergonomía y Carga Física
@@ -205,10 +205,10 @@ const handleQuestionnaireSelect = (questionnaireType) => {
                 Riesgos por Manipulación Manual de Cargas
               </button>
             </div>
-          </div>
+          </div> -->
 
           <!-- Vigilancia médica por factores psicosociales -->
-          <div class="space-y-3">
+          <!-- <div class="space-y-3">
             <div class="flex items-center text-sm font-semibold text-emerald-700 uppercase tracking-wide mb-3">
               <i class="fas fa-brain text-emerald-500 mr-3"></i>
               Factores Psicosociales
@@ -231,7 +231,7 @@ const handleQuestionnaireSelect = (questionnaireType) => {
                 Seguimiento de Estrés Laboral y Fatiga Mental
               </button>
             </div>
-          </div>
+          </div> -->
         </div>
 
         <!-- Botón de cerrar -->

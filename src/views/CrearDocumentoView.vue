@@ -70,7 +70,7 @@ onMounted(() => {
     formData.consultarAlturaDisponible(trabajadorId.value)
       .then(({ altura, fuente }) => {
         if (altura) {
-          console.log(`Altura obtenida de ${fuente}: ${altura}m para control prenatal`);
+          // console.log(`Altura obtenida de ${fuente}: ${altura}m para control prenatal`);
         }
       })
       .catch(error => console.log('No se pudo consultar altura disponible:', error));
