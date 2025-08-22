@@ -219,7 +219,7 @@ function formatearCampo(campo) {
       <div class="w-full md:w-[calc(25%-0.5rem)] flex flex-wrap gap-2 justify-end text-sm sm:text-base cursor-pointer"
         :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }"
         @click="goToStep(1)">
-        <p class="w-full md:w-auto">Fecha: <span class="font-semibold">{{
+        <p class="w-full md:w-auto">Fecha: <span class="font-medium">{{
           formatDateDDMMYYYY(formData.formDataCertificado.fechaCertificado) }}</span></p>
       </div>
     </div>

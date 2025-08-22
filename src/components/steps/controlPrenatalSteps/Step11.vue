@@ -121,7 +121,10 @@ const fppModificada = computed(() => {
             <!-- FPP Calculada automáticamente -->
             <div v-else-if="fppCalculada" class="mt-1 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p class="text-sm text-blue-700">
-                    📅 FPP calculada (Fórmula de Näegele): <span class="font-semibold text-blue-800">{{ convertirFechaISOaDDMMYYYY(fppCalculada) }}</span>
+                    📅 FPP calculada (Fórmula de Näegele):
+                </p>
+                <p class="text-sm text-blue-800 text-center mt-1 font-semibold">
+                    {{ convertirFechaISOaDDMMYYYY(fppCalculada) }}
                 </p>
             </div>
 
@@ -143,7 +146,6 @@ const fppModificada = computed(() => {
                 <input type="date"
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     v-model="fpp"
-                    :disabled="!puedeCalcularFPP"
                     :placeholder="puedeCalcularFPP ? 'Puede usar la calculada o modificar manualmente' : 'Requiere FUM válida del paso anterior'">
             </div>
             

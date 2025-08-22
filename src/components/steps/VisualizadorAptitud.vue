@@ -180,7 +180,7 @@ const antidopingResumen = computed(() => {
       <div class="w-full md:w-[calc(25%-0.5rem)] flex flex-wrap gap-2 justify-end text-sm sm:text-base cursor-pointer"
         :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }"
         @click="goToStep(1)">
-        <p class="w-full md:w-auto">Fecha: <span class="font-semibold">{{
+        <p class="w-full md:w-auto">Fecha: <span class="font-medium">{{
            formatDateDDMMYYYY(formData.formDataAptitud.fechaAptitudPuesto) }}</span></p>
       </div>
     </div>
@@ -193,13 +193,13 @@ const antidopingResumen = computed(() => {
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NOMBRE
             </td>
-            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
                               {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
             </td>
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NACIMIENTO
             </td>
-            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ convertirFechaISOaDDMMYYYY(trabajadores.currentTrabajador.fechaNacimiento) }}
             </td>
           </tr>
@@ -207,13 +207,13 @@ const antidopingResumen = computed(() => {
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ESCOLARIDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.escolaridad }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               EDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}
             </td>
           </tr>
@@ -221,13 +221,13 @@ const antidopingResumen = computed(() => {
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               PUESTO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.puesto }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               SEXO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.sexo }}
             </td>
           </tr>
@@ -235,13 +235,13 @@ const antidopingResumen = computed(() => {
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ANTIGUEDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ calcularAntiguedad(trabajadores.currentTrabajador.fechaIngreso) }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               TELÉFONO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.telefono }}
             </td>
           </tr>
@@ -249,13 +249,13 @@ const antidopingResumen = computed(() => {
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ESTADO CIVIL
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.estadoCivil }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NUM. EMPLEADO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.numeroEmpleado || '-' }}
             </td>
           </tr>

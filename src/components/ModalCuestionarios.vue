@@ -1,7 +1,10 @@
 <script setup>
+import { inject } from 'vue';
 import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+
+const toast = inject('toast');
 
 const emit = defineEmits(['closeModal']);
 const router = useRouter();
@@ -16,9 +19,17 @@ const closeModal = () => {
 const handleQuestionnaireSelect = (questionnaireType) => {
   // Solo permitir cuestionarios habilitados
   if (questionnaireType === 'control-prenatal') {
-    console.log('Cuestionario seleccionado:', questionnaireType);
     
-    // Navegar a la vista crear-documento con el tipo controlPrenatal
+    // Validar que el trabajador sea de sexo femenino
+    if (trabajadores.currentTrabajador?.sexo === 'Masculino') {
+      toast.open({
+        message: `No puedes hacer control prenatal al sexo masculino.`,
+        type: 'error',
+      });
+      return; // No avanzar si es masculino
+    }
+    
+    // Si es femenino, navegar a la vista crear-documento con el tipo controlPrenatal
     router.push({
       name: 'crear-documento',
       params: {

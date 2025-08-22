@@ -31,7 +31,7 @@ export const useStepsStore = defineStore("steps", () => {
   // Validar los campos visibles del paso actual
   const validateCurrentStep = (): boolean => {
     const visibleInputs = Array.from(
-      document.querySelectorAll("input:required, textarea:required")
+      document.querySelectorAll("input:required, textarea:required, input[type='date']:required")
     )
       // Filtrar inputs visibles y vacíos, excluyendo los específicos
       .filter((input) => {

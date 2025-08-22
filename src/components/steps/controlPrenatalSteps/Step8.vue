@@ -6,7 +6,7 @@ import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
 const { formDataControlPrenatal } = useFormDataStore();
 
 // Valor local para la pregunta principal
-const recuerdaFum = ref('No');
+const recuerdaFum = ref('Si');
 
 const fum = ref(''); // Fecha de última menstruación
 
@@ -19,10 +19,10 @@ onMounted(() => {
         recuerdaFum.value = 'No';
         fum.value = '';
     } else {
-        // Si no hay valor, establecer por defecto
-        recuerdaFum.value = 'No';
+        // Si no hay valor, mantener por defecto en "Si"
+        recuerdaFum.value = 'Si';
         fum.value = '';
-        formDataControlPrenatal.fum = 'No recuerda';
+        formDataControlPrenatal.fum = '';
     }
 });
 
@@ -93,10 +93,12 @@ const estadoFUM = computed(() => {
                 <input type="date"
                     class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     v-model="fum"
-                    :placeholder="'Seleccione fecha o deje en blanco'">
+                    :placeholder="'Seleccione fecha o deje en blanco'"
+                    required>
+
             </div>
             <p class="text-sm text-gray-500 mt-1">
-                Puede dejar en blanco si no recuerda la fecha exacta
+                Puede usar una fecha aproximada si no recuerda la fecha exacta
             </p>
         </div>
 

@@ -35,7 +35,7 @@ const goToStep = (stepNumber) => {
       <!-- Fecha -->
       <div class="w-full md:w-[calc(25%-0.5rem)] flex flex-wrap gap-2 justify-end text-sm sm:text-base cursor-pointer"
       :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }"  @click="goToStep(1)">
-        <p class="w-full md:w-auto">Fecha: <span class="font-semibold">{{
+        <p class="w-full md:w-auto">Fecha: <span class="font-medium">{{
           formatDateDDMMYYYY(formData.formDataExamenVista.fechaExamenVista) }}</span></p>
       </div>
     </div>
@@ -48,13 +48,13 @@ const goToStep = (stepNumber) => {
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NOMBRE
             </td>
-            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
                               {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               EDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}
             </td>
           </tr>
@@ -62,13 +62,13 @@ const goToStep = (stepNumber) => {
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               PUESTO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.puesto }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               SEXO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.sexo }}
             </td>
           </tr>
@@ -76,13 +76,13 @@ const goToStep = (stepNumber) => {
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ESCOLARIDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.escolaridad }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ANTIGUEDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ calcularAntiguedad(trabajadores.currentTrabajador.fechaIngreso) }}
             </td>
           </tr>
@@ -92,7 +92,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Agudeza Visual Sin Corrección -->
     <div class="w-full">
-      <h2 class="text-lg font-semibold mb-1 text-center">Agudeza Visual Sin Corrección</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Agudeza Visual Sin Corrección</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -142,18 +142,18 @@ const goToStep = (stepNumber) => {
       <p class="w-full md:w-auto cursor-pointer" @click="goToStep(2)"
         :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }">
         Requiere Lentes para Uso General: (
-        <span class="font-semibold">{{ formData.formDataExamenVista.requiereLentesUsoGeneral }}</span> )
+        <span class="font-medium">{{ formData.formDataExamenVista.requiereLentesUsoGeneral }}</span> )
       </p>
       <p class="w-full md:w-auto cursor-pointer" @click="goToStep(3)"
         :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 3 }">
         Requiere Lentes para Lectura: (
-        <span class="font-semibold">{{ formData.formDataExamenVista.requiereLentesParaLectura }}</span> )
+        <span class="font-medium">{{ formData.formDataExamenVista.requiereLentesParaLectura }}</span> )
       </p>
     </div>
 
     <!-- Agudeza Visual Con Corrección -->
     <div class="w-full">
-      <h2 class="text-lg font-semibold mb-1 text-center">Agudeza Visual Con Corrección</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Agudeza Visual Con Corrección</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -202,7 +202,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Prueba de Ishihara -->
     <div class="w-full">
-      <h2 class="text-lg font-semibold mb-1 text-center">Prueba de Ishihara</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Prueba de Ishihara</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">

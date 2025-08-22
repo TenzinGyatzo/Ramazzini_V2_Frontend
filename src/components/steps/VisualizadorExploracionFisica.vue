@@ -35,7 +35,7 @@ const goToStep = (stepNumber) => {
         class="w-full md:w-[calc(25%-0.5rem)] flex flex-wrap gap-2 justify-end text-sm sm:text-base cursor-pointer"
         :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }"
         @click="goToStep(1)">
-        <p class="w-full md:w-auto">Fecha: <span class="font-semibold">{{
+        <p class="w-full md:w-auto">Fecha: <span class="font-medium">{{
           formatDateDDMMYYYY(formData.formDataExploracionFisica.fechaExploracionFisica) }}</span></p>
       </div>
     </div>
@@ -48,13 +48,13 @@ const goToStep = (stepNumber) => {
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NOMBRE
             </td>
-            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
                               {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               EDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}
             </td>
           </tr>
@@ -62,13 +62,13 @@ const goToStep = (stepNumber) => {
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               PUESTO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.puesto }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               SEXO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.sexo }}
             </td>
           </tr>
@@ -76,13 +76,13 @@ const goToStep = (stepNumber) => {
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ESCOLARIDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.escolaridad }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ANTIGUEDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ calcularAntiguedad(trabajadores.currentTrabajador.fechaIngreso) }}
             </td>
           </tr>
@@ -92,7 +92,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Somatometría -->
     <div class="w-full md:w-[calc(50%-0.5rem)]" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }">
-      <h2 class="text-lg font-semibold mb-1 text-center">SOMATOMETRÍA</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">SOMATOMETRÍA</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -138,7 +138,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Signos Vitales -->
     <div class="w-full md:w-[calc(50%-0.5rem)]" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 3 }">
-      <h2 class="text-lg font-semibold mb-1 text-center">SIGNOS VITALES</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">SIGNOS VITALES</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -191,7 +191,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Cabeza y Cuello -->
     <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">CABEZA Y CUELLO</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">CABEZA Y CUELLO</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -248,7 +248,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Extremidades Superiores -->
     <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">EXTREMIDADES SUPERIORES</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">EXTREMIDADES SUPERIORES</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -303,7 +303,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Tórax -->
     <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">TÓRAX</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">TÓRAX</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -326,7 +326,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Abdomen -->
     <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">ABDOMEN</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">ABDOMEN</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -349,7 +349,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Extremidades Inferiores -->
     <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">EXTREMIDADES INFERIORES</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">EXTREMIDADES INFERIORES</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -394,7 +394,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Columna -->
     <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">COLUMNA</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">COLUMNA</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -425,7 +425,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Piel -->
     <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">PIEL</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">PIEL</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -458,7 +458,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Neurológico -->
     <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">NEUROLÓGICO</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">NEUROLÓGICO</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -497,7 +497,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Resumen de Exploración Física -->
     <div class="w-full" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 31 }">
-      <h2 class="text-lg font-semibold mb-1 text-center">RESUMEN EXPLORACIÓN FÍSICA</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">RESUMEN EXPLORACIÓN FÍSICA</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <tbody>
           <!-- Encabezado -->

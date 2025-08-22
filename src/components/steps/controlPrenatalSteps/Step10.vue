@@ -5,7 +5,7 @@ import { useFormDataStore } from '@/stores/formDataStore';
 const { formDataControlPrenatal } = useFormDataStore();
 
 // Valor local para la pregunta principal
-const metodoPlanificacionFamiliarPregunta = ref('No'); // Cambiado a 'No' por defecto
+const metodoPlanificacionFamiliarPregunta = ref('Si'); // Cambiado a 'No' por defecto
 
 // Valor local para el método seleccionado
 const metodoSeleccionado = ref('Ninguno'); // Preseleccionado como "Ninguno"

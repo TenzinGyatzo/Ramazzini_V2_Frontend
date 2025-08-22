@@ -86,7 +86,7 @@ const antecedentesLaborales = ref([
           '&nbsp;' }} )</p>
         <p class="flex-1 md:flex-none">Periódico ( {{ formData.formDataHistoriaClinica.motivoExamen === 'Periódico' ?
           'X' : '&nbsp;' }} )</p>
-        <p class="w-full md:w-auto">Fecha: <span class="font-semibold">{{
+        <p class="w-full md:w-auto">Fecha: <span class="font-medium">{{
           formatDateDDMMYYYY(formData.formDataHistoriaClinica.fechaHistoriaClinica) }}</span></p>
       </div>
     </div>
@@ -99,13 +99,13 @@ const antecedentesLaborales = ref([
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NOMBRE
             </td>
-            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
-                              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
+            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
+              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
             </td>
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NACIMIENTO
             </td>
-            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ convertirFechaISOaDDMMYYYY(trabajadores.currentTrabajador.fechaNacimiento) }}
             </td>
           </tr>
@@ -113,13 +113,13 @@ const antecedentesLaborales = ref([
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ESCOLARIDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.escolaridad }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               EDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}
             </td>
           </tr>
@@ -127,13 +127,13 @@ const antecedentesLaborales = ref([
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               PUESTO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.puesto }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               SEXO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.sexo }}
             </td>
           </tr>
@@ -141,13 +141,13 @@ const antecedentesLaborales = ref([
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ANTIGUEDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ calcularAntiguedad(trabajadores.currentTrabajador.fechaIngreso) }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               TELÉFONO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.telefono }}
             </td>
           </tr>
@@ -155,13 +155,13 @@ const antecedentesLaborales = ref([
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ESTADO CIVIL
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.estadoCivil }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NUM. EMPLEADO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.numeroEmpleado || 'No asignado' }}
             </td>
           </tr>
@@ -171,7 +171,7 @@ const antecedentesLaborales = ref([
 
     <!-- Antecedentes Heredofamiliares -->
     <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Heredofamiliares</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Antecedentes Heredofamiliares</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -205,7 +205,7 @@ const antecedentesLaborales = ref([
 
     <!-- Antecedentes Personales Patológicos -->
     <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Personales Patológicos</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Antecedentes Personales Patológicos</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -239,7 +239,7 @@ const antecedentesLaborales = ref([
 
     <!-- Antecedentes Personales No Patológicos -->
     <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Personales No Patológicos</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Antecedentes Personales No Patológicos</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -273,7 +273,7 @@ const antecedentesLaborales = ref([
 
     <!-- Antecedentes Personales No Patológicos Parte 2 -->
     <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Personales No Patológicos</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Antecedentes Personales No Patológicos</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -307,7 +307,7 @@ const antecedentesLaborales = ref([
 
     <!-- Antecedentes Gineco Obstétricos -->
     <div v-if="trabajadores.currentTrabajador.sexo === 'Femenino'" class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Gineco Obstétricos</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Antecedentes Gineco Obstétricos</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <tbody>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 28 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(28)">
@@ -372,7 +372,7 @@ const antecedentesLaborales = ref([
 
     <!-- Antecedentes Gineco Obstétricos Parte 2 -->
     <div v-if="trabajadores.currentTrabajador.sexo === 'Femenino'" class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Gineco Obstétricos</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Antecedentes Gineco Obstétricos</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <tbody>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-yellow-500 rounded-md': steps.currentStep === 35 }" @click="goToStep(35)">
@@ -437,7 +437,7 @@ const antecedentesLaborales = ref([
 
     <!-- Antecedentes Laborales -->
     <div class="w-full">
-      <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Laborales</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Antecedentes Laborales</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <thead>
           <tr class="bg-gray-200">
@@ -477,7 +477,7 @@ const antecedentesLaborales = ref([
 
     <!-- Antecedentes de Accidentes de Trabajo -->
     <div class="w-full md:w-[calc(50%-0.5rem)]" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-sm': (trabajadores.currentTrabajador.sexo === 'Masculino' ? (steps.currentStep + 14 === 45) : (steps.currentStep === 45)) }">
-      <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Laborales</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Antecedentes Laborales</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
       <tbody>
         <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(45)">
@@ -518,7 +518,7 @@ const antecedentesLaborales = ref([
 
     <!-- Resumen de Historia Clínica -->
     <div class="w-full md:w-[calc(50%-0.5rem)]" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-sm': (trabajadores.currentTrabajador.sexo === 'Masculino' ? (steps.currentStep + 14 === 46) : (steps.currentStep === 46)) }">
-      <h2 class="text-lg font-semibold mb-1 text-center">Resumen de Historia Clínica</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Resumen de Historia Clínica</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <tbody>
           <!-- Encabezado -->

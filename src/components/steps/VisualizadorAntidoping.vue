@@ -15,7 +15,7 @@ const goToStep = (stepNumber) => {
 <template>
   <div
     class="border-shadow w-full col-span-1 2xl:col-span-9 text-left rounded-lg p-7 2xl:p-7 transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-lg mx-auto">
-    <h2 class="text-lg font-semibold mb-4">Información del Documento</h2>
+    <h2 class="text-lg font-medium mb-4">Información del Documento</h2>
     <table class="table-auto w-full border-collapse border border-gray-200">
       <thead>
         <tr class="bg-gray-200">

@@ -152,53 +152,79 @@ const presetsFondoUterino = [
     <h1 class="font-bold mb-4 text-gray-800 leading-5">Control Prenatal - Septiembre</h1>
     
     <!-- FONDO UTERINO -->
-    <div class="mb-6">
+    <div class="mb-4">
       <h2 class="font-semibold mb-3 text-gray-700">FONDO UTERINO</h2>
-      
+ 
+      <!-- INFORMACIÓN ADICIONAL -->
       <div class="mb-4">
-        
-        <!-- Presets de fondo uterino comunes -->
-        <div class="mb-4 mt-4">
-          <div class="grid grid-cols-3 gap-3">
-            <button
-              v-for="preset in presetsFondoUterino"
-              :key="preset.valor"
-              @click="seleccionarPreset(preset.valor)"
-              type="button"
-              class="w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 font-medium text-xs"
-              :class="septiembreFondoUterino === preset.valor.toString() 
-                ? 'border-emerald-500 bg-emerald-100 text-emerald-700' 
-                : 'border-gray-300 bg-white text-gray-600 hover:border-emerald-300 hover:bg-emerald-50'"
-            >
-              {{ preset.descripcion }}
-            </button>
-          </div>
-        </div>
-
-        <hr class="my-4 border-gray-300">
-
-        <!-- Input personalizado -->
-        <div class="mb-4">
-          <div class="flex items-center justify-center gap-3">
-            <label for="septiembreFondoUterino" class="font-medium text-gray-700">Personalizar:</label>
-            <input
-              id="septiembreFondoUterino"
-              v-model="septiembreFondoUterino"
-              type="number"
-              min="0"
-              max="50"
-              step="0.5"
-              placeholder="Ej: 25.5"
-              class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-center"
-            />
-            <span class="text-gray-600 text-sm">centímetros</span>
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+          <h3 class="font-semibold mb-2 text-gray-700">📋 Clasificación por trimestres:</h3>
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <ul class="text-sm text-gray-600 space-y-1">
+                <li><span class="font-normal text-blue-600">Primer trimestre:</span> 0-3 cm</li>
+                <li><span class="font-normal text-green-600">Segundo trimestre:</span> 12-24 cm</li>
+                <li><span class="font-normal text-orange-600">Tercer trimestre:</span> 32-40 cm</li>
+                <li><span class="font-normal text-purple-600">Postérmino:</span> 40+ cm</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-700 mb-2">Consideraciones:</h4>
+              <ul class="text-sm text-gray-600 space-y-1">
+                <li>• Se mide desde la sínfisis púbica</li>
+                <li>• Generalmente ≈ semana de gestación</li>
+                <li>• Varía según constitución materna</li>
+              </ul>
+            </div>
           </div>
           
-          <!-- Mensaje de error -->
-          <p v-if="mensajeErrorFondoUterino" class="text-red-500 text-sm mt-2 text-center">
-            ⚠️ {{ mensajeErrorFondoUterino }}
-          </p>
         </div>
+      </div>     
+    </div>
+
+    <!-- INPUTS -->
+    <div class="mb-4">
+      <!-- Presets de fondo uterino comunes -->
+      <div class="mb-4 mt-4">
+        <div class="grid grid-cols-3 gap-3">
+          <button
+            v-for="preset in presetsFondoUterino"
+            :key="preset.valor"
+            @click="seleccionarPreset(preset.valor)"
+            type="button"
+            class="w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 font-medium text-xs"
+            :class="septiembreFondoUterino === preset.valor.toString() 
+              ? 'border-emerald-500 bg-emerald-100 text-emerald-700' 
+              : 'border-gray-300 bg-white text-gray-600 hover:border-emerald-300 hover:bg-emerald-50'"
+          >
+            {{ preset.descripcion }}
+          </button>
+        </div>
+      </div>
+
+      <hr class="my-4 border-gray-300">
+
+      <!-- Input personalizado -->
+      <div class="mb-4">
+        <div class="flex items-center justify-center gap-3">
+          <label for="septiembreFondoUterino" class="font-medium text-gray-700">Personalizar:</label>
+          <input
+            id="septiembreFondoUterino"
+            v-model="septiembreFondoUterino"
+            type="number"
+            min="0"
+            max="50"
+            step="0.5"
+            placeholder="Ej: 25.5"
+            class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-center"
+          />
+          <span class="text-gray-600 text-sm">centímetros</span>
+        </div>
+        
+        <!-- Mensaje de error -->
+        <p v-if="mensajeErrorFondoUterino" class="text-red-500 text-sm mt-2 text-center">
+          ⚠️ {{ mensajeErrorFondoUterino }}
+        </p>
       </div>
     </div>
 
@@ -248,32 +274,6 @@ const presetsFondoUterino = [
             Rango esperado: {{ fondoUterinoEsperadoComputed.rangoMin }}-{{ fondoUterinoEsperadoComputed.rangoMax }} cm
           </p>
         </div>
-      </div>
-    </div>
-
-    <!-- INFORMACIÓN ADICIONAL -->
-    <div class="mb-6">
-      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h3 class="font-semibold mb-2 text-gray-700">📋 Clasificación por trimestres:</h3>
-        <div class="grid grid-cols-1 gap-4">
-          <div>
-            <ul class="text-sm text-gray-600 space-y-1">
-              <li><span class="font-normal text-blue-600">Primer trimestre:</span> 0-3 cm</li>
-              <li><span class="font-normal text-green-600">Segundo trimestre:</span> 12-24 cm</li>
-              <li><span class="font-normal text-orange-600">Tercer trimestre:</span> 32-40 cm</li>
-              <li><span class="font-normal text-purple-600">Postérmino:</span> 40+ cm</li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="font-medium text-gray-700 mb-2">Consideraciones:</h4>
-            <ul class="text-sm text-gray-600 space-y-1">
-              <li>• Se mide desde la sínfisis púbica</li>
-              <li>• Generalmente ≈ semana de gestación</li>
-              <li>• Varía según constitución materna</li>
-            </ul>
-          </div>
-        </div>
-        
       </div>
     </div>
 

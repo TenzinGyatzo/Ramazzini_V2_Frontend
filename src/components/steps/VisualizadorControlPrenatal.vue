@@ -36,7 +36,7 @@ const goToStep = (stepNumber) => {
         class="w-full md:w-[calc(60%-1rem)] flex flex-wrap gap-2 justify-start md:justify-end text-sm sm:text-base cursor-pointer"
         :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }"
         @click="goToStep(1)">
-        <p class="w-full md:w-auto">Inicio de Control Prenatal: <span class="font-semibold">{{
+        <p class="w-full md:w-auto">Inicio de Control Prenatal: <span class="font-medium">{{
           formatDateDDMMYYYY(formData.formDataControlPrenatal.fechaInicioControlPrenatal) }}</span></p>
       </div>
     </div>
@@ -49,13 +49,13 @@ const goToStep = (stepNumber) => {
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NOMBRE
             </td>
-            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
             </td>
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NACIMIENTO
             </td>
-            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ convertirFechaISOaDDMMYYYY(trabajadores.currentTrabajador.fechaNacimiento) }}
             </td>
           </tr>
@@ -63,13 +63,13 @@ const goToStep = (stepNumber) => {
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ESCOLARIDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.escolaridad }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               EDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}
             </td>
           </tr>
@@ -77,13 +77,13 @@ const goToStep = (stepNumber) => {
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               PUESTO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.puesto }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               SEXO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.sexo }}
             </td>
           </tr>
@@ -91,13 +91,13 @@ const goToStep = (stepNumber) => {
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ANTIGUEDAD
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ calcularAntiguedad(trabajadores.currentTrabajador.fechaIngreso) }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               TELÉFONO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.telefono }}
             </td>
           </tr>
@@ -105,13 +105,13 @@ const goToStep = (stepNumber) => {
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               ESTADO CIVIL
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.estadoCivil }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NUM. EMPLEADO
             </td>
-            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-semibold">
+            <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
               {{ trabajadores.currentTrabajador.numeroEmpleado || 'No asignado' }}
             </td>
           </tr>
@@ -121,7 +121,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Antecedentes Gineco Obstétricos -->
     <div v-if="trabajadores.currentTrabajador.sexo === 'Femenino'" class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Gineco Obstétricos</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Antecedentes Gineco Obstétricos</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <tbody>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 2 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(2)">
@@ -170,7 +170,7 @@ const goToStep = (stepNumber) => {
 
     <!-- Antecedentes Gineco Obstétricos Parte 2 -->
     <div v-if="trabajadores.currentTrabajador.sexo === 'Femenino'" class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-semibold mb-1 text-center">Antecedentes Gineco Obstétricos</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Antecedentes Gineco Obstétricos</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <tbody>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="steps.currentStep === 7 ? 'outline outline-2 outline-yellow-500 rounded-md' : ''" @click="goToStep(7)">
@@ -219,18 +219,18 @@ const goToStep = (stepNumber) => {
 
     <!-- Tabla de Control Prenatal Enero a Junio -->
     <div class="w-full">
-      <h2 class="text-lg font-semibold mb-1 text-center">Control Prenatal - Enero a Junio</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Control Prenatal - Enero a Junio</h2>
       <div class="overflow-x-auto">
         <table class="table-auto w-full border-collapse border border-gray-300 text-xs">
           <!-- Encabezado de meses -->
           <thead>
             <tr>
-              <th class="w-44 bg-gray-700 text-white px-2 py-2 border border-gray-300 text-center font-semibold">
+              <th class="w-44 bg-gray-600 text-white px-2 py-1 border border-gray-300 text-center font-medium ">
                 MES
               </th>
               <th v-for="mes in ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN']" 
                   :key="mes" 
-                  class="w-20 bg-gray-700 text-white px-2 py-2 border border-gray-300 text-center font-semibold">
+                  class="w-20 bg-gray-600 text-white px-2 py-1 border border-gray-300 text-center font-medium">
                 {{ mes }}
               </th>
             </tr>
@@ -333,18 +333,18 @@ const goToStep = (stepNumber) => {
 
     <!-- Tabla de Control Prenatal Julio a Diciembre -->
     <div class="w-full">
-      <h2 class="text-lg font-semibold mb-1 text-center">Control Prenatal - Julio a Diciembre</h2>
+      <h2 class="text-lg font-medium mb-1 text-center">Control Prenatal - Julio a Diciembre</h2>
       <div class="overflow-x-auto">
         <table class="table-auto w-full border-collapse border border-gray-300 text-xs">
           <!-- Encabezado de meses -->
           <thead>
             <tr>
-              <th class="w-44 bg-gray-700 text-white px-2 py-2 border border-gray-300 text-center font-semibold">
+              <th class="w-44 bg-gray-600 text-white px-2 py-1 border border-gray-300 text-center font-medium">
                 MES
               </th>
               <th v-for="mes in ['JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC']" 
                   :key="mes" 
-                  class="w-20 bg-gray-700 text-white px-2 py-2 border border-gray-300 text-center font-semibold">
+                  class="w-20 bg-gray-600 text-white px-2 py-1 border border-gray-300 text-center font-medium">
                 {{ mes }}
               </th>
             </tr>
@@ -449,7 +449,7 @@ const goToStep = (stepNumber) => {
         <table class="table-auto w-full border-collapse border border-gray-300 text-xs">
           <thead>
             <tr class="bg-gray-200">
-              <th class="text-xs sm:text-sm bg-gray-700 text-white px-2 py-2 border border-gray-300 text-center font-semibold" colspan="2">
+              <th class="text-xs sm:text-sm bg-gray-600 text-white px-2 py-1 border border-gray-300 text-center font-medium" colspan="2">
                   OBSERVACIONES
               </th>
             </tr>
@@ -537,8 +537,6 @@ const goToStep = (stepNumber) => {
         </table>
       </div>
     </div>
-
-    
 
   </div>
 </template>

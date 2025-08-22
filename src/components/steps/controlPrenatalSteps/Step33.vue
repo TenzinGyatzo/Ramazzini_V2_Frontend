@@ -106,49 +106,73 @@ const presetsFcf = [
     <div class="mb-6">
       <h2 class="font-semibold mb-3 text-gray-700">FRECUENCIA CARDIACA FETAL (FCF)</h2>
       
+      <!-- INFORMACIÓN ADICIONAL -->
+      <div class="mb-6">
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+          <h3 class="font-semibold mb-2 text-gray-700">📋 Clasificación de F. C. F.</h3>
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <ul class="text-sm text-gray-600 space-y-1">
+                <li><span class="font-normal text-red-800">Bradicardia:</span> &lt;110 lpm</li>
+                <li><span class="font-normal text-green-600">Normal:</span> 110-160 lpm</li>
+                <li><span class="font-normal text-yellow-600">Taquicardia leve:</span> 161-180 lpm</li>
+                <li><span class="font-normal text-red-600">Taquicardia severa:</span> &gt;180 lpm</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-700 mb-2">Consideraciones:</h4>
+              <ul class="text-sm text-gray-600 space-y-1">
+                <li>• Puede variar según la edad gestacional</li>
+                <li>• Se mide con doppler fetal</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INPUTS -->
+    <div class="mb-4">
+      <!-- Presets de FCF comunes -->
+      <div class="mb-4 mt-4">
+        <div class="grid grid-cols-5 gap-3">
+          <button
+            v-for="preset in presetsFcf"
+            :key="preset.valor"
+            @click="seleccionarPreset(preset.valor)"
+            type="button"
+            class="w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 font-medium text-xs"
+            :class="abrilFcf === preset.valor.toString() 
+              ? 'border-emerald-500 bg-emerald-100 text-emerald-700' 
+              : 'border-gray-300 bg-white text-gray-600 hover:border-emerald-300 hover:bg-emerald-50'"
+          >
+            {{ preset.descripcion }}
+          </button>
+        </div>
+      </div>
+
+      <hr class="my-4 border-gray-300">
+
+      <!-- Input personalizado -->
       <div class="mb-4">
+        <div class="flex items-center justify-center gap-3">
+          <label for="abrilFcf" class="font-medium text-gray-700">Personalizar:</label>
+          <input
+            id="abrilFcf"
+            v-model="abrilFcf"
+            type="number"
+            min="60"
+            max="250"
+            placeholder="Ej: 135"
+            class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-center"
+          />
+          <span class="text-gray-600 text-sm">lpm</span>
+        </div>
         
-        <!-- Presets de FCF comunes -->
-        <div class="mb-4 mt-4">
-          <div class="grid grid-cols-5 gap-3">
-            <button
-              v-for="preset in presetsFcf"
-              :key="preset.valor"
-              @click="seleccionarPreset(preset.valor)"
-              type="button"
-              class="w-full px-3 py-2 rounded-lg border-2 transition-all duration-200 font-medium text-xs"
-              :class="abrilFcf === preset.valor.toString() 
-                ? 'border-emerald-500 bg-emerald-100 text-emerald-700' 
-                : 'border-gray-300 bg-white text-gray-600 hover:border-emerald-300 hover:bg-emerald-50'"
-            >
-              {{ preset.descripcion }}
-            </button>
-          </div>
-        </div>
-
-        <hr class="my-4 border-gray-300">
-
-        <!-- Input personalizado -->
-        <div class="mb-4">
-          <div class="flex items-center justify-center gap-3">
-            <label for="abrilFcf" class="font-medium text-gray-700">Personalizar:</label>
-            <input
-              id="abrilFcf"
-              v-model="abrilFcf"
-              type="number"
-              min="60"
-              max="250"
-              placeholder="Ej: 135"
-              class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-center"
-            />
-            <span class="text-gray-600 text-sm">lpm</span>
-          </div>
-          
-          <!-- Mensaje de error -->
-          <p v-if="mensajeErrorFcf" class="text-red-500 text-sm mt-2 text-center">
-            ⚠️ {{ mensajeErrorFcf }}
-          </p>
-        </div>
+        <!-- Mensaje de error -->
+        <p v-if="mensajeErrorFcf" class="text-red-500 text-sm mt-2 text-center">
+          ⚠️ {{ mensajeErrorFcf }}
+        </p>
       </div>
     </div>
 
@@ -183,31 +207,6 @@ const presetsFcf = [
         <p class="text-sm text-gray-600 text-center">
           Ingrese la frecuencia cardíaca fetal para ver el resultado
         </p>
-      </div>
-    </div>
-
-    <!-- INFORMACIÓN ADICIONAL -->
-    <div class="mb-6">
-      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h3 class="font-semibold mb-2 text-gray-700">📋 Clasificación de F. C. F.</h3>
-        <div class="grid grid-cols-1 gap-4">
-          <div>
-            <ul class="text-sm text-gray-600 space-y-1">
-              <li><span class="font-normal text-red-800">Bradicardia:</span> &lt;110 lpm</li>
-              <li><span class="font-normal text-green-600">Normal:</span> 110-160 lpm</li>
-              <li><span class="font-normal text-yellow-600">Taquicardia leve:</span> 161-180 lpm</li>
-              <li><span class="font-normal text-red-600">Taquicardia severa:</span> &gt;180 lpm</li>
-            </ul>
-          </div>
-          <div>
-            <h4 class="font-medium text-gray-700 mb-2">Consideraciones:</h4>
-            <ul class="text-sm text-gray-600 space-y-1">
-              <li>• Puede variar según la edad gestacional</li>
-              <li>• Se mide con doppler fetal</li>
-            </ul>
-          </div>
-        </div>
-        
       </div>
     </div>
 
