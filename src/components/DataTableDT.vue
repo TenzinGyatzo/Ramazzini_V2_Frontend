@@ -176,7 +176,7 @@ onMounted(() => {
               <!-- RTs -->
                 <button
                   type="button"
-                  class="btn-rt group absolute right-24 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-violet-200 hover:bg-violet-300 text-violet-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-violet-200 hover:border-violet-100 whitespace-nowrap flex items-center overflow-hidden text-sm"
+                  class="btn-rt group absolute right-25 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-violet-200 hover:bg-violet-300 text-violet-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-violet-200 hover:border-violet-100 whitespace-nowrap flex items-center overflow-hidden text-sm"
                   data-id="${row._id}"
                 >
                   RT
@@ -263,7 +263,7 @@ onMounted(() => {
       },
       columnDefs: [
         { targets: props.mostrarColumnasOcultas ? [] : columnasOcultas, visible: props.mostrarColumnasOcultas ? true : false }, // Oculta las columnas según la prop
-        { targets: 37, width: '210px' } // Acciones 200 para agregar otro botón
+        { targets: 37, width: '248px', className: 'columna-acciones' } // Acciones con clase específica
       ]
     });
 
@@ -481,8 +481,6 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
   dataTableInstance.draw();
 }
 
-
-
 defineExpose({
   aplicarTodosLosFiltrosDesdeLocalStorage
 });
@@ -518,6 +516,7 @@ watch(() => props.mostrarColumnasOcultas, (nuevoValor) => {
 
 <style scoped>
 .table-container {
+  width: 1538px;
   overflow-x: auto;
   /* Permite scroll horizontal solo si es necesario */
 }
@@ -528,17 +527,25 @@ watch(() => props.mostrarColumnasOcultas, (nuevoValor) => {
   /* Mantén el comportamiento automático para el layout */
 }
 
-/* Forzar ancho fijo de la última columna sin importar el viewport */
+/* Forzar ancho fijo de la columna de acciones */
+table.dataTable th.columna-acciones,
+table.dataTable td.columna-acciones {
+  width: 248px !important;
+  min-width: 248px !important;
+  max-width: 248px !important;
+  white-space: nowrap;
+}
+
+/* Asegurar que la última columna tenga el ancho correcto */
 table.dataTable th:last-child,
 table.dataTable td:last-child {
-  width: 160px !important;
-  min-width: 160px !important;
-  max-width: 160px !important;
+  width: 248px !important;
+  min-width: 248px !important;
+  max-width: 248px !important;
   white-space: nowrap;
 }
 
 </style>
-
 
 <style>
 @import 'datatables.net-dt';
@@ -682,6 +689,45 @@ table.dataTable tbody tr.evaluacion-no-completada-row {
 
 table.dataTable tbody tr.evaluacion-no-completada-row:hover {
   background-color: #fef2f2 !important;
+}
+
+/* Estilos adicionales para forzar el ancho de la columna de acciones */
+.columna-acciones {
+  width: 248px !important;
+  min-width: 248px !important;
+  max-width: 248px !important;
+}
+
+/* Sobrescribir cualquier estilo inline de DataTables */
+table.dataTable th.columna-acciones,
+table.dataTable td.columna-acciones {
+  width: 248px !important;
+  min-width: 248px !important;
+  max-width: 248px !important;
+  box-sizing: border-box !important;
+}
+
+/* Asegurar que el contenedor de la tabla respete el ancho */
+.dataTables_wrapper .dataTables_scroll {
+  overflow-x: auto;
+}
+
+/* Forzar el ancho mínimo de la tabla */
+#customTable {
+  min-width: 100%;
+}
+
+/* Clases personalizadas para posicionamiento intermedio */
+.right-26 {
+  right: 6.5rem; /* 104px - punto medio entre right-24 (96px) y right-28 (112px) */
+}
+
+.right-25 {
+  right: 6.25rem; /* 100px - más cerca de right-24 */
+}
+
+.right-27 {
+  right: 6.75rem; /* 108px - más cerca de right-28 */
 }
 
 </style>
