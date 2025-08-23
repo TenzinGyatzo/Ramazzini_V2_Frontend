@@ -1504,8 +1504,8 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
                                     Control Prenatal
                                 </h3>
-                                <span v-if="controlPrenatal.sdg" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
-                                    {{ controlPrenatal.sdg }}
+                                <span v-if="controlPrenatal.fpp" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                    FPP {{ convertirFechaISOaDDMMYYYY(controlPrenatal.fpp) }}
                                 </span>
                             </div>
                             <p class="text-sm text-gray-500 flex items-center">
@@ -1515,11 +1515,99 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
-                        <div v-if="controlPrenatal.sdg" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
                             <div class="text-sm">
                                 <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
-                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Semanas de Gestación</p>
-                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.sdg }}</p>
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">ENE</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.eneroFecha ? '✅' : '➖' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">FEB</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.febreroFecha ? '✅' : '➖' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">MAR</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.marzoFecha ? '✅' : '➖' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">ABR</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.abrilFecha ? '✅' : '➖' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">MAY</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.mayoFecha ? '✅' : '➖' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">JUN</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.junioFecha ? '✅' : '➖' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">JUL</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.julioFecha ? '✅' : '➖' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">AGO</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.agostoFecha ? '✅' : '➖' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">SEP</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.septiembreFecha ? '✅' : '➖' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">OCT</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.octubreFecha ? '✅' : '➖' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">NOV</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.noviembreFecha ? '✅' : '➖' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">DIC</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ controlPrenatal.diciembreFecha ? '✅' : '➖' }}</p>
                                 </div>
                             </div>
                         </div>

@@ -105,7 +105,7 @@ onMounted(() => {
         // { data: 'updatedAt', title: 'Última actualización', render: d => convertirFechaISOaDDMMYYYY(d) },
         { 
           data: 'updatedAt', 
-          title: 'Última actualización', 
+          title: 'Último cambio', 
           render: d => convertirFechaISOaDDMMYYYY(d), 
           type: 'date-dd-MM-yyyy' // Indica que la columna tiene fechas en formato personalizado
         }, // 4
@@ -516,7 +516,6 @@ watch(() => props.mostrarColumnasOcultas, (nuevoValor) => {
 
 <style scoped>
 .table-container {
-  width: 1538px;
   overflow-x: auto;
   /* Permite scroll horizontal solo si es necesario */
 }
