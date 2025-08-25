@@ -49,6 +49,7 @@ const menuRef = ref<HTMLElement | null>(null);
 const isGuideMenuOpen = ref(false);
 const guideMenuRef = ref<HTMLElement | null>(null);
 const isNotificationVisible = ref(false);
+const isNotificationEmpresasVisible = ref(false);
 
 const guiaConfiguracionInicialURL = "https://scribehow.com/shared/Configuracion_de_Informes__qSuHpPxtSnKc8JTaObgY7Q?referrer=workspace"
 const guiaRegistrarClientesURL = "https://scribehow.com/shared/Agregar_Clientes_y_Centros_de_Trabajo__32Haet8BQy6oFUDacWcbWg?referrer=documents"
@@ -66,6 +67,11 @@ const handleClickOutside = (event: MouseEvent) => {
 // Función para cerrar notificaciones
 const closeNotification = () => {
   isNotificationVisible.value = false;
+};
+
+// Función para cerrar notificación de empresas
+const closeNotificationEmpresas = () => {
+  isNotificationEmpresasVisible.value = false;
 };
 
 onMounted(() => {
@@ -154,7 +160,6 @@ const camposPendientesProveedor = computed(() => {
   const proveedor = proveedorSaludStore.proveedorSalud;
   const pendientes: string[] = [];
 
-  if (!proveedor?.nombre) pendientes.push("Razón Social");
   if (!proveedor?.estado) pendientes.push("Estado");
   if (!proveedor?.municipio) pendientes.push("Municipio");
   if (!proveedor?.direccion) pendientes.push("Dirección");
@@ -251,14 +256,12 @@ const mostrarMensajePendiente = computed(() => {
 
 // Definir el mensaje adecuado según el estado
 const mensajeConfiguracion = computed(() => {
-  if (logotipoPendiente.value && (camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0)) {
+  if ((camposPendientesProveedor.value.length === 4) && (camposPendientesMedico.value.length === 3)) {
     return "Tus informes aún no están configurados correctamente.";
-  } else if (logotipoPendiente.value) {
-    return "Aún no has subido el logotipo.";
-  } else if (camposPendientesProveedor.value.length > 0 && camposPendientesMedico.value.length > 0) {
-    return "Algunos campos están incompletos en tu configuración.";
   } else if (camposPendientesProveedor.value.length > 0) {
     return 'Hay campos pendientes en "Mi Negocio".';
+  } else if (logotipoPendiente.value) {
+    return "Aún no has subido el logotipo.";
   } else if (camposPendientesMedico.value.length > 0) {
     return 'Hay campos pendientes en "Médico Firmante".';
   } else {
@@ -300,6 +303,86 @@ const colorNotificacion = computed(() => {
   }
 });
 
+// Watcher para mostrar la notificación cuando hay campos pendientes
+watch(mostrarMensajePendiente, (nuevoValor) => {
+  if (nuevoValor && datosCargados.value) {
+    // Mostrar la notificación después de un pequeño delay para mejor UX
+    setTimeout(() => {
+      isNotificationVisible.value = true;
+    }, 1000);
+  }
+});
+
+// Watcher adicional para cuando datosCargados cambie a true y ya haya campos pendientes
+watch(datosCargados, (nuevoValor) => {
+  if (nuevoValor && mostrarMensajePendiente.value) {
+    // Mostrar la notificación después de un pequeño delay para mejor UX
+    setTimeout(() => {
+      isNotificationVisible.value = true;
+    }, 1000);
+  }
+});
+
+// Watcher adicional para cuando mostrarMensajePendiente cambie después de que los datos estén cargados
+watch([datosCargados, mostrarMensajePendiente], ([nuevosDatosCargados, nuevoMostrarMensaje]) => {
+  if (nuevosDatosCargados && nuevoMostrarMensaje) {
+    // Mostrar la notificación después de un pequeño delay para mejor UX
+    setTimeout(() => {
+      isNotificationVisible.value = true;
+    }, 1000);
+  }
+});
+
+// Watcher adicional para cuando datosCargados cambie a true y ya haya campos pendientes
+watch([datosCargados, logotipoPendiente, camposPendientesProveedor, camposPendientesMedico], ([nuevosDatosCargados, nuevoLogotipoPendiente, nuevosCamposProveedor, nuevosCamposMedico]) => {
+  if (nuevosDatosCargados && (nuevoLogotipoPendiente || nuevosCamposProveedor.length > 0 || nuevosCamposMedico.length > 0)) {
+    // Mostrar la notificación después de un pequeño delay para mejor UX
+    setTimeout(() => {
+      isNotificationVisible.value = true;
+    }, 1000);
+  }
+});
+
+// Watcher para mostrar la notificación cuando no hay empresas registradas
+watch([empresasCargadas, () => empresas.empresas.length], ([nuevoEmpresasCargadas, nuevoNumeroEmpresas]) => {
+  if (nuevoEmpresasCargadas && nuevoNumeroEmpresas === 0) {
+    // Mostrar la notificación después de un pequeño delay para mejor UX
+    setTimeout(() => {
+      isNotificationEmpresasVisible.value = true;
+    }, 1000);
+  }
+});
+
+// Watcher adicional para cuando empresasCargadas cambie a true y no haya empresas
+watch(empresasCargadas, (nuevoValor) => {
+  if (nuevoValor && empresas.empresas.length === 0) {
+    // Mostrar la notificación después de un pequeño delay para mejor UX
+    setTimeout(() => {
+      isNotificationEmpresasVisible.value = true;
+    }, 1000);
+  }
+});
+
+// Watcher adicional para cuando ambos valores cambien
+watch([empresasCargadas, () => empresas.empresas.length], ([nuevoEmpresasCargadas, nuevoNumeroEmpresas]) => {
+  if (nuevoEmpresasCargadas && nuevoNumeroEmpresas === 0) {
+    // Mostrar la notificación después de un pequeño delay para mejor UX
+    setTimeout(() => {
+      isNotificationEmpresasVisible.value = true;
+    }, 1000);
+  }
+});
+
+// Watcher adicional para cuando datosCargados cambie a true y ya haya empresas cargadas
+watch([datosCargados, empresasCargadas, () => empresas.empresas.length], ([nuevosDatosCargados, nuevoEmpresasCargadas, nuevoNumeroEmpresas]) => {
+  if (nuevosDatosCargados && nuevoEmpresasCargadas && nuevoNumeroEmpresas === 0) {
+    // Mostrar la notificación después de un pequeño delay para mejor UX
+    setTimeout(() => {
+      isNotificationEmpresasVisible.value = true;
+    }, 1000);
+  }
+});
+
 // Watchers para las animaciones de tooltips
 watch(mostrarTooltipProveedor, (nuevoValor) => {
   if (intervaloTooltipProveedor) {
@@ -328,7 +411,7 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
       animacionTooltipMedico.value = 
         animacionTooltipMedico.value === "tooltip-bounce" 
         ? "tooltip-pulse" 
-        : "tooltip-bounce";
+        : "tooltip-pulse";
     }, 2000);
   }
 });
@@ -400,52 +483,61 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
       </div>
     </Transition>
 
-    <!-- Notificaciones mejoradas -->
-    <Transition name="slide-up">
-      <div v-if="datosCargados && mostrarMensajePendiente && isNotificationVisible" 
-          class="fixed bottom-6 right-6 bg-white text-gray-700 border-l-4 border-red-500 rounded-xl shadow-2xl p-4 max-w-sm z-50 transform hover:scale-105 transition-all duration-300 ease-in-out">
-        <div class="flex items-start gap-3">
-          <i :class="[iconoNotificacion, colorNotificacion, 'text-xl mt-1']"></i>
-          <div class="flex-1">
-            <p class="text-sm font-medium text-gray-800 mb-2">
-              {{ mensajeConfiguracion }}
-            </p>
-            <a :href="guiaConfiguracionInicialURL" 
-               target="_blank" 
-               rel="noopener noreferrer" 
-               class="text-blue-600 hover:text-blue-800 underline text-sm font-medium transition-colors duration-200">
-              {{ textoEnlace }}
-            </a>
-          </div>
-          <button @click="closeNotification" 
-                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-            <i class="fa-solid fa-times"></i>
-          </button>
-        </div>
-      </div>
+
+
+      <!-- Notificaciones separadas con transiciones independientes -->
       
-      <div v-else-if="datosCargados && empresasCargadas && empresas.empresas.length === 0 && ['inicio', 'empresas'].includes(route.name as string)" 
-          class="fixed bottom-6 right-6 bg-white text-gray-700 border-l-4 border-blue-500 rounded-xl shadow-2xl p-4 max-w-sm z-50 transform hover:scale-105 transition-all duration-300 ease-in-out">
-        <div class="flex items-start gap-3">
-          <i class="fa-regular fa-lightbulb text-blue-500 text-xl mt-1"></i>
-          <div class="flex-1">
-            <p class="text-sm font-medium text-gray-800 mb-2">
-              Aún no tienes clientes registrados
-            </p>
-            <a :href="guiaRegistrarClientesURL" 
-               target="_blank" 
-               rel="noopener noreferrer" 
-               class="text-blue-600 hover:text-blue-800 underline text-sm font-medium transition-colors duration-200">
-              Guía para registrar a tu primer cliente
-            </a>
+      <!-- Primera notificación: campos pendientes -->
+      <Transition name="slide-up">
+        <div v-if="datosCargados && mostrarMensajePendiente && isNotificationVisible" 
+             class="hidden sm:block fixed bottom-6 right-6 z-50 bg-white text-gray-700 border-l-4 border-red-500 rounded-xl shadow-lg p-4 max-w-sm transform hover:scale-105 transition-transform duration-500 ease-in-out">
+          <div class="flex items-start gap-3">
+            <i :class="[iconoNotificacion, colorNotificacion, 'text-xl mt-1']"></i>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-800 mb-2">
+                {{ mensajeConfiguracion }}
+              </p>
+              <a :href="guiaConfiguracionInicialURL" 
+                 target="_blank" 
+                 rel="noopener noreferrer" 
+                 class="text-blue-600 hover:text-blue-800 underline text-sm font-medium transition-colors duration-200">
+                {{ textoEnlace }}
+              </a>
+            </div>
+            <button @click="closeNotification" 
+                    class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+              <i class="fa-solid fa-times"></i>
+            </button>
           </div>
-          <button @click="closeNotification" 
-                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-            <i class="fa-solid fa-times"></i>
-          </button>
         </div>
-      </div>
-    </Transition>
+      </Transition>
+      
+      <!-- Segunda notificación: no hay empresas -->
+      <Transition name="slide-up">
+        <div v-if="datosCargados && empresasCargadas && empresas.empresas.length === 0 && isNotificationEmpresasVisible" 
+             class="hidden sm:block fixed bottom-6 right-6 z-50 bg-white text-gray-700 border-l-4 border-blue-500 rounded-xl shadow-lg p-4 max-w-sm transform hover:scale-105 transition-transform duration-500 ease-in-out"
+             :class="((camposPendientesProveedor.length === 4) && (camposPendientesMedico.length === 3)) ? 'mb-3' : '-mb-2'"
+             :style="{ bottom: datosCargados && mostrarMensajePendiente && isNotificationVisible ? '8rem' : '1.5rem' }">
+          <div class="flex items-start gap-3">
+            <i class="fa-regular fa-lightbulb text-blue-500 text-xl mt-1"></i>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-800 mb-2">
+                Aún no tienes clientes registrados
+              </p>
+              <a :href="guiaRegistrarClientesURL" 
+                 target="_blank" 
+                 rel="noopener noreferrer" 
+                 class="text-blue-600 hover:text-blue-800 underline text-sm font-medium transition-colors duration-200">
+                Guía para registrar a tu primer cliente
+              </a>
+            </div>
+            <button @click="closeNotificationEmpresas" 
+                    class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </Transition>
 
     <!-- Botón del engrane mejorado -->
     <Transition name="delayed-appear">
