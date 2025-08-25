@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, inject } from "vue";
+import { ref, reactive, inject, nextTick, watch, onMounted, onUnmounted } from "vue";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
 import { useUserStore } from "@/stores/user";
 import { useRouter } from "vue-router";
@@ -9,6 +9,9 @@ const toast = inject("toast");
 const currentStep = ref(1);
 const showStep2 = ref(false);
 const transitioning = ref(false);
+const showPassword = ref(false);
+const passwordContainer = ref(null);
+const toggleButton = ref(null);
 const formDataUser = reactive({
   username: "",
   email: "",
@@ -118,6 +121,72 @@ const perfiles = [
   "Equipo Médico Interno de la Empresa",
   "Otro",
 ];
+
+// Función para reposicionar el toggle cuando cambie el layout
+const repositionToggle = () => {
+  if (passwordContainer.value && toggleButton.value) {
+    const container = passwordContainer.value;
+    const button = toggleButton.value;
+    
+    // Obtener la posición del input dentro del contenedor
+    const input = container.querySelector('input');
+    if (input) {
+      const inputRect = input.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      
+      // Calcular la posición relativa del input dentro del contenedor
+      const inputTop = inputRect.top - containerRect.top;
+      const inputHeight = inputRect.height;
+      
+      // Posicionar el botón en el centro del input
+      button.style.top = `${inputTop + (inputHeight / 2)}px`;
+      button.style.transform = 'translateY(-50%)';
+    }
+  }
+};
+
+// Función para alternar la visibilidad de la contraseña
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value;
+  // Reposicionar después del cambio para asegurar que esté centrado
+  nextTick(() => {
+    repositionToggle();
+  });
+};
+
+// Watcher para reposicionar el toggle cuando cambie el valor de la contraseña
+watch(() => formDataUser.password, () => {
+  nextTick(() => {
+    repositionToggle();
+  });
+});
+
+// Reposicionar el toggle cuando el componente se monte
+onMounted(() => {
+  nextTick(() => {
+    repositionToggle();
+    
+    // Observer para detectar cambios en el DOM que puedan afectar el posicionamiento
+    if (passwordContainer.value) {
+      const observer = new MutationObserver(() => {
+        repositionToggle();
+      });
+      
+      // Observar cambios en el contenedor y sus hijos
+      observer.observe(passwordContainer.value, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class', 'style']
+      });
+      
+      // Limpiar el observer cuando el componente se desmonte
+      onUnmounted(() => {
+        observer.disconnect();
+      });
+    }
+  });
+});
 </script>
 
 <template>
@@ -263,18 +332,29 @@ const perfiles = [
           v-model="formDataUser.phone"
         />
 
-        <FormKit
-          type="password"
-          label="¿Qué contraseña deseas usar?"
-          name="password"
-          placeholder="Contraseña de usuario"
-          validation="required|passwordValidation"
-          :validation-messages="{
-            required: 'Este campo es obligatorio',
-            passwordValidation: 'Mín. 8 dígitos, 1 mayúscula y 1 número.',
-          }"
-          v-model="formDataUser.password"
-        />
+        <div class="relative" ref="passwordContainer">
+          <FormKit
+            :type="showPassword ? 'text' : 'password'"
+            label="¿Qué contraseña deseas usar?"
+            name="password"
+            placeholder="Contraseña de usuario"
+            validation="required|passwordValidation"
+            :validation-messages="{
+              required: 'Este campo es obligatorio',
+              passwordValidation: 'Mín. 8 dígitos, 1 mayúscula y 1 número.',
+            }"
+            v-model="formDataUser.password"
+          />
+          <button
+            type="button"
+            @click="togglePasswordVisibility"
+            class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md p-1 z-10"
+            :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            ref="toggleButton"
+          >
+            <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+          </button>
+        </div>
 
         <div class="w-full pr-2 mt-4">
           <FormKit type="submit">
