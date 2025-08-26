@@ -13,7 +13,11 @@ import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 const props = defineProps<{ 
   rows: any[];
   mostrarColumnasOcultas?: boolean;
+  mostrarLeyenda?: boolean;
 }>();
+
+// Estado local para controlar la visibilidad de la leyenda
+const mostrarLeyendaLocal = ref(props.mostrarLeyenda !== false);
 
 const tablaRef = ref<HTMLElement | null>(null);
 let dataTableInstance: any = null;
@@ -33,6 +37,7 @@ const emit = defineEmits<{
   (e: 'toggle-estado-laboral', trabajador: any): void;
   (e: 'eliminar', payload: { id: string; nombre: string }): void;
   (e: 'actualizando-tabla', actualizando: boolean): void;
+  (e: 'toggle-leyenda', mostrar: boolean): void;
 }>();
 
 onMounted(() => {
@@ -51,7 +56,7 @@ onMounted(() => {
     };
 
     // Definir las columnas que se ocultan por defecto
-    const columnasOcultas = [2, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35];
+    const columnasOcultas = [2, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36];
 
     dataTableInstance = new DataTablesCore('#customTable', {
       data: props.rows,
@@ -79,6 +84,26 @@ onMounted(() => {
             case 'Evaluación No Completada':
               $(row).addClass('evaluacion-no-completada-row');
               break;
+          }
+        }
+        
+        // Agregar clase CSS según el estado de vigencia
+        if (data && typeof data === 'object' && 'aptitudResumen' in data && 
+            data.aptitudResumen && typeof data.aptitudResumen === 'object' && 
+            'fechaAptitudPuesto' in data.aptitudResumen) {
+          
+          const fechaAptitud = data.aptitudResumen.fechaAptitudPuesto;
+          if (fechaAptitud) {
+            const { estado } = calcularEstadoVigencia(fechaAptitud as string | Date);
+            
+            switch (estado) {
+              case 'Por vencer':
+                $(row).addClass('por-vencer-row');
+                break;
+              case 'Vencido':
+                $(row).addClass('vencido-row');
+                break;
+            }
           }
         }
       },
@@ -137,9 +162,29 @@ onMounted(() => {
         { data: 'historiaClinicaResumen.tabaquismo', title: 'Tabaco', defaultContent: '-' }, // 30
         { data: 'historiaClinicaResumen.accidenteLaboral', title: 'Acc. Laboral', defaultContent: '-' }, // 31
         { data: 'aptitudResumen.aptitudPuesto', title: 'Aptitud', defaultContent: '-' }, // 32
-        { data: 'agentesRiesgoActuales', title: 'Agentes Riesgo', render: d => Array.isArray(d) ? d.join(', ') : '-', defaultContent: '-' }, // 33
-        { data: 'consultaResumen.fechaNotaMedica', title: 'Consultas', render: d => d ? 'Si' : 'No', defaultContent: '-' }, // 34
-        { data: 'estadoLaboral', title: 'Estado Laboral' }, // 35
+        { 
+          data: 'aptitudResumen.fechaAptitudPuesto', 
+          title: 'Estado Vigencia', 
+          render: function(data, type, row) {
+            if (!data) return '<span class="text-gray-500">Sin fecha</span>';
+                        
+            const { estado, diasRestantes, diasTranscurridos, color } = calcularEstadoVigencia(data);
+                        
+            return `
+              <div class="flex flex-col items-start gap-1">
+                <span class="font-medium ${color}">${estado}</span>
+                ${estado === 'Vigente' ? `<span class="text-xs text-gray-600">${diasRestantes} días restantes</span>` : 
+                  estado === 'Por vencer' ? `<span class="text-xs text-gray-600">${diasRestantes} días restantes</span>` :
+                  estado === 'Vencido' ? `<span class="text-xs text-gray-500">${Math.max(0, diasTranscurridos - 365)} días vencido</span>` :
+                  `<span class="text-xs text-gray-500">${estado}</span>`}
+              </div>
+            `;
+          },
+          defaultContent: '<span class="text-gray-500">Sin fecha</span>' 
+        }, // 33
+        { data: 'agentesRiesgoActuales', title: 'Agentes Riesgo', render: d => Array.isArray(d) ? d.join(', ') : '-', defaultContent: '-' }, // 34
+        { data: 'consultaResumen.fechaNotaMedica', title: 'Consultas', render: d => d ? 'Si' : 'No', defaultContent: '-' }, // 35
+        { data: 'estadoLaboral', title: 'Estado Laboral' }, // 36
         {
           data: null,
           title: 'Expediente',
@@ -163,7 +208,7 @@ onMounted(() => {
               </a>
             `;
           }
-        }, // 36
+        }, // 37
         {
           data: null,
           title: 'Acciones',
@@ -240,7 +285,7 @@ onMounted(() => {
               </div>
             `;
           }
-        }, // 37
+        }, // 38
       ],
       deferRender: true,
       scrollX: true,
@@ -263,7 +308,10 @@ onMounted(() => {
       },
       columnDefs: [
         { targets: props.mostrarColumnasOcultas ? [] : columnasOcultas, visible: props.mostrarColumnasOcultas ? true : false }, // Oculta las columnas según la prop
-        { targets: 37, width: '248px', className: 'columna-acciones' } // Acciones con clase específica
+        { targets: 0, className: 'text-center' }, // Tabaco
+        { targets: 30, width: '70px' }, // Tabaco
+        { targets: 32, width: '100px' }, // Aptitud
+        { targets: 38, width: '248px', className: 'columna-acciones' } // Acciones con clase específica
       ]
     });
 
@@ -379,9 +427,10 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
     { id: 'quirurgico', columna: 27 },
     { id: 'traumatico', columna: 28 },
     { id: 'aptitud', columna: 32 },
-    { id: 'exposicion', columna: 33 }, // <-- este tiene lógica especial
-    { id: 'consultas', columna: 34 },
-    { id: 'estadoLaboral', columna: 35 }
+    { id: 'vigencia', columna: 33 },
+    { id: 'exposicion', columna: 34 }, // <-- este tiene lógica especial
+    { id: 'consultas', columna: 35 },
+    { id: 'estadoLaboral', columna: 36 }
   ];
 
   // 1. Limpiar filtros anteriores
@@ -488,7 +537,7 @@ defineExpose({
 // Agregar watcher para la prop mostrarColumnasOcultas
 watch(() => props.mostrarColumnasOcultas, (nuevoValor) => {
   if (dataTableInstance) {
-    const columnasOcultas = [2, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35];
+    const columnasOcultas = [2, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36];
     
     // Cambiar la visibilidad de las columnas
     columnasOcultas.forEach((columnaIndex) => {
@@ -506,12 +555,161 @@ watch(() => props.mostrarColumnasOcultas, (nuevoValor) => {
   }
 });
 
+// Agregar watcher para la prop mostrarLeyenda
+watch(() => props.mostrarLeyenda, (nuevoValor) => {
+  mostrarLeyendaLocal.value = nuevoValor !== false;
+});
+
+// Función helper para calcular estado de vigencia y días restantes
+function calcularEstadoVigencia(fechaAptitudPuesto: string | Date | null): { estado: string; diasRestantes: number; diasTranscurridos: number; color: string } {
+  if (!fechaAptitudPuesto) {
+    return { estado: 'Sin fecha', diasRestantes: 0, diasTranscurridos: 0, color: 'text-gray-500' };
+  }
+
+  // Convertir la fecha a objeto Date si es string
+  let fechaAptitud: Date;
+  
+  if (typeof fechaAptitudPuesto === 'string') {
+    // Si es string, intentar parsear como ISO o como dd/MM/yyyy
+    if (fechaAptitudPuesto.includes('/')) {
+      // Formato dd/MM/yyyy
+      const partes = fechaAptitudPuesto.split('/');
+      if (partes.length === 3) {
+        fechaAptitud = new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
+      } else {
+        fechaAptitud = new Date(fechaAptitudPuesto);
+      }
+    } else {
+      // Formato ISO u otro
+      fechaAptitud = new Date(fechaAptitudPuesto);
+    }
+  } else {
+    fechaAptitud = fechaAptitudPuesto;
+  }
+  
+  const fechaActual = new Date();
+  
+  // Validar que la fecha sea válida
+  if (isNaN(fechaAptitud.getTime())) {
+    console.warn('Fecha inválida:', fechaAptitudPuesto, 'fecha parseada:', fechaAptitud);
+    return { estado: 'Fecha inválida', diasRestantes: 0, diasTranscurridos: 0, color: 'text-gray-500' };
+  }
+  
+  // Calcular diferencia en días
+  const diferenciaTiempo = fechaActual.getTime() - fechaAptitud.getTime();
+  const diasTranscurridos = Math.ceil(diferenciaTiempo / (1000 * 3600 * 24));
+  
+  // Validar que el cálculo sea válido
+  if (isNaN(diasTranscurridos)) {
+    console.warn('Error calculando días transcurridos:', { fechaAptitud, fechaActual, diferenciaTiempo });
+    return { estado: 'Error cálculo', diasRestantes: 0, diasTranscurridos: 0, color: 'text-gray-500' };
+  }
+  
+  // Calcular días restantes para vencer (365 días total)
+  const diasRestantes = Math.max(0, 365 - diasTranscurridos);
+  
+  let estado: string;
+  let color: string;
+  
+  // Lógica corregida:
+  // - Si < 304 días: "Vigente" (0-303 días)
+  // - Si >= 304 días y < 365 días: "Por vencer" (entre 304-364 días)
+  // - Si >= 365 días: "Vencido" (ya cumplió el año completo)
+  if (diasTranscurridos < 304) {
+    estado = 'Vigente';
+    color = 'text-green-600';
+  } else if (diasTranscurridos >= 304 && diasTranscurridos < 365) {
+    estado = 'Por vencer';
+    color = 'text-orange-600';
+  } else {
+    estado = 'Vencido';
+    color = 'text-red-600';
+  }
+  
+  return { estado, diasRestantes, diasTranscurridos, color };
+}
+
 </script>
 
 <template>
-  <div class="table-container overflow-x-auto">
-    <table id="customTable" ref="tablaRef" class="display w-full"></table>
-  </div>
+    <div class="table-container">
+    <!-- Leyenda de indicadores visuales -->
+    <Transition name="desplegar-leyenda" mode="out-in">
+      <div v-if="mostrarLeyendaLocal" class="leyenda-indicadores mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="flex justify-between items-start mb-3">
+          <h3 class="text-sm font-semibold text-gray-700">Indicadores Visuales en la Tabla</h3>
+          <button 
+            @click="mostrarLeyendaLocal = false; emit('toggle-leyenda', false)"
+            class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            title="Ocultar leyenda"
+          >
+            <i class="fa-solid fa-times text-sm"></i>
+          </button>
+        </div>
+      
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          <!-- Leyenda de Aptitud (Bordes izquierdos) -->
+          <div>
+            <h4 class="text-xs font-medium text-gray-600 mb-2">Estado de Aptitud (Borde izquierdo)</h4>
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-green-500 rounded-sm"></div>
+                <span class="text-xs text-gray-600">Apto Sin Restricciones</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-yellow-500 rounded-sm"></div>
+                <span class="text-xs text-gray-600">Apto Con Precaución</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-orange-500 rounded-sm"></div>
+                <span class="text-xs text-gray-600">Apto Con Restricciones</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-red-500 rounded-sm"></div>
+                <span class="text-xs text-gray-600">No Apto</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-gray-500 rounded-sm"></div>
+                <span class="text-xs text-gray-600">Evaluación No Completada</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Leyenda de Vigencia (Fondo de fila) -->
+          <div>
+            <h4 class="text-xs font-medium text-gray-600 mb-2">Vigencia (Color de fondo de la fila)</h4>
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-orange-100 border border-orange-300 rounded-sm"></div>
+                <span class="text-xs text-gray-600">Por Vencer (Vence en menos de 60 días)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-red-100 border border-red-300 rounded-sm"></div>
+                <span class="text-xs text-gray-600">Vencido (Ya cumplió el año)</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-4 bg-white border border-gray-300 rounded-sm"></div>
+                <span class="text-xs text-gray-600">Vigente (examen médico válido)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      
+    <!-- Información adicional -->
+        <div class="mt-3 pt-3 border-t border-gray-200">
+          <p class="text-xs text-gray-500">
+            <strong>Nota:</strong> Los indicadores se combinan para mostrar tanto la aptitud del trabajador como la vigencia de su examen médico. 
+            El borde izquierdo indica la aptitud, mientras que el color de fondo indica si el examen está por vencer o ya venció.
+          </p>
+        </div>
+      </div>
+      </Transition>
+      
+      <!-- Tabla -->
+      <div class="overflow-x-auto">
+        <table id="customTable" ref="tablaRef" class="display w-full"></table>
+      </div>
+    </div>
 </template>
 
 <style scoped>
@@ -643,51 +841,84 @@ table.dataTable tbody td {
   line-height: 1.3 !important; /* o prueba con 1.1 o incluso 1.0 */
 }
 
-/* Estilos para la semaforización de aptitud */
+/* Estilos para la semaforización de aptitud usando background-image */
 
 /* Apto Sin Restricciones - Verde */
 table.dataTable tbody tr.apto-sin-restricciones-row {
-  border-left: 4px solid #10b981 !important;
+  background-image: linear-gradient(to right, #10b981 0px, #10b981 4px, transparent 4px) !important;
+  background-repeat: no-repeat !important;
+  background-position: left center !important;
 }
 
 table.dataTable tbody tr.apto-sin-restricciones-row:hover {
   background-color: #f0fdf4 !important;
+  background-image: linear-gradient(to right, #10b981 0px, #10b981 4px, #f0fdf4 4px) !important;
 }
 
 /* Apto Con Precaución - Amarillo */
 table.dataTable tbody tr.apto-con-precaucion-row {
-  border-left: 4px solid #f59e0b !important;
+  background-image: linear-gradient(to right, #f59e0b 0px, #f59e0b 4px, transparent 4px) !important;
+  background-repeat: no-repeat !important;
+  background-position: left center !important;
 }
 
 table.dataTable tbody tr.apto-con-precaucion-row:hover {
   background-color: #fffbeb !important;
+  background-image: linear-gradient(to right, #f59e0b 0px, #f59e0b 4px, #fffbeb 4px) !important;
 }
 
 /* Apto Con Restricciones - Naranja */
 table.dataTable tbody tr.apto-con-restricciones-row {
-  border-left: 4px solid #f97316 !important;
+  background-image: linear-gradient(to right, #f97316 0px, #f97316 4px, transparent 4px) !important;
+  background-repeat: no-repeat !important;
+  background-position: left center !important;
 }
 
 table.dataTable tbody tr.apto-con-restricciones-row:hover {
   background-color: #fff7ed !important;
+  background-image: linear-gradient(to right, #f97316 0px, #f97316 4px, #fff7ed 4px) !important;
 }
 
 /* No Apto - Rojo */
 table.dataTable tbody tr.no-apto-row {
-  border-left: 4px solid #dc2626 !important;
+  background-image: linear-gradient(to right, #dc2626 0px, #dc2626 4px, transparent 4px) !important;
+  background-repeat: no-repeat !important;
+  background-position: left center !important;
 }
 
 table.dataTable tbody tr.no-apto-row:hover {
   background-color: #fef2f2 !important;
+  background-image: linear-gradient(to right, #dc2626 0px, #dc2626 4px, #fef2f2 4px) !important;
 }
 
 /* Evaluación No Completada - Gris */
 table.dataTable tbody tr.evaluacion-no-completada-row {
-  border-left: 4px solid #4B5563 !important; 
+  background-image: linear-gradient(to right, #4B5563 0px, #4B5563 4px, transparent 4px) !important;
+  background-repeat: no-repeat !important;
+  background-position: left center !important;
 }
 
 table.dataTable tbody tr.evaluacion-no-completada-row:hover {
   background-color: #fef2f2 !important;
+  background-image: linear-gradient(to right, #4B5563 0px, #4B5563 4px, #fef2f2 4px) !important;
+}
+
+/* Por Vencer - Fondo naranja claro */
+table.dataTable tbody tr.por-vencer-row {
+  background-color: #ffedd5 !important; /* orange-100 */
+}
+
+table.dataTable tbody tr.por-vencer-row:hover {
+  background-color: #fed7aa !important; /* orange-200 */
+}
+
+/* Vencido - Fondo rojo claro */
+table.dataTable tbody tr.vencido-row {
+  background-color: #fee2e2 !important; /* red-100 */
+}
+
+table.dataTable tbody tr.vencido-row:hover {
+  background-color: #fecaca !important; /* red-200 */
 }
 
 /* Estilos adicionales para forzar el ancho de la columna de acciones */
@@ -727,6 +958,75 @@ table.dataTable td.columna-acciones {
 
 .right-27 {
   right: 6.75rem; /* 108px - más cerca de right-28 */
+}
+
+/* Estilos para la columna de vigencia */
+table.dataTable td:nth-child(34) {
+  min-width: 120px;
+  max-width: 150px;
+}
+
+/* Asegurar que el contenido de vigencia se alinee correctamente */
+table.dataTable td:nth-child(34) .flex {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+/* Estilos para la leyenda de indicadores */
+.leyenda-indicadores {
+  font-family: inherit;
+}
+
+.leyenda-indicadores h3 {
+  color: #374151; /* gray-700 */
+  font-weight: 600;
+}
+
+.leyenda-indicadores h4 {
+  color: #4B5563; /* gray-600 */
+  font-weight: 500;
+}
+
+.leyenda-indicadores .text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 768px) {
+  .leyenda-indicadores {
+    padding: 1rem;
+  }
+  
+  .leyenda-indicadores .grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .leyenda-indicadores .space-y-2 > div {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Transición para la leyenda */
+.desplegar-leyenda-enter-active,
+.desplegar-leyenda-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.desplegar-leyenda-enter-from,
+.desplegar-leyenda-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.desplegar-leyenda-enter-to,
+.desplegar-leyenda-leave-from {
+  opacity: 1;
+  max-height: 800px;
+  transform: translateY(0);
 }
 
 </style>

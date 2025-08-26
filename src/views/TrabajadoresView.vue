@@ -59,6 +59,7 @@ const mostrarFiltros = ref(false);
 const filtrosAplicados = reactive(new Set<string>());
 const mostrarTabla = ref(false);
 const mostrarColumnasOcultas = ref(false);
+const mostrarLeyenda = ref(false);
 const actualizandoTabla = ref(false);
 
 // 4. Filtros
@@ -500,6 +501,10 @@ const toggleColumnasOcultas = () => {
   }, 10);
 };
 
+const toggleLeyenda = () => {
+  mostrarLeyenda.value = !mostrarLeyenda.value;
+};
+
 </script>
 
 <template>
@@ -662,6 +667,21 @@ const toggleColumnasOcultas = () => {
               {{ actualizandoTabla ? 'Actualizando...' : (mostrarColumnasOcultas ? 'Mostrar sólo columnas básicas' : 'Mostrar todas las columnas') }}
             </button>
 
+             <!-- Toggle leyenda -->
+             <button
+               @click="toggleLeyenda"
+               :class="[
+                 'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 border',
+                 mostrarLeyenda
+                   ? 'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100'
+                   : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300'
+               ]"
+               :title="mostrarLeyenda ? 'Ocultar explicación de colores' : 'Mostrar explicación de colores'"
+             >
+               <i :class="mostrarLeyenda ? 'fa-solid fa-info-circle' : 'fa-solid fa-info-circle'"></i>
+               {{ mostrarLeyenda ? 'Ocultar explicación' : 'Explicar colores' }}
+             </button>
+
             <!-- Indicador de filtros activos -->
             <div v-if="hayFiltrosActivos" 
                  class="inline-flex items-center gap-1.5 px-2 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg"
@@ -739,6 +759,7 @@ const toggleColumnasOcultas = () => {
             ref="dataTableRef"
             :rows="trabajadores.trabajadores || []"
             :mostrarColumnasOcultas="mostrarColumnasOcultas"
+            :mostrarLeyenda="mostrarLeyenda"
             v-if="mostrarTabla"
             class="table-auto z-1"
             @riesgo-trabajo="openRTsModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, $event)"
@@ -747,6 +768,7 @@ const toggleColumnasOcultas = () => {
             @toggle-estado-laboral="toggleEstadoLaboral($event)"
             @eliminar="solicitarEliminacion('Trabajador', $event.id, $event.nombre, eliminarTrabajador)"
             @actualizando-tabla="actualizandoTabla = $event"
+            @toggle-leyenda="mostrarLeyenda = $event"
           />
 
           <!-- Mensaje de estado vacío (siempre visible cuando no hay trabajadores) -->
@@ -835,6 +857,10 @@ const toggleColumnasOcultas = () => {
   opacity: 1;
   max-height: 800px;
   transform: translateY(0);
+}
+
+:deep(table.dataTable .text-center) {
+  text-align: center;
 }
 
 /* Estilos de cursor para elementos interactivos */
