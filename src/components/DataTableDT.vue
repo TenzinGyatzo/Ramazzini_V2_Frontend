@@ -14,10 +14,13 @@ const props = defineProps<{
   rows: any[];
   mostrarColumnasOcultas?: boolean;
   mostrarLeyenda?: boolean;
+  mostrarVigencias?: boolean;
 }>();
 
 // Estado local para controlar la visibilidad de la leyenda
 const mostrarLeyendaLocal = ref(props.mostrarLeyenda !== false);
+// Estado local para controlar la visibilidad de las vigencias
+const mostrarVigenciasLocal = ref(props.mostrarVigencias !== false);
 
 const tablaRef = ref<HTMLElement | null>(null);
 let dataTableInstance: any = null;
@@ -38,6 +41,7 @@ const emit = defineEmits<{
   (e: 'eliminar', payload: { id: string; nombre: string }): void;
   (e: 'actualizando-tabla', actualizando: boolean): void;
   (e: 'toggle-leyenda', mostrar: boolean): void;
+  (e: 'toggle-vigencias', mostrar: boolean): void;
 }>();
 
 onMounted(() => {
@@ -56,7 +60,7 @@ onMounted(() => {
     };
 
     // Definir las columnas que se ocultan por defecto
-    const columnasOcultas = [2, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36];
+    const columnasOcultas = [2, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36];
 
     dataTableInstance = new DataTablesCore('#customTable', {
       data: props.rows,
@@ -127,48 +131,21 @@ onMounted(() => {
             return nombreCompleto || 'Sin nombre';
           }
         }, // 3
-        // { data: 'updatedAt', title: 'Última actualización', render: d => convertirFechaISOaDDMMYYYY(d) },
+        { data: 'aptitudResumen.aptitudPuesto', title: 'Aptitud', defaultContent: '-' }, // 4 (antes era 32)
         { 
-          data: 'updatedAt', 
-          title: 'Último cambio', 
-          render: d => convertirFechaISOaDDMMYYYY(d), 
-          type: 'date-dd-MM-yyyy' // Indica que la columna tiene fechas en formato personalizado
-        }, // 4
-        { data: 'fechaNacimiento', title: 'Edad', render: d => calcularEdad(d) + ' años' }, // 5
-        { data: 'sexo', title: 'Sexo' }, // 6
-        { data: 'escolaridad', title: 'Escolaridad' }, // 7
-        { data: 'puesto', title: 'Puesto' }, // 8
-        { data: 'fechaIngreso', title: 'Antigüedad', render: d => calcularAntiguedad(d) }, // 9
-        { data: 'telefono', title: 'Teléfono', defaultContent: '-' }, // 10
-        { data: 'estadoCivil', title: 'Estado Civil' }, // 11
-        { data: 'exploracionFisicaResumen.categoriaIMC', title: 'IMC', defaultContent: '-' }, // 12
-        { data: 'exploracionFisicaResumen.categoriaCircunferenciaCintura', title: 'Cintura', defaultContent: '-' }, // 13
-        { data: 'exploracionFisicaResumen.categoriaTensionArterial', title: 'TA', defaultContent: '-' }, // 14
-        { data: 'examenVistaResumen.requiereLentesUsoGeneral', title: 'Req. Lentes', render: d => d === 'Si' ? 'Requiere lentes' : 'No requiere', defaultContent: '-' }, // 15
-        { data: null, title: 'Corrección', render: d => determinarVistaCorregida(d.examenVistaResumen?.requiereLentesUsoGeneral, Number(d.examenVistaResumen?.ojoIzquierdoLejanaConCorreccion), Number(d.examenVistaResumen?.ojoDerechoLejanaConCorreccion)) }, // 16
-        { data: 'examenVistaResumen.sinCorreccionLejanaInterpretacion', title: 'Agudeza', defaultContent: '-' }, // 17
-        { data: 'examenVistaResumen.interpretacionIshihara', title: 'Daltonismo', defaultContent: '-' }, // 18
-        { data: 'historiaClinicaResumen.lumbalgias', title: 'Lumbalgia', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 19
-        { data: 'historiaClinicaResumen.diabeticosPP', title: 'Diabetes', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 20
-        { data: 'historiaClinicaResumen.cardiopaticosPP', title: 'Cardiopatías', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 21
-        { data: 'historiaClinicaResumen.alergicos', title: 'Alergias', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 22
-        { data: 'historiaClinicaResumen.hipertensivosPP', title: 'Hipertensión', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 23
-        { data: 'historiaClinicaResumen.respiratorios', title: 'Respiratorios', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 24
-        { data: 'historiaClinicaResumen.epilepticosPP', title: 'Epilépticos', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 25
-        { data: 'historiaClinicaResumen.accidentes', title: 'Accidentes', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 26
-        { data: 'historiaClinicaResumen.quirurgicos', title: 'Cirugias', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 27
-        { data: 'historiaClinicaResumen.traumaticos', title: 'Traumas', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 28
-        { data: 'historiaClinicaResumen.alcoholismo', title: 'Alcohol', defaultContent: '-' }, // 29
-        { data: 'historiaClinicaResumen.tabaquismo', title: 'Tabaco', defaultContent: '-' }, // 30
-        { data: 'historiaClinicaResumen.accidenteLaboral', title: 'Acc. Laboral', defaultContent: '-' }, // 31
-        { data: 'aptitudResumen.aptitudPuesto', title: 'Aptitud', defaultContent: '-' }, // 32
-        { 
-          data: 'aptitudResumen.fechaAptitudPuesto', 
+          data: null, 
           title: 'Estado Vigencia', 
           render: function(data, type, row) {
-            if (!data) return '<span class="text-gray-500">Sin fecha</span>';
+            if (!row.aptitudResumen?.fechaAptitudPuesto) {
+              return '<span class="text-gray-500">Sin fecha</span>';
+            }
                         
-            const { estado, diasRestantes, diasTranscurridos, color } = calcularEstadoVigencia(data);
+            const { estado, diasRestantes, diasTranscurridos, color } = calcularEstadoVigencia(row.aptitudResumen.fechaAptitudPuesto);
+            
+            // Para el filtrado, retornar solo el estado cuando se solicita 'filter'
+            if (type === 'filter') {
+              return estado;
+            }
                         
             return `
               <div class="flex flex-col items-start gap-1">
@@ -181,10 +158,44 @@ onMounted(() => {
             `;
           },
           defaultContent: '<span class="text-gray-500">Sin fecha</span>' 
-        }, // 33
-        { data: 'agentesRiesgoActuales', title: 'Agentes Riesgo', render: d => Array.isArray(d) ? d.join(', ') : '-', defaultContent: '-' }, // 34
-        { data: 'consultaResumen.fechaNotaMedica', title: 'Consultas', render: d => d ? 'Si' : 'No', defaultContent: '-' }, // 35
-        { data: 'estadoLaboral', title: 'Estado Laboral' }, // 36
+        }, // 5 (antes era 33)
+        // { data: 'updatedAt', title: 'Última actualización', render: d => convertirFechaISOaDDMMYYYY(d) },
+        { 
+          data: 'updatedAt', 
+          title: 'Último cambio', 
+          render: d => convertirFechaISOaDDMMYYYY(d), 
+          type: 'date-dd-MM-yyyy' // Indica que la columna tiene fechas en formato personalizado
+        }, // 6 (antes era 4)
+        { data: 'fechaNacimiento', title: 'Edad', render: d => calcularEdad(d) + ' años' }, // 7 (antes era 5)
+        { data: 'sexo', title: 'Sexo' }, // 8 (antes era 6)
+        { data: 'escolaridad', title: 'Escolaridad' }, // 9 (antes era 7)
+        { data: 'puesto', title: 'Puesto' }, // 10 (antes era 8)
+        { data: 'fechaIngreso', title: 'Antigüedad', render: d => calcularAntiguedad(d) }, // 11 (antes era 9)
+        { data: 'telefono', title: 'Teléfono', defaultContent: '-' }, // 12 (antes era 10)
+        { data: 'estadoCivil', title: 'Estado Civil' }, // 13 (antes era 11)
+        { data: 'exploracionFisicaResumen.categoriaIMC', title: 'IMC', defaultContent: '-' }, // 14 (antes era 12)
+        { data: 'exploracionFisicaResumen.categoriaCircunferenciaCintura', title: 'Cintura', defaultContent: '-' }, // 15 (antes era 13)
+        { data: 'exploracionFisicaResumen.categoriaTensionArterial', title: 'TA', defaultContent: '-' }, // 16 (antes era 14)
+        { data: 'examenVistaResumen.requiereLentesUsoGeneral', title: 'Req. Lentes', render: d => d === 'Si' ? 'Requiere lentes' : 'No requiere', defaultContent: '-' }, // 17 (antes era 15)
+        { data: null, title: 'Corrección', render: d => determinarVistaCorregida(d.examenVistaResumen?.requiereLentesUsoGeneral, Number(d.examenVistaResumen?.ojoIzquierdoLejanaConCorreccion), Number(d.examenVistaResumen?.ojoDerechoLejanaConCorreccion)) }, // 18 (antes era 16)
+        { data: 'examenVistaResumen.sinCorreccionLejanaInterpretacion', title: 'Agudeza', defaultContent: '-' }, // 19 (antes era 17)
+        { data: 'examenVistaResumen.interpretacionIshihara', title: 'Daltonismo', defaultContent: '-' }, // 20 (antes era 18)
+        { data: 'historiaClinicaResumen.lumbalgias', title: 'Lumbalgia', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 21 (antes era 19)
+        { data: 'historiaClinicaResumen.diabeticosPP', title: 'Diabetes', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 22 (antes era 20)
+        { data: 'historiaClinicaResumen.cardiopaticosPP', title: 'Cardiopatías', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 23 (antes era 21)
+        { data: 'historiaClinicaResumen.alergicos', title: 'Alergias', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 24 (antes era 22)
+        { data: 'historiaClinicaResumen.hipertensivosPP', title: 'Hipertensión', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 25 (antes era 23)
+        { data: 'historiaClinicaResumen.respiratorios', title: 'Respiratorios', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 26 (antes era 24)
+        { data: 'historiaClinicaResumen.epilepticosPP', title: 'Epilépticos', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 27 (antes era 25)
+        { data: 'historiaClinicaResumen.accidentes', title: 'Accidentes', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 28 (antes era 26)
+        { data: 'historiaClinicaResumen.quirurgicos', title: 'Cirugias', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 29 (antes era 27)
+        { data: 'historiaClinicaResumen.traumaticos', title: 'Traumas', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 30 (antes era 28)
+        { data: 'historiaClinicaResumen.alcoholismo', title: 'Alcohol', defaultContent: '-' }, // 31 (antes era 29)
+        { data: 'historiaClinicaResumen.tabaquismo', title: 'Tabaco', defaultContent: '-' }, // 32 (antes era 30)
+        { data: 'historiaClinicaResumen.accidenteLaboral', title: 'Acc. Laboral', defaultContent: '-' }, // 33 (antes era 31)
+        { data: 'agentesRiesgoActuales', title: 'Agentes Riesgo', render: d => Array.isArray(d) ? d.join(', ') : '-', defaultContent: '-' }, // 34 (antes era 34)
+        { data: 'consultaResumen.fechaNotaMedica', title: 'Consultas', render: d => d ? 'Si' : 'No', defaultContent: '-' }, // 35 (antes era 35)
+        { data: 'estadoLaboral', title: 'Estado Laboral' }, // 36 (antes era 36)
         {
           data: null,
           title: 'Expediente',
@@ -208,7 +219,7 @@ onMounted(() => {
               </a>
             `;
           }
-        }, // 37
+        }, // 37 (antes era 37)
         {
           data: null,
           title: 'Acciones',
@@ -285,7 +296,7 @@ onMounted(() => {
               </div>
             `;
           }
-        }, // 38
+        }, // 38 (antes era 38)
       ],
       deferRender: true,
       scrollX: true,
@@ -308,9 +319,14 @@ onMounted(() => {
       },
       columnDefs: [
         { targets: props.mostrarColumnasOcultas ? [] : columnasOcultas, visible: props.mostrarColumnasOcultas ? true : false }, // Oculta las columnas según la prop
-        { targets: 0, className: 'text-center' }, // Tabaco
-        { targets: 30, width: '70px' }, // Tabaco
-        { targets: 32, width: '100px' }, // Aptitud
+        { targets: 0, className: 'text-center' },
+        { targets: 3, width: '100px' }, // Nombre completo
+        { targets: 4, width: '100px' }, // Aptitud
+        { targets: 5, width: '120px' }, // Estado Vigencia
+        { targets: 6, width: '70px' }, // Última actualización
+        { targets: 10, width: '100px' }, // Puesto
+        { targets: 14, width: '60px' }, // IMC
+        { targets: 32, width: '70px' }, // Tabaco
         { targets: 38, width: '248px', className: 'columna-acciones' } // Acciones con clase específica
       ]
     });
@@ -408,37 +424,45 @@ let filtroPeriodoReferencia: ((settings: any, data: any[]) => boolean) | null = 
 
 function aplicarTodosLosFiltrosDesdeLocalStorage() {
   const filtros = [
-    { id: 'sexo', columna: 6 },
-    { id: 'puesto', columna: 8 },
-    { id: 'imc', columna: 12 },
-    { id: 'cintura', columna: 13 },
-    { id: 'tensionArterial', columna: 14 },
-    { id: 'lentes', columna: 15 },
-    { id: 'correccionVisual', columna: 16 },
-    { id: 'agudeza', columna: 17 },
-    { id: 'daltonismo', columna: 18 },
-    { id: 'lumbalgia', columna: 19 },
-    { id: 'diabetico', columna: 20 },
-    { id: 'cardiopatico', columna: 21 },
-    { id: 'alergia', columna: 22 },
-    { id: 'hipertensivo', columna: 23 },
-    { id: 'epilepsia', columna: 25 },
-    { id: 'accidente', columna: 26 },
-    { id: 'quirurgico', columna: 27 },
-    { id: 'traumatico', columna: 28 },
-    { id: 'aptitud', columna: 32 },
-    { id: 'vigencia', columna: 33 },
+    { id: 'sexo', columna: 8 },
+    { id: 'puesto', columna: 10 },
+    { id: 'imc', columna: 14 },
+    { id: 'cintura', columna: 15 },
+    { id: 'tensionArterial', columna: 16 },
+    { id: 'lentes', columna: 17 },
+    { id: 'correccionVisual', columna: 18 },
+    { id: 'agudeza', columna: 19 },
+    { id: 'daltonismo', columna: 20 },
+    { id: 'lumbalgia', columna: 21 },
+    { id: 'diabetico', columna: 22 },
+    { id: 'cardiopatico', columna: 23 },
+    { id: 'alergia', columna: 24 },
+    { id: 'hipertensivo', columna: 25 },
+    { id: 'epilepsia', columna: 27 },
+    { id: 'accidente', columna: 28 },
+    { id: 'quirurgico', columna: 29 },
+    { id: 'traumatico', columna: 30 },
+    { id: 'aptitud', columna: 4 },
+    { id: 'vigencia', columna: 5 }, // <-- Ahora funciona con filtro estándar
     { id: 'exposicion', columna: 34 }, // <-- este tiene lógica especial
     { id: 'consultas', columna: 35 },
     { id: 'estadoLaboral', columna: 36 }
   ];
 
-  // 1. Limpiar filtros anteriores
-  dataTableInstance.columns().search('');
-  if (filtroPeriodoReferencia) {
-    $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(f => f !== filtroPeriodoReferencia);
-    filtroPeriodoReferencia = null;
-  }
+      // 1. Limpiar filtros anteriores
+    dataTableInstance.columns().search('');
+    if (filtroPeriodoReferencia) {
+      $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(f => f !== filtroPeriodoReferencia);
+      filtroPeriodoReferencia = null;
+    }
+
+
+    // 1.5. Aplicar visibilidad de columnas de vigencias
+    // Si columnas está ON, respetar el estado de vigencias
+    // Si columnas está OFF, solo mostrar si vigencias está ON
+    const mostrarVigencias = props.mostrarColumnasOcultas ? mostrarVigenciasLocal.value : mostrarVigenciasLocal.value;
+    dataTableInstance.column(4).visible(mostrarVigencias);
+    dataTableInstance.column(5).visible(mostrarVigencias);
 
   // 2. Aplicar filtros por columna
   filtros.forEach(({ id, columna }) => {
@@ -508,7 +532,7 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
       const hasta = (fechaFinMesAnterior || fechaFinAnoAnterior)?.getTime() || null;
 
       filtroPeriodoReferencia = function (settings, data) {
-        const fechaTexto = data[4]; // columna "Última actualización" (índice 4)
+        const fechaTexto = data[6]; // columna "Última actualización" (índice 6)
         if (!fechaTexto || fechaTexto === '-') return true;
         
         const partes = fechaTexto.split('-');
@@ -526,28 +550,65 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
 
   }
 
-  // 4. Redibujar tabla
+  // 4. El filtro de vigencia ahora se maneja automáticamente por DataTables
+  // ya que la columna tiene data para filtrado en el render
+
+  // 5. Redibujar tabla
   dataTableInstance.draw();
 }
 
 defineExpose({
-  aplicarTodosLosFiltrosDesdeLocalStorage
+  aplicarTodosLosFiltrosDesdeLocalStorage,
+  mostrarVigenciasLocal,
+  toggleVigencias: () => {
+    if (dataTableInstance) {
+      mostrarVigenciasLocal.value = !mostrarVigenciasLocal.value;
+      
+      // Aplicar la visibilidad de las columnas de vigencias
+      // Si columnas está ON, respetar el estado de vigencias
+      // Si columnas está OFF, solo mostrar si vigencias está ON
+      const mostrarVigencias = props.mostrarColumnasOcultas ? mostrarVigenciasLocal.value : mostrarVigenciasLocal.value;
+      dataTableInstance.column(4).visible(mostrarVigencias);
+      dataTableInstance.column(5).visible(mostrarVigencias);
+      
+      emit('toggle-vigencias', mostrarVigenciasLocal.value);
+      
+      // Redibujar la tabla
+      dataTableInstance.draw();
+    }
+  }
 });
 
 // Agregar watcher para la prop mostrarColumnasOcultas
 watch(() => props.mostrarColumnasOcultas, (nuevoValor) => {
   if (dataTableInstance) {
-    const columnasOcultas = [2, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36];
+    const columnasOcultas = [2, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36];
     
     // Cambiar la visibilidad de las columnas
     columnasOcultas.forEach((columnaIndex) => {
       dataTableInstance.column(columnaIndex).visible(nuevoValor);
     });
     
+    // Sincronizar el estado del toggle de vigencias
+    if (nuevoValor) {
+      // Si se activan todas las columnas, activar también vigencias
+      mostrarVigenciasLocal.value = true;
+      emit('toggle-vigencias', true);
+    } else {
+      // Si se desactivan todas las columnas, desactivar también vigencias
+      mostrarVigenciasLocal.value = false;
+      emit('toggle-vigencias', false);
+    }
+    
+    // Aplicar la visibilidad de las columnas de vigencias
+    // Si columnas está ON, respetar el estado de vigencias
+    // Si columnas está OFF, solo mostrar si vigencias está ON
+    const mostrarVigencias = props.mostrarColumnasOcultas ? mostrarVigenciasLocal.value : mostrarVigenciasLocal.value;
+    dataTableInstance.column(4).visible(mostrarVigencias);
+    dataTableInstance.column(5).visible(mostrarVigencias);
+    
     // Usar requestAnimationFrame para detectar cuando el DOM realmente se actualiza
-    // Esto es más preciso que un timeout fijo
     requestAnimationFrame(() => {
-      // Un segundo requestAnimationFrame para asegurar que la tabla terminó de renderizar
       requestAnimationFrame(() => {
         emit('actualizando-tabla', false);
       });
@@ -558,6 +619,29 @@ watch(() => props.mostrarColumnasOcultas, (nuevoValor) => {
 // Agregar watcher para la prop mostrarLeyenda
 watch(() => props.mostrarLeyenda, (nuevoValor) => {
   mostrarLeyendaLocal.value = nuevoValor !== false;
+});
+
+
+
+// Agregar watcher para la prop mostrarVigencias
+watch(() => props.mostrarVigencias, (nuevoValor) => {
+  mostrarVigenciasLocal.value = nuevoValor !== false;
+  
+  if (dataTableInstance) {
+    // Aplicar la visibilidad de las columnas de vigencias
+    // Si columnas está ON, respetar el estado de vigencias
+    // Si columnas está OFF, solo mostrar si vigencias está ON
+    const mostrarVigencias = props.mostrarColumnasOcultas ? mostrarVigenciasLocal.value : mostrarVigenciasLocal.value;
+    dataTableInstance.column(4).visible(mostrarVigencias);
+    dataTableInstance.column(5).visible(mostrarVigencias);
+    
+    // Usar requestAnimationFrame para detectar cuando el DOM realmente se actualiza
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        emit('actualizando-tabla', false);
+      });
+    });
+  }
 });
 
 // Función helper para calcular estado de vigencia y días restantes
@@ -633,6 +717,8 @@ function calcularEstadoVigencia(fechaAptitudPuesto: string | Date | null): { est
 
 <template>
     <div class="table-container">
+
+
     <!-- Leyenda de indicadores visuales -->
     <Transition name="desplegar-leyenda" mode="out-in">
       <div v-if="mostrarLeyendaLocal" class="leyenda-indicadores mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
@@ -961,13 +1047,13 @@ table.dataTable td.columna-acciones {
 }
 
 /* Estilos para la columna de vigencia */
-table.dataTable td:nth-child(34) {
+table.dataTable td:nth-child(6) {
   min-width: 120px;
   max-width: 150px;
 }
 
 /* Asegurar que el contenido de vigencia se alinee correctamente */
-table.dataTable td:nth-child(34) .flex {
+table.dataTable td:nth-child(6) .flex {
   align-items: flex-start;
   justify-content: flex-start;
 }

@@ -60,6 +60,7 @@ const filtrosAplicados = reactive(new Set<string>());
 const mostrarTabla = ref(false);
 const mostrarColumnasOcultas = ref(false);
 const mostrarLeyenda = ref(false);
+const mostrarVigencias = ref(false); // Estado inicial: oculto
 const actualizandoTabla = ref(false);
 
 // 4. Filtros
@@ -81,6 +82,7 @@ const filtrosConfig = [
     'No Apto', 'Evaluación No Completada', '-'
   ]},
   { id: 'lentes', label: 'Requiere Lentes', opciones: ['Requiere lentes', 'No requiere', '-'] },
+  { id: 'vigencia', label: 'Estado de Vigencia', opciones: ['Vigente', 'Por vencer', 'Vencido'] },
   { id: 'correccionVisual', label: 'Vista corregida', opciones: ['Corregida', 'Sin corregir', 'No requiere', '-'] },
   { id: 'agudeza', label: 'Agudeza Visual', opciones: [
     'Visión excepcional',
@@ -120,6 +122,7 @@ const filtros = reactive<Record<string, string>>({
   tensionArterial: '',
   aptitud: '',
   lentes: '',
+  vigencia: '',
   correccionVisual: '',
   agudeza: '',
   daltonismo: '',
@@ -444,6 +447,7 @@ const filtrosValidos = {
   cintura: ['Bajo Riesgo', 'Riesgo Aumentado', 'Alto Riesgo', '-'],
   tensionArterial: ['Óptima', 'Normal', 'Alta', 'Hipertensión ligera', 'Hipertensión moderada', 'Hipertensión severa'],
   aptitud: ['Apto Sin Restricciones', 'Apto Con Precaución', 'Apto Con Restricciones', 'No Apto', 'Evaluación No Completada'],
+  vigencia: ['Vigente', 'Por vencer', 'Vencido'],
   lentes: ['Requiere lentes', 'No requiere'],
   correccionVisual: ['Corregida', 'Sin corregir', 'No requiere'],
   agudeza: [
@@ -503,6 +507,10 @@ const toggleColumnasOcultas = () => {
 
 const toggleLeyenda = () => {
   mostrarLeyenda.value = !mostrarLeyenda.value;
+};
+
+const toggleVigencias = () => {
+  mostrarVigencias.value = !mostrarVigencias.value;
 };
 
 </script>
@@ -648,6 +656,21 @@ const toggleLeyenda = () => {
               {{ mostrarFiltros ? 'Ocultar filtros' : 'Mostrar filtros' }}
             </button>
 
+            <!-- Toggle vigencias -->
+            <button
+              @click="toggleVigencias"
+              :class="[
+                'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-200 border',
+                mostrarVigencias
+                  ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100'
+                  : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300'
+              ]"
+              :title="mostrarVigencias ? 'Ocultar columnas de vigencias' : 'Mostrar columnas de vigencias'"
+            >
+              <i class="fa-solid fa-calendar-check"></i>
+              {{ mostrarVigencias ? 'Ocultar vigencias' : 'Mostrar vigencias' }}
+            </button>
+
             <!-- Toggle columnas -->
             <button
               @click="toggleColumnasOcultas"
@@ -760,6 +783,7 @@ const toggleLeyenda = () => {
             :rows="trabajadores.trabajadores || []"
             :mostrarColumnasOcultas="mostrarColumnasOcultas"
             :mostrarLeyenda="mostrarLeyenda"
+            :mostrar-vigencias="mostrarVigencias"
             v-if="mostrarTabla"
             class="table-auto z-1"
             @riesgo-trabajo="openRTsModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, $event)"
@@ -769,6 +793,7 @@ const toggleLeyenda = () => {
             @eliminar="solicitarEliminacion('Trabajador', $event.id, $event.nombre, eliminarTrabajador)"
             @actualizando-tabla="actualizandoTabla = $event"
             @toggle-leyenda="mostrarLeyenda = $event"
+            @toggle-vigencias="mostrarVigencias = $event"
           />
 
           <!-- Mensaje de estado vacío (siempre visible cuando no hay trabajadores) -->
