@@ -77,7 +77,11 @@ const handleClick = async () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${trabajadores.currentTrabajador.nombre} ${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}.pdf`;
+    a.download = `${
+      [trabajadores.currentTrabajador.primerApellido, trabajadores.currentTrabajador.segundoApellido, trabajadores.currentTrabajador.nombre]
+        .filter(Boolean)
+        .join(' ')
+    } ${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}.pdf`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);

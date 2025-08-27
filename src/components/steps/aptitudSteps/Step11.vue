@@ -63,66 +63,128 @@ const copiarTexto = (texto) => {
             <p class="font-medium mb-1 text-gray-800 leading-5">Para cada una de las alteraciones encontradas debe de
                 haber una medida preventiva recomendada. </p>
 
-<!--             <p class="font-medium mb-1 text-gray-800 leading-5 mt-4">1. Puedes iniciar con los siguientes enunciados:</p>
-            <ul class="list-disc list-inside">
-                <li class="text-gray-700 hover:text-emerald-700 cursor-pointer leading-4">
-                    <p class="italic text-sm font-light inline"
-                        @click="copiarTexto('Es importante ')">
-                        Es importante...
-                    </p>
-                </li>
-                <li class="text-gray-700 hover:text-emerald-700 cursor-pointer leading-4">
-                    <p class="italic text-sm font-light inline"
-                        @click="copiarTexto('Se aconseja ')">
-                        Se aconseja...
-                    </p>
-                </li>
-                <li class="text-gray-700 hover:text-emerald-700 cursor-pointer leading-4">
-                    <p class="italic text-sm font-light inline"
-                        @click="copiarTexto('Es recomendable que ')">
-                        Es recomendable que...
-                    </p>
-                </li>
-                <li class="text-gray-700 hover:text-emerald-700 cursor-pointer leading-4">
-                    <p class="italic text-sm font-light inline"
-                        @click="copiarTexto('Se sugiere ')">
-                        Se sugiere...
-                    </p>
-                </li>
-                <li class="text-gray-700 hover:text-emerald-700 cursor-pointer leading-4">
-                    <p class="italic text-sm font-light inline"
-                        @click="copiarTexto('Es fundamental que ')">
-                        Es fundamental que...
-                    </p>
-                </li>
-                <li class="text-gray-700 hover:text-emerald-700 cursor-pointer leading-4">
-                    <p class="italic text-sm font-light inline"
-                        @click="copiarTexto('Es crucial que ')">
-                        Es crucial que...
-                    </p>
-                </li>
-                <li class="text-gray-700 hover:text-emerald-700 cursor-pointer leading-4">
-                    <p class="italic text-sm font-light inline"
-                        @click="copiarTexto('Se recomienda ')">
-                        Se recomienda...
-                    </p>
-                </li>
-            </ul> -->
-
             <!-- <p class="font-medium mb-1 text-gray-800 leading-5 mt-4">1. Separa cada recomendacion con punto y seguido.</p> -->
             
             <!-- Ejemplos -->
             <p class="font-medium mb-1 text-gray-800 leading-5 mt-4">Ejemplos de recomendaciones:<span v-if="mensajeCopiado" class="font-medium mb-1 leading-5 ml-2 text-emerald-600 text-sm">¡Copiado!</span></p>
-            <div class="space-y-2">
-                <!-- Botón principal -->
+            
+            <!-- Grid de botones compactos -->
+            <div class="grid grid-cols-2 gap-2 mt-3">
+                <!-- Genérico -->
                 <button
-                    class="w-full bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
+                    class="font-medium py-1.5 px-3 rounded-lg text-sm transition-all duration-200 flex items-center justify-between group"
+                    :class="isOpen('generico') 
+                        ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-500 shadow-sm' 
+                        : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white'"
                     @click="toggle('generico')">
-                    Genérico
+                    <span>Genérico</span>
+                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isOpen('generico') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
                 </button>
 
-                <!-- Contenedor del desplegable -->
-                <div v-if="isOpen('generico')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white">
+                <!-- Hernia Abdominal -->
+                <button
+                    class="font-medium py-1.5 px-3 rounded-lg text-sm transition-all duration-200 flex items-center justify-between group"
+                    :class="isOpen('Hernia') 
+                        ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-500 shadow-sm' 
+                        : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white'"
+                    @click="toggle('Hernia')">
+                    <span>Hernia Abd.</span>
+                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isOpen('Hernia') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+
+                <!-- Obesidad -->
+                <button
+                    class="font-medium py-1.5 px-3 rounded-lg text-sm transition-all duration-200 flex items-center justify-between group"
+                    :class="isOpen('obesidad') 
+                        ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-500 shadow-sm' 
+                        : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white'"
+                    @click="toggle('obesidad')">
+                    <span>Obesidad</span>
+                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isOpen('obesidad') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+
+                <!-- Diabetes Tipo II -->
+                <button
+                    class="font-medium py-1.5 px-3 rounded-lg text-sm transition-all duration-200 flex items-center justify-between group"
+                    :class="isOpen('diabetesMellitus2') 
+                        ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-500 shadow-sm' 
+                        : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white'"
+                    @click="toggle('diabetesMellitus2')">
+                    <span>Diabetes Tipo II</span>
+                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isOpen('diabetesMellitus2') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+
+                <!-- Hipertensión -->
+                <button
+                    class="font-medium py-1.5 px-3 rounded-lg text-sm transition-all duration-200 flex items-center justify-between group"
+                    :class="isOpen('hipertension') 
+                        ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-500 shadow-sm' 
+                        : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white'"
+                    @click="toggle('hipertension')">
+                    <span>Hipertensión</span>
+                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isOpen('hipertension') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+
+                <!-- Hipoacusia -->
+                <button
+                    class="font-medium py-1.5 px-3 rounded-lg text-sm transition-all duration-200 flex items-center justify-between group"
+                    :class="isOpen('hipoacusia') 
+                        ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-500 shadow-sm' 
+                        : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white'"
+                    @click="toggle('hipoacusia')">
+                    <span>Hipoacusia</span>
+                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isOpen('hipoacusia') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+
+                <!-- Problemas Respiratorios -->
+                <button
+                    class="font-medium py-1.5 px-3 rounded-lg text-sm transition-all duration-200 flex items-center justify-between group"
+                    :class="isOpen('problemasRespiratorios') 
+                        ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-500 shadow-sm' 
+                        : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white'"
+                    @click="toggle('problemasRespiratorios')">
+                    <span>Respiratorios</span>
+                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isOpen('problemasRespiratorios') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+
+                <!-- Lumbalgia -->
+                <button
+                    class="font-medium py-1.5 px-3 rounded-lg text-sm transition-all duration-200 flex items-center justify-between group"
+                    :class="isOpen('lumbalgia') 
+                        ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-500 shadow-sm' 
+                        : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white'"
+                    @click="toggle('lumbalgia')">
+                    <span>Lumbalgia</span>
+                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isOpen('lumbalgia') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Contenedores desplegables con animaciones -->
+            <!-- Genérico -->
+            <transition
+                enter-active-class="transition-all duration-300 ease-out"
+                enter-from-class="opacity-0 transform -translate-y-2 max-h-0"
+                enter-to-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-to-class="opacity-0 transform -translate-y-2 max-h-0">
+                <div v-if="isOpen('generico')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white mt-3 overflow-hidden">
                     <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
                             @click="copiarTexto('Es importante usar adecuadamente el EPP, mantener hábitos saludables como una alimentación balanceada, ejercicio regular y descanso adecuado, así como efectuar vigilancia médica con periodicidad anual, incluyendo exámenes generales de laboratorio y gabinete para una vigilancia integral de la salud. ')">
@@ -133,18 +195,17 @@ const copiarTexto = (texto) => {
                         </p>
                     </div>
                 </div>
-            </div>
+            </transition>
 
-            <div class="space-y-2">
-                <!-- Botón principal -->
-                <button
-                    class="w-full bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
-                    @click="toggle('Hernia')">
-                    Hernia Abdominal
-                </button>
-
-                <!-- Contenedor del desplegable -->
-                <div v-if="isOpen('Hernia')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white text-justify">
+            <!-- Hernia Abdominal -->
+            <transition
+                enter-active-class="transition-all duration-300 ease-out"
+                enter-from-class="opacity-0 transform -translate-y-2 max-h-0"
+                enter-to-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-to-class="opacity-0 transform -translate-y-2 max-h-0">
+                <div v-if="isOpen('Hernia')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white mt-3 text-justify overflow-hidden">
                     <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
                             @click="copiarTexto('Es crucial priorizar la prevención y el cuidado de la pared abdominal mediante el fortalecimiento de los músculos centrales, la mejora de la postura y el uso de técnicas adecuadas de levantamiento de objetos. ')">
@@ -152,18 +213,17 @@ const copiarTexto = (texto) => {
                         </p>
                     </div>
                 </div>
-            </div>
+            </transition>
 
-            <div class="space-y-2">
-                <!-- Botón principal -->
-                <button
-                    class="w-full bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
-                    @click="toggle('obesidad')">
-                    Obesidad
-                </button>
-
-                <!-- Contenedor del desplegable -->
-                <div v-if="isOpen('obesidad')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white text-justify">
+            <!-- Obesidad -->
+            <transition
+                enter-active-class="transition-all duration-300 ease-out"
+                enter-from-class="opacity-0 transform -translate-y-2 max-h-0"
+                enter-to-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-to-class="opacity-0 transform -translate-y-2 max-h-0">
+                <div v-if="isOpen('obesidad')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white mt-3 text-justify overflow-hidden">
                     <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
                             @click="copiarTexto('Se recomienda adoptar una dieta balanceada y realizar ejercicio físico regularmente para mejorar la salud en general. Estas prácticas ayudan a controlar el peso, disminuir los niveles de grasa corporal, fortalecer los músculos y mejorar la función cardiovascular. Además, reducen el riesgo de desarrollar enfermedades crónicas como la diabetes tipo 2, enfermedades cardíacas y ciertos tipos de cáncer. ')">
@@ -171,18 +231,17 @@ const copiarTexto = (texto) => {
                         </p>
                     </div>
                 </div>
-            </div>
+            </transition>
 
-            <div class="space-y-2">
-                <!-- Botón principal -->
-                <button
-                    class="w-full bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
-                    @click="toggle('diabetesMellitus2')">
-                    Diabetes Tipo II
-                </button>
-
-                <!-- Contenedor del desplegable -->
-                <div v-if="isOpen('diabetesMellitus2')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white text-justify">
+            <!-- Diabetes Tipo II -->
+            <transition
+                enter-active-class="transition-all duration-300 ease-out"
+                enter-from-class="opacity-0 transform -translate-y-2 max-h-0"
+                enter-to-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-to-class="opacity-0 transform -translate-y-2 max-h-0">
+                <div v-if="isOpen('diabetesMellitus2')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white mt-3 text-justify overflow-hidden">
                     <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
                             @click="copiarTexto('Es importante mantener una dieta equilibrada, controlar regularmente los niveles de azúcar en la sangre y visitar al médico familiar para un seguimiento y una correcta gestión de la diabetes tipo 2. ')">
@@ -190,18 +249,17 @@ const copiarTexto = (texto) => {
                         </p>
                     </div>
                 </div>
-            </div>
+            </transition>
 
-            <div class="space-y-2">
-                <!-- Botón principal -->
-                <button
-                    class="w-full bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
-                    @click="toggle('hipertension')">
-                    Hipertensión
-                </button>
-
-                <!-- Contenedor del desplegable -->
-                <div v-if="isOpen('hipertension')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white">
+            <!-- Hipertensión -->
+            <transition
+                enter-active-class="transition-all duration-300 ease-out"
+                enter-from-class="opacity-0 transform -translate-y-2 max-h-0"
+                enter-to-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-to-class="opacity-0 transform -translate-y-2 max-h-0">
+                <div v-if="isOpen('hipertension')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white mt-3 overflow-hidden">
                     <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
                         <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer text-justify"
                             @click="copiarTexto('Es recomendable mantener una dieta baja en sodio, realizar actividad física regularmente, controlar la presión arterial periódicamente y adherirse estrictamente al tratamiento recetado para gestionar la hipertensión de manera efectiva. ')">
@@ -209,7 +267,61 @@ const copiarTexto = (texto) => {
                         </p>
                     </div>
                 </div>
-            </div>
+            </transition>
+
+            <!-- Hipoacusia -->
+            <transition
+                enter-active-class="transition-all duration-300 ease-out"
+                enter-from-class="opacity-0 transform -translate-y-2 max-h-0"
+                enter-to-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-to-class="opacity-0 transform -translate-y-2 max-h-0">
+                <div v-if="isOpen('hipoacusia')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white mt-3 text-justify overflow-hidden">
+                    <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
+                        <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
+                            @click="copiarTexto('Es fundamental proteger la audición mediante el uso adecuado de protección auditiva en ambientes ruidosos, evitar la exposición prolongada a sonidos de alta intensidad, realizar evaluaciones auditivas periódicas y consultar al especialista ante cualquier cambio en la capacidad auditiva. ')">
+                            Es fundamental proteger la audición mediante el uso adecuado de protección auditiva en ambientes ruidosos, evitar la exposición prolongada a sonidos de alta intensidad, realizar evaluaciones auditivas periódicas y consultar al especialista ante cualquier cambio en la capacidad auditiva.
+                        </p>
+                    </div>
+                </div>
+            </transition>
+
+            <!-- Problemas Respiratorios -->
+            <transition
+                enter-active-class="transition-all duration-300 ease-out"
+                enter-from-class="opacity-0 transform -translate-y-2 max-h-0"
+                enter-to-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-to-class="opacity-0 transform -translate-y-2 max-h-0">
+                <div v-if="isOpen('problemasRespiratorios')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white mt-3 text-justify overflow-hidden">
+                    <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
+                        <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
+                            @click="copiarTexto('Se recomienda evitar la exposición a agentes irritantes respiratorios, mantener una buena ventilación en los espacios de trabajo, realizar ejercicios de respiración profunda regularmente, evitar el tabaquismo y consultar al médico ante síntomas persistentes como tos, dificultad para respirar o sibilancias. ')">
+                            Se recomienda evitar la exposición a agentes irritantes respiratorios, mantener una buena ventilación en los espacios de trabajo, realizar ejercicios de respiración profunda regularmente, evitar el tabaquismo y consultar al médico ante síntomas persistentes como tos, dificultad para respirar o sibilancias.
+                        </p>
+                    </div>
+                </div>
+            </transition>
+
+            <!-- Lumbalgia -->
+            <transition
+                enter-active-class="transition-all duration-300 ease-out"
+                enter-from-class="opacity-0 transform -translate-y-2 max-h-0"
+                enter-to-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 transform translate-y-0 max-h-96"
+                leave-to-class="opacity-0 transform -translate-y-2 max-h-0">
+                <div v-if="isOpen('lumbalgia')" class="font-medium space-y-2 p-4 border rounded-md shadow-sm bg-white mt-3 text-justify overflow-hidden">
+                    <div class="p-4 border-l-4 border-emerald-500 bg-gray-100">
+                        <p class="italic text-sm font-light mb-4 leading-4 text-gray-700 hover:text-emerald-700 cursor-pointer"
+                            @click="copiarTexto('Es esencial mantener una postura correcta durante las actividades laborales, realizar ejercicios de fortalecimiento de la musculatura lumbar y abdominal, evitar movimientos bruscos o levantamiento de peso excesivo, y considerar el uso de soportes ergonómicos cuando sea necesario. ')">
+                            Es esencial mantener una postura correcta durante las actividades laborales, realizar ejercicios de fortalecimiento de la musculatura lumbar y abdominal, evitar movimientos bruscos o levantamiento de peso excesivo, y considerar el uso de soportes ergonómicos cuando sea necesario.
+                        </p>
+                    </div>
+                </div>
+            </transition>
 
         </div>
     </div>
