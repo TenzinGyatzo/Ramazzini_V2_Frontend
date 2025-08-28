@@ -25,7 +25,7 @@ const formDataProveedorSalud = reactive({
   referenciaPlan: "BÁSICO",
   estado: "pending",
   estadoSuscripcion: "pending",
-  fechaInicioTrial: new Date(),
+  fechaInicioTrial: new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000) - (7 * 60 * 60 * 1000)),
   periodoDePruebaFinalizado: false,
   addOns: [],
   mercadoPagoSubscriptionId: "",

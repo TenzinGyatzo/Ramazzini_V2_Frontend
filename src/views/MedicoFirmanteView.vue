@@ -321,7 +321,7 @@ const firmaSrc = computed(() => {
                             <!-- Pie de Página del Médico Firmante (Izquierda) -->
                             <div v-if="piePaginaFirmante.nombre" class="w-1/2 flex flex-col items-start">
                                 <p class="font-medium text-lg text-gray-700">Pie de Página del Médico Firmante:</p>
-                                <div class="mt-6 p-4 border rounded-lg bg-gray-50 text-left">                  
+                                <div class="mt-6 p-4 border rounded-lg bg-gray-50 text-left w-11/12">                  
                                     <p class="text-sm text-gray-800 mt-2">
                                         <span class="font-medium" v-if="piePaginaFirmante.nombre">
                                             {{ piePaginaFirmante.tituloProfesional }} {{ piePaginaFirmante.nombre }}

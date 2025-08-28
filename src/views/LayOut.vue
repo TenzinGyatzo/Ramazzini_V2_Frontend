@@ -450,10 +450,10 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
         <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl py-5 text-center text-slate-700 font-medium bg-gradient-to-r from-slate-700 to-gray-600 bg-clip-text text-transparent">
           Ramazzini
         </h1>
-        <p class="text-2xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl xl:w-2/3 py-2 text-center text-gray-600">
+        <p class="text-xl sm:text-3xl md:text-4xl lg:text-4xl xl:text-5xl xl:w-2/3 py-2 text-center text-gray-600">
           La aplicación para la creación y gestión de informes de exámenes médicos laborales.
         </p>
-        <p class="text-gray-600 text-md sm:text-lg my-4">Hola, {{ user.getUsername }}</p>
+        <p class="text-gray-600 text-sm sm:text-lg my-4 text-center">Hola, {{ user.getUsername }}</p>
         
         <!-- Botones de acción -->
         <div class="grid gap-4 w-full max-w-md mt-2">

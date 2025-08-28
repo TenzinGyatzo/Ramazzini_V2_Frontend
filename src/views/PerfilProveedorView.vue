@@ -377,7 +377,7 @@ const logoSrc = computed(() => {
                   </span>
                   </button>
                 </div>
-                <p class="mt-2 text-sm text-gray-600">Color seleccionado: {{ colorOptions.find(c => c.hex === colorInforme)?.name }}</p>
+                <p class="mt-2 text-sm text-gray-600">Color seleccionado: <span class="font-semibold">{{ colorOptions.find(c => c.hex === colorInforme)?.name }}</span></p>
               </div>
 
               <!-- Switch para Activar Semaforización -->
@@ -395,6 +395,7 @@ const logoSrc = computed(() => {
                     :class="semaforizacionActivada ? 'translate-x-7' : ''">
                   </span>
                 </button>
+                <p class="mt-2 text-sm text-gray-600 hidden sm:block">La semaforización permite el uso de colores en los resultados de los informes (<span class="text-emerald-700">Apto sin restricciones</span>, <span class="text-amber-700">Apto con restricciones</span>, <span class="text-red-700">No apto</span>) haciéndolo más claro y fácil de entender.</p>
               </div>
 
             </div>
