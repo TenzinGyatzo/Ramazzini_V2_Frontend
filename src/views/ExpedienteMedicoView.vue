@@ -327,6 +327,17 @@ const handleDeleteSelected = async () => {
                     documentosAEliminar.push({ id: certificado._id, tipo: 'certificado' });
                 }
             });
+
+            // Certificados Expedito
+            yearData.certificadosExpedito?.forEach(certificado => {
+                const rutaBase = obtenerRutaDocumento(certificado, 'Certificado Expedito');
+                const fecha = obtenerFechaDocumento(certificado) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(certificado, 'Certificado Expedito', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: certificado._id, tipo: 'certificadoExpedito' });
+                }
+            });
             
             // Documentos Externos
             yearData.documentosExternos?.forEach(documentoExterno => {
@@ -347,6 +358,17 @@ const handleDeleteSelected = async () => {
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
                 if (selectedRoutes.value.includes(ruta)) {
                     documentosAEliminar.push({ id: notaMedica._id, tipo: 'notaMedica' });
+                }
+            });
+
+            // Control Prenatal
+            yearData.controlPrenatal?.forEach(controlPrenatal => {
+                const rutaBase = obtenerRutaDocumento(controlPrenatal, 'Control Prenatal');
+                const fecha = obtenerFechaDocumento(controlPrenatal) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(controlPrenatal, 'Control Prenatal', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: controlPrenatal._id, tipo: 'controlPrenatal' });
                 }
             });
         });
@@ -420,7 +442,9 @@ const totalDocumentosCreados = computed(() => {
       (yearData.examenesVista?.length || 0) +
       (yearData.antidopings?.length || 0) +
       (yearData.certificados?.length || 0) +
-      (yearData.notasMedicas?.length || 0)
+      (yearData.certificadosExpedito?.length || 0) +
+      (yearData.notasMedicas?.length || 0) +
+      (yearData.controlPrenatal?.length || 0) 
     );
   }, 0);
 });
@@ -768,6 +792,7 @@ const añoMasReciente = computed(() => {
                   :key="year" 
                   :documents="documentos.documentsByYear[year]" 
                   :year="year"
+                  :trabajador="trabajadores.currentTrabajador || {}"
                   @eliminarDocumento="toggleDeleteModal" 
                   @abrirModalUpdate="toggleDocumentoExternoUpdateModal" 
                   @openSubscriptionModal="showSubscriptionModal = true"

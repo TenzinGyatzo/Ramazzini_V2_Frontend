@@ -41,6 +41,15 @@ const handleQuestionnaireSelect = (questionnaireType) => {
     
     // Cerrar el modal después de navegar
     closeModal();
+  } else if (questionnaireType === 'certificado-expedito') {
+    router.push({
+      name: 'crear-documento',
+      params: {
+        idEmpresa: empresas.currentEmpresaId,
+        idTrabajador: trabajadores.currentTrabajadorId,
+        tipoDocumento: 'certificadoExpedito'
+      }
+    });
   }
 };
 </script>
@@ -67,6 +76,23 @@ const handleQuestionnaireSelect = (questionnaireType) => {
 
         <!-- Contenido del modal -->
         <div class="space-y-6">
+          <!-- Trámites -->
+          <div class="space-y-3">
+            <div class="flex items-center text-sm font-semibold text-emerald-700 uppercase tracking-wide mb-3">
+              <i class="fas fa-file text-emerald-500 mr-3"></i>
+              Otros informes
+            </div>
+            <div class="space-y-2">
+              <button 
+                @click="handleQuestionnaireSelect('certificado-expedito')"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+              >
+                <i class="fas fa-file-alt text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
+                Certificado Expedito
+              </button>
+            </div>
+          </div>
+
           <!-- Vigilancia médica por condición personal -->
           <div class="space-y-3">
             <div class="flex items-center text-sm font-semibold text-emerald-700 uppercase tracking-wide mb-3">

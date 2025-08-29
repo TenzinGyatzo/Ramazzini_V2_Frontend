@@ -6,6 +6,7 @@ export const useFormDataStore = defineStore('formData', () => {
   const formDataAntidoping = ref({}); // Estado compartido
   const formDataAptitud = ref({}); // Estado compartido
   const formDataCertificado = ref({}); // Estado compartido
+  const formDataCertificadoExpedito = ref({}); // Estado compartido
   const formDataDocumentoExterno = ref({}); // Estado compartido
   const formDataExamenVista = ref({}); // Estado compartido
   const formDataExploracionFisica = ref({}); // Estado compartido
@@ -28,6 +29,9 @@ export const useFormDataStore = defineStore('formData', () => {
         break;
       case 'certificado':
         formDataCertificado.value = { ...documento };
+        break;
+      case 'certificadoExpedito':
+        formDataCertificadoExpedito.value = { ...documento };
         break;
       case 'documentoExterno':
         formDataDocumentoExterno.value = { ...documento };
@@ -58,6 +62,7 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataAntidoping.value = {};
     formDataAptitud.value = {};
     formDataCertificado.value = {};
+    formDataCertificadoExpedito.value = {};
     formDataDocumentoExterno.value = {};
     formDataExamenVista.value = {};
     formDataExploracionFisica.value = {};
@@ -90,6 +95,7 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataAntidoping,
     formDataAptitud,
     formDataCertificado,
+    formDataCertificadoExpedito,
     formDataDocumentoExterno,
     formDataExamenVista,
     formDataExploracionFisica,

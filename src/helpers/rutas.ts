@@ -1,5 +1,11 @@
 import { convertirFechaISOaDDMMYYYY } from './dates';
 
+interface Trabajador {
+    primerApellido?: string;
+    segundoApellido?: string;
+    nombre?: string;
+}
+
 export const obtenerRutaDocumento = (documento, tipoDocumento) => {
     if (tipoDocumento === 'Documento Externo') {
         return documento.rutaDocumento || null;
@@ -19,11 +25,13 @@ export const obtenerFechaDocumento = (documento) => {
         'fechaAntidoping',
         'fechaAptitudPuesto',
         'fechaCertificado',
+        'fechaCertificadoExpedito',
         'fechaExamenVista',
         'fechaExploracionFisica',
         'fechaHistoriaClinica',
         'fechaDocumento',
-        'fechaNotaMedica'
+        'fechaNotaMedica',
+        'fechaInicioControlPrenatal'
     ];
 
     for (const campo of camposFecha) {
@@ -32,4 +40,18 @@ export const obtenerFechaDocumento = (documento) => {
         }
     }
     return null;
+};
+
+// Función específica para el nombre de descarga del Certificado Expedito
+export const obtenerNombreDescargaCertificadoExpedito = (fecha: string, trabajador: Trabajador | null = null) => {
+    if (!trabajador) {
+        return `Certificado Expedito ${fecha}.pdf`;
+    }
+    
+    const apellidos = [trabajador.primerApellido, trabajador.segundoApellido]
+        .filter(Boolean)
+        .join(' ');
+    const nombre = trabajador.nombre || '';
+    const nombreCompleto = [apellidos, nombre].filter(Boolean).join(' ');
+    return `Certificado ${nombreCompleto} ${fecha}.pdf`;
 };

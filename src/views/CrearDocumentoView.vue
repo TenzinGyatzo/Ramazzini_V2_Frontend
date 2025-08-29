@@ -12,6 +12,7 @@ import FormStepper from '@/components/steps/FormStepper.vue';
 import VisualizadorAntidoping from '@/components/steps/VisualizadorAntidoping.vue';
 import VisualizadorAptitud from '@/components/steps/VisualizadorAptitud.vue';
 import VisualizadorCertificado from '@/components/steps/VisualizadorCertificado.vue';
+import VisualizadorCertificadoExpedito from '@/components/steps/VisualizadorCertificadoExpedito.vue';
 import VisualizadorExamenVista from '@/components/steps/VisualizadorExamenVista.vue';
 import VisualizadorExploracionFisica from '@/components/steps/VisualizadorExploracionFisica.vue';
 import VisualizadorHistoriaClinica from '@/components/steps/VisualizadorHistoriaClinica.vue';
@@ -98,6 +99,7 @@ watchEffect(async () => {
       antidoping: formData.formDataAntidoping,
       aptitud: formData.formDataAptitud,
       certificado: formData.formDataCertificado,
+      certificadoExpedito: formData.formDataCertificadoExpedito,
       'documento Externo': formData.formDataDocumentoExterno,
       examenVista: formData.formDataExamenVista,
       exploracionFisica: formData.formDataExploracionFisica,
@@ -267,6 +269,18 @@ const marcarSinHallazgos = () => {
           </div>
           <div class="w-full xl:w-2/3">
             <VisualizadorCertificado />
+          </div>
+        </div>
+      </Transition>
+      
+      <Transition appear mode="out-in" name="slide-up">
+        <div v-if="documentos.currentTypeOfDocument === 'certificadoExpedito'"
+          class="max-w-6xl mx-auto flex flex-wrap lg:flex-nowrap gap-3 md:gap-6 justify-center">
+          <div class="w-full xl:w-1/3">
+            <FormStepper />
+          </div>
+          <div class="w-full xl:w-2/3">
+            <VisualizadorCertificadoExpedito />
           </div>
         </div>
       </Transition>

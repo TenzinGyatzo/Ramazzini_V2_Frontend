@@ -52,6 +52,29 @@ export interface Certificado {
     updatedBy: string;
 }
 
+export interface CertificadoExpedito {
+    _id: string;
+    fechaCertificadoExpedito: string;
+    cuerpoCertificado: string;
+    impedimentosFisicos: string;
+    peso: number;
+    altura: number;
+    indiceMasaCorporal: number;
+    tensionArterialSistolica: number;
+    tensionArterialDiastolica: number;
+    frecuenciaCardiaca: number;
+    frecuenciaRespiratoria: number;
+    temperaturaCorporal: number;
+    gradoSalud: string;
+    aptitudPuesto: string;
+    descripcionSobreAptitud: string;
+    observaciones: string;
+    idTrabajador: string;
+    rutaPDF: string;
+    createdBy: string;
+    updatedBy: string;
+}
+
 export interface DocumentoExterno {
     _id: string;
     nombreDocumento: string;

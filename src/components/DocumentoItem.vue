@@ -9,7 +9,7 @@ import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
-import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento } from '@/helpers/rutas.ts';
+import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento, obtenerNombreDescargaCertificadoExpedito } from '@/helpers/rutas.ts';
 import ModalPdfEliminado from './ModalPdfEliminado.vue';
 
 const router = useRouter();
@@ -81,9 +81,19 @@ const descargarArchivo = async (documento, tipoDocumento) => {
 
         const fecha = obtenerFechaDocumento(documento) || 'SinFecha';
 
-        const nombreArchivo = obtenerNombreArchivo(documento, tipoDocumento, fecha);
+        // Para Certificado Expedito, usar el nombre personalizado para la descarga
+        let nombreArchivo;
+        let nombreArchivoReal;
+        
+        if (tipoDocumento === 'Certificado Expedito') {
+            nombreArchivo = obtenerNombreDescargaCertificadoExpedito(fecha, trabajadores.currentTrabajador);
+            nombreArchivoReal = obtenerNombreArchivo(documento, tipoDocumento, fecha);
+        } else {
+            nombreArchivo = obtenerNombreArchivo(documento, tipoDocumento, fecha);
+            nombreArchivoReal = nombreArchivo;
+        }
 
-        await descargarYGuardarArchivo(ruta, nombreArchivo);
+        await descargarYGuardarArchivo(ruta, nombreArchivo, nombreArchivoReal);
 
     } catch (error) {
         console.error('Error al descargar el archivo:', error);
@@ -91,9 +101,10 @@ const descargarArchivo = async (documento, tipoDocumento) => {
     }
 };
 
-const descargarYGuardarArchivo = async (ruta, nombreArchivo) => {
+const descargarYGuardarArchivo = async (ruta, nombreArchivo, nombreArchivoReal) => {
     try {
-        const urlCompleta = `${BASE_URL}/${ruta}/${nombreArchivo}`;
+        // Usar el nombre real del archivo para construir la URL (el que existe en el servidor)
+        const urlCompleta = `${BASE_URL}/${ruta}/${nombreArchivoReal}`;
 
         const response = await axios.get(encodeURI(urlCompleta), {
             responseType: 'blob',
@@ -102,6 +113,7 @@ const descargarYGuardarArchivo = async (ruta, nombreArchivo) => {
         const blob = response.data;
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
+        // Usar el nombre personalizado para el atributo download
         link.download = nombreArchivo;
 
         document.body.appendChild(link);
@@ -470,6 +482,10 @@ const descargarPdfActual = async () => {
                     documento = props.certificado;
                     tipoDocumento = 'Certificado';
                     break;
+                case 'certificadoexpedito':
+                    documento = props.certificadoExpedito;
+                    tipoDocumento = 'Certificado Expedito';
+                    break;
                 case 'examenvista':
                     documento = props.examenVista;
                     tipoDocumento = 'Examen Vista';
@@ -570,7 +586,7 @@ const handleCheckboxChange = (event, documento, tipoDocumento) => {
     const rutaBase = obtenerRutaDocumento(documento, tipoDocumento); // Define cómo obtener la ruta del documento
 
     const fecha = obtenerFechaDocumento(documento) || 'SinFecha';
-    const nombreArchivo = obtenerNombreArchivo(documento, tipoDocumento, fecha);
+    const nombreArchivo = obtenerNombreArchivo(documento, tipoDocumento, fecha, trabajadores.currentTrabajador);
 
     const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
 
@@ -604,6 +620,7 @@ const props = defineProps({
     antidoping: [Object, String],
     aptitud: [Object, String],
     certificado: [Object, String],
+    certificadoExpedito: [Object, String],
     documentoExterno: [Object, String],
     examenVista: [Object, String],
     exploracionFisica: [Object, String],
@@ -802,6 +819,7 @@ const construirRutaYNombrePDF = () => {
     'antidoping': props.antidoping,
     'aptitud': props.aptitud, 
     'certificado': props.certificado,
+    'certificadoexpedito': props.certificadoExpedito,
     'examenvista': props.examenVista,
     'exploracionfisica': props.exploracionFisica,
     'historiaclinica': props.historiaClinica,
@@ -809,12 +827,13 @@ const construirRutaYNombrePDF = () => {
     'controlprenatal': props.controlPrenatal,
   }[tipoSinEspacios];
 
-  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaCertificado || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal;
+  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal;
 
   const tiposDocumentos = {
     'antidoping': 'Antidoping',
     'aptitud': 'Aptitud',
     'certificado': 'Certificado',
+    'certificadoexpedito': 'Certificado Expedito',
     'examenvista': 'Examen Vista', 
     'exploracionfisica': 'Exploracion Fisica',
     'historiaclinica': 'Historia Clinica',
@@ -927,7 +946,7 @@ onMounted(() => {
 });
 
 // Watcher para verificar disponibilidad cuando cambien las props
-watch(() => [props.antidoping, props.aptitud, props.certificado, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal], () => {
+watch(() => [props.antidoping, props.aptitud, props.certificado, props.certificadoExpedito, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal], () => {
   verificarDisponibilidadPDF();
 }, { deep: true });
 
@@ -1126,6 +1145,65 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                                     <p class="font-medium text-sm truncate max-w-full"
                                         :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'text-gray-800' : 'text-red-600'">
                                         {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'No presenta impedimentos físicos' : certificado.impedimentosFisicos }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="typeof certificadoExpedito === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, certificadoExpedito, 'Certificado Expedito')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${certificadoExpedito.rutaPDF}`,
+                        `Certificado Expedito ${convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mr-4 group-hover:bg-blue-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-certificate text-blue-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Certificado Ex.
+                                </h3>
+                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                    :class="certificadoExpedito.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                                    {{ certificadoExpedito.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'Sin impedimentos' : 'Con impedimentos' }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito) }}
+                            </p>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div class="hidden xl:block w-64 flex-shrink-0">
+                            <div class="text-sm flex xl:space-x-2">
+                                <div class="hidden xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Impedimentos Físicos</p>
+                                    <p class="font-medium text-sm truncate max-w-full"
+                                        :class="certificadoExpedito.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'text-gray-800' : 'text-red-600'">
+                                        {{ certificadoExpedito.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'No presenta impedimentos físicos' : certificadoExpedito.impedimentosFisicos }}
+                                    </p>
+                                </div>
+                                <div class="hidden 2xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-1">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Aptitud</p>
+                                    <p class="font-medium text-sm truncate max-w-full"
+                                        :class="certificadoExpedito.aptitudPuesto === 'No Apto' ? 'text-red-600' : 'text-gray-800'">
+                                        {{ certificadoExpedito.aptitudPuesto }}
                                     </p>
                                 </div>
                             </div>
@@ -1622,6 +1700,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.documento
                     'Antidoping': antidoping,
                     'Aptitud': aptitud,
                     'Certificado': certificado,
+                    'Certificado Expedito': certificadoExpedito,
                     'Documento Externo': documentoExterno,
                     'Examen Vista': examenVista,
                     'Exploracion Fisica': exploracionFisica,

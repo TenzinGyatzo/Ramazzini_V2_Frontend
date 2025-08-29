@@ -5,6 +5,7 @@ import type {
   Antidoping,
   Aptitud,
   Certificado,
+  CertificadoExpedito,
   DocumentoExterno,
   ExamenVista,
   ExploracionFisica,
@@ -18,6 +19,7 @@ export type DocumentsByYear = {
     antidopings?: Antidoping[];
     aptitudes?: Aptitud[];
     certificados?: Certificado[];
+    certificadosExpedito?: CertificadoExpedito[];
     documentosExternos?: DocumentoExterno[];
     examenesVista?: ExamenVista[];
     exploracionesFisicas?: ExploracionFisica[];
@@ -55,6 +57,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
         antidopings,
         aptitudes,
         certificados,
+        certificadosExpedito,
         documentosExternos,
         examenesVista,
         exploracionesFisicas,
@@ -72,6 +75,10 @@ export const useDocumentosStore = defineStore("documentos", () => {
         }),
         DocumentosAPI.getCertificados(trabajadorId).catch(error => {
           console.error("Error al obtener certificados", error);
+          return { data: [] };
+        }),
+        DocumentosAPI.getCertificadosExpedito(trabajadorId).catch(error => {
+          console.error("Error al obtener certificadosExpedito", error);
           return { data: [] };
         }),
         DocumentosAPI.getDocumentosExternos(trabajadorId).catch(error => {
@@ -105,6 +112,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
         antidopings: Array.isArray(antidopings.data) ? antidopings.data : [],
         aptitudes: Array.isArray(aptitudes.data) ? aptitudes.data : [],
         certificados: Array.isArray(certificados.data) ? certificados.data : [],
+        certificadosExpedito: Array.isArray(certificadosExpedito.data) ? certificadosExpedito.data : [],
         documentosExternos: Array.isArray(documentosExternos.data) ? documentosExternos.data : [],
         examenesVista: Array.isArray(examenesVista.data) ? examenesVista.data : [],
         exploracionesFisicas: Array.isArray(exploracionesFisicas.data) ? exploracionesFisicas.data : [],
@@ -146,6 +154,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
       antidopings: "fechaAntidoping",
       aptitudes: "fechaAptitudPuesto",
       certificados: "fechaCertificado",
+      certificadosExpedito: "fechaCertificadoExpedito",
       documentosExternos: "fechaDocumento",
       examenesVista: "fechaExamenVista",
       exploracionesFisicas: "fechaExploracionFisica",

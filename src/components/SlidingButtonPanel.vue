@@ -20,6 +20,8 @@ const documentOrder = {
   Certificado: 6,
   "Documento Externo": 7,
   "Nota Medica": 8,
+  "Control Prenatal": 9,
+  "Certificado Expedito": 10,
 };
 
 const getDocumentType = (route) => {
@@ -30,6 +32,8 @@ const getDocumentType = (route) => {
   if (route.includes("Antidoping")) return "Antidoping";
   if (route.includes("Certificado")) return "Certificado";
   if (route.includes("Nota Medica")) return "Nota Medica";
+  if (route.includes("Control Prenatal")) return "Control Prenatal";
+  if (route.includes("Certificado Expedito")) return "Certificado Expedito";
   return "Documento Externo"; // Para cualquier otro caso
 };
 

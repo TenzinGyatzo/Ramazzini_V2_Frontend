@@ -13,6 +13,10 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/certificado`);
     },
 
+    getCertificadosExpedito(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/certificadoExpedito`);
+    },
+
     getDocumentosExternos(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/documentoExterno`);
     },

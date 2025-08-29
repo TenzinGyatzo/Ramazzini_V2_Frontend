@@ -15,6 +15,14 @@ const props = defineProps({
         type: String as PropType<string>,
         required: true,
     },
+    trabajador: {
+        type: Object as PropType<{
+            primerApellido?: string;
+            segundoApellido?: string;
+            nombre?: string;
+        }>,
+        required: true,
+    },
     toggleRouteSelection: {
         type: Function as PropType<(route: string, isSelected: boolean) => void>,
         required: true,
@@ -48,6 +56,7 @@ const totalDocumentos = computed(() => {
            (props.documents.examenesVista?.length || 0) +
            (props.documents.antidopings?.length || 0) +
            (props.documents.certificados?.length || 0) +
+           (props.documents.certificadosExpedito?.length || 0) +
            (props.documents.documentosExternos?.length || 0) +
            (props.documents.notasMedicas?.length || 0) +
            (props.documents.controlPrenatal?.length || 0);
@@ -112,6 +121,17 @@ const rutasDelGrupo = computed(() => {
             const rutaBase = obtenerRutaDocumento(certificado, 'Certificado');
             const fecha = obtenerFechaDocumento(certificado) || 'SinFecha';
             const nombreArchivo = obtenerNombreArchivo(certificado, 'Certificado', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            rutas.push(ruta);
+        });
+    }
+
+    if (props.documents.certificadosExpedito) {
+
+        props.documents.certificadosExpedito.forEach(certificadoExpedito => {
+            const rutaBase = obtenerRutaDocumento(certificadoExpedito, 'Certificado Expedito');
+            const fecha = obtenerFechaDocumento(certificadoExpedito) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(certificadoExpedito, 'Certificado Expedito', fecha);
             const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
             rutas.push(ruta);
         });
@@ -498,6 +518,30 @@ const toggleSelectAll = () => {
                         @openSubscriptionModal="emit('openSubscriptionModal')"
                     />
                 </div>
+            </div>
+        </div>
+
+        <!-- Certificados Expedito -->
+        <div v-if="documents.certificadosExpedito && documents.certificadosExpedito.length > 0">
+            <div v-for="(certificadoExpedito, index) in documents.certificadosExpedito" :key="certificadoExpedito._id"
+                    class="transition-all duration-200 hover:bg-gray-50"
+                    :style="{ animationDelay: `${index * 50}ms` }">
+                <DocumentoItem 
+                    :certificadoExpedito="certificadoExpedito" 
+                    :documentoId="certificadoExpedito._id" 
+                    :documentoTipo="'certificadoExpedito'" 
+                    :toggleRouteSelection="toggleRouteSelection"
+                    :isDeletionMode="isDeletionMode"
+                    :isSelected="(() => {
+                        const rutaBase = obtenerRutaDocumento(certificadoExpedito, 'Certificado Expedito');
+                        const fecha = obtenerFechaDocumento(certificadoExpedito) || 'SinFecha';
+                        const nombreArchivo = obtenerNombreArchivo(certificadoExpedito, 'Certificado Expedito', fecha);
+                        const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                        return props.selectedRoutes.includes(ruta);
+                    })()"
+                    @eliminarDocumento="$emit('eliminarDocumento', certificadoExpedito._id, convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito), 'certificadoExpedito')" 
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
+                />
             </div>
         </div>
 
