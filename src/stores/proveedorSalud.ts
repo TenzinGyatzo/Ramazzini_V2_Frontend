@@ -33,6 +33,8 @@ interface ProveedorSalud {
     mercadoPagoSubscriptionId: string;
     payerEmail: string;
     finDeSuscripcion: Date;
+    colorInforme?: string;
+    semaforizacionActivada?: boolean;
 }
 
 // Define el store
