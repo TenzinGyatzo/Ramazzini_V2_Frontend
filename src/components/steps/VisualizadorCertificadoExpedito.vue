@@ -40,19 +40,6 @@ const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
 };
 
-
-
-const textoExploracion = computed(() => {
-  if (hallazgos.value.length === 0) {
-    return 'Exploración física sin alteraciones significativas. Se observó integridad funcional del aparato locomotor y del sistema nervioso, con marcha, coordinación, fuerza y reflejos dentro de parámetros normales.';
-  } else {
-    return 'Hallazgos relevantes en la exploración física: ' +
-      hallazgos.value
-        .map(h => `${formatearCampo(h.campo)}: ${h.valor}`)
-        .join('; ') + '.';
-  }
-});
-
 // Utilidad opcional para mejorar formato
 function formatearCampo(campo) {
   const palabras = campo.replace(/([A-Z])/g, ' $1').split(' ');
@@ -112,7 +99,7 @@ function getGradoSaludFormateado(gradoSalud) {
 
         <span class="font-medium">
           {{ medicoFirmanteStore.medicoFirmante.tituloProfesional }} {{ medicoFirmanteStore.medicoFirmante.nombre }}
-        </span><span v-if="medicoFirmanteStore.medicoFirmante.especialistaSaludTrabajo === 'Si'">,</span><span v-else>.</span>
+        </span><span v-if="medicoFirmanteStore.medicoFirmante.especialistaSaludTrabajo === 'Si'">,</span><span v-else>. </span>
 
         <template v-if="medicoFirmanteStore.medicoFirmante.especialistaSaludTrabajo === 'Si'">
           legalmente <span v-if="medicoFirmanteStore.medicoFirmante.tituloProfesional === 'Dr.'">autorizado</span> <span v-else>autorizada</span> por la Dirección General de Profesiones para ejercer la Especialidad en Medicina del Trabajo con cédula profesional número 
@@ -121,7 +108,7 @@ function getGradoSaludFormateado(gradoSalud) {
 
         <template v-if="medicoFirmanteStore.medicoFirmante.nombreCredencialAdicional && medicoFirmanteStore.medicoFirmante.numeroCredencialAdicional">
           {{ medicoFirmanteStore.medicoFirmante.nombreCredencialAdicional }} con número 
-          <span class="font-medium">{{ medicoFirmanteStore.medicoFirmante.numeroCredencialAdicional }}</span>
+          <span class="font-medium">{{ medicoFirmanteStore.medicoFirmante.numeroCredencialAdicional }}</span>.
         </template>
 
       </p>

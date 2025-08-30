@@ -241,7 +241,7 @@ function formatearCampo(campo) {
 
         <strong>
           {{ medicoFirmanteStore.medicoFirmante.tituloProfesional }} {{ medicoFirmanteStore.medicoFirmante.nombre }}
-        </strong><span v-if="medicoFirmanteStore.medicoFirmante.especialistaSaludTrabajo === 'Si'">,</span><span v-else>.</span>
+        </strong><span v-if="medicoFirmanteStore.medicoFirmante.especialistaSaludTrabajo === 'Si'">,</span><span v-else>. </span>
 
         <template v-if="medicoFirmanteStore.medicoFirmante.especialistaSaludTrabajo === 'Si'">
           legalmente <span v-if="medicoFirmanteStore.medicoFirmante.tituloProfesional === 'Dr.'">autorizado</span> <span v-else>autorizada</span> por la Dirección General de Profesiones para ejercer la Especialidad en Medicina del Trabajo con cédula profesional número 
@@ -250,7 +250,7 @@ function formatearCampo(campo) {
 
         <template v-if="medicoFirmanteStore.medicoFirmante.nombreCredencialAdicional && medicoFirmanteStore.medicoFirmante.numeroCredencialAdicional">
           {{ medicoFirmanteStore.medicoFirmante.nombreCredencialAdicional }} con número 
-          <strong>{{ medicoFirmanteStore.medicoFirmante.numeroCredencialAdicional }}</strong>
+          <strong>{{ medicoFirmanteStore.medicoFirmante.numeroCredencialAdicional }}</strong>.
         </template>
 
       </p>
