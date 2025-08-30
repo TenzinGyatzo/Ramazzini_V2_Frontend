@@ -51,12 +51,12 @@ watchEffect(() => {
 
 // Función para validar archivo
 const validateFile = (file) => {
-  const validExtensions = ['.png', '.jpg', '.jpeg', '.svg'];
+  const validExtensions = ['.png', '.jpg', '.jpeg'];
   const maxSizeMB = 1;
   
   const extension = '.' + file.name.split('.').pop().toLowerCase();
   if (!validExtensions.includes(extension)) {
-    return { valid: false, message: 'Solo se permiten archivos: PNG, JPG, JPEG, SVG' };
+    return { valid: false, message: 'Solo se permiten archivos: PNG, JPG, JPEG' };
   }
   if (file.size > maxSizeMB * 1024 * 1024) {
     return { valid: false, message: `El archivo es muy grande. Límite: ${maxSizeMB}MB` };
@@ -419,7 +419,7 @@ const logoSrc = computed(() => {
                 <input
                   ref="logotipoInput"
                   type="file"
-                  accept=".png,.jpg,.jpeg,.svg"
+                  accept=".png,.jpg,.jpeg"
                   @change="handleFileChange"
                   class="hidden"
                 />
