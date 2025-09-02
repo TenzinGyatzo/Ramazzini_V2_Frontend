@@ -315,6 +315,28 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
           </SidebarLink>
         </div>
       </Transition>
+
+      <!-- Sección Estadísticas RT -->
+      <Transition name="slide-fade" :duration="900">
+        <div v-if="showRiesgosSection" class="section">
+          <div class="section-header" v-if="!sidebar.collapsed">
+            <span class="section-title">Estadísticas RT</span>
+            <div class="section-indicator"></div>
+          </div>
+          
+          <SidebarLink 
+            :to="{ name: 'dashboard-rt', params: { idEmpresa: empresas.currentEmpresaId } }" 
+            icon="fas fa-chart-line"
+            :tooltip="`Estadísticas RT`"
+            class="leading-5" 
+            @click.stop>
+            <p class="text-sm">Estadísticas RT</p>
+            <p class="font-light text-xs overflow-hidden text-ellipsis max-w-[155px]">
+              {{ empresas.currentEmpresa?.nombreComercial || 'Nombre no disponible' }}
+            </p>
+          </SidebarLink>
+        </div>
+      </Transition>
     </div>
 
     <!-- Footer del Sidebar -->

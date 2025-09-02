@@ -1382,8 +1382,8 @@ function handleClickTablaNaturalezaLesion(naturaleza) {
                 </div>
               </div>
             </div>
-          </Transition>
-        </div>
+            </Transition>
+          </div>
 
           <!-- =======================
               Gráficas y Tablas

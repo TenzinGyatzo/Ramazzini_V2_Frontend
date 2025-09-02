@@ -175,7 +175,7 @@ onMounted(async () => {
                       v-if="empresas.currentEmpresa?.logotipoEmpresa?.data"
                       :src="'/uploads/logos/' + empresas.currentEmpresa.logotipoEmpresa.data + '?t=' + empresas.currentEmpresa.updatedAt"
                       :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial"
-                      class="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-lg shadow-sm"
+                      class="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-lg shadow-lg"
                     />
                     <div v-else class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
                       <i class="fas fa-building text-gray-400 text-xl"></i>

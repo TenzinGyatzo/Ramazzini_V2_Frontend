@@ -1741,12 +1741,10 @@ const mostrarTipScrollLateral = () => {
           </div>
         </Transition>
 
-
-
         <!-- =======================
              Botón de Regreso
         ======================= -->
-        <div class="text-center">
+        <div class="text-center mt-6">
           <button 
             @click="$router.back()" 
             class="inline-flex items-center gap-2 text-gray-600 hover:text-emerald-600 font-medium transition-colors duration-200"

@@ -58,6 +58,7 @@ const dataTableRef = ref();
 const mostrarFiltros = ref(false);
 const filtrosAplicados = reactive(new Set<string>());
 const mostrarTabla = ref(false);
+const tablaLista = ref(false); // Control adicional para timing de renderizado
 const mostrarColumnasOcultas = ref(false);
 const mostrarLeyenda = ref(false);
 const mostrarVigencias = ref(false); // Estado inicial: oculto
@@ -177,9 +178,40 @@ onMounted(async () => {
   const guardado = localStorage.getItem('mostrarFiltros');
 
   // const t0 = performance.now();
+  
+  // Iniciar la carga con un delay mínimo para garantizar que el spinner se muestre
+  const inicioCarga = Date.now();
   await trabajadores.fetchTrabajadoresConHistoria(empresaId, centroTrabajoId);
+  
+  // Garantizar que el spinner se muestre por al menos 300ms para mejor UX
+  const tiempoTranscurrido = Date.now() - inicioCarga;
+  const tiempoMinimoSpinner = 100;
+  if (tiempoTranscurrido < tiempoMinimoSpinner) {
+    await new Promise(resolve => setTimeout(resolve, tiempoMinimoSpinner - tiempoTranscurrido));
+  }
+  
+  // Aplicar filtros desde query antes de mostrar la tabla
+  aplicarFiltrosDesdeQuery(route.query);
+  router.replace({ query: {} });
+  
+  // Esperar a que el DOM se actualice completamente
   await nextTick();
-  mostrarTabla.value = true;
+  
+  // Usar requestAnimationFrame para asegurar que el DOM esté completamente renderizado
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      mostrarTabla.value = true;
+      
+      // Esperar un tick más para que el componente DataTableDT se monte
+      nextTick(() => {
+        // Aplicar filtros después de que la tabla esté lista
+        setTimeout(() => {
+          dataTableRef.value?.aplicarTodosLosFiltrosDesdeLocalStorage();
+          tablaLista.value = true; // Marcar que la tabla está completamente lista
+        }, 50); // Pequeño delay para asegurar que DataTables esté inicializado
+      });
+    });
+  });
 
   // const t1 = performance.now();
   // console.log('Tiempo en cargar y renderizar trabajadores:', t1 - t0, 'ms');
@@ -190,11 +222,6 @@ onMounted(async () => {
   // });
 
   //console.log('Trabajadores:', trabajadores.trabajadores);
-
-  aplicarFiltrosDesdeQuery(route.query);
-  router.replace({ query: {} });
-  await nextTick();
-  dataTableRef.value?.aplicarTodosLosFiltrosDesdeLocalStorage();
   
   empresas.currentEmpresaId = empresaId;
   empresas.fetchEmpresaById(empresaId);
@@ -572,10 +599,10 @@ const toggleVigencias = () => {
                 v-if="empresas.currentEmpresa?.logotipoEmpresa?.data"
                 :src="'/uploads/logos/' + empresas.currentEmpresa.logotipoEmpresa.data + '?t=' + empresas.currentEmpresa.updatedAt"
                 :alt="'Logo de ' + empresas.currentEmpresa?.nombreComercial"
-                class="w-12 h-12 sm:w-16 sm:h-16 xl:w-20 xl:h-20 object-contain rounded-lg shadow-sm transition-all duration-500 ease-in-out"
+                class="w-12 h-12 sm:w-16 sm:h-16 xl:w-20 xl:h-20 object-contain rounded-lg shadow-lg transition-all duration-500 ease-in-out"
               />
-              <div v-else class="w-12 h-12 sm:w-16 sm:h-16 xl:w-20 xl:h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 transition-all duration-500 ease-in-out">
-                <i class="fas fa-building text-gray-400 text-lg sm:text-xl xl:text-2xl transition-all duration-500 ease-in-out"></i>
+              <div v-else class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center shadow-lg">
+                <i class="fas fa-building text-white text-xl sm:text-2xl"></i>
               </div>
             </div>
             
@@ -785,6 +812,7 @@ const toggleVigencias = () => {
             :mostrarLeyenda="mostrarLeyenda"
             :mostrar-vigencias="mostrarVigencias"
             v-if="mostrarTabla"
+            :tabla-lista="tablaLista"
             class="table-auto z-1"
             @riesgo-trabajo="openRTsModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, $event)"
             @riesgos="openRisksModal(empresas.currentEmpresa, centrosTrabajo.currentCentroTrabajo || null, $event)"

@@ -610,7 +610,7 @@ const añoMasReciente = computed(() => {
             </div>
             <div class="flex-1">
               <p class="text-sm text-amber-800">
-                <span class="font-semibold">Aviso:</span> Puedes crear informes, pero como no has subido un logotipo, el encabezado podría verse incorrecto. 
+                <span class="font-semibold">Aviso:</span> Puedes crear informes, pero como no has subido un logotipo, se utilizará el logotipo de Ramazzini. 
                 <router-link :to="{ name: 'perfil-proveedor' }" class="font-semibold underline hover:text-amber-900 transition-colors">
                   Sube tu logotipo aquí
                 </router-link> 

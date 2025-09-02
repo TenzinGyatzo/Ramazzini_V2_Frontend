@@ -15,6 +15,7 @@ const props = defineProps<{
   mostrarColumnasOcultas?: boolean;
   mostrarLeyenda?: boolean;
   mostrarVigencias?: boolean;
+  tablaLista?: boolean;
 }>();
 
 // Estado local para controlar la visibilidad de la leyenda
@@ -45,6 +46,15 @@ const emit = defineEmits<{
 }>();
 
 onMounted(() => {
+  // Usar requestAnimationFrame para asegurar que el DOM esté completamente renderizado
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      inicializarDataTable();
+    });
+  });
+});
+
+function inicializarDataTable() {
   if (!dataTableInstance) {
 
     $.fn.dataTable.ext.type.order['date-dd-MM-yyyy-desc'] = function(a, b) {
@@ -410,7 +420,7 @@ onMounted(() => {
     //   // Esta lógica causaba que el filtro de período cambiara el orden automáticamente
     // });
   }
-});
+}
 
 onBeforeUnmount(() => {
   $(document).off('click', '.btn-expediente');
@@ -576,6 +586,13 @@ defineExpose({
       // Redibujar la tabla
       dataTableInstance.draw();
     }
+  },
+  recalcularAnchos: () => {
+    if (dataTableInstance) {
+      requestAnimationFrame(() => {
+        dataTableInstance.columns.adjust();
+      });
+    }
   }
 });
 
@@ -640,6 +657,16 @@ watch(() => props.mostrarVigencias, (nuevoValor) => {
       requestAnimationFrame(() => {
         emit('actualizando-tabla', false);
       });
+    });
+  }
+});
+
+// Watcher para cuando la tabla esté completamente lista
+watch(() => props.tablaLista, (nuevoValor) => {
+  if (nuevoValor && dataTableInstance) {
+    // Recalcular anchos de columnas cuando la tabla esté completamente lista
+    requestAnimationFrame(() => {
+      dataTableInstance.columns.adjust();
     });
   }
 });
