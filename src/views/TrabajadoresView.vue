@@ -66,8 +66,18 @@ const actualizandoTabla = ref(false);
 
 // 4. Filtros
 const filtrosConfig = [
-  { id: 'sexo', label: 'Sexo', opciones: ['Masculino', 'Femenino'] },
+  { id: 'estadoLaboral', label: 'Estado Laboral', opciones: ['Activo', 'Inactivo'] },
+  { id: 'periodo', label: 'Periodo', opciones: [
+    'Hoy', 'Esta semana', 'Este mes', 'Mes anterior', 
+    'Últimos 3 meses', 'Últimos 6 meses', 'Este año', 'Año anterior'
+  ]},
   { id: 'puesto', label: 'Puesto', opciones: () => puestosUnicos.value },
+  { id: 'sexo', label: 'Sexo', opciones: ['Masculino', 'Femenino'] },
+  { id: 'aptitud', label: 'Aptitud', opciones: [
+    'Apto Sin Restricciones', 'Apto Con Precaución', 'Apto Con Restricciones',
+    'No Apto', 'Evaluación No Completada', '-'
+  ]},
+  { id: 'vigencia', label: 'Estado de Vigencia', opciones: ['Vigente', 'Por vencer', 'Vencido'] },
   { id: 'imc', label: 'Categoria IMC', opciones: [
     'Bajo peso', 'Normal', 'Sobrepeso',
     'Obesidad clase I', 'Obesidad clase II', 'Obesidad clase III', '-'
@@ -78,13 +88,9 @@ const filtrosConfig = [
   { id: 'tensionArterial', label: 'Tensión Arterial', opciones: [
     'Óptima', 'Normal', 'Alta', 'Hipertensión ligera', 'Hipertensión moderada', 'Hipertensión severa', '-'
   ]},
-  { id: 'aptitud', label: 'Aptitud', opciones: [
-    'Apto Sin Restricciones', 'Apto Con Precaución', 'Apto Con Restricciones',
-    'No Apto', 'Evaluación No Completada', '-'
-  ]},
-  { id: 'lentes', label: 'Requiere Lentes', opciones: ['Requiere lentes', 'No requiere', '-'] },
-  { id: 'vigencia', label: 'Estado de Vigencia', opciones: ['Vigente', 'Por vencer', 'Vencido'] },
-  { id: 'correccionVisual', label: 'Vista corregida', opciones: ['Corregida', 'Sin corregir', 'No requiere', '-'] },
+  { id: 'diabetico', label: 'Diabético', opciones: ['Si', 'No', '-'] },
+  { id: 'hipertensivo', label: 'Hipertensivo', opciones: ['Si', 'No', '-'] },
+  { id: 'cardiopatico', label: 'Cardiopatías', opciones: ['Si', 'No', '-'] },
   { id: 'agudeza', label: 'Agudeza Visual', opciones: [
     'Visión excepcional',
     'Visión normal',
@@ -94,25 +100,19 @@ const filtrosConfig = [
     'Visión muy reducida'
   ]},
   { id: 'daltonismo', label: 'Visión de color', opciones: ['Normal', 'Daltonismo']},
-  { id: 'diabetico', label: 'Diabético', opciones: ['Si', 'No', '-'] },
-  { id: 'hipertensivo', label: 'Hipertensivo', opciones: ['Si', 'No', '-'] },
-  { id: 'cardiopatico', label: 'Cardiopatías', opciones: ['Si', 'No', '-'] },
+  { id: 'correccionVisual', label: 'Vista corregida', opciones: ['Corregida', 'Sin corregir', 'No requiere', '-'] },
+  { id: 'lentes', label: 'Requiere Lentes', opciones: ['Requiere lentes', 'No requiere', '-'] },
+  { id: 'lumbalgia', label: 'Lumbalgia', opciones: ['Si', 'No', '-'] },
   { id: 'epilepsia', label: 'Epilepsias', opciones: ['Si', 'No', '-'] },
   { id: 'alergia', label: 'Alergias', opciones: ['Si', 'No', '-'] },
-  { id: 'lumbalgia', label: 'Lumbalgia', opciones: ['Si', 'No', '-'] },
   { id: 'accidente', label: 'Accidentes', opciones: ['Si', 'No', '-'] },
-  { id: 'quirurgico', label: 'Cirugias', opciones: ['Si', 'No', '-'] },
   { id: 'traumatico', label: 'Traumatismos', opciones: ['Si', 'No', '-'] },
+  { id: 'quirurgico', label: 'Cirugias', opciones: ['Si', 'No', '-'] },
   { id: 'exposicion', label: 'Exposición a riesgos', opciones: [
     'Ergonómicos', 'Ruido', 'Polvos', 'Químicos', 'Psicosociales',
     'Temperaturas elevadas', 'Temperaturas abatidas', 'Vibraciones', 'Biológicos Infecciosos', '-'
   ]},
   { id: 'consultas', label: 'Consultas', opciones: ['Si', 'No']},
-  { id: 'periodo', label: 'Periodo', opciones: [
-    'Hoy', 'Esta semana', 'Este mes', 'Mes anterior', 
-    'Últimos 3 meses', 'Últimos 6 meses', 'Este año', 'Año anterior'
-  ]},
-  { id: 'estadoLaboral', label: 'Estado Laboral', opciones: ['Activo', 'Inactivo'] }
 ];
 
 const filtros = reactive<Record<string, string>>({
