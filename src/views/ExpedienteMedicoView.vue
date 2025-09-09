@@ -494,10 +494,10 @@ const añoMasReciente = computed(() => {
          <ModalCuestionarios v-if="showCuestionariosModal" @closeModal="toggleCuestionariosModal" />
        </Transition>
 
-      <div class="grid gap-5">
+
 
         <!-- Header principal con información del trabajador -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden mb-4">
           <div class="p-6">
             <Transition appear mode="out-in" name="slide-up">
               <div v-if="trabajadores.currentTrabajador" class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
@@ -621,7 +621,7 @@ const añoMasReciente = computed(() => {
         </Transition>
 
         <!-- Panel de creación de documentos -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-4">
           <!-- Header del panel -->
           <div class="bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 px-6 py-4">
             <div class="flex items-center justify-between">
@@ -639,7 +639,7 @@ const añoMasReciente = computed(() => {
 
           <!-- Botones de documentos -->
           <div class="p-6">
-            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-8 gap-3">
               
               <!-- Historia Clínica -->
               <button @click="navigateTo('crear-documento', {
@@ -683,6 +683,21 @@ const añoMasReciente = computed(() => {
                   </div>
                   <h3 class="font-semibold text-gray-900 text-sm mb-1">Examen Vista</h3>
                   <p class="text-xs text-gray-600">Agudeza visual y colores</p>
+                </div>
+              </button>
+
+              <!-- Audiometría -->
+              <button @click="navigateTo('crear-documento', {
+                idEmpresa: empresas.currentEmpresaId,
+                idTrabajador: trabajadores.currentTrabajadorId,
+                tipoDocumento: 'audiometria'
+              })" class="group relative bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border-2 border-purple-200 hover:border-purple-400 rounded-xl p-4 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+                <div class="text-center">
+                  <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-600 transition-colors">
+                    <i class="fas fa-volume-up text-white text-lg"></i>
+                  </div>
+                  <h3 class="font-semibold text-gray-900 text-sm mb-1">Audiometría</h3>
+                  <p class="text-xs text-gray-600">Audición</p>
                 </div>
               </button>
 
@@ -747,9 +762,9 @@ const añoMasReciente = computed(() => {
               </button>
             </div>
 
-            <div class="flex justify-center gap-4">
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
               <!-- Documento Externo -->
-              <div class="mt-6 flex justify-center">
+              <div class="mt-4 sm:mt-6 flex justify-center">
                 <SliderButton 
                   class="w-full max-w-md" 
                   text="Documento Externo" 
@@ -759,7 +774,7 @@ const añoMasReciente = computed(() => {
               </div>
   
               <!-- Botón para Cuestionarios de Vigilancia Médica -->
-              <div class="mt-6 flex justify-center">
+              <div class="sm:mt-6 flex justify-center">
                 <button
                   @click="toggleCuestionariosModal"
                   class="relative w-[232px] h-[50px] rounded-lg cursor-pointer flex items-center border-2 border-emerald-600 bg-white overflow-hidden transition-all duration-200 hover:bg-emerald-50 hover:shadow-lg"
@@ -892,7 +907,7 @@ const añoMasReciente = computed(() => {
           />
         </div>
 
-      </div>
+
     </div>
   </Transition>
 </template>

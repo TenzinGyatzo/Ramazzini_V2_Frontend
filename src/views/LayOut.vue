@@ -483,61 +483,59 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
       </div>
     </Transition>
 
-
-
-      <!-- Notificaciones separadas con transiciones independientes -->
-      
-      <!-- Primera notificación: campos pendientes -->
-      <Transition name="slide-up">
-        <div v-if="datosCargados && mostrarMensajePendiente && isNotificationVisible" 
-             class="hidden sm:block fixed bottom-6 right-6 z-50 bg-white text-gray-700 border-l-4 border-red-500 rounded-xl shadow-lg p-4 max-w-sm transform hover:scale-105 transition-transform duration-500 ease-in-out">
-          <div class="flex items-start gap-3">
-            <i :class="[iconoNotificacion, colorNotificacion, 'text-xl mt-1']"></i>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-gray-800 mb-2">
-                {{ mensajeConfiguracion }}
-              </p>
-              <a :href="guiaConfiguracionInicialURL" 
-                 target="_blank" 
-                 rel="noopener noreferrer" 
-                 class="text-blue-600 hover:text-blue-800 underline text-sm font-medium transition-colors duration-200">
-                {{ textoEnlace }}
-              </a>
-            </div>
-            <button @click="closeNotification" 
-                    class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-              <i class="fa-solid fa-times"></i>
-            </button>
+    <!-- Notificaciones separadas con transiciones independientes -->
+    
+    <!-- Primera notificación: campos pendientes -->
+    <Transition name="slide-up">
+      <div v-if="datosCargados && mostrarMensajePendiente && isNotificationVisible" 
+            class="hidden sm:block fixed bottom-6 right-6 z-50 bg-white text-gray-700 border-l-4 border-red-500 rounded-xl shadow-lg p-4 max-w-sm transform hover:scale-105 transition-transform duration-500 ease-in-out">
+        <div class="flex items-start gap-3">
+          <i :class="[iconoNotificacion, colorNotificacion, 'text-xl mt-1']"></i>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-800 mb-2">
+              {{ mensajeConfiguracion }}
+            </p>
+            <a :href="guiaConfiguracionInicialURL" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="text-blue-600 hover:text-blue-800 underline text-sm font-medium transition-colors duration-200">
+              {{ textoEnlace }}
+            </a>
           </div>
+          <button @click="closeNotification" 
+                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+            <i class="fa-solid fa-times"></i>
+          </button>
         </div>
-      </Transition>
-      
-      <!-- Segunda notificación: no hay empresas -->
-      <Transition name="slide-up">
-        <div v-if="datosCargados && empresasCargadas && empresas.empresas.length === 0 && isNotificationEmpresasVisible" 
-             class="hidden sm:block fixed bottom-6 right-6 z-50 bg-white text-gray-700 border-l-4 border-blue-500 rounded-xl shadow-lg p-4 max-w-sm transform hover:scale-105 transition-transform duration-500 ease-in-out"
-             :class="((camposPendientesProveedor.length === 4) && (camposPendientesMedico.length === 3)) ? 'mb-3' : '-mb-2'"
-             :style="{ bottom: datosCargados && mostrarMensajePendiente && isNotificationVisible ? '8rem' : '1.5rem' }">
-          <div class="flex items-start gap-3">
-            <i class="fa-regular fa-lightbulb text-blue-500 text-xl mt-1"></i>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-gray-800 mb-2">
-                Aún no tienes clientes registrados
-              </p>
-              <a :href="guiaRegistrarClientesURL" 
-                 target="_blank" 
-                 rel="noopener noreferrer" 
-                 class="text-blue-600 hover:text-blue-800 underline text-sm font-medium transition-colors duration-200">
-                Guía para registrar a tu primer cliente
-              </a>
-            </div>
-            <button @click="closeNotificationEmpresas" 
-                    class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-              <i class="fa-solid fa-times"></i>
-            </button>
+      </div>
+    </Transition>
+    
+    <!-- Segunda notificación: no hay empresas -->
+    <Transition name="slide-up">
+      <div v-if="datosCargados && empresasCargadas && empresas.empresas.length === 0 && isNotificationEmpresasVisible" 
+            class="hidden sm:block fixed bottom-6 right-6 z-50 bg-white text-gray-700 border-l-4 border-blue-500 rounded-xl shadow-lg p-4 max-w-sm transform hover:scale-105 transition-transform duration-500 ease-in-out"
+            :class="((camposPendientesProveedor.length === 4) && (camposPendientesMedico.length === 3)) ? 'mb-3' : '-mb-2'"
+            :style="{ bottom: datosCargados && mostrarMensajePendiente && isNotificationVisible ? '8rem' : '1.5rem' }">
+        <div class="flex items-start gap-3">
+          <i class="fa-regular fa-lightbulb text-blue-500 text-xl mt-1"></i>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-800 mb-2">
+              Aún no tienes clientes registrados
+            </p>
+            <a :href="guiaRegistrarClientesURL" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="text-blue-600 hover:text-blue-800 underline text-sm font-medium transition-colors duration-200">
+              Guía para registrar a tu primer cliente
+            </a>
           </div>
+          <button @click="closeNotificationEmpresas" 
+                  class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+            <i class="fa-solid fa-times"></i>
+          </button>
         </div>
-      </Transition>
+      </div>
+    </Transition>
 
     <!-- Botón del engrane mejorado -->
     <Transition name="delayed-appear">
@@ -779,7 +777,7 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
               <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">{{ guia.text }}</span>
             </a>
           </li>
-          <li v-for="(guia, index) in [
+          <!-- <li v-for="(guia, index) in [
             { text: 'Estadísticas de Salud', icon: 'fa-solid fa-chart-line' },
             { text: 'Gestión de RTs', icon: 'fa-solid fa-exclamation-triangle' }
           ]" :key="index + 7">
@@ -788,7 +786,7 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
               <i :class="[guia.icon, 'text-gray-400']"></i>
               <span class="text-sm font-medium text-gray-400">{{ guia.text }}</span>
             </div>
-          </li>
+          </li> -->
         </ul>
       </div>
     </Transition>
