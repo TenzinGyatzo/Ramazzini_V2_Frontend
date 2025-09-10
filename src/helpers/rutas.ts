@@ -24,6 +24,7 @@ export const obtenerFechaDocumento = (documento) => {
     const camposFecha = [
         'fechaAntidoping',
         'fechaAptitudPuesto',
+        'fechaAudiometria',
         'fechaCertificado',
         'fechaCertificadoExpedito',
         'fechaExamenVista',

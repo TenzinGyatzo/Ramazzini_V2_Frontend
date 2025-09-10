@@ -11,6 +11,7 @@ import { useCurrentUser } from '@/composables/useCurrentUser';
 import FormStepper from '@/components/steps/FormStepper.vue';
 import VisualizadorAntidoping from '@/components/steps/VisualizadorAntidoping.vue';
 import VisualizadorAptitud from '@/components/steps/VisualizadorAptitud.vue';
+import VisualizadorAudiometria from '@/components/steps/VisualizadorAudiometria.vue';
 import VisualizadorCertificado from '@/components/steps/VisualizadorCertificado.vue';
 import VisualizadorCertificadoExpedito from '@/components/steps/VisualizadorCertificadoExpedito.vue';
 import VisualizadorExamenVista from '@/components/steps/VisualizadorExamenVista.vue';
@@ -257,6 +258,18 @@ const marcarSinHallazgos = () => {
           </div>
           <div class="w-full xl:w-3/4">
             <VisualizadorAptitud />
+          </div>
+        </div>
+      </Transition>
+
+      <Transition appear mode="out-in" name="slide-up">
+        <div v-if="documentos.currentTypeOfDocument === 'audiometria'"
+          class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/4">
+            <FormStepper />
+          </div>
+          <div class="w-full xl:w-3/4">
+            <VisualizadorAudiometria />
           </div>
         </div>
       </Transition>

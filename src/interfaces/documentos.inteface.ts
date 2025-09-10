@@ -43,6 +43,40 @@ export interface Aptitud {
     updatedBy: string;
 }
 
+export interface Audiometria {
+    _id: string;
+    fechaAudiometria: string;
+    oidoDerecho125?: number;
+    oidoDerecho250?: number;
+    oidoDerecho500?: number;
+    oidoDerecho1000?: number;
+    oidoDerecho2000?: number;
+    oidoDerecho3000?: number;
+    oidoDerecho4000?: number;
+    oidoDerecho6000?: number;
+    oidoDerecho8000?: number;
+    porcentajePerdidaOD?: number;
+    oidoIzquierdo125?: number;
+    oidoIzquierdo250?: number;
+    oidoIzquierdo500?: number;
+    oidoIzquierdo1000?: number;
+    oidoIzquierdo2000?: number;
+    oidoIzquierdo3000?: number;
+    oidoIzquierdo4000?: number;
+    oidoIzquierdo6000?: number;
+    oidoIzquierdo8000?: number;
+    porcentajePerdidaOI?: number;
+    hipoacusiaBilateralCombinada?: number;
+    observacionesAudiometria?: string;
+    interpretacionAudiometrica?: string;
+    diagnosticoAudiometria?: string;
+    recomendacionesAudiometria?: string[];
+    idTrabajador: string;
+    rutaPDF: string;
+    createdBy: string;
+    updatedBy: string;
+}
+
 export interface Certificado {
     _id: string;
     fechaCertificado: string;

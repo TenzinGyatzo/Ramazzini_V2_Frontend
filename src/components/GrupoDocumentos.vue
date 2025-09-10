@@ -54,6 +54,7 @@ const totalDocumentos = computed(() => {
            (props.documents.historiasClinicas?.length || 0) +
            (props.documents.exploracionesFisicas?.length || 0) +
            (props.documents.examenesVista?.length || 0) +
+           (props.documents.audiometrias?.length || 0) +
            (props.documents.antidopings?.length || 0) +
            (props.documents.certificados?.length || 0) +
            (props.documents.certificadosExpedito?.length || 0) +
@@ -101,6 +102,16 @@ const rutasDelGrupo = computed(() => {
             const rutaBase = obtenerRutaDocumento(examenVista, 'Examen Vista');
             const fecha = obtenerFechaDocumento(examenVista) || 'SinFecha';
             const nombreArchivo = obtenerNombreArchivo(examenVista, 'Examen Vista', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            rutas.push(ruta);
+        });
+    }
+
+    if (props.documents.audiometrias) {
+        props.documents.audiometrias.forEach(audiometria => {
+            const rutaBase = obtenerRutaDocumento(audiometria, 'Audiometria');
+            const fecha = obtenerFechaDocumento(audiometria) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(audiometria, 'Audiometria', fecha);
             const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
             rutas.push(ruta);
         });
@@ -299,8 +310,6 @@ const toggleSelectAll = () => {
             </div>
         </div>
 
-
-
         <!-- Contenido de documentos con espaciado mejorado -->
         <div class="divide-gray-100">
             <!-- Aptitudes -->
@@ -394,6 +403,30 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', examenVista._id, convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista), 'examenVista')" 
+                        @openSubscriptionModal="emit('openSubscriptionModal')"
+                    />
+                </div>
+            </div>
+
+            <!-- Audiometrías -->
+            <div v-if="documents.audiometrias && documents.audiometrias.length > 0">
+                <div v-for="(audiometria, index) in documents.audiometrias" :key="audiometria._id"
+                     class="transition-all duration-200 hover:bg-gray-50"
+                     :style="{ animationDelay: `${index * 50}ms` }">
+                    <DocumentoItem 
+                        :audiometria="audiometria" 
+                        :documentoId="audiometria._id" 
+                        :documentoTipo="'audiometria'" 
+                        :toggleRouteSelection="toggleRouteSelection"
+                        :isDeletionMode="isDeletionMode"
+                        :isSelected="(() => {
+                            const rutaBase = obtenerRutaDocumento(audiometria, 'Audiometria');
+                            const fecha = obtenerFechaDocumento(audiometria) || 'SinFecha';
+                            const nombreArchivo = obtenerNombreArchivo(audiometria, 'Audiometria', fecha);
+                            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                            return props.selectedRoutes.includes(ruta);
+                        })()"
+                        @eliminarDocumento="$emit('eliminarDocumento', audiometria._id, convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria), 'audiometria')" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
                     />
                 </div>

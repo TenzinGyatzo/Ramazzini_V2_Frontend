@@ -478,6 +478,10 @@ const descargarPdfActual = async () => {
                     documento = props.aptitud;
                     tipoDocumento = 'Aptitud';
                     break;
+                case 'audiometria':
+                    documento = props.audiometria;
+                    tipoDocumento = 'Audiometria';
+                    break;
                 case 'certificado':
                     documento = props.certificado;
                     tipoDocumento = 'Certificado';
@@ -619,6 +623,7 @@ const props = defineProps({
     },
     antidoping: [Object, String],
     aptitud: [Object, String],
+    audiometria: [Object, String],
     certificado: [Object, String],
     certificadoExpedito: [Object, String],
     documentoExterno: [Object, String],
@@ -818,6 +823,7 @@ const construirRutaYNombrePDF = () => {
   const doc = {
     'antidoping': props.antidoping,
     'aptitud': props.aptitud, 
+    'audiometria': props.audiometria,
     'certificado': props.certificado,
     'certificadoexpedito': props.certificadoExpedito,
     'examenvista': props.examenVista,
@@ -827,11 +833,12 @@ const construirRutaYNombrePDF = () => {
     'controlprenatal': props.controlPrenatal,
   }[tipoSinEspacios];
 
-  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal;
+  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal;
 
   const tiposDocumentos = {
     'antidoping': 'Antidoping',
     'aptitud': 'Aptitud',
+    'audiometria': 'Audiometria',
     'certificado': 'Certificado',
     'certificadoexpedito': 'Certificado Expedito',
     'examenvista': 'Examen Vista', 
@@ -946,7 +953,7 @@ onMounted(() => {
 });
 
 // Watcher para verificar disponibilidad cuando cambien las props
-watch(() => [props.antidoping, props.aptitud, props.certificado, props.certificadoExpedito, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal], () => {
+watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certificado, props.certificadoExpedito, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal], () => {
   verificarDisponibilidadPDF();
 }, { deep: true });
 
@@ -1097,6 +1104,59 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.certifica
                                 </div>
                             </div>
                         </div> -->
+                    </div>
+                </div>
+
+                <div v-if="typeof audiometria === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, audiometria, 'Audiometria')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${audiometria.rutaPDF}`,
+                        `Audiometria ${convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mr-4 group-hover:bg-purple-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-volume-up text-purple-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Audiometría
+                                </h3>
+                                <span v-if="audiometria.hipoacusiaBilateralCombinada" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                    HBC: {{ audiometria.hipoacusiaBilateralCombinada }}%
+                                </span>
+                                <span v-else class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                    Incompleta
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria) }}
+                            </p>
+                        </div>
+
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div v-if="audiometria.diagnosticoAudiometria" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Diagnóstico</p>
+                                    <p class="font-medium text-sm truncate max-w-full text-gray-800">
+                                        {{ audiometria.diagnosticoAudiometria.toUpperCase() }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1699,6 +1759,7 @@ watch(() => [props.antidoping, props.aptitud, props.certificado, props.certifica
                 <template v-for="(documento, key) in {
                     'Antidoping': antidoping,
                     'Aptitud': aptitud,
+                    'Audiometria': audiometria,
                     'Certificado': certificado,
                     'Certificado Expedito': certificadoExpedito,
                     'Documento Externo': documentoExterno,

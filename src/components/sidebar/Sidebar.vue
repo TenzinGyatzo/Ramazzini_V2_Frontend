@@ -87,6 +87,7 @@ const documentTypeLabels = {
   historiaClinica: "Historia Clínica",
   exploracionFisica: "Exploración Física",
   examenVista: "Examen de la Vista",
+  audiometria: "Audiometría",
   antidoping: "Antidoping",
   certificado: "Certificado",
   certificadoExpedito: "Certificado Expedito",

@@ -5,6 +5,7 @@ import DocumentosAPI from '@/api/DocumentosAPI';
 export const useFormDataStore = defineStore('formData', () => {
   const formDataAntidoping = ref({}); // Estado compartido
   const formDataAptitud = ref({}); // Estado compartido
+  const formDataAudiometria = ref({}); // Estado compartido
   const formDataCertificado = ref({}); // Estado compartido
   const formDataCertificadoExpedito = ref({}); // Estado compartido
   const formDataDocumentoExterno = ref({}); // Estado compartido
@@ -26,6 +27,9 @@ export const useFormDataStore = defineStore('formData', () => {
         break;
       case 'aptitud':
         formDataAptitud.value = { ...documento };
+        break;
+      case 'audiometria':
+        formDataAudiometria.value = { ...documento };
         break;
       case 'certificado':
         formDataCertificado.value = { ...documento };
@@ -61,6 +65,7 @@ export const useFormDataStore = defineStore('formData', () => {
     // Reiniciar el estado directamente asignando un objeto vacío.
     formDataAntidoping.value = {};
     formDataAptitud.value = {};
+    formDataAudiometria.value = {};
     formDataCertificado.value = {};
     formDataCertificadoExpedito.value = {};
     formDataDocumentoExterno.value = {};
@@ -94,6 +99,7 @@ export const useFormDataStore = defineStore('formData', () => {
   return { 
     formDataAntidoping,
     formDataAptitud,
+    formDataAudiometria,
     formDataCertificado,
     formDataCertificadoExpedito,
     formDataDocumentoExterno,

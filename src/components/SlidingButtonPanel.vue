@@ -16,12 +16,13 @@ const documentOrder = {
   "Historia Clinica": 2,
   "Exploracion Fisica": 3,
   "Examen Vista": 4,
-  Antidoping: 5,
-  Certificado: 6,
-  "Documento Externo": 7,
-  "Nota Medica": 8,
-  "Control Prenatal": 9,
-  "Certificado Expedito": 10,
+  Audiometria: 5,
+  Antidoping: 6,
+  Certificado: 7,
+  "Documento Externo": 8,
+  "Nota Medica": 9,
+  "Control Prenatal": 10,
+  "Certificado Expedito": 11,
 };
 
 const getDocumentType = (route) => {
@@ -29,6 +30,7 @@ const getDocumentType = (route) => {
   if (route.includes("Historia Clinica")) return "Historia Clinica";
   if (route.includes("Exploracion Fisica")) return "Exploracion Fisica";
   if (route.includes("Examen Vista")) return "Examen Vista";
+  if (route.includes("Audiometria")) return "Audiometria";
   if (route.includes("Antidoping")) return "Antidoping";
   if (route.includes("Certificado")) return "Certificado";
   if (route.includes("Nota Medica")) return "Nota Medica";

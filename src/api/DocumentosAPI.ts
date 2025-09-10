@@ -9,6 +9,10 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/aptitud`);
     },
 
+    getAudiometrias(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/audiometria`);
+    },
+
     getCertificados(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/certificado`);
     },

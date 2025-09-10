@@ -4,6 +4,7 @@ import DocumentosAPI from "@/api/DocumentosAPI";
 import type {
   Antidoping,
   Aptitud,
+  Audiometria,
   Certificado,
   CertificadoExpedito,
   DocumentoExterno,
@@ -18,6 +19,7 @@ export type DocumentsByYear = {
   [year: string]: {
     antidopings?: Antidoping[];
     aptitudes?: Aptitud[];
+    audiometrias?: Audiometria[];
     certificados?: Certificado[];
     certificadosExpedito?: CertificadoExpedito[];
     documentosExternos?: DocumentoExterno[];
@@ -56,6 +58,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
       const [
         antidopings,
         aptitudes,
+        audiometrias,
         certificados,
         certificadosExpedito,
         documentosExternos,
@@ -71,6 +74,10 @@ export const useDocumentosStore = defineStore("documentos", () => {
         }),
         DocumentosAPI.getAptitudes(trabajadorId).catch(error => {
           console.error("Error al obtener aptitudes", error);
+          return { data: [] };
+        }),
+        DocumentosAPI.getAudiometrias(trabajadorId).catch(error => {
+          console.error("Error al obtener audiometrias", error);
           return { data: [] };
         }),
         DocumentosAPI.getCertificados(trabajadorId).catch(error => {
@@ -111,6 +118,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
       const documentosAgrupados = {
         antidopings: Array.isArray(antidopings.data) ? antidopings.data : [],
         aptitudes: Array.isArray(aptitudes.data) ? aptitudes.data : [],
+        audiometrias: Array.isArray(audiometrias.data) ? audiometrias.data : [],
         certificados: Array.isArray(certificados.data) ? certificados.data : [],
         certificadosExpedito: Array.isArray(certificadosExpedito.data) ? certificadosExpedito.data : [],
         documentosExternos: Array.isArray(documentosExternos.data) ? documentosExternos.data : [],
@@ -153,6 +161,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
     const fechaCampos = {
       antidopings: "fechaAntidoping",
       aptitudes: "fechaAptitudPuesto",
+      audiometrias: "fechaAudiometria",
       certificados: "fechaCertificado",
       certificadosExpedito: "fechaCertificadoExpedito",
       documentosExternos: "fechaDocumento",

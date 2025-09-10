@@ -162,6 +162,7 @@ const documentTypeLabels = {
   historiaClinica: "Historia Clínica",
   exploracionFisica: "Exploración Física",
   examenVista: "Examen de la Vista",
+  audiometria: "Audiometría",
   antidoping: "Antidoping",
   certificado: "Certificado",
   documentoExterno: "Documento Externo",
@@ -305,7 +306,18 @@ const handleDeleteSelected = async () => {
                     documentosAEliminar.push({ id: examenVista._id, tipo: 'examenVista' });
                 }
             });
-            
+
+            // Audiometrías
+            yearData.audiometrias?.forEach(audiometria => {
+                const rutaBase = obtenerRutaDocumento(audiometria, 'Audiometria');
+                const fecha = obtenerFechaDocumento(audiometria) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(audiometria, 'Audiometria', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: audiometria._id, tipo: 'audiometria' });
+                }
+            });
+
             // Antidopings
             yearData.antidopings?.forEach(antidoping => {
                 const rutaBase = obtenerRutaDocumento(antidoping, 'Antidoping');
@@ -440,6 +452,7 @@ const totalDocumentosCreados = computed(() => {
       (yearData.historiasClinicas?.length || 0) +
       (yearData.exploracionesFisicas?.length || 0) +
       (yearData.examenesVista?.length || 0) +
+      (yearData.audiometrias?.length || 0) +
       (yearData.antidopings?.length || 0) +
       (yearData.certificados?.length || 0) +
       (yearData.certificadosExpedito?.length || 0) +
