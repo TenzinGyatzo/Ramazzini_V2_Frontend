@@ -304,7 +304,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 image: imagenes.grupos, 
                 width: 460, 
                 alignment: 'center',
-                margin: [0, 10, 0, 20] 
+                margin: [0, 10, 0, 10] 
             }
         );
         

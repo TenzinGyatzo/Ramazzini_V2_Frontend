@@ -1,20 +1,262 @@
 <script setup>
+import { computed, ref, onMounted, nextTick, watch } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
 import { calcularEdad, calcularAntiguedad, convertirFechaISOaDDMMYYYY, formatDateDDMMYYYY } from '@/helpers/dates';
 import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
+import { exportarGraficaAltaResolucion } from '@/helpers/exportChartImage';
+import GraficaAudiometria from '@/components/graficas/GraficaAudiometria.vue';
 
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
 const formData = useFormDataStore();
 const steps = useStepsStore();
 
+// Referencia para la gráfica
+const refGraficaAudiometria = ref(null);
+
 // Ir a un paso específico
 const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
 };
+
+// Computed para asegurar reactividad completa
+const formDataAudiometria = computed(() => formData.formDataAudiometria);
+
+// Computed para datos de la gráfica audiométrica
+const graficaAudiometriaData = computed(() => {
+  const frecuencias = [125, 250, 500, 1000, 2000, 3000, 4000, 6000, 8000];
+  
+  // Datos del oído derecho
+  const oidoDerecho = [
+    formDataAudiometria.value.oidoDerecho125,
+    formDataAudiometria.value.oidoDerecho250,
+    formDataAudiometria.value.oidoDerecho500,
+    formDataAudiometria.value.oidoDerecho1000,
+    formDataAudiometria.value.oidoDerecho2000,
+    formDataAudiometria.value.oidoDerecho3000,
+    formDataAudiometria.value.oidoDerecho4000,
+    formDataAudiometria.value.oidoDerecho6000,
+    formDataAudiometria.value.oidoDerecho8000
+  ].map(valor => valor !== null && valor !== undefined ? Number(valor) : null);
+
+  // Datos del oído izquierdo
+  const oidoIzquierdo = [
+    formDataAudiometria.value.oidoIzquierdo125,
+    formDataAudiometria.value.oidoIzquierdo250,
+    formDataAudiometria.value.oidoIzquierdo500,
+    formDataAudiometria.value.oidoIzquierdo1000,
+    formDataAudiometria.value.oidoIzquierdo2000,
+    formDataAudiometria.value.oidoIzquierdo3000,
+    formDataAudiometria.value.oidoIzquierdo4000,
+    formDataAudiometria.value.oidoIzquierdo6000,
+    formDataAudiometria.value.oidoIzquierdo8000
+  ].map(valor => valor !== null && valor !== undefined ? Number(valor) : null);
+
+  return {
+    labels: frecuencias.map(f => `${f} Hz`),
+    datasets: [
+      {
+        label: 'Oído Derecho',
+        data: oidoDerecho,
+        borderColor: 'rgba(239, 68, 68, 0.8)', // Rojo con transparencia
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        tension: 0,
+        pointBackgroundColor: 'transparent',
+        pointBorderColor: 'rgba(239, 68, 68, 0.8)',
+        pointBorderWidth: 1.5,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        spanGaps: false
+      },
+      {
+        label: 'Oído Izquierdo',
+        data: oidoIzquierdo,
+        borderColor: '#3B82F6', // Azul sólido
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        tension: 0,
+        pointBackgroundColor: '#3B82F6',
+        pointBorderColor: '#3B82F6',
+        pointBorderWidth: 1.5,
+        pointStyle: 'crossRot',
+        pointRadius: 8,
+        pointHoverRadius: 10,
+        spanGaps: false
+      }
+    ]
+  };
+});
+
+// Opciones de configuración para la gráfica audiométrica
+const graficaAudiometriaOptions = computed(() => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: {
+    intersect: false,
+    mode: 'index'
+  },
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top',
+      labels: {
+        usePointStyle: true,
+        padding: 10,
+        pointStyleWidth: 17,
+        font: {
+          size: 12,
+          weight: '500'
+        }
+      }
+    },
+    tooltip: {
+      enabled: true,
+      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+      titleColor: '#ffffff',
+      bodyColor: '#ffffff',
+      borderColor: '#374151',
+      borderWidth: 1,
+      callbacks: {
+        title: (context) => {
+          return `Frecuencia: ${context[0].label}`;
+        },
+        label: (context) => {
+          const valor = context.raw;
+          return `${context.dataset.label}: ${valor !== null ? valor + ' dB' : 'Sin medición'}`;
+        }
+      }
+    },
+    datalabels: {
+      display: false
+    }
+  },
+  scales: {
+    x: {
+      title: {
+        display: true,
+        text: 'Frecuencia (Hz)',
+        font: {
+          size: 12,
+          weight: '600'
+        },
+        color: '#374151'
+      },
+      grid: {
+        display: true,
+        color: 'rgba(0, 0, 0, 0.2)',
+        drawTicks: false,
+        lineWidth: 1
+      },
+      border: {
+        display: true,
+        color: '#374151',
+        width: 1.2
+      },
+      ticks: {
+        color: '#374151',
+        font: {
+          size: 11,
+        }
+      }
+    },
+    y: {
+      title: {
+        display: true,
+        text: 'Umbral Auditivo (dB)',
+        font: {
+          size: 12,
+          weight: '600'
+        },
+        color: '#374151'
+      },
+      min: -10,
+      max: 110,
+      stepSize: 10,
+      // Usar offset para crear espacio visual adicional
+      offset: true,
+      grid: {
+        display: true,
+        color: 'rgba(0, 0, 0, 0.2)',
+        lineWidth: 1
+      },
+      border: {
+        display: true,
+        color: '#374151',
+        width: 1.2
+      },
+      ticks: {
+        color: '#374151',
+        font: {
+          size: 11
+        },
+        stepSize: 10,
+        maxTicksLimit: 13,
+        count: 13,
+        includeBounds: true,
+        autoSkip: false,
+        suggestedMin: -10,
+        suggestedMax: 110,
+        callback: function(value) {
+          return value + ' dB';
+        }
+      },
+      // Invertir el eje Y para que los valores más altos estén arriba (estándar audiométrico)
+      reverse: true
+    }
+  },
+  elements: {
+    line: {
+      borderWidth: 2
+    },
+    point: {
+      borderWidth: 2
+    }
+  }
+}));
+
+// Función para generar y guardar la gráfica en el store
+const generarYGuardarGrafica = async () => {
+  await nextTick(); // Esperar a que el DOM se actualice
+  
+  if (refGraficaAudiometria.value) {
+    try {
+      // Usar el helper de exportación de alta resolución
+      const chartConfig = {
+        type: 'line',
+        data: graficaAudiometriaData.value,
+        options: graficaAudiometriaOptions.value
+      };
+      
+      const graficaBase64 = exportarGraficaAltaResolucion(chartConfig, 1200, 400);
+      
+      // Guardar la gráfica en el store
+      formData.formDataAudiometria.graficaAudiometria = graficaBase64;
+
+    } catch (error) {
+      console.error('🎨 Debug - Error al generar la gráfica:', error);
+    }
+  } 
+};
+
+// Generar la gráfica cuando el componente se monta
+onMounted(() => {
+  // Esperar un poco para que la gráfica se renderice completamente
+  setTimeout(generarYGuardarGrafica, 1000);
+});
+
+// Regenerar la gráfica cuando cambien los datos de audiometría
+watch(() => formDataAudiometria.value, () => {
+  setTimeout(generarYGuardarGrafica, 500);
+}, { deep: true });
+
+// Exponer la referencia para acceso desde el componente padre
+defineExpose({
+  refGraficaAudiometria,
+  graficaAudiometriaData,
+  graficaAudiometriaOptions
+});
 
 </script>
 
@@ -36,7 +278,7 @@ const goToStep = (stepNumber) => {
         :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }"
         @click="goToStep(1)">
         <p class="w-full md:w-auto">Fecha: <span class="font-medium">{{
-           formatDateDDMMYYYY(formData.formDataAudiometria.fechaAudiometria) }}</span></p>
+           formatDateDDMMYYYY(formDataAudiometria.fechaAudiometria) }}</span></p>
       </div>
     </div>
 
@@ -141,79 +383,161 @@ const goToStep = (stepNumber) => {
           @click="goToStep(2)">
             <td class="w-32 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">OIDO DERECHO</td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoDerecho125 ?? '' }}
+              {{ formDataAudiometria.oidoDerecho125 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoDerecho250 ?? '' }}
+              {{ formDataAudiometria.oidoDerecho250 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoDerecho500 ?? '' }}
+              {{ formDataAudiometria.oidoDerecho500 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoDerecho1000 ?? '' }}
+              {{ formDataAudiometria.oidoDerecho1000 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoDerecho2000 ?? '' }}
+              {{ formDataAudiometria.oidoDerecho2000 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoDerecho3000 ?? '' }}
+              {{ formDataAudiometria.oidoDerecho3000 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoDerecho4000 ?? '' }}
+              {{ formDataAudiometria.oidoDerecho4000 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoDerecho6000 ?? '' }}
+              {{ formDataAudiometria.oidoDerecho6000 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoDerecho8000 ?? '' }}
+              {{ formDataAudiometria.oidoDerecho8000 ?? '' }}
             </td>
             <td class="w-16 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.porcentajePerdidaOD ?? '' }}
+              {{ formDataAudiometria.porcentajePerdidaOD ?? '' }}
             </td>
           </tr>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 3 }"
           @click="goToStep(3)">
             <td class="w-32 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">OIDO IZQUIERDO</td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoIzquierdo125 ?? '' }}
+              {{ formDataAudiometria.oidoIzquierdo125 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoIzquierdo250 ?? '' }}
+              {{ formDataAudiometria.oidoIzquierdo250 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoIzquierdo500 ?? '' }}
+              {{ formDataAudiometria.oidoIzquierdo500 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoIzquierdo1000 ?? '' }}
+              {{ formDataAudiometria.oidoIzquierdo1000 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoIzquierdo2000 ?? '' }}
+              {{ formDataAudiometria.oidoIzquierdo2000 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoIzquierdo3000 ?? '' }}
+              {{ formDataAudiometria.oidoIzquierdo3000 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoIzquierdo4000 ?? '' }}
+              {{ formDataAudiometria.oidoIzquierdo4000 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoIzquierdo6000 ?? '' }}
+              {{ formDataAudiometria.oidoIzquierdo6000 ?? '' }}
             </td>
             <td class="w-12 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.oidoIzquierdo8000 ?? '' }}
+              {{ formDataAudiometria.oidoIzquierdo8000 ?? '' }}
             </td>
             <td class="w-16 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.porcentajePerdidaOI ?? '' }}
+              {{ formDataAudiometria.porcentajePerdidaOI ?? '' }}
             </td>
           </tr>
           <tr class="odd:bg-white even:bg-gray-50">
             <td colspan="10" class="w-32 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">Hipoacusia Bilateral Combinada</td>
             <td class="w-16 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formData.formDataAudiometria.hipoacusiaBilateralCombinada ?? '' }}
+              {{ formDataAudiometria.hipoacusiaBilateralCombinada ?? '' }}
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <!-- Gráfica Audiométrica -->
+    <div class="w-full mt-4">
+      <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <div class="h-64">
+          <GraficaAudiometria 
+            ref="refGraficaAudiometria"
+            :data="graficaAudiometriaData" 
+            :options="graficaAudiometriaOptions" 
+          />
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Observaciones -->
+    <div v-if="formDataAudiometria.observacionesAudiometria" 
+      class="w-full cursor-pointer"
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 4 }"
+      @click="goToStep(4)"
+    >
+      <p class="text-justify font-medium">OBSERVACIONES: <span class="font-light">{{ formDataAudiometria.observacionesAudiometria }}</span></p>
+    </div>
+    <div v-else 
+      class="w-full text-center cursor-pointer text-gray-500 italic" 
+      :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 4 }" 
+      @click="goToStep(4)">
+      + Agregar observaciones
+    </div>
+
+    <!-- Interpretación Audiométrica -->
+    <div v-if="formDataAudiometria.interpretacionAudiometrica" 
+      class="w-full cursor-pointer"
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 5 }"
+      @click="goToStep(5)"
+    >
+      <p class="text-justify font-medium">INTERPRETACIÓN AUDIOMÉTRICA: <span class="font-light">{{ formDataAudiometria.interpretacionAudiometrica }}</span></p>
+    </div>
+    <div v-else 
+      class="w-full text-center cursor-pointer text-gray-500 italic" 
+      :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 5 }" 
+      @click="goToStep(5)">
+      + Agregar interpretación
+    </div>
+
+    <!-- Diagnóstico -->
+    <div v-if="formDataAudiometria.diagnosticoAudiometria" 
+      class="w-full cursor-pointer"
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }"
+      @click="goToStep(6)"
+    >
+      <p class="text-justify font-medium">DIAGNÓSTICO: <span class="font-semibold text-lg text-gray-900">{{ formDataAudiometria.diagnosticoAudiometria }}</span></p>
+    </div>
+    <div v-else 
+      class="w-full text-center cursor-pointer text-gray-500 italic" 
+      :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 6 }" 
+      @click="goToStep(6)">
+      + Agregar diagnóstico
+    </div>
+
+    <!-- Recomendaciones -->
+    <div 
+      v-if="formData.formDataAudiometria.recomendacionesAudiometria && formData.formDataAudiometria.recomendacionesAudiometria.length > 0"
+      class="w-full mb-1 cursor-pointer"
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 7 }"
+      @click="goToStep(7)"
+    >
+      <p class="text-justify font-medium">
+      Recomendaciones:
+      <span class="font-light block mt-1">
+        <div 
+        v-for="(item, index) in formData.formDataAudiometria.recomendacionesAudiometria" 
+        :key="index" 
+        class="ml-4 relative"
+        >
+        <span class="absolute left-0">{{ String.fromCharCode(97 + index) }}.</span>
+        <span class="block pl-4">{{ item }}</span>
+        </div>
+      </span>
+      </p>
+    </div>
+    <div v-else class="w-full text-center cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 7 }" @click="goToStep(7)">+ Agregar Recomendaciones</div>
 
   </div>
 </template>

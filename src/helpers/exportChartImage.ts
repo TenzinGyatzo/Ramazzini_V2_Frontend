@@ -70,12 +70,98 @@ export function exportarGraficaAltaResolucion(chartConfig: any, width = 1200, he
     config.options.scales.y.ticks.font.size = Math.round(originalSize * scaleFactor * 1); // 0% más grande
   }
 
-  // Hacer las líneas de los ejes más visibles (solo ejes principales, sin cuadrícula)
-  if (config.options.scales?.x?.grid) {
-    config.options.scales.x.grid.display = false; // Desactivar cuadrícula
+  // Escalado específico para gráfica de audiometría (línea)
+  if (config.type === 'line') {
+    // Desactivar etiquetas de datos para que no aparezcan encima de los marcadores
+    if (config.options.plugins?.datalabels) {
+      config.options.plugins.datalabels.display = false;
+    }
+
+    // Escalar leyenda coordinando fuente y pointStyleWidth para evitar distorsión
+    const legendScaleFactor = 1.3;
+    
+    if (config.options.plugins?.legend?.labels?.font) {
+      const originalSize = config.options.plugins.legend.labels.font.size || 12;
+      config.options.plugins.legend.labels.font.size = Math.round(originalSize * legendScaleFactor);
+    }
+    
+    // Escalar pointStyleWidth proporcionalmente para mantener proporciones
+    if (config.options.plugins?.legend?.labels) {
+      config.options.plugins.legend.labels.usePointStyle = true;
+      const originalPointStyleWidth = 17; // Valor original de la configuración
+      config.options.plugins.legend.labels.pointStyleWidth = Math.round(originalPointStyleWidth * legendScaleFactor);
+    }
+
+    // Escalar títulos de ejes
+    if (config.options.scales?.x?.title?.font) {
+      const originalSize = config.options.scales.x.title.font.size || 12;
+      config.options.scales.x.title.font.size = Math.round(originalSize * 1.5);
+    }
+    if (config.options.scales?.y?.title?.font) {
+      const originalSize = config.options.scales.y.title.font.size || 12;
+      config.options.scales.y.title.font.size = Math.round(originalSize * 1.5);
+    }
+
+    // Escalar ticks de ejes
+    if (config.options.scales?.x?.ticks?.font) {
+      const originalSize = config.options.scales.x.ticks.font.size || 12;
+      config.options.scales.x.ticks.font.size = Math.round(originalSize * 1.5);
+    }
+    if (config.options.scales?.y?.ticks?.font) {
+      const originalSize = config.options.scales.y.ticks.font.size || 12;
+      config.options.scales.y.ticks.font.size = Math.round(originalSize * 1.5);
+    }
+
+    // Escalar indicadores de datos (puntos en la línea) - hacer más grandes
+    if (config.options.elements?.point?.radius) {
+      const originalRadius = config.options.elements.point.radius || 3;
+      config.options.elements.point.radius = originalRadius * 2;
+    }
+
+    // Escalar grosor de líneas
+    if (config.options.elements?.line?.borderWidth) {
+      const originalWidth = config.options.elements.line.borderWidth || 2;
+      config.options.elements.line.borderWidth = originalWidth * 1.5;
+    }
+
+    // Asegurar que los marcadores sean más visibles
+    if (config.data?.datasets) {
+      config.data.datasets.forEach((dataset: any) => {
+        if (dataset.pointRadius !== undefined) {
+          dataset.pointRadius = dataset.pointRadius * 1.5;
+        }
+        if (dataset.pointHoverRadius !== undefined) {
+          dataset.pointHoverRadius = dataset.pointHoverRadius * 1.5;
+        }
+        // Asegurar que no se muestren etiquetas de datos
+        if (dataset.datalabels) {
+          dataset.datalabels = { display: false };
+        }
+      });
+    }
   }
-  if (config.options.scales?.y?.grid) {
-    config.options.scales.y.grid.display = false; // Desactivar cuadrícula
+
+  // Configurar cuadrícula según el tipo de gráfica
+  if (config.type === 'line') {
+    // Para gráficas de línea (audiometría), mostrar cuadrícula
+  if (config.options.scales?.x?.grid) {
+     config.options.scales.x.grid.display = true;
+     config.options.scales.x.grid.color = '#6b7280';
+     config.options.scales.x.grid.lineWidth = 0.5;
+   }
+   if (config.options.scales?.y?.grid) {
+     config.options.scales.y.grid.display = true;
+     config.options.scales.y.grid.color = '#6b7280';
+     config.options.scales.y.grid.lineWidth = 0.5;
+   }
+  } else {
+    // Para otros tipos de gráfica, desactivar cuadrícula
+    if (config.options.scales?.x?.grid) {
+      config.options.scales.x.grid.display = false;
+    }
+    if (config.options.scales?.y?.grid) {
+      config.options.scales.y.grid.display = false;
+    }
   }
 
   // Elegir color de ejes según calidad

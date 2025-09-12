@@ -99,6 +99,7 @@ watchEffect(async () => {
     const documentoMap = {
       antidoping: formData.formDataAntidoping,
       aptitud: formData.formDataAptitud,
+      audiometria: formData.formDataAudiometria,
       certificado: formData.formDataCertificado,
       certificadoExpedito: formData.formDataCertificadoExpedito,
       'documento Externo': formData.formDataDocumentoExterno,

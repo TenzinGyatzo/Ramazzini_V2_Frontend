@@ -74,6 +74,9 @@ onMounted(() => {
   // Inicializar hipoacusia bilateral combinada
   formDataAudiometria.hipoacusiaBilateralCombinada = formDataAudiometria.hipoacusiaBilateralCombinada || 0;
   
+  // Sincronizar valores locales con formData
+  sincronizarValoresLocales();
+  
   // Calcular hipoacusia bilateral combinada si ya existen ambos porcentajes
   calcularHipoacusiaBilateralCombinada();
 });
@@ -284,11 +287,79 @@ const calcularHipoacusiaBilateralCombinada = () => {
   
   formDataAudiometria.hipoacusiaBilateralCombinada = Math.round(hipoacusiaBilateral * 1000) / 1000;
 };
+
+// Función para sincronizar valores locales con formData
+const sincronizarValoresLocales = () => {
+  oidoIzquierdo125.value = formDataAudiometria.oidoIzquierdo125 || 0;
+  oidoIzquierdo250.value = formDataAudiometria.oidoIzquierdo250 || 0;
+  oidoIzquierdo500.value = formDataAudiometria.oidoIzquierdo500 || 0;
+  oidoIzquierdo1000.value = formDataAudiometria.oidoIzquierdo1000 || 0;
+  oidoIzquierdo2000.value = formDataAudiometria.oidoIzquierdo2000 || 0;
+  oidoIzquierdo3000.value = formDataAudiometria.oidoIzquierdo3000 || 0;
+  oidoIzquierdo4000.value = formDataAudiometria.oidoIzquierdo4000 || 0;
+  oidoIzquierdo6000.value = formDataAudiometria.oidoIzquierdo6000 || 0;
+  oidoIzquierdo8000.value = formDataAudiometria.oidoIzquierdo8000 || 0;
+};
+
+// Watchers para sincronizar desde formData hacia valores locales
+watch(() => formDataAudiometria.oidoIzquierdo125, (newValue) => {
+  if (newValue !== oidoIzquierdo125.value) {
+    oidoIzquierdo125.value = newValue || 0;
+  }
+});
+
+watch(() => formDataAudiometria.oidoIzquierdo250, (newValue) => {
+  if (newValue !== oidoIzquierdo250.value) {
+    oidoIzquierdo250.value = newValue || 0;
+  }
+});
+
+watch(() => formDataAudiometria.oidoIzquierdo500, (newValue) => {
+  if (newValue !== oidoIzquierdo500.value) {
+    oidoIzquierdo500.value = newValue || 0;
+  }
+});
+
+watch(() => formDataAudiometria.oidoIzquierdo1000, (newValue) => {
+  if (newValue !== oidoIzquierdo1000.value) {
+    oidoIzquierdo1000.value = newValue || 0;
+  }
+});
+
+watch(() => formDataAudiometria.oidoIzquierdo2000, (newValue) => {
+  if (newValue !== oidoIzquierdo2000.value) {
+    oidoIzquierdo2000.value = newValue || 0;
+  }
+});
+
+watch(() => formDataAudiometria.oidoIzquierdo3000, (newValue) => {
+  if (newValue !== oidoIzquierdo3000.value) {
+    oidoIzquierdo3000.value = newValue || 0;
+  }
+});
+
+watch(() => formDataAudiometria.oidoIzquierdo4000, (newValue) => {
+  if (newValue !== oidoIzquierdo4000.value) {
+    oidoIzquierdo4000.value = newValue || 0;
+  }
+});
+
+watch(() => formDataAudiometria.oidoIzquierdo6000, (newValue) => {
+  if (newValue !== oidoIzquierdo6000.value) {
+    oidoIzquierdo6000.value = newValue || 0;
+  }
+});
+
+watch(() => formDataAudiometria.oidoIzquierdo8000, (newValue) => {
+  if (newValue !== oidoIzquierdo8000.value) {
+    oidoIzquierdo8000.value = newValue || 0;
+  }
+});
 </script>
 
 <template>
   <div>
-    <h1 class="mb-4 text-gray-800 leading-5"><span class="text-2xl font-bold">OÍDO IZQUIERDO</span> - Valores Audiométricos</h1>
+    <h1 class="mb-4 text-sm text-gray-800 leading-5"><span class="text-xl font-bold">OÍDO IZQUIERDO</span> - Valores Audiométricos</h1>
     
     <div class="mb-4">
       <p class="font-medium mb-3 text-gray-700 leading-5">
