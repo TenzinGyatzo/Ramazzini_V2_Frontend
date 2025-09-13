@@ -50,6 +50,9 @@ const documentTypes = computed(() => {
     else if (route.includes('Examen Vista')) {
       types.examenesVista = (types.examenesVista || 0) + 1;
     }
+    else if (route.includes('Audiometria')) {
+      types.audiometrias = (types.audiometrias || 0) + 1;
+    }
     else if (route.includes('Antidoping')) {
       types.antidopings = (types.antidopings || 0) + 1;
     }
@@ -61,7 +64,7 @@ const documentTypes = computed(() => {
     }
     // Si la ruta no contiene ninguno de los tipos específicos pero tiene extensión, es un documento externo
     else if (!route.includes('Aptitud') && !route.includes('Historia Clinica') && !route.includes('Exploracion Fisica') && 
-             !route.includes('Examen Vista') && !route.includes('Antidoping') && !route.includes('Certificado') && 
+             !route.includes('Examen Vista') && !route.includes('Audiometria') && !route.includes('Antidoping') && !route.includes('Certificado') && 
              !route.includes('Nota Medica') && (route.includes('.pdf') || route.includes('.png') || route.includes('.jpg') || 
              route.includes('.jpeg') || route.includes('.doc') || route.includes('.docx'))) {
       types.documentosExternos = (types.documentosExternos || 0) + 1;
@@ -139,6 +142,10 @@ const documentTypes = computed(() => {
                       <div v-if="documentTypes.examenesVista" class="flex items-center space-x-2">
                         <i class="fas fa-eye text-yellow-600"></i>
                         <span>{{ documentTypes.examenesVista }} Examen{{ documentTypes.examenesVista !== 1 ? 'es' : '' }} Vista</span>
+                      </div>
+                      <div v-if="documentTypes.audiometrias" class="flex items-center space-x-2">
+                        <i class="fas fa-volume-up text-purple-600"></i>
+                        <span>{{ documentTypes.audiometrias }} Audiometría{{ documentTypes.audiometrias !== 1 ? 's' : '' }}</span>
                       </div>
                       <div v-if="documentTypes.antidopings" class="flex items-center space-x-2">
                         <i class="fas fa-flask text-red-600"></i>

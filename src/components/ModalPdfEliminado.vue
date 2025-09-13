@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import axios from 'axios';
 import { inject, ref, onMounted, onUnmounted } from 'vue';
+import DocumentosAPI from '@/api/DocumentosAPI';
+import { exportarGraficaAltaResolucion } from '@/helpers/exportChartImage';
 
 const toast: any = inject('toast');
 
@@ -48,12 +50,219 @@ const esperarQuePDFEsteDisponible = async (url: string, maxIntentos = 10, interv
   return false; // No se pudo obtener tras varios intentos
 };
 
+// Función para generar la gráfica de audiometría desde los datos del documento
+const generarGraficaAudiometria = async (datosAudiometria: any): Promise<string> => {
+  const frecuencias = [125, 250, 500, 1000, 2000, 3000, 4000, 6000, 8000];
+  
+  // Datos del oído derecho
+  const oidoDerecho = [
+    datosAudiometria.oidoDerecho125,
+    datosAudiometria.oidoDerecho250,
+    datosAudiometria.oidoDerecho500,
+    datosAudiometria.oidoDerecho1000,
+    datosAudiometria.oidoDerecho2000,
+    datosAudiometria.oidoDerecho3000,
+    datosAudiometria.oidoDerecho4000,
+    datosAudiometria.oidoDerecho6000,
+    datosAudiometria.oidoDerecho8000
+  ].map(valor => valor !== null && valor !== undefined ? Number(valor) : null);
+
+  // Datos del oído izquierdo
+  const oidoIzquierdo = [
+    datosAudiometria.oidoIzquierdo125,
+    datosAudiometria.oidoIzquierdo250,
+    datosAudiometria.oidoIzquierdo500,
+    datosAudiometria.oidoIzquierdo1000,
+    datosAudiometria.oidoIzquierdo2000,
+    datosAudiometria.oidoIzquierdo3000,
+    datosAudiometria.oidoIzquierdo4000,
+    datosAudiometria.oidoIzquierdo6000,
+    datosAudiometria.oidoIzquierdo8000
+  ].map(valor => valor !== null && valor !== undefined ? Number(valor) : null);
+
+  const chartConfig = {
+    type: 'line',
+    data: {
+      labels: frecuencias.map(f => `${f} Hz`),
+      datasets: [
+        {
+          label: 'Oído Derecho',
+          data: oidoDerecho,
+          borderColor: 'rgba(239, 68, 68, 0.8)', // Rojo con transparencia
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          tension: 0,
+          pointBackgroundColor: 'transparent',
+          pointBorderColor: 'rgba(239, 68, 68, 0.8)',
+          pointBorderWidth: 1.5,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+          spanGaps: false
+        },
+        {
+          label: 'Oído Izquierdo',
+          data: oidoIzquierdo,
+          borderColor: '#3B82F6', // Azul sólido
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          tension: 0,
+          pointBackgroundColor: '#3B82F6',
+          pointBorderColor: '#3B82F6',
+          pointBorderWidth: 1.5,
+          pointStyle: 'crossRot',
+          pointRadius: 8,
+          pointHoverRadius: 10,
+          spanGaps: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        intersect: false,
+        mode: 'index'
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            usePointStyle: true,
+            padding: 10,
+            pointStyleWidth: 17,
+            font: {
+              size: 12,
+              weight: '500'
+            }
+          }
+        },
+        tooltip: {
+          enabled: true,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          titleColor: '#ffffff',
+          bodyColor: '#ffffff',
+          borderColor: '#374151',
+          borderWidth: 1,
+          callbacks: {
+            title: (context: any) => {
+              return `Frecuencia: ${context[0].label}`;
+            },
+            label: (context: any) => {
+              const valor = context.raw;
+              return `${context.dataset.label}: ${valor !== null ? valor + ' dB' : 'Sin medición'}`;
+            }
+          }
+        },
+        datalabels: {
+          display: false
+        }
+      },
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Frecuencia (Hz)',
+            font: {
+              size: 12,
+              weight: '600'
+            },
+            color: '#374151'
+          },
+          grid: {
+            display: true,
+            color: 'rgba(0, 0, 0, 0.2)',
+            drawTicks: false,
+            lineWidth: 1
+          },
+          border: {
+            display: true,
+            color: '#374151',
+            width: 1.2
+          },
+          ticks: {
+            color: '#374151',
+            font: {
+              size: 11,
+              weight: '500'
+            },
+            padding: 6
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Umbral Auditivo (dB)',
+            font: {
+              size: 12,
+              weight: '600'
+            },
+            color: '#374151'
+          },
+          grid: {
+            display: true,
+            color: 'rgba(0, 0, 0, 0.2)',
+            drawTicks: false,
+            lineWidth: 1
+          },
+          border: {
+            display: true,
+            color: '#374151',
+            width: 1.2
+          },
+          ticks: {
+            color: '#374151',
+            font: {
+              size: 11,
+              weight: '500'
+            },
+            padding: 6,
+            stepSize: 10
+          },
+          min: -10,
+          max: 120
+        }
+      },
+      elements: {
+        point: {
+          radius: 6,
+          hoverRadius: 8
+        },
+        line: {
+          borderWidth: 2
+        }
+      }
+    }
+  };
+
+  return exportarGraficaAltaResolucion(chartConfig, 1200, 400);
+};
+
 const regenerar = async () => {
   try {
     isLoading.value = true;
 
     const apiEndpoint = `${import.meta.env.VITE_API_URL}/informes/${props.tipo}/${props.empresaId}/${props.trabajadorId}/${props.documentoId}/${props.userId}`;
-    await axios.get(apiEndpoint); // Generar PDF
+    
+    // Si es audiometría, obtener los datos del documento y generar la gráfica
+    if (props.tipo === 'audiometria') {
+      try {
+        // Obtener los datos del documento de audiometría
+        const response = await DocumentosAPI.getDocumentById('audiometria', props.trabajadorId, props.documentoId);
+        const datosAudiometria = response.data;
+        
+        // Generar la gráfica desde los datos
+        const graficaBase64 = await generarGraficaAudiometria(datosAudiometria);
+        
+        // Enviar la gráfica al backend usando POST
+        await axios.post(apiEndpoint, { grafica: graficaBase64 });
+      } catch (error) {
+        console.error('Error al obtener datos de audiometría:', error);
+        // Si falla, intentar sin gráfica
+        await axios.get(apiEndpoint);
+      }
+    } else {
+      // Para otros tipos de documento, usar GET normal
+      await axios.get(apiEndpoint);
+    }
 
     const { ruta, nombre } = props.getPdfMetadata();
     const rutaCompleta = `${ruta}/${nombre}`.replace(/\/+/g, '/');
