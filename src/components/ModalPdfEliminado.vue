@@ -375,7 +375,7 @@ button:focus {
         <div class="text-center mb-8">
           <p class="text-gray-600 text-lg leading-relaxed mb-4">
             El documento fue <span class="font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">eliminado automáticamente</span> tras 
-            <span class="font-medium text-emerald-600">2 meses</span> como parte de nuestro sistema de limpieza y optimización.
+            <span class="font-medium text-emerald-600">1 mes</span> como parte de nuestro sistema de limpieza y optimización.
           </p>
           <div class="flex items-center justify-center gap-2 text-sm text-gray-500 mb-6">
             <i class="fa-solid fa-info-circle text-blue-500"></i>
