@@ -572,6 +572,7 @@ const insertarQuick = (texto) => {
         class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 h-48"
         v-model="interpretacionAudiometrica"
         required
+        data-skip-validation
       ></textarea>
     </div>
 

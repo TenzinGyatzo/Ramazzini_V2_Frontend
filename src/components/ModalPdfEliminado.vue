@@ -233,7 +233,7 @@ const generarGraficaAudiometria = async (datosAudiometria: any): Promise<string>
     }
   };
 
-  return exportarGraficaAltaResolucion(chartConfig, 1200, 400);
+  return exportarGraficaAltaResolucion(chartConfig, 1140, 380);
 };
 
 const regenerar = async () => {

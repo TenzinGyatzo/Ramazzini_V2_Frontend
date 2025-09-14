@@ -229,7 +229,7 @@ const generarYGuardarGrafica = async () => {
         options: graficaAudiometriaOptions.value
       };
       
-      const graficaBase64 = exportarGraficaAltaResolucion(chartConfig, 1200, 400);
+      const graficaBase64 = exportarGraficaAltaResolucion(chartConfig, 1140, 380);
       
       // Guardar la gráfica en el store
       formData.formDataAudiometria.graficaAudiometria = graficaBase64;
