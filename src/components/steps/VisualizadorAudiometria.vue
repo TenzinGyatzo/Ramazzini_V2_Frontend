@@ -507,7 +507,7 @@ defineExpose({
       :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }"
       @click="goToStep(6)"
     >
-      <p class="text-justify font-medium">DIAGNÓSTICO: <span class="font-semibold text-lg text-gray-900">{{ formDataAudiometria.diagnosticoAudiometria }}</span></p>
+      <p class="text-justify font-medium">DIAGNÓSTICO: <span class="font-semibold text-lg text-gray-900">{{ formDataAudiometria.diagnosticoAudiometria.toUpperCase() }} HBC DE {{ formDataAudiometria.hipoacusiaBilateralCombinada }}%</span></p>
     </div>
     <div v-else 
       class="w-full text-center cursor-pointer text-gray-500 italic" 

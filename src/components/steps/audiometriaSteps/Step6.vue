@@ -23,6 +23,8 @@ watch(diagnosticoAudiometria, (newValue) => {
   formDataAudiometria.diagnosticoAudiometria = newValue ?? '';
 });
 
+// === SISTEMA AUTOMÁTICO (COMENTADO TEMPORALMENTE) ===
+/*
 // Generar el texto dinámico basado en la información
 const diagnosticoAutomatico = computed(() => {
   const {
@@ -164,7 +166,7 @@ const diagnosticoAutomatico = computed(() => {
       return `SIN CLASIFICACIÓN ${lado.toUpperCase()} VALORABLE (FRECUENCIAS INCOMPLETAS).`;
     }
 
-    // Override: si PTA “normal” pero graves altos, no declarar normal
+    // Override: si PTA "normal" pero graves altos, no declarar normal
     if (PTAstd <= 20 && hasHighLF(air) && PTAlf !== null) {
       const { tipo } = determinarTipoSoloAerea(air);
       return `HIPOACUSIA ${tipo.toUpperCase()} ${lado.toUpperCase()} ${gradoOMS(PTAlf).toUpperCase()}.`;
@@ -215,6 +217,123 @@ const diagnosticoAutomatico = computed(() => {
 
   return texto;
 });
+*/
+
+// === NUEVO SISTEMA DE CONSTRUCCIÓN DE DIAGNÓSTICO ===
+const openSections = ref({
+  constructor: false,
+  neurosensorial: false,
+  conductiva: false,
+  mixta: false
+});
+
+const toggle = (section) => { 
+  openSections.value[section] = !openSections.value[section]; 
+};
+const isOpen = (section) => !!openSections.value[section];
+
+// Estado del constructor
+const constructorDiagnostico = ref({
+  tipo: '', // 'neurosensorial', 'conductiva', 'mixta'
+  lateralidad: '', // 'unilateral', 'bilateral'
+  severidad: '' // 'leve', 'moderada', 'severa', 'profunda'
+});
+
+// Opciones del constructor
+const TIPOS_HIPOACUSIA = [
+  { value: 'neurosensorial', label: 'Neurosensorial' },
+  { value: 'conductiva', label: 'Conductiva' },
+  { value: 'mixta', label: 'Mixta' }
+];
+
+const LATERALIDAD = [
+  { value: 'unilateral', label: 'Unilateral' },
+  { value: 'bilateral', label: 'Bilateral' }
+];
+
+const SEVERIDAD = [
+  { value: 'leve.', label: 'Leve' },
+  { value: 'moderada.', label: 'Moderada' },
+  { value: 'severa.', label: 'Severa' },
+  { value: 'profunda.', label: 'Profunda' }
+];
+
+// Generar diagnóstico principal
+const generarDiagnosticoPrincipal = () => {
+  const { tipo, lateralidad, severidad } = constructorDiagnostico.value;
+  
+  if (!tipo || !lateralidad || !severidad) {
+    return '';
+  }
+  
+  const tipoTexto = tipo.toLowerCase();
+  const lateralidadTexto = lateralidad === 'unilateral' ? 'unilateral' : 'bilateral';
+  const severidadTexto = severidad.charAt(0).toUpperCase() + severidad.slice(1);
+  
+  return `Hipoacusia ${tipoTexto} ${lateralidadTexto} crónica ${severidadTexto.toLowerCase()}`;
+};
+
+const insertarDiagnosticoPrincipal = () => {
+  const diagnostico = generarDiagnosticoPrincipal();
+  if (diagnostico) {
+    diagnosticoAudiometria.value = diagnostico;
+  }
+};
+
+// === QUICK INSERTS PARA "COMPATIBLE CON" ===
+const opcionesCompatibleCon = computed(() => [
+  // Neurosensorial
+  {
+    categoria: 'neurosensorial',
+    titulo: 'Neurosensorial',
+    opciones: [
+      'Cortipatía bilateral crónica por exposición a ruido.',
+      'Proceso inflamatorio crónico de oído medio predominante en oído derecho.',
+      'Proceso inflamatorio crónico de oído medio predominante en oído izquierdo.',
+      'Proceso inflamatorio agudo de oído derecho + oído izquierdo con audición normal.',
+      'Proceso inflamatorio agudo de oído izquierdo + oído derecho con audición normal.',
+      'Uso de medicamentos ototóxicos.',
+      'Presbiacusia (envejecimiento).'
+    ]
+  },
+  // Conductiva
+  {
+    categoria: 'conductiva',
+    titulo: 'Conductiva',
+    opciones: [
+      'Acumulación de cerumen (tapón de cera).',
+      'Infecciones del oído medio aguda o crónica (otitis media).',
+      'Perforación del tímpano derecho.',
+      'Perforación del tímpano izquierdo.',
+      'Otitis media con derrame (líquido en el oído).',
+      'Otosclerosis (osificación anormal de los huesecillos).'
+    ]
+  },
+  // Mixta
+  {
+    categoria: 'mixta',
+    titulo: 'Mixta',
+    opciones: [
+      'Proceso inflamatorio agudo en oído izquierdo.',
+      'Proceso inflamatorio agudo en oído derecho.',
+      'Proceso inflamatorio crónico en oído izquierdo.',
+      'Proceso inflamatorio crónico en oído derecho.',
+      'Presbiacusia (envejecimiento).',
+      'Enfermedad de Meniere.',
+      'Traumatismo craneoencefálico.',
+      'Otosclerosis (osificación anormal de los huesecillos).',
+      'Trauma acústico (Explosión).'
+    ]
+  }
+]);
+
+const insertarCompatibleCon = (texto) => {
+  const textoActual = diagnosticoAudiometria.value.trim();
+  const nuevoTexto = textoActual 
+    ? `${textoActual} Compatible con ${texto}`
+    : `compatible con ${texto}`;
+  diagnosticoAudiometria.value = nuevoTexto;
+};
 
 const insertarDiagnostico = (texto) => {
   // Inserta reemplazando el contenido actual
@@ -226,21 +345,184 @@ const insertarDiagnostico = (texto) => {
 
 
 <template>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Audiometría</h1>
+    <h1 class="font-bold mb-4 text-gray-800 leading-5">Diagnóstico Audiométrico</h1>
     
     <div class="mb-4">
-        <h2 class="text-lg font-semibold mb-2 text-gray-800">DIAGNÓSTICO</h2>
+        <h2 class="text-lg font-semibold mb-2 text-gray-800">Diagnóstico:</h2>
 
         <!-- Textarea (source of truth local) -->
         <div class="font-light mb-4">
             <textarea
-                class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 h-48"
+                class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 h-32"
                 v-model="diagnosticoAudiometria"
+                placeholder="Escriba el diagnóstico aquí o use las herramientas de abajo..."
                 required
+                data-skip-validation
             ></textarea>
         </div>
 
-        <!-- === Diagnóstico Automático === -->
+        <!-- Quick Insert para audición normal -->
+        <div class="mb-6">
+            <div class="flex items-center gap-2 mb-4">
+                <p class="font-medium text-gray-800 leading-5">Diagnóstico normal:</p>
+            </div>
+            <div class="flex items-center justify-between border rounded-lg p-2 bg-white hover:shadow-sm transition-shadow">
+                <div class="flex-1">
+                    <p class="text-sm text-gray-800">Audición normal bilateral.</p>
+                </div>
+                <button
+                    class="ml-2 px-2 py-1 rounded text-xs text-emerald-700 border border-emerald-600 hover:bg-emerald-50 transition-colors"
+                    @click="diagnosticoAudiometria = 'Audición normal bilateral.'"
+                    title="Insertar diagnóstico"
+                >
+                    Insertar
+                </button>
+            </div>
+        </div>
+
+        <!-- Constructor de diagnóstico de hipoacusia -->
+        <div class="mb-6">
+            <div class="border rounded-lg">
+                <button
+                    class="w-full flex items-center justify-between p-3 text-left hover:bg-emerald-50 transition-colors"
+                    :class="isOpen('constructor') ? 'bg-emerald-50' : 'bg-white'"
+                    @click="toggle('constructor')"
+                >
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
+                        <span class="font-medium text-gray-800">Constructor de hipoacusia <br><span class="text-xs font-normal text-gray-500">(Seleccione tipo, lateralidad y severidad)</span></span>
+                        
+                    </div>
+                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isOpen('constructor') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <transition
+                    enter-active-class="transition-all duration-200 ease-out"
+                    enter-from-class="opacity-0 max-h-0"
+                    enter-to-class="opacity-100 max-h-96"
+                    leave-active-class="transition-all duration-200 ease-in"
+                    leave-from-class="opacity-100 max-h-96"
+                    leave-to-class="opacity-0 max-h-0"
+                >
+                    <div v-if="isOpen('constructor')" class="border-t bg-emerald-50 p-4 space-y-4">
+                        <!-- Tipo de hipoacusia -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de hipoacusia:</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <label v-for="op in TIPOS_HIPOACUSIA" :key="op.value" class="flex items-center gap-2 text-sm p-2 border rounded-lg hover:bg-emerald-100 cursor-pointer">
+                                    <input type="radio" class="text-emerald-600 focus:ring-emerald-500"
+                                           v-model="constructorDiagnostico.tipo" :value="op.value" />
+                                    <span>{{ op.label }}</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Lateralidad -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Lateralidad:</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <label v-for="op in LATERALIDAD" :key="op.value" class="flex items-center gap-2 text-sm p-2 border rounded-lg hover:bg-emerald-100 cursor-pointer">
+                                    <input type="radio" class="text-emerald-600 focus:ring-emerald-500"
+                                           v-model="constructorDiagnostico.lateralidad" :value="op.value" />
+                                    <span>{{ op.label }}</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Severidad -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Severidad:</label>
+                            <div class="grid grid-cols-2 md:grid-cols-2 gap-2">
+                                <label v-for="op in SEVERIDAD" :key="op.value" class="flex items-center gap-2 text-sm p-2 border rounded-lg hover:bg-emerald-100 cursor-pointer">
+                                    <input type="radio" class="text-emerald-600 focus:ring-emerald-500"
+                                           v-model="constructorDiagnostico.severidad" :value="op.value" />
+                                    <span>{{ op.label }}</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Vista previa y botón insertar -->
+                        <div class="mt-4 p-3 border rounded-lg bg-white">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700">Vista previa:</span>
+                                <button
+                                    type="button"
+                                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium"
+                                    @click="insertarDiagnosticoPrincipal"
+                                    :disabled="!constructorDiagnostico.tipo.toLowerCase() || !constructorDiagnostico.lateralidad || !constructorDiagnostico.severidad"
+                                >
+                                    Insertar diagnóstico
+                                </button>
+                            </div>
+                            <p class="text-sm text-gray-600 italic">
+                                {{ generarDiagnosticoPrincipal() || 'Seleccione todas las opciones para ver la vista previa' }}
+                            </p>
+                        </div>
+                    </div>
+                </transition>
+            </div>
+        </div>
+
+        <!-- Quick Inserts para "Compatible con" -->
+        <div class="mb-6">
+            <div class="flex items-center gap-2 mb-4">
+                <p class="font-medium text-gray-800 leading-5">Opciones "Compatible con": <br><span class="text-xs font-normal text-gray-500">(Se agregan al diagnóstico existente)</span></p>
+            </div>
+
+            <div class="space-y-2">
+                <div v-for="categoria in opcionesCompatibleCon" :key="categoria.categoria" class="border rounded-lg">
+                    <button
+                        class="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 transition-colors"
+                        :class="isOpen(categoria.categoria) ? 'bg-gray-50' : 'bg-white'"
+                        @click="toggle(categoria.categoria)"
+                    >
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full" :class="{
+                                'bg-blue-400': categoria.categoria === 'Neurosensorial',
+                                'bg-orange-400': categoria.categoria === 'Conductiva',
+                                'bg-purple-400': categoria.categoria === 'Mixta'
+                            }"></div>
+                            <span class="font-medium text-gray-800">{{ categoria.titulo }}</span>
+                            <span class="text-xs text-gray-500">({{ categoria.opciones.length }} opciones)</span>
+                        </div>
+                        <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': isOpen(categoria.categoria) }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <transition
+                        enter-active-class="transition-all duration-200 ease-out"
+                        enter-from-class="opacity-0 max-h-0"
+                        enter-to-class="opacity-100 max-h-96"
+                        leave-active-class="transition-all duration-200 ease-in"
+                        leave-from-class="opacity-100 max-h-96"
+                        leave-to-class="opacity-0 max-h-0"
+                    >
+                        <div v-if="isOpen(categoria.categoria)" class="border-t bg-gray-50 p-3 space-y-2">
+                            <div
+                                v-for="opcion in categoria.opciones"
+                                :key="opcion"
+                                class="flex items-center justify-between border rounded-lg p-2 bg-white hover:shadow-sm transition-shadow"
+                            >
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-800">{{ opcion }}</p>
+                                </div>
+                                <button
+                                    class="ml-2 px-2 py-1 rounded text-xs text-emerald-700 border border-emerald-600 hover:bg-emerald-50 transition-colors"
+                                    @click="insertarCompatibleCon(opcion)"
+                                    title="Agregar al diagnóstico"
+                                >
+                                    Agregar
+                                </button>
+                            </div>
+                        </div>
+                    </transition>
+                </div>
+            </div>
+        </div>
+
+        <!-- === SISTEMA AUTOMÁTICO (COMENTADO TEMPORALMENTE) === -->
+        <!--
         <div class="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
             <div class="flex items-center justify-between mb-2">
                 <h3 class="font-semibold text-emerald-800">Diagnóstico Automático</h3>
@@ -254,5 +536,6 @@ const insertarDiagnostico = (texto) => {
             </div>
             <p class="text-sm text-emerald-700 italic">{{ diagnosticoAutomatico }}</p>
         </div>
+        -->
     </div>
 </template>
