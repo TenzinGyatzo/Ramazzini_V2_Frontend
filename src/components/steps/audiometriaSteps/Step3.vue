@@ -367,7 +367,7 @@ watch(() => formDataAudiometria.oidoIzquierdo8000, (newValue) => {
       </p>
       
       <!-- Grid de valores audiométricos -->
-      <div class="grid grid-cols-3 gap-2">
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
         <div 
           v-for="frecuencia in frecuencias" 
           :key="frecuencia.value"
