@@ -27,6 +27,9 @@ const nearestExamenVista = ref(null);
 const antidopings = ref([]);
 const nearestAntidoping = ref(null);
 
+const audiometrias = ref([]);
+const nearestAudiometria = ref(null);
+
 onMounted(async () => {
   try {
     const response = await DocumentosAPI.getHistoriasClinicas(trabajadores.currentTrabajadorId);
@@ -52,6 +55,12 @@ onMounted(async () => {
   } catch (error) {
     console.error('Error al obtener los exámenes:', error);
   }
+  try {
+    const response = await DocumentosAPI.getAudiometrias(trabajadores.currentTrabajadorId);
+    audiometrias.value = response.data;
+  } catch (error) {
+    console.error('Error al obtener los exámenes:', error);
+  }
 
     // Llamar la función de cálculo inicial si ya existe fechaAptitudPuesto
     if (formData.formDataAptitud.fechaAptitudPuesto) {
@@ -64,6 +73,7 @@ const calculateNearestDocuments = (fechaAptitudPuesto) => {
   nearestExamenVista.value = findNearestDocument(examenesVista.value, fechaAptitudPuesto, 'fechaExamenVista');
   nearestHistoriaClinica.value = findNearestDocument(historiasClinicas.value, fechaAptitudPuesto, 'fechaHistoriaClinica');
   nearestExploracionFisica.value = findNearestDocument(exploracionesFisicas.value, fechaAptitudPuesto, 'fechaExploracionFisica');
+  nearestAudiometria.value = findNearestDocument(audiometrias.value, fechaAptitudPuesto, 'fechaAudiometria');
   nearestAntidoping.value = findNearestDocument(antidopings.value, fechaAptitudPuesto, 'fechaAntidoping');
 };
 
@@ -110,6 +120,19 @@ const examenVistaResumen = computed(() => {
     (nearestExamenVista.value.ojoDerechoLejanaConCorreccion === 0 || nearestExamenVista.value.ojoDerechoLejanaConCorreccion == null)
     ? `OI: 20/${nearestExamenVista.value.ojoIzquierdoLejanaSinCorreccion || '-'}, OD: 20/${nearestExamenVista.value.ojoDerechoLejanaSinCorreccion || '-'} - ${nearestExamenVista.value.sinCorreccionLejanaInterpretacion || '-'}, Ishihara: ${nearestExamenVista.value.porcentajeIshihara || '-'}% - ${nearestExamenVista.value.interpretacionIshihara || '-'}`
     : `OI: 20/${nearestExamenVista.value.ojoIzquierdoLejanaConCorreccion || '-'}, OD: 20/${nearestExamenVista.value.ojoDerechoLejanaConCorreccion || '-'} - ${nearestExamenVista.value.conCorreccionLejanaInterpretacion || '-'} Corregida, Ishihara: ${nearestExamenVista.value.porcentajeIshihara || '-'}% - ${nearestExamenVista.value.interpretacionIshihara || '-'}`;
+});
+
+const audiometriaResumen = computed(() => {
+  if (!nearestAudiometria.value) {
+    return 'No hay audiometrías disponibles';
+  }
+  
+  const diagnostico = nearestAudiometria.value.diagnosticoAudiometria || 'Sin diagnóstico';
+  const hipoacusia = nearestAudiometria.value.hipoacusiaBilateralCombinada !== undefined 
+    ? nearestAudiometria.value.hipoacusiaBilateralCombinada + '%' 
+    : 'No especificado';
+  
+  return `${diagnostico} HBC ${hipoacusia}`;
 });
 
 const antidopingResumen = computed(() => {
@@ -194,7 +217,7 @@ const antidopingResumen = computed(() => {
               NOMBRE
             </td>
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
-                              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
+              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
             </td>
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               NACIMIENTO
@@ -308,6 +331,13 @@ const antidopingResumen = computed(() => {
               convertirFechaISOaDDMMYYYY(nearestExamenVista.fechaExamenVista) : '-' }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestExamenVista ?
               examenVistaResumen : '-' }}</td>
+          </tr>
+          <tr v-if="nearestAudiometria" class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">AUDIOMETRÍA</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestAudiometria ?
+              convertirFechaISOaDDMMYYYY(nearestAudiometria.fechaAudiometria) : '-' }}</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestAudiometria ?
+              audiometriaResumen : '-' }}</td>
           </tr>
           <tr v-if="nearestAntidoping" class="odd:bg-white even:bg-gray-50">
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">ANTIDOPING</td>

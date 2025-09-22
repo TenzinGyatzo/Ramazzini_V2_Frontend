@@ -1,4 +1,5 @@
 import auth from '@/lib/axiosAuth'
+import proveedor from '@/lib/axiosProveedor'
 
 export default {
     // Obtener estadísticas de productividad para todos los usuarios de un proveedor
@@ -65,7 +66,7 @@ export default {
     // **API para reglas de puntaje**
     // Obtener reglas de puntaje del proveedor de salud
     async getReglasPuntaje(idProveedorSalud: string) {
-        return auth.get(`/proveedores-salud/reglas-puntaje/${idProveedorSalud}`);
+        return proveedor.get(`/reglas-puntaje/${idProveedorSalud}`);
     },
 
     // Actualizar reglas de puntaje del proveedor de salud
@@ -79,6 +80,6 @@ export default {
         notas: number;
         externos: number;
     }) {
-        return auth.patch(`/proveedores-salud/reglas-puntaje/${idProveedorSalud}`, reglasPuntaje);
+        return proveedor.patch(`/reglas-puntaje/${idProveedorSalud}`, reglasPuntaje);
     }
 };
