@@ -220,6 +220,37 @@ const mesActual = computed(() => {
   return mes.charAt(0).toUpperCase() + mes.slice(1);
 });
 
+// Función para formatear el país mostrando código y nombre
+const formatearPais = (codigoPais) => {
+  if (!codigoPais) return 'No disponible';
+  
+  const countries = [
+    { code: 'MX', name: 'México' },
+    { code: 'AR', name: 'Argentina' },
+    { code: 'BR', name: 'Brasil' },
+    { code: 'CL', name: 'Chile' },
+    { code: 'CO', name: 'Colombia' },
+    { code: 'PE', name: 'Perú' },
+    { code: 'VE', name: 'Venezuela' },
+    { code: 'UY', name: 'Uruguay' },
+    { code: 'PY', name: 'Paraguay' },
+    { code: 'BO', name: 'Bolivia' },
+    { code: 'EC', name: 'Ecuador' },
+    { code: 'GT', name: 'Guatemala' },
+    { code: 'CR', name: 'Costa Rica' },
+    { code: 'PA', name: 'Panamá' },
+    { code: 'HN', name: 'Honduras' },
+    { code: 'NI', name: 'Nicaragua' },
+    { code: 'SV', name: 'El Salvador' },
+    { code: 'CU', name: 'Cuba' },
+    { code: 'DO', name: 'República Dominicana' },
+    { code: 'PR', name: 'Puerto Rico' }
+  ];
+  
+  const country = countries.find(c => c.code === codigoPais);
+  return country ? `${country.name}` : codigoPais;
+};
+
 </script>
 
 <template>
@@ -373,7 +404,7 @@ const mesActual = computed(() => {
       <div class="bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
         <h3 class="text-2xl font-semibold text-gray-800 mb-4">Mi Cuenta</h3>
         <p class="text-gray-600"><strong>👤 Nombre:</strong> {{ proveedorSalud.nombre || 'No disponible' }}</p>
-        <p class="text-gray-600"><strong>🆔 RFC:</strong> {{ proveedorSalud.RFC || 'No disponible' }}</p>
+        <p class="text-gray-600"><strong>🌍 País:</strong> {{ formatearPais(proveedorSalud.pais) }}</p>
         <p class="text-gray-600"><strong>📧 Correo:</strong> {{ proveedorSalud.correoElectronico || 'No disponible' }}</p>
         <p class="text-gray-600"><strong>👥 Historias Clínicas {{ mesActual }}:</strong> {{ `${proveedorSalud.maxHistoriasPermitidasAlMes - historiasDelMes} disponibles` || 'No disponible' }}</p>
         <!-- <p class="text-gray-600"><strong>👥 Usuarios:</strong> {{ `${proveedorSalud.maxUsuariosPermitidos} disponibles` || 'No disponible' }}</p>

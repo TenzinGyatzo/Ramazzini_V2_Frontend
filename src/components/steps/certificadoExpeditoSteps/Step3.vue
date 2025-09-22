@@ -17,13 +17,25 @@ const temperaturaCorporal = ref(36.5);
 const categoriaTemperaturaCorporal = ref('Normal');
 
 onMounted(() => {
-  if (documentos.currentDocument) {
+  // Prioridad: formData > documentos.currentDocument > valores por defecto
+  if (formDataCertificadoExpedito.tensionArterialSistolica !== undefined) {
+    tensionArterialSistolica.value = formDataCertificadoExpedito.tensionArterialSistolica;
+    tensionArterialDiastolica.value = formDataCertificadoExpedito.tensionArterialDiastolica;
+    categoriaTensionArterial.value = formDataCertificadoExpedito.categoriaTensionArterial;
+    frecuenciaCardiaca.value = formDataCertificadoExpedito.frecuenciaCardiaca;
+    categoriaFrecuenciaCardiaca.value = formDataCertificadoExpedito.categoriaFrecuenciaCardiaca;
+    frecuenciaRespiratoria.value = formDataCertificadoExpedito.frecuenciaRespiratoria;
+    categoriaFrecuenciaRespiratoria.value = formDataCertificadoExpedito.categoriaFrecuenciaRespiratoria;
+    temperaturaCorporal.value = formDataCertificadoExpedito.temperaturaCorporal;
+    categoriaTemperaturaCorporal.value = formDataCertificadoExpedito.categoriaTemperaturaCorporal;
+  } else if (documentos.currentDocument) {
     tensionArterialSistolica.value = documentos.currentDocument.tensionArterialSistolica;
     tensionArterialDiastolica.value = documentos.currentDocument.tensionArterialDiastolica;
     frecuenciaCardiaca.value = documentos.currentDocument.frecuenciaCardiaca;
     frecuenciaRespiratoria.value = documentos.currentDocument.frecuenciaRespiratoria;
     temperaturaCorporal.value = documentos.currentDocument.temperaturaCorporal;
   }
+  // Si no hay formData ni currentDocument, se mantienen los valores por defecto
 });
 
 onUnmounted(() => {

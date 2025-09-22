@@ -11,7 +11,7 @@ interface ProveedorSalud {
     _id: string;
     nombre: string;
     razonSocial: string;
-    RFC: string;
+    pais: string;
     logotipoEmpresa: {
         data: string;
         contentType: string;

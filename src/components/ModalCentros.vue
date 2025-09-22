@@ -11,13 +11,6 @@ const centrosTrabajo = useCentrosTrabajoStore();
 const { getCurrentUserId, ensureUserLoaded } = useCurrentUser();
 const emit = defineEmits(['closeModal']);
 
-const estadosDeMexico = [
-  "Aguascalientes", "Baja California", "Baja California Sur", "Campeche", "Chiapas",
-  "Chihuahua", "Coahuila", "Colima", "Durango", "Guanajuato", "Guerrero", "Hidalgo",
-  "Jalisco", "Estado de México", "Michoacán", "Morelos", "Nayarit", "Nuevo León",
-  "Oaxaca", "Puebla", "Querétaro", "Quintana Roo", "San Luis Potosí", "Sinaloa",
-  "Sonora", "Tabasco", "Tamaulipas", "Tlaxcala", "Veracruz", "Yucatán", "Zacatecas"
-];
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
@@ -89,26 +82,30 @@ const closeModal = () => {
         <!-- Contenido del modal -->
         <div v-else>
           <h1 class="text-3xl">{{ centrosTrabajo.currentCentroTrabajo._id ? 'Editar Entidad' : 'Registrar Entidad' }}</h1>
+          <p class="text-xs text-gray-500 mt-1 mb-3">Los campos con <span class="text-red-500 font-medium">*</span> son obligatorios</p>
           <hr class="mt-2 mb-3">
 
           <FormKit type="form" :actions="false" incomplete-message="Por favor complete todos los campos"
             @submit="handleSubmit">
-            <FormKit type="text" label="Nombre Entidad*" name="nombreCentro"
+            <FormKit type="text" name="nombreCentro"
               placeholder="Nombre del centro, área, departamento o proyecto" validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio' }"
-              :value="centrosTrabajo.currentCentroTrabajo?.nombreCentro || ''" />
+              :value="centrosTrabajo.currentCentroTrabajo?.nombreCentro || ''">
+              <template #label>
+                <span class="font-medium text-lg text-gray-700">Nombre Entidad<span class="text-red-500">*</span></span>
+              </template>
+            </FormKit>
             <FormKit type="text" label="Dirección" name="direccionCentro" placeholder="Calle, número y colonia"
               :value="centrosTrabajo.currentCentroTrabajo?.direccionCentro || ''" />
-            <FormKit type="text" label="Código Postal" name="codigoPostal" placeholder="5 dígitos"
+            <FormKit type="text" label="Código Postal" name="codigoPostal" placeholder="Ej. 81200, 44100, 01500"
             validation="postalCodeValidation" :validation-messages="{
-                  postalCodeValidation: 'El código postal debe tener 5 dígitos.',
+                  postalCodeValidation: 'El código postal debe tener entre 4 y 10 dígitos.',
                 }"
               :value="centrosTrabajo.currentCentroTrabajo?.codigoPostal || ''" />
-            <FormKit type="select" label="Estado" name="estado" placeholder="Seleccione un estado"
-              :options="estadosDeMexico" 
+            <FormKit type="text" label="Región/Provincia/Estado" name="estado" placeholder="Ej. Estado de México, Morelos, Chihuahua"
               :value="centrosTrabajo.currentCentroTrabajo?.estado || ''" />
 
-            <FormKit type="text" label="Municipio" name="municipio" placeholder="Ej. Ahome"
+            <FormKit type="text" label="Ciudad/Municipio" name="municipio" placeholder="Ej. Juárez, Léon, Cuernavaca"
               :value="centrosTrabajo.currentCentroTrabajo?.municipio || ''" />
 
             <FormKit type="hidden" name="idEmpresa" :value="empresas.currentEmpresaId" />

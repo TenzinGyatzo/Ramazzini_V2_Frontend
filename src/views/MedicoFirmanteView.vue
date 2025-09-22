@@ -1,9 +1,11 @@
 <script setup>
 import { ref, inject, watch, watchEffect, computed } from 'vue';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useRouter } from 'vue-router';
 
 const medicoFirmante = useMedicoFirmanteStore();
+const proveedorSaludStore = useProveedorSaludStore();
 const router = useRouter();
 
 const firmaPreview = ref(null);
@@ -233,22 +235,22 @@ const firmaSrc = computed(() => {
                                 placeholder='Selecciona "Dr." o "Dra."' :options="titulos"
                                 v-model="formularioMedicoFirmante.tituloProfesional" />
 
-                            <FormKit type="text" label="Número de Cédula Profesional" name="numeroCedulaProfesional"
-                                placeholder="Ej. 142988" validation="cedulaProfesionalValidation" v-model="formularioMedicoFirmante.numeroCedulaProfesional"
-                                :validation-messages="{ cedulaProfesionalValidation: 'El número de cédula profesional debe tener entre 6 y 8 dígitos.' }" />
+                            <FormKit type="text" label="Número de Registro/Cédula Profesional" name="numeroCedulaProfesional"
+                                placeholder="Ej. 142988, REG-123456, CRM 123456" validation="cedulaProfesionalValidation" v-model="formularioMedicoFirmante.numeroCedulaProfesional"
+                                :validation-messages="{ cedulaProfesionalValidation: 'El registro debe tener entre 3 y 20 caracteres (letras, números, guiones o espacios).' }" />
 
                             <FormKit type="select" label="Especialista en Medicina del Trabajo"
                                 name="especialistaSaludTrabajo" placeholder="¿Es especialista en Medicina del Trabajo"
                                 :options="siONo" v-model="formularioMedicoFirmante.especialistaSaludTrabajo" />
 
-                            <FormKit type="text" label="Cédula de Especialidad en Medicina del Trabajo"
-                                name="numeroCedulaEspecialista" placeholder="Ej. 3425572" validation="cedulaEspecialistaValidation"
+                            <FormKit type="text" label="Número de Registro/Cédula de Especialidad"
+                                name="numeroCedulaEspecialista" placeholder="Ej. 3425572, ESP-789012, RQE 456789" validation="cedulaEspecialistaValidation"
                                 :disabled="formularioMedicoFirmante.especialistaSaludTrabajo !== 'Si'"
                                 v-model="formularioMedicoFirmante.numeroCedulaEspecialista"
-                                :validation-messages="{ cedulaEspecialistaValidation: 'El número de cédula de especialidad debe tener entre 7 y 8 dígitos.' }" />
+                                :validation-messages="{ cedulaEspecialistaValidation: 'El registro de especialidad debe tener entre 3 y 20 caracteres (letras, números, guiones o espacios).' }" />
 
-                            <FormKit type="text" label="Credencial Adicional" name="nombreCredencialAdicional"
-                                placeholder="Ej. Certificado ante el Consejo Mexicano de Medicina del Trabajo"
+                            <FormKit type="text" label="Credencial/Certificación Adicional" name="nombreCredencialAdicional"
+                                placeholder="Ej. Certificado ante Consejo de Medicina del Trabajo, Certificación Internacional"
                                 v-model="formularioMedicoFirmante.nombreCredencialAdicional" />
 
                             <FormKit type="text" label="Número de Credencial Adicional" name="numeroCredencialAdicional"
@@ -328,14 +330,14 @@ const firmaSrc = computed(() => {
                                         </span><br v-if="piePaginaFirmante.nombre">
                                         
                                         <span v-if="piePaginaFirmante.numeroCedulaProfesional" class="font-light">
-                                            Cédula Profesional Médico Cirujano No. {{ piePaginaFirmante.numeroCedulaProfesional }}
+                                            {{ proveedorSaludStore.proveedorSalud.pais === 'MX' ? 'Cédula Profesional Médico Cirujano No.' : 'Registro Profesional No.' }} {{ piePaginaFirmante.numeroCedulaProfesional }}
                                         </span><br v-if="piePaginaFirmante.numeroCedulaProfesional">
                                         
                                         <span v-if="piePaginaFirmante.especialistaSaludTrabajo && !piePaginaFirmante.numeroCedulaEspecialista" class="font-light">
                                             Especialista en Medicina del Trabajo
                                         </span>
                                         <span v-else-if="piePaginaFirmante.numeroCedulaEspecialista" class="font-light">
-                                            Cédula Especialidad Med. del Trab. No. {{ piePaginaFirmante.numeroCedulaEspecialista }}
+                                            {{ proveedorSaludStore.proveedorSalud.pais === 'MX' ? 'Cédula Especialidad Med. del Trab. No.' : 'Registro de Especialidad No.' }} {{ piePaginaFirmante.numeroCedulaEspecialista }}
                                         </span><br v-if="piePaginaFirmante.especialistaSaludTrabajo">
                                         
                                         <span v-if="piePaginaFirmante.nombreCredencialAdicional" 

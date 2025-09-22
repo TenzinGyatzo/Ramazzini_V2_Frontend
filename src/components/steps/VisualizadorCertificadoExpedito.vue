@@ -85,9 +85,13 @@ function getGradoSaludFormateado(gradoSalud) {
     <!-- Certificado -->
      <div class="w-full mb-4">
       <p class="text-justify font-light">
-        {{ medicoFirmanteStore.medicoFirmante.tituloProfesional === 'Dra.' 
-          ? 'La suscrita Médica Cirujano, con cédula profesional número ' 
-          : 'El suscrito Médico Cirujano, con cédula profesional número ' }}
+        {{ proveedorSalud.pais === 'MX'
+          ? medicoFirmanteStore.medicoFirmante.tituloProfesional === 'Dra.'
+            ? 'La suscrita Médica Cirujano, con cédula profesional número '
+            : 'El suscrito Médico Cirujano, con cédula profesional número '
+          : medicoFirmanteStore.medicoFirmante.tituloProfesional === 'Dra.'
+            ? 'La suscrita Médica Cirujano, con registro profesional número '
+            : 'El suscrito Médico Cirujano, con registro profesional número ' }}
         <span class="font-medium">{{ medicoFirmanteStore.medicoFirmante.numeroCedulaProfesional }}</span>. 
 
         <template v-if="medicoFirmanteStore.medicoFirmante.especialistaSaludTrabajo === 'Si'">
@@ -102,7 +106,7 @@ function getGradoSaludFormateado(gradoSalud) {
         </span><span v-if="medicoFirmanteStore.medicoFirmante.especialistaSaludTrabajo === 'Si'">,</span><span v-else>. </span>
 
         <template v-if="medicoFirmanteStore.medicoFirmante.especialistaSaludTrabajo === 'Si'">
-          legalmente <span v-if="medicoFirmanteStore.medicoFirmante.tituloProfesional === 'Dr.'">autorizado</span> <span v-else>autorizada</span> por la Dirección General de Profesiones para ejercer la Especialidad en Medicina del Trabajo con cédula profesional número 
+          legalmente <span v-if="medicoFirmanteStore.medicoFirmante.tituloProfesional === 'Dr.'">autorizado</span> <span v-else>autorizada</span> {{ proveedorSalud.pais === 'MX' ? 'por la Dirección General de Profesiones ' : '' }}para ejercer la Especialidad en Medicina del Trabajo con {{ proveedorSalud.pais === 'MX' ? 'cédula profesional' : 'registro de especialidad' }} número 
           <span class="font-medium">{{ medicoFirmanteStore.medicoFirmante.numeroCedulaEspecialista }}</span>.
         </template>
 

@@ -197,14 +197,19 @@ const closeModal = () => {
         <!-- Contenido del modal -->
         <div v-else>
           <h1 class="text-3xl">{{ empresas.currentEmpresa._id ? 'Editar Empresa' : 'Registrar Empresa' }}</h1>
+          <p class="text-xs text-gray-500 mt-1 mb-3">Los campos con <span class="text-red-500 font-medium">*</span> son obligatorios</p>
           <hr class="mt-2 mb-3">
 
           <FormKit type="form" :actions="false" incomplete-message="Por favor complete todos los campos"
             @submit="handleSubmit">
-            <FormKit type="text" label="Nombre Comercial*" name="nombreComercial"
+            <FormKit type="text" name="nombreComercial"
               placeholder="Nombre comercial de la empresa" validation="required"
               :validation-messages="{ required: 'Este campo es obligatorio' }"
-              :value="empresas.currentEmpresa?.nombreComercial || ''" />
+              :value="empresas.currentEmpresa?.nombreComercial || ''">
+              <template #label>
+                <span class="font-medium text-lg text-gray-700">Nombre Comercial<span class="text-red-500">*</span></span>
+              </template>
+            </FormKit>
             <FormKit type="text" label="Razón Social" name="razonSocial" placeholder="Razón social de la empresa"
               :value="empresas.currentEmpresa?.razonSocial || ''" />
             <FormKit type="text" label="RFC" name="RFC" placeholder="RFC" validation="rfcValidation" :validation-messages="{
@@ -323,5 +328,10 @@ const closeModal = () => {
 
 .fade-slow-leave-active {
   transition-delay: 250ms;
+}
+
+/* Estilo para colorear asteriscos de campos obligatorios en FormKit */
+:deep(.formkit-label) {
+  color: #374151; /* Color base del texto del label */
 }
 </style>

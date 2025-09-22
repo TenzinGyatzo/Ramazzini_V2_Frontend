@@ -5,11 +5,13 @@ const rfcValidation = ({ value }) => {
   return rfcRegex.test(value.trim());
 };
 const postalCodeValidation = ({ value }) => {
-  const postalCodeRegex = /^[0-9]{5}$/;
+  // Validación flexible para códigos postales de 4 a 10 dígitos
+  const postalCodeRegex = /^[0-9]{4,10}$/;
   return postalCodeRegex.test(value.trim());
 };
 const phoneValidation = ({ value }) => {
-  const phoneRegex = /^[0-9]{10}$/;
+  // Validación flexible para números internacionales (4-15 dígitos)
+  const phoneRegex = /^\+?[1-9]\d{3,14}$/;
   return phoneRegex.test(value.trim());
 };
 const mailValidation = ({ value }) => {
@@ -21,12 +23,12 @@ const urlValidation = ({ value }) => {
   return urlRegex.test(value.trim());
 };
 const cedulaProfesionalValidation = ({ value }) => {
-  const cedulaNumberRegex = /^[0-9]{6,8}$/;
-  return cedulaNumberRegex.test(value.trim());
+  const registroRegex = /^[A-Za-z0-9\- ]{3,20}$/;
+  return registroRegex.test(value.trim());
 };
 const cedulaEspecialistaValidation = ({ value }) => {
-  const cedulaNumberRegex = /^[0-9]{7,8}$/;
-  return cedulaNumberRegex.test(value.trim());
+  const registroRegex = /^[A-Za-z0-9\- ]{3,20}$/;
+  return registroRegex.test(value.trim());
 };
 const emailValidation = ({ value }) => {
   const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
@@ -44,17 +46,17 @@ const config = {
       global: {
         wrapper: "space-y-0 mb-0",
         message: "text-red-700 text-sm mb-0",
-        label: "block mt-3 font-medium text-lg text-gray-700",
+        label: "block font-medium text-lg text-gray-700",
         input:
-         "w-full h-15 p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500",
+         "w-full h-15 p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 mb-3",
       },
       select: {
         input:
-          "w-full h-15 p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500",
+          "w-full h-15 p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 mb-3",
       },
       date: {
         input:
-          "w-full h-15 p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500",
+          "w-full h-15 p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 mb-3",
       },
       submit: {
         input:

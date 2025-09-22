@@ -2,6 +2,8 @@
 import { ref, inject, computed, watchEffect } from "vue";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
 import { useRouter } from "vue-router";
+import CountryPhoneInput from "@/components/CountryPhoneInput.vue";
+import CountrySelect from "@/components/CountrySelect.vue";
 
 const proveedorSalud = useProveedorSaludStore();
 const router = useRouter();
@@ -22,7 +24,7 @@ const formulario = ref({
   estado: "",
   telefono: "",
   sitioWeb: "",
-  RFC: "",
+  pais: "",
   correoElectronico: "",
   perfilProveedorSalud: "", 
   codigoPostal: ""          
@@ -38,7 +40,7 @@ watchEffect(() => {
       estado: proveedorSalud.proveedorSalud.estado ?? "",
       telefono: proveedorSalud.proveedorSalud.telefono ?? "",
       sitioWeb: proveedorSalud.proveedorSalud.sitioWeb ?? "",
-      RFC: proveedorSalud.proveedorSalud.RFC ?? "",
+      pais: proveedorSalud.proveedorSalud.pais ?? "",
       correoElectronico: proveedorSalud.proveedorSalud.correoElectronico ?? "",
       perfilProveedorSalud: proveedorSalud.proveedorSalud.perfilProveedorSalud ?? "", 
       codigoPostal: proveedorSalud.proveedorSalud.codigoPostal ?? ""                 
@@ -76,12 +78,58 @@ const piePaginaInforme = computed(() => ({
   correoElectronico: formulario.value.correoElectronico || ""
 }));
 
-// Función para formatear el teléfono
+// Función para formatear el teléfono internacional
 function formatearTelefono(telefono) {
-  if (!telefono || telefono.length !== 10) {
+  if (!telefono) {
     return ''; 
   }
-  return `(${telefono.slice(0, 3)}) ${telefono.slice(3, 6)} ${telefono.slice(6)}`;
+  
+  // Si el teléfono ya tiene formato internacional (+52XXXXXXXXXX)
+  if (telefono.startsWith('+')) {
+    // Buscar el país correspondiente para obtener el código
+    const countries = [
+      { code: 'MX', dialCode: '+52' },
+      { code: 'AR', dialCode: '+54' },
+      { code: 'BR', dialCode: '+55' },
+      { code: 'CL', dialCode: '+56' },
+      { code: 'CO', dialCode: '+57' },
+      { code: 'PE', dialCode: '+51' },
+      { code: 'VE', dialCode: '+58' },
+      { code: 'UY', dialCode: '+598' },
+      { code: 'PY', dialCode: '+595' },
+      { code: 'BO', dialCode: '+591' },
+      { code: 'EC', dialCode: '+593' },
+      { code: 'GT', dialCode: '+502' },
+      { code: 'CR', dialCode: '+506' },
+      { code: 'PA', dialCode: '+507' },
+      { code: 'HN', dialCode: '+504' },
+      { code: 'NI', dialCode: '+505' },
+      { code: 'SV', dialCode: '+503' },
+      { code: 'CU', dialCode: '+53' },
+      { code: 'DO', dialCode: '+1' },
+      { code: 'PR', dialCode: '+1' }
+    ];
+    
+    // Encontrar el país por código de marcación
+    const country = countries.find(c => telefono.startsWith(c.dialCode));
+    if (country) {
+      const numeroLocal = telefono.replace(country.dialCode, '');
+      return `(${country.dialCode}) ${numeroLocal}`;
+    }
+  }
+  
+  // Si es un número local de 10 dígitos (México)
+  if (telefono.length === 10 && /^\d{10}$/.test(telefono)) {
+    return `(+52) ${telefono}`;
+  }
+  
+  // Si es un número local de otros países (8-11 dígitos)
+  if (telefono.length >= 8 && telefono.length <= 11 && /^\d+$/.test(telefono)) {
+    return `(+XX) ${telefono}`;
+  }
+  
+  // Si no coincide con ningún formato conocido, devolver tal como está
+  return telefono;
 }
 
 // Lista de opciones de colores predefinidos
@@ -180,6 +228,16 @@ const handleSubmit = async (data) => {
   // Agregar personalización de informes
   formData.append("colorInforme", colorInforme.value);
   formData.append("semaforizacionActivada", semaforizacionActivada.value);
+  
+  // Agregar teléfono del formulario (CountryPhoneInput no es FormKit)
+  if (formulario.value.telefono) {
+    formData.append("telefono", formulario.value.telefono);
+  }
+
+  // Agregar país del formulario (CountrySelect no es FormKit)
+  if (formulario.value.pais) {
+    formData.append("pais", formulario.value.pais);
+  }
 
   // Asegurar que solo se agrega un archivo válido
   if (logotipoArchivo.value instanceof File) {
@@ -309,43 +367,53 @@ const logoSrc = computed(() => {
             @submit="handleSubmit">
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 mb-4">
-              <FormKit type="text" label="Razón Social, nombre o denominación*" name="nombre"
+              <FormKit type="text" name="nombre"
                 placeholder="¿Cual es tu nombre, denominación o razón social?" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
-                v-model="formulario.nombre" />
+                v-model="formulario.nombre">
+                <template #label>
+                  <span class="font-medium text-lg text-gray-700">Razón Social, nombre o denominación<span class="text-red-500">*</span></span>
+                </template>
+              </FormKit>
 
-              <FormKit type="text" label="RFC" name="RFC" placeholder="RFC del proveedor"
-                validation="required|rfcValidation" :validation-messages="{
-                  required: 'Este campo es obligatorio',
-                  rfcValidation: 'El RFC ingresado no es válido.',
-                }" v-model="formulario.RFC" />
+              <CountrySelect
+                label="País"
+                placeholder="Selecciona tu país"
+                v-model="formulario.pais"
+                validation="required"
+              />
 
-              <FormKit type="select" label="Perfil de proveedor*" name="perfilProveedorSalud"
+              <FormKit type="select" name="perfilProveedorSalud"
                 placeholder="Selecciona el que te describa mejor:" :options="perfiles" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
-                v-model="formulario.perfilProveedorSalud" />
+                v-model="formulario.perfilProveedorSalud">
+                <template #label>
+                  <span class="font-medium text-lg text-gray-700">Perfil de proveedor<span class="text-red-500">*</span></span>
+                </template>
+              </FormKit>
 
-              <FormKit type="select" label="Estado" name="estado" placeholder="Seleccione su estado"
-                :options="estadosDeMexico" v-model="formulario.estado" />
+              <FormKit type="text" label="Región/Provincia/Estado" name="estado" placeholder="Ej. Estado de México, Buenos Aires, São Paulo"
+                v-model="formulario.estado" />
 
-              <FormKit type="text" label="Municipio" name="municipio" placeholder="Municipio del proveedor"
+              <FormKit type="text" label="Ciudad/Municipio" name="municipio" placeholder="Ej. Ciudad de México, Bogotá, Lima"
                 v-model="formulario.municipio" />
 
-              <FormKit type="text" label="Código Postal" name="codigoPostal" placeholder="Ej. 44100"
+              <FormKit type="text" label="Código Postal" name="codigoPostal" placeholder="Ej. 44100, 1000, 01000"
                 validation="postalCodeValidation" v-model="formulario.codigoPostal"
                 :validation-messages="{
                   postalCodeValidation:
-                    'El código postal debe tener 5 dígitos.',
+                    'El código postal debe tener entre 4 y 10 dígitos.',
                 }" />
 
               <FormKit type="text" label="Dirección (Calle, número y colonia)" name="direccion"
                 placeholder="Ej. Calle Madero #123, Colonia Centro" v-model="formulario.direccion" />
 
-              <FormKit type="text" label="Teléfono" name="telefono" placeholder="10 dígitos"
-                validation="phoneValidation" v-model="formulario.telefono" :validation-messages="{
-                  phoneValidation:
-                    'El número de teléfono debe tener 10 dígitos.',
-                }" />
+              <CountryPhoneInput
+                label="Teléfono"
+                placeholder="Número local"
+                v-model="formulario.telefono"
+                :initial-country="formulario.pais"
+              />
 
               <FormKit type="text" label="Correo Electrónico" name="correoElectronico"
                 placeholder="Correo electrónico del proveedor" validation="mailValidation"

@@ -14,7 +14,15 @@ const temperatura = ref(36.5);
 const saturacionOxigeno = ref(97);
 
 onMounted(() => {
-  if (documentos.currentDocument) {
+  // Prioridad: formData > documentos.currentDocument > valores por defecto
+  if (formDataNotaMedica.tensionArterialSistolica !== undefined) {
+    tensionArterialSistolica.value = formDataNotaMedica.tensionArterialSistolica;
+    tensionArterialDiastolica.value = formDataNotaMedica.tensionArterialDiastolica;
+    frecuenciaCardiaca.value = formDataNotaMedica.frecuenciaCardiaca;
+    frecuenciaRespiratoria.value = formDataNotaMedica.frecuenciaRespiratoria;
+    saturacionOxigeno.value = formDataNotaMedica.saturacionOxigeno;
+    temperatura.value = formDataNotaMedica.temperatura;
+  } else if (documentos.currentDocument) {
     tensionArterialSistolica.value = documentos.currentDocument.tensionArterialSistolica;
     tensionArterialDiastolica.value = documentos.currentDocument.tensionArterialDiastolica;
     frecuenciaCardiaca.value = documentos.currentDocument.frecuenciaCardiaca;
@@ -22,6 +30,7 @@ onMounted(() => {
     saturacionOxigeno.value = documentos.currentDocument.saturacionOxigeno;
     temperatura.value = documentos.currentDocument.temperatura;
   }
+  // Si no hay formData ni currentDocument, se mantienen los valores por defecto
 });
 
 onUnmounted(() => {

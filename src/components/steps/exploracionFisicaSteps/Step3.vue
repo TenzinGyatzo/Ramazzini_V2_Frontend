@@ -18,7 +18,18 @@ const saturacionOxigeno = ref(97);
 const categoriaSaturacionOxigeno = ref('Normal');
 
 onMounted(() => {
-  if (documentos.currentDocument) {
+  // Prioridad: formData > documentos.currentDocument > valores por defecto
+  if (formDataExploracionFisica.tensionArterialSistolica !== undefined) {
+    tensionArterialSistolica.value = formDataExploracionFisica.tensionArterialSistolica;
+    tensionArterialDiastolica.value = formDataExploracionFisica.tensionArterialDiastolica;
+    categoriaTensionArterial.value = formDataExploracionFisica.categoriaTensionArterial;
+    frecuenciaCardiaca.value = formDataExploracionFisica.frecuenciaCardiaca;
+    categoriaFrecuenciaCardiaca.value = formDataExploracionFisica.categoriaFrecuenciaCardiaca;
+    frecuenciaRespiratoria.value = formDataExploracionFisica.frecuenciaRespiratoria;
+    categoriaFrecuenciaRespiratoria.value = formDataExploracionFisica.categoriaFrecuenciaRespiratoria;
+    saturacionOxigeno.value = formDataExploracionFisica.saturacionOxigeno;
+    categoriaSaturacionOxigeno.value = formDataExploracionFisica.categoriaSaturacionOxigeno;
+  } else if (documentos.currentDocument) {
     tensionArterialSistolica.value = documentos.currentDocument.tensionArterialSistolica;
     tensionArterialDiastolica.value = documentos.currentDocument.tensionArterialDiastolica;
     categoriaTensionArterial.value = documentos.currentDocument.categoriaTensionArterial;
@@ -29,6 +40,7 @@ onMounted(() => {
     saturacionOxigeno.value = documentos.currentDocument.saturacionOxigeno;
     categoriaSaturacionOxigeno.value = documentos.currentDocument.categoriaSaturacionOxigeno;
   }
+  // Si no hay formData ni currentDocument, se mantienen los valores por defecto
 });
 
 onUnmounted(() => {

@@ -6,7 +6,7 @@ import { ca, es } from 'date-fns/locale';
 const props = defineProps({
   id: String,
   nombre: String,
-  RFC: String,
+  pais: String,
   correoElectronico: String,
   maxHistoriasPermitidasAlMes: Number,
   estadoSuscripcion: String,
@@ -101,7 +101,7 @@ const formatCurrency = (amount) => {
             <p class="text-gray-600"><strong>👤 Usuario Principal:</strong> {{ users.data[0].username }}</p>
             <p class="text-gray-600"><strong>📧 Correo:</strong> {{ users.data[0].email }}</p>
             <p class="text-gray-600"><strong>📞 Teléfono:</strong> {{ users.data[0].phone }}</p>
-            <!-- <p class="text-gray-600"><strong>🆔 RFC:</strong> {{ RFC || 'No disponible' }}</p> -->
+            <!-- <p class="text-gray-600"><strong>🌍 País:</strong> {{ pais || 'No disponible' }}</p> -->
             <!-- <p class="text-gray-600"><strong>📧 Correo:</strong> {{ correoElectronico || 'No disponible' }}</p> -->
             <p class="text-gray-600"><strong>🎨 Color Informe:</strong> {{ nombreColorInforme }}</p>
             <p class="text-gray-600"><strong>🚦 Semaforización:</strong> {{ semaforizacionActivada ? 'Activada' : 'Desactivada' }}</p>

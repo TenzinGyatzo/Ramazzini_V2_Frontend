@@ -3,6 +3,8 @@ import { ref, reactive, inject, nextTick, watch, onMounted, onUnmounted } from "
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
 import { useUserStore } from "@/stores/user";
 import { useRouter } from "vue-router";
+import CountryPhoneInput from "@/components/CountryPhoneInput.vue";
+import CountrySelect from "@/components/CountrySelect.vue";
 
 const toast = inject("toast");
 
@@ -16,14 +18,15 @@ const formDataUser = reactive({
   username: "",
   email: "",
   phone: "",
+  country: "MX", // País por defecto México
   password: "",
 });
 const formDataProveedorSalud = reactive({
   nombre: "",
-  RFC: "",
+  pais: "",
   perfilProveedorSalud: "",
+  semaforizacionActivada: true,
   referenciaPlan: "BÁSICO",
-  estado: "pending",
   estadoSuscripcion: "pending",
   fechaInicioTrial: new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000) - (7 * 60 * 60 * 1000)),
   periodoDePruebaFinalizado: false,
@@ -41,19 +44,19 @@ const userStore = useUserStore();
 const router = useRouter();
 
 const handleSubmitStep1 = async (data) => {
-  formDataUser.value = data; // Guardar datos del usuario temporalmente
+  Object.assign(formDataUser, data); // Guardar datos del usuario temporalmente
   transitioning.value = true;
   currentStep.value = 2; // Avanzar al paso 2
 };
 
 const handleSubmitStep2 = async (data) => {
-  formDataProveedorSalud.value = data; // Guardar datos del Proveedor de Salud
+  Object.assign(formDataProveedorSalud, data); // Guardar datos del Proveedor de Salud
   let idProveedorSalud = null; // Variable para almacenar el ID del proveedor de salud
 
   try {
     // 1. Crear Proveedor Salud y obtener idProveedorSalud
     const respuesta = await proveedorSaludStore.createProveedor(
-      formDataProveedorSalud.value
+      formDataProveedorSalud
     );
     const proveedorSalud = respuesta.data;
     idProveedorSalud = proveedorSalud._id;
@@ -64,11 +67,12 @@ const handleSubmitStep2 = async (data) => {
 
     // 2. Crear usuario
     const userPayload = {
-      ...formDataUser.value,
+      ...formDataUser,
       role: "Principal",
       idProveedorSalud,
     };
 
+    console.log('User payload:', userPayload); // Debug
     const resultado = await userStore.registerUser(userPayload);
 
     // Verificar si el registro fue exitoso
@@ -160,6 +164,13 @@ watch(() => formDataUser.password, () => {
     repositionToggle();
   });
 });
+
+// Watcher para sincronizar el país del paso 1 con el paso 2
+watch(() => formDataUser.country, (newCountry) => {
+  if (newCountry) {
+    formDataProveedorSalud.pais = newCountry;
+  }
+}, { immediate: true });
 
 // Reposicionar el toggle cuando el componente se monte
 onMounted(() => {
@@ -319,17 +330,12 @@ onMounted(() => {
           v-model="formDataUser.email"
         />
 
-        <FormKit
-          type="text"
+        <CountryPhoneInput
           label="¿Cuál es tu teléfono?"
-          name="phone"
-          placeholder="Teléfono"
-          validation="required|phoneValidation"
-          :validation-messages="{
-            required: 'Este campo es obligatorio',
-            phoneValidation: 'El número de teléfono debe tener 10 dígitos.',
-          }"
+          placeholder="Número local"
           v-model="formDataUser.phone"
+          @update:country="formDataUser.country = $event"
+          validation="required"
         />
 
         <div class="relative" ref="passwordContainer">
@@ -387,17 +393,11 @@ onMounted(() => {
           :validation-messages="{ required: 'Este campo es obligatorio' }"
           v-model="formDataProveedorSalud.nombre"
         />
-        <FormKit
-          type="text"
-          label="¿Cuál es tu RFC?"
-          name="RFC"
-          placeholder="RFC de tu empresa o el propio"
-          validation="required|rfcValidation"
-          :validation-messages="{
-            required: 'Este campo es obligatorio',
-            rfcValidation: 'El RFC ingresado no es válido.',
-          }"
-          v-model="formDataProveedorSalud.RFC"
+        <CountrySelect
+          label="¿En qué país te encuentras?"
+          placeholder="Selecciona tu país"
+          v-model="formDataProveedorSalud.pais"
+          validation="required"
         />
         <FormKit
           type="select"

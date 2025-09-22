@@ -617,7 +617,7 @@ const añoMasReciente = computed(() => {
 
         <!-- Aviso de logotipo pendiente -->
         <Transition appear name="slide-down">
-          <div v-if="logotipoPendiente" class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+          <div v-if="logotipoPendiente" class="mb-1 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
             <div class="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
               <i class="fas fa-exclamation-triangle text-amber-600 text-sm"></i>
             </div>
@@ -627,7 +627,7 @@ const añoMasReciente = computed(() => {
                 <router-link :to="{ name: 'perfil-proveedor' }" class="font-semibold underline hover:text-amber-900 transition-colors">
                   Sube tu logotipo aquí
                 </router-link> 
-                para mejor presentación.
+                 para mejor presentación.
               </p>
             </div>
           </div>

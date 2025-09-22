@@ -16,7 +16,15 @@ const circunferenciaCintura = ref(89);
 const categoriaCircunferenciaCintura = ref('Bajo Riesgo');
 
 onMounted(() => {
-  if (documentos.currentDocument) {
+  // Prioridad: formData > documentos.currentDocument > valores por defecto
+  if (formDataExploracionFisica.peso !== undefined) {
+    peso.value = formDataExploracionFisica.peso;
+    altura.value = formDataExploracionFisica.altura;
+    indiceMasaCorporal.value = formDataExploracionFisica.indiceMasaCorporal;
+    categoriaIMC.value = formDataExploracionFisica.categoriaIMC;
+    circunferenciaCintura.value = formDataExploracionFisica.circunferenciaCintura;
+    categoriaCircunferenciaCintura.value = formDataExploracionFisica.categoriaCircunferenciaCintura;
+  } else if (documentos.currentDocument) {
     peso.value = documentos.currentDocument.peso;
     altura.value = documentos.currentDocument.altura;
     indiceMasaCorporal.value = documentos.currentDocument.indiceMasaCorporal;
@@ -24,6 +32,7 @@ onMounted(() => {
     circunferenciaCintura.value = documentos.currentDocument.circunferenciaCintura;
     categoriaCircunferenciaCintura.value = documentos.currentDocument.categoriaCircunferenciaCintura; 
   }
+  // Si no hay formData ni currentDocument, se mantienen los valores por defecto
 });
 
 onUnmounted(() => {
