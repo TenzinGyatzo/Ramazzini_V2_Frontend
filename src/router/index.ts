@@ -58,6 +58,11 @@ const router = createRouter({
           component: () => import("../views/RemoveUsersView.vue"),
         },
         {
+          path: "/productividad-usuarios",
+          name: "user-productivity",
+          component: () => import("../views/UserProductivityView.vue"),
+        },
+        {
           path: "perfil-proveedor",
           name: "perfil-proveedor",
           component: () => import("../views/PerfilProveedorView.vue"),

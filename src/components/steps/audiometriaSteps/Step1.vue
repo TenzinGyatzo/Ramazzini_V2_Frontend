@@ -26,8 +26,6 @@ onMounted(() => {
   formDataAudiometria.idTrabajador = trabajadores.currentTrabajadorId;
 
   // Establece usuario creador y/o actualizador en formData
-  formDataAudiometria.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-  formDataAudiometria.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
 
   // Establece rutaPDF en formData cuando aun no se ha seleccionado la fecha
   const empresa = empresas.currentEmpresa.nombreComercial;

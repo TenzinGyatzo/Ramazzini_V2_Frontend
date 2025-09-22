@@ -37,8 +37,6 @@ onMounted(() => {
     }
   }
   
-  formDataHistoriaClinica.createdBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
-  formDataHistoriaClinica.updatedBy = '6650f38308ac3beedf5ac41b'; // TODO: Obtener el ID del usuario actual
   
   // Establece rutaPDF en formData
   const empresa = empresas.currentEmpresa.nombreComercial;

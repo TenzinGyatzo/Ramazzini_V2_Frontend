@@ -11,6 +11,7 @@ import ModalCentros from '@/components/ModalCentros.vue';
 import ModalEliminar from '@/components/ModalEliminar.vue';
 import type { Empresa } from '@/interfaces/empresa.interface';
 import type { CentroTrabajo } from '@/interfaces/centro-trabajo.interface';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
 const toast: any = inject('toast');
 
@@ -18,6 +19,7 @@ const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const riesgosTrabajo = useRiesgoTrabajoStore();
+const proveedorSaludStore = useProveedorSaludStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -28,6 +30,14 @@ const selectedCentroTrabajoNombre = ref<string | null>(null);
 const totalTrabajadores = ref(0);
 const loadingTrabajadores = ref(false);
 const tieneRiesgosTrabajo = ref(false);
+
+// Computed para verificar si el proveedor de salud es de México
+const esProveedorMexicano = computed(() => {
+  console.log('Proveedor de salud:', proveedorSaludStore.proveedorSalud);
+  console.log('País del proveedor:', proveedorSaludStore.proveedorSalud?.pais);
+  console.log('Es mexicano?', proveedorSaludStore.proveedorSalud?.pais === 'MX');
+  return proveedorSaludStore.proveedorSalud?.pais === 'MX';
+});
 
 const openModal = async (empresa: Empresa | null = null, centroTrabajo: CentroTrabajo | null = null) => {
   showModal.value = false;
@@ -133,6 +143,17 @@ const obtenerDatosEmpresa = async () => {
 onMounted(async () => {
   const empresaId = String(route.params.idEmpresa);
   
+  // Cargar proveedor de salud desde localStorage si está disponible
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  console.log('Usuario desde localStorage:', user);
+  if (user?.idProveedorSalud) {
+    console.log('Cargando proveedor de salud con ID:', user.idProveedorSalud);
+    await proveedorSaludStore.loadProveedorSalud(user.idProveedorSalud);
+    console.log('Proveedor cargado:', proveedorSaludStore.proveedorSalud);
+  } else {
+    console.log('No se encontró idProveedorSalud en el usuario');
+  }
+  
   // Ejecutar en paralelo las llamadas que no dependen entre sí
   const [centrosResult] = await Promise.all([
     centrosTrabajo.fetchCentrosTrabajo(empresaId),
@@ -237,6 +258,7 @@ onMounted(async () => {
                     <span>Estadísticas de Salud</span>
                   </button>
                   <button
+                    v-if="esProveedorMexicano"
                     type="button"
                     :disabled="!empresas.currentEmpresa || !tieneRiesgosTrabajo"
                     @click="empresas.currentEmpresa && router.push({ name: 'riesgos-trabajo', params: { idEmpresa: empresas.currentEmpresa._id } })"

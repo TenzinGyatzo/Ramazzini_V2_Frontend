@@ -569,7 +569,7 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
     <!-- Menú desplegable mejorado -->
     <Transition name="fade">
       <div 
-        v-if="isMenuOpen && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
+        v-if="isMenuOpen && ['inicio', 'add-user', 'remove-users', 'user-productivity', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
         ref="menuRef"
         class="fixed top-20 right-6 bg-white rounded-2xl shadow-2xl p-6 w-72 z-40 border border-gray-100 backdrop-blur-sm bg-white/95">
 
@@ -686,6 +686,13 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
               <div class="flex items-center gap-3">
                 <i class="fa-solid fa-user-plus text-purple-500 group-hover:text-purple-600 transition-colors duration-200"></i>
                 <span class="font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Agregar Usuario</span>
+              </div>
+            </a>
+            <a @click="router.push({ name: 'user-productivity' })" 
+               class="block py-3 px-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 rounded-xl mt-2 transition-all duration-300 ease-in-out cursor-pointer border border-gray-200 hover:border-blue-300 group">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-chart-line text-blue-500 group-hover:text-blue-600 transition-colors duration-200"></i>
+                <span class="font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Monitoreo de Usuarios</span>
               </div>
             </a>
             <a @click="router.push({ name: 'remove-users' })" 
