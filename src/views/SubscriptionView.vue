@@ -606,7 +606,7 @@ const porcentajeHistorias = computed(() => {
           <p>Límite de trabajadores por empresa: <span class="font-semibold">{{ selectedPlan.workers + extraWorkers }}</span> 
             <span class="text-gray-500"> (Base: {{ selectedPlan.workers }} + Extras: {{ extraWorkers }})</span>
           </p> -->
-          <p class="text-xl font-semibold mt-4 text-sky-600">Total mensual: ${{ formatCurrency(totalPrice) }}</p>
+          <p class="text-xl font-semibold mt-4 text-sky-600">Total mensual: ${{ formatCurrency(totalPrice) }} MXN</p>
           <p v-if="suggestion" class="text-yellow-600 mt-2">{{ suggestion }}</p>
         </div>
         <button 

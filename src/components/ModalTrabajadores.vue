@@ -363,9 +363,10 @@ const cancelarTransferencia = () => {
                   <span class="font-medium text-lg text-gray-700">Fecha de Ingreso<span class="text-red-500">*</span></span>
                 </template>
               </FormKit>
-              <FormKit type="text" label="Teléfono" name="telefono" placeholder="10 dígitos"
-                validation="optional|length:10|matches:/^[0-9]*$/" :validation-messages="{ length: 'El teléfono debe tener 10 dígitos', matches: 'Solo se permiten números' }"
-                maxlength="10" :value="trabajadores.currentTrabajador?.telefono || ''" />
+              <FormKit type="text" label="Teléfono" name="telefono" placeholder="Número de teléfono"
+                validation="optional|phoneValidation" 
+                :validation-messages="{ phoneValidation: 'El número de teléfono debe tener entre 4 y 15 dígitos' }"
+                :value="trabajadores.currentTrabajador?.telefono || ''" />
               <FormKit type="select" name="estadoCivil" placeholder="-Seleccione un estado civil-"
                 :options="estadosCiviles" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"

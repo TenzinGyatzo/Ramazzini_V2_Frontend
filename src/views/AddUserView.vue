@@ -1,8 +1,10 @@
 <script setup>
-import { ref, reactive, inject, onMounted } from "vue";
+import { ref, reactive, inject, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import ModalSuscripcion from "@/components/suscripciones/ModalSuscripcion.vue";
+import CountryPhoneInput from "@/components/CountryPhoneInput.vue";
+import CountrySelect from "@/components/CountrySelect.vue";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -32,6 +34,7 @@ const formDataUser = reactive({
   username: "",
   email: "",
   phone: "",
+  country: "MX", // Default to Mexico
   password: "",
   role: "Secundario",
   idProveedorSalud: user.value.idProveedorSalud,
@@ -39,7 +42,18 @@ const formDataUser = reactive({
 
 const handleSubmit = async () => {
   try {
-    const resultado = await userStore.registerUser(formDataUser);
+    // Crear el payload con todos los campos necesarios
+    const userPayload = {
+      username: formDataUser.username,
+      email: formDataUser.email,
+      phone: formDataUser.phone,
+      country: formDataUser.country,
+      password: formDataUser.password,
+      role: formDataUser.role,
+      idProveedorSalud: formDataUser.idProveedorSalud,
+    };
+
+    const resultado = await userStore.registerUser(userPayload);
 
     // Verificar si el registro fue exitoso
     if (!resultado.success) {
@@ -116,17 +130,21 @@ const volver = () => {
           v-model="formDataUser.email"
         />
 
-        <FormKit
-          type="text"
-          label="Teléfono de usuario"
-          name="phone"
-          placeholder="Teléfono"
-          validation="required|phoneValidation"
-          :validation-messages="{
-            required: 'Este campo es obligatorio',
-            phoneValidation: 'El número de teléfono debe tener 10 dígitos.',
-          }"
+        <CountrySelect
+          label="¿En qué país se encuentra el usuario?"
+          placeholder="Selecciona el país"
+          v-model="formDataUser.country"
+          validation="required"
+        />
+
+        <CountryPhoneInput
+          class="my-3"
+          label="¿Cuál es el teléfono del usuario?"
+          placeholder="Número local"
           v-model="formDataUser.phone"
+          :initial-country="formDataUser.country"
+          @update:country="formDataUser.country = $event"
+          validation="required"
         />
 
         <FormKit

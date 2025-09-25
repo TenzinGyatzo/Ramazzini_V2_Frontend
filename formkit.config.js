@@ -11,7 +11,7 @@ const postalCodeValidation = ({ value }) => {
 };
 const phoneValidation = ({ value }) => {
   // Validación flexible para números internacionales (4-15 dígitos)
-  const phoneRegex = /^\+?[1-9]\d{3,14}$/;
+  const phoneRegex = /^\+?[0-9]\d{3,14}$/;
   return phoneRegex.test(value.trim());
 };
 const mailValidation = ({ value }) => {
