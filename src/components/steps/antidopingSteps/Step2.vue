@@ -9,7 +9,8 @@ const documentos = useDocumentosStore();
 // Valor local para la pregunta principal
 const antidopingResult = ref('No'); // Por defecto "No"
 
-const tipoPrueba = ref('5');
+// Inicializar con el valor del store si existe, o con el valor por defecto
+const tipoPrueba = ref(formDataAntidoping.tipoPrueba || '5');
 
 const todosLosParametros = {
   marihuana: "Negativo",
@@ -28,7 +29,11 @@ const todosLosParametros = {
 const drugResults = reactive({ ...todosLosParametros });
 
 const camposVisibles = computed(() => {
-  if (tipoPrueba.value === '5') {
+  if (tipoPrueba.value === '2') {
+    return ['marihuana', 'cocaina'];
+  } else if (tipoPrueba.value === '3') {
+    return ['marihuana', 'cocaina', 'anfetaminas'];
+  } else if (tipoPrueba.value === '5') {
     return ['marihuana', 'cocaina', 'anfetaminas', 'metanfetaminas', 'opiaceos'];
   } else if (tipoPrueba.value === '6') {
     return ['marihuana', 'cocaina', 'anfetaminas', 'metanfetaminas', 'opiaceos', 'benzodiacepinas'];
@@ -48,20 +53,37 @@ onMounted(() => {
       }
     }
 
-    // Detectar el tipo de prueba (por número de campos presentes)
-    const camposPresentes = Object.keys(todosLosParametros).filter(
-      (campo) => campo in doc
-    );
+    // Solo detectar automáticamente si no hay un valor guardado en el store
+    if (!formDataAntidoping.tipoPrueba) {
+      // Detectar el tipo de prueba de manera más precisa
+      const camposPresentes = Object.keys(todosLosParametros).filter(
+        (campo) => campo in doc && doc[campo] !== undefined && doc[campo] !== null
+      );
 
-    if (camposPresentes.length >= 10) {
-      tipoPrueba.value = '10';
-    } else if (camposPresentes.includes('benzodiacepinas')) {
-      tipoPrueba.value = '6';
+      // Lógica mejorada para detectar el tipo de prueba
+      if (camposPresentes.length >= 10) {
+        tipoPrueba.value = '10';
+      } else if (camposPresentes.includes('benzodiacepinas')) {
+        tipoPrueba.value = '6';
+      } else if (camposPresentes.length === 5 && camposPresentes.includes('metanfetaminas') && camposPresentes.includes('opiaceos')) {
+        tipoPrueba.value = '5';
+      } else if (camposPresentes.length === 3 && camposPresentes.includes('anfetaminas') && !camposPresentes.includes('metanfetaminas')) {
+        tipoPrueba.value = '3';
+      } else if (camposPresentes.length === 2 && !camposPresentes.includes('anfetaminas')) {
+        tipoPrueba.value = '2';
+      } else {
+        // Si no se puede detectar claramente, mantener el valor actual o usar el por defecto
+        tipoPrueba.value = tipoPrueba.value || '5';
+      }
     } else {
-      tipoPrueba.value = '5';
+      // Usar el valor guardado en el store
+      tipoPrueba.value = formDataAntidoping.tipoPrueba;
     }
 
     antidopingResult.value = 'Si';
+  } else {
+    // Si no hay documento, mantener el valor actual del selector
+    tipoPrueba.value = tipoPrueba.value || '5';
   }
 });
 
@@ -101,6 +123,11 @@ watch(antidopingResult, (val) => {
   }
 });
 
+// Guardar el tipo de prueba en el store cuando cambie
+watch(tipoPrueba, (newValue) => {
+  formDataAntidoping.tipoPrueba = newValue;
+});
+
 function formatoNombre(campo) {
   return campo
     .replace(/([A-Z])/g, ' $1')
@@ -117,6 +144,8 @@ function formatoNombre(campo) {
     <div class="mb-4">
       <label class="font-medium text-gray-800">Tipo de prueba antidoping:</label>
       <select v-model="tipoPrueba" class="mt-1 border rounded p-1">
+        <option value="2">2 parámetros</option>
+        <option value="3">3 parámetros</option>
         <option value="5">5 parámetros</option>
         <option value="6">6 parámetros</option>
         <option value="10">10 parámetros</option>

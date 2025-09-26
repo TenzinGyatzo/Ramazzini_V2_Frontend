@@ -33,9 +33,6 @@ const tieneRiesgosTrabajo = ref(false);
 
 // Computed para verificar si el proveedor de salud es de México
 const esProveedorMexicano = computed(() => {
-  console.log('Proveedor de salud:', proveedorSaludStore.proveedorSalud);
-  console.log('País del proveedor:', proveedorSaludStore.proveedorSalud?.pais);
-  console.log('Es mexicano?', proveedorSaludStore.proveedorSalud?.pais === 'MX');
   return proveedorSaludStore.proveedorSalud?.pais === 'MX';
 });
 
@@ -145,13 +142,10 @@ onMounted(async () => {
   
   // Cargar proveedor de salud desde localStorage si está disponible
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  console.log('Usuario desde localStorage:', user);
   if (user?.idProveedorSalud) {
-    console.log('Cargando proveedor de salud con ID:', user.idProveedorSalud);
     await proveedorSaludStore.loadProveedorSalud(user.idProveedorSalud);
-    console.log('Proveedor cargado:', proveedorSaludStore.proveedorSalud);
   } else {
-    console.log('No se encontró idProveedorSalud en el usuario');
+    console.error('No se encontró idProveedorSalud en el usuario');
   }
   
   // Ejecutar en paralelo las llamadas que no dependen entre sí

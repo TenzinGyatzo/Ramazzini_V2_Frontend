@@ -244,10 +244,7 @@ const toggleDeletionMode = () => {
 
 const handleDeleteSelected = async () => {
     if (selectedRoutes.value.length === 0) return;
-    
-    console.log('🚀 Iniciando eliminación masiva');
-    console.log('📋 Rutas seleccionadas:', selectedRoutes.value);
-    
+        
     try {
         toast.open({ 
             message: `Eliminando ${selectedRoutes.value.length} documento${selectedRoutes.value.length !== 1 ? 's' : ''}...`, 
@@ -257,8 +254,6 @@ const handleDeleteSelected = async () => {
         // Mapear rutas a documentos para eliminación
         const documentosAEliminar: Array<{id: string, tipo: string}> = [];
         
-        console.log('📚 Documentos disponibles:', documentos.documentsByYear);
-        
         // Recorrer todos los documentos por año para encontrar los que coinciden con las rutas seleccionadas
         Object.values(documentos.documentsByYear).forEach(yearData => {
             // Aptitudes
@@ -267,9 +262,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(aptitud) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(aptitud, 'Aptitud', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                console.log(`🔍 Comparando ruta aptitud: "${ruta}" con seleccionadas:`, selectedRoutes.value.includes(ruta));
                 if (selectedRoutes.value.includes(ruta)) {
-                    console.log(`✅ Coincidencia encontrada para aptitud:`, aptitud._id);
                     documentosAEliminar.push({ id: aptitud._id, tipo: 'aptitud' });
                 }
             });
@@ -384,22 +377,18 @@ const handleDeleteSelected = async () => {
                 }
             });
         });
-        
-        console.log('🎯 Documentos a eliminar:', documentosAEliminar);
-        
+                
         // Eliminar documentos uno por uno
         const eliminacionesExitosas: Array<{id: string, tipo: string}> = [];
         const eliminacionesFallidas: Array<{id: string, tipo: string}> = [];
         
         for (const documento of documentosAEliminar) {
-            console.log(`🗑️ Intentando eliminar documento:`, documento);
             try {
                 await documentos.deleteDocumentById(
                     documento.tipo,
                     trabajadores.currentTrabajadorId!,
                     documento.id
                 );
-                console.log(`✅ Documento eliminado exitosamente:`, documento);
                 eliminacionesExitosas.push(documento);
             } catch (error) {
                 console.error(`❌ Error al eliminar documento ${documento.id}:`, error);
