@@ -14,6 +14,18 @@ export default {
         return auth.get(url);
     },
 
+    // Obtener estadísticas de productividad para todos los usuarios del sistema (solo para administradores)
+    async getAllProductivityStats(fechaInicio?: string, fechaFin?: string) {
+        const params = new URLSearchParams();
+        if (fechaInicio) params.append('fechaInicio', fechaInicio);
+        if (fechaFin) params.append('fechaFin', fechaFin);
+
+        const queryString = params.toString();
+        const url = `/users/productividad/todos${queryString ? `?${queryString}` : ''}`;
+
+        return auth.get(url);
+    },
+
     // Obtener estadísticas detalladas de un usuario específico
     async getUserDetailedStats(userId: string, fechaInicio?: string, fechaFin?: string) {
         const params = new URLSearchParams();

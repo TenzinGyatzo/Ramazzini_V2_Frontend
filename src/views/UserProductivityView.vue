@@ -47,6 +47,11 @@ const user = ref(
   JSON.parse(localStorage.getItem("user")) || null
 );
 
+// Verificar si el usuario actual es el administrador
+const esAdministrador = computed(() => {
+  return user.value?.email === 'edgarcoronel66@gmail.com';
+});
+
 // Opciones de periodos predefinidos
 const opcionesPeriodo = [
   'Hoy',
@@ -269,12 +274,21 @@ const cargarDatos = async (inicio, fin) => {
   try {
     loading.value = true;
     
-    // Obtener estadísticas de productividad del proveedor con filtros de fecha
-    const response = await UserProductivityAPI.getProductivityStatsByProveedor(
-      user.value.idProveedorSalud,
-      inicio,
-      fin
-    );
+    let response;
+    
+    if (esAdministrador.value) {
+      // Si es administrador, obtener estadísticas de todos los usuarios del sistema
+      response = await UserProductivityAPI.getAllProductivityStats(inicio, fin);
+      console.log("Obteniendo estadísticas de todos los usuarios (modo administrador)");
+    } else {
+      // Si no es administrador, obtener solo los datos de su proveedor
+      response = await UserProductivityAPI.getProductivityStatsByProveedor(
+        user.value.idProveedorSalud,
+        inicio,
+        fin
+      );
+      console.log("Obteniendo estadísticas del proveedor:", user.value.idProveedorSalud);
+    }
     
     if (response.data) {
       usuariosConProductividad.value = response.data;
@@ -385,6 +399,12 @@ const cargarConfiguracionGuardada = async () => {
     configuracionPuntos.value = { ...configuracionOriginal };
   }
 };
+
+// Función para obtener las clases CSS de los campos de entrada
+const getInputClasses = (colorClass) => {
+  const baseClasses = 'w-20 px-3 py-1 border rounded-md text-center focus:outline-none';
+  return `${baseClasses} border-gray-300 focus:${colorClass} focus:ring-${colorClass}`;
+};
 </script>
 
 <template>
@@ -392,12 +412,20 @@ const cargarConfiguracionGuardada = async () => {
     <div class="w-full max-w-7xl mx-auto p-6">
       <!-- Header -->
       <div class="mb-3">
-        <h1 class="text-3xl font-bold text-gray-800 mb-1">
-          Monitoreo de Productividad
-        </h1>
-        <p class="text-gray-600">
-          Supervisa el rendimiento y actividad de los usuarios del sistema
-        </p>
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-1">
+              Monitoreo de Productividad
+            </h1>
+            <p class="text-gray-600">
+              {{ esAdministrador ? 'Supervisa el rendimiento de todos los usuarios del sistema' : 'Supervisa el rendimiento y actividad de los usuarios del sistema' }}
+            </p>
+          </div>
+          <div v-if="esAdministrador" class="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full">
+            <i class="fas fa-crown text-sm"></i>
+            <span class="text-sm font-medium">Modo Administrador</span>
+          </div>
+        </div>
         <hr class="mt-4 border-gray-200" />
       </div>
 
@@ -412,6 +440,7 @@ const cargarConfiguracionGuardada = async () => {
           <button 
             @click="abrirModalReglas"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            title="Configurar reglas de puntaje"
           >
             <i class="fas fa-cog mr-2"></i>
             Reglas de Puntaje
@@ -522,7 +551,7 @@ const cargarConfiguracionGuardada = async () => {
                   Ranking de Productividad
                 </h2>
                 <span class="ml-2 text-sm text-gray-500">
-                  ({{ hayFiltrosAplicados ? 'Período filtrado' : 'Todos los datos' }})
+                  ({{ esAdministrador ? 'Todos los usuarios del sistema' : hayFiltrosAplicados ? 'Período filtrado' : 'Todos los datos' }})
                 </span>
               </div>
               <button
@@ -571,6 +600,9 @@ const cargarConfiguracionGuardada = async () => {
                   </th>
                   <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" title="Notas Médicas">
                     Externos
+                  </th>
+                  <th v-if="esAdministrador" class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Proveedor
                   </th>
                 </tr>
               </thead>
@@ -729,6 +761,15 @@ const cargarConfiguracionGuardada = async () => {
                     </div>
                   </td>
 
+                  <!-- Proveedor (solo para administradores) -->
+                  <td v-if="esAdministrador" class="px-2 py-3 whitespace-nowrap text-center">
+                    <div class="flex items-center justify-center">
+                      <div class="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                        {{ usuario.proveedorNombre || 'Sin proveedor' }}
+                      </div>
+                    </div>
+                  </td>
+
                 </tr>
               </tbody>
             </table>
@@ -746,7 +787,7 @@ const cargarConfiguracionGuardada = async () => {
                 Detalle de Productividad
               </h2>
               <span class="ml-2 text-sm text-gray-500">
-                ({{ hayFiltrosAplicados ? 'Período filtrado' : 'Todos los datos' }})
+                ({{ esAdministrador ? 'Todos los usuarios del sistema' : hayFiltrosAplicados ? 'Período filtrado' : 'Todos los datos' }})
               </span>
             </div>
           </div>
@@ -789,6 +830,9 @@ const cargarConfiguracionGuardada = async () => {
                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Último Informe
                 </th>
+                <th v-if="esAdministrador" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Proveedor
+                </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -797,6 +841,7 @@ const cargarConfiguracionGuardada = async () => {
                 :key="usuario._id"
                 :usuario="usuario"
                 :mostrar-estado-actividad="!hayFiltrosAplicados"
+                :mostrar-proveedor="esAdministrador"
                 @ver-detalles="obtenerEstadisticasUsuario"
               />
             </tbody>
@@ -893,8 +938,16 @@ const cargarConfiguracionGuardada = async () => {
 
           <!-- Contenido del Modal -->
           <div class="px-6 py-4">
+            <div v-if="esAdministrador" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div class="flex items-center">
+                <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                <p class="text-sm text-blue-700">
+                  Como administrador, puedes configurar las reglas de puntaje para tu propio proveedor de salud. Estas reglas se aplican solo a tu organización.
+                </p>
+              </div>
+            </div>
             <p class="text-sm text-gray-600 mb-6">
-              Configura cuántos puntos otorga cada tipo de documento en el sistema de ranking.
+              Configura cuántos puntos otorga cada tipo de documento en el sistema de ranking para {{ esAdministrador ? 'tu proveedor de salud' : 'tu organización' }}.
             </p>
 
             <!-- Formulario de Configuración -->
@@ -914,7 +967,7 @@ const cargarConfiguracionGuardada = async () => {
                     type="number"
                     min="0"
                     max="100"
-                    class="w-20 px-3 py-1 border border-gray-300 rounded-md text-center focus:border-green-500 focus:ring-green-500 focus:outline-none"
+                    :class="getInputClasses('border-green-500 ring-green-500')"
                   />
                   <span class="text-sm text-gray-500">puntos</span>
                 </div>
@@ -935,7 +988,7 @@ const cargarConfiguracionGuardada = async () => {
                     type="number"
                     min="0"
                     max="100"
-                    class="w-20 px-3 py-1 border border-gray-300 rounded-md text-center focus:border-teal-500 focus:ring-teal-500 focus:outline-none"
+                    :class="getInputClasses('border-teal-500 ring-teal-500')"
                   />
                   <span class="text-sm text-gray-500">puntos</span>
                 </div>
@@ -956,7 +1009,7 @@ const cargarConfiguracionGuardada = async () => {
                     type="number"
                     min="0"
                     max="100"
-                    class="w-20 px-3 py-1 border border-gray-300 rounded-md text-center focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none"
+                    :class="getInputClasses('border-indigo-500 ring-indigo-500')"
                   />
                   <span class="text-sm text-gray-500">puntos</span>
                 </div>
@@ -977,7 +1030,7 @@ const cargarConfiguracionGuardada = async () => {
                     type="number"
                     min="0"
                     max="100"
-                    class="w-20 px-3 py-1 border border-gray-300 rounded-md text-center focus:border-yellow-500 focus:ring-yellow-500 focus:outline-none"
+                    :class="getInputClasses('border-yellow-500 ring-yellow-500')"
                   />
                   <span class="text-sm text-gray-500">puntos</span>
                 </div>
@@ -998,7 +1051,7 @@ const cargarConfiguracionGuardada = async () => {
                     type="number"
                     min="0"
                     max="100"
-                    class="w-20 px-3 py-1 border border-gray-300 rounded-md text-center focus:border-purple-500 focus:ring-purple-500 focus:outline-none"
+                    :class="getInputClasses('border-purple-500 ring-purple-500')"
                   />
                   <span class="text-sm text-gray-500">puntos</span>
                 </div>
@@ -1019,7 +1072,7 @@ const cargarConfiguracionGuardada = async () => {
                     type="number"
                     min="0"
                     max="100"
-                    class="w-20 px-3 py-1 border border-gray-300 rounded-md text-center focus:border-red-500 focus:ring-red-500 focus:outline-none"
+                    :class="getInputClasses('border-red-500 ring-red-500')"
                   />
                   <span class="text-sm text-gray-500">puntos</span>
                 </div>
@@ -1040,7 +1093,7 @@ const cargarConfiguracionGuardada = async () => {
                     type="number"
                     min="0"
                     max="100"
-                    class="w-20 px-3 py-1 border border-gray-300 rounded-md text-center focus:border-orange-500 focus:ring-orange-500 focus:outline-none"
+                    :class="getInputClasses('border-orange-500 ring-orange-500')"
                   />
                   <span class="text-sm text-gray-500">puntos</span>
                 </div>
@@ -1061,7 +1114,7 @@ const cargarConfiguracionGuardada = async () => {
                     type="number"
                     min="0"
                     max="100"
-                    class="w-20 px-3 py-1 border border-gray-300 rounded-md text-center focus:border-gray-500 focus:ring-gray-500 focus:outline-none"
+                    :class="getInputClasses('border-gray-500 ring-gray-500')"
                   />
                   <span class="text-sm text-gray-500">puntos</span>
                 </div>

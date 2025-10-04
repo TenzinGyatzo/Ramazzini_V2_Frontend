@@ -9,6 +9,10 @@ const props = defineProps({
   mostrarEstadoActividad: {
     type: Boolean,
     default: true
+  },
+  mostrarProveedor: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -243,6 +247,15 @@ const verDetalles = () => {
           ></i>
           {{ textoEstado }}
         </span> -->
+      </div>
+    </td>
+
+    <!-- Proveedor (solo para administradores) -->
+    <td v-if="mostrarProveedor" class="px-3 py-3 whitespace-nowrap">
+      <div class="flex items-center">
+        <div class="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+          {{ usuario.proveedorNombre || 'Sin proveedor' }}
+        </div>
       </div>
     </td>
 

@@ -315,7 +315,7 @@ function inicializarDataTable() {
       scrollCollapse: true,
       scrollY: '800px',
       language: {
-        url: '//cdn.datatables.net/plug-ins/2.1.8/i18n/es-ES.json',
+        url: 'https://cdn.datatables.net/plug-ins/2.1.8/i18n/es-ES.json',
         // @ts-expect-error: DataTables select extension no está tipado en language
         select: {
           rows: {

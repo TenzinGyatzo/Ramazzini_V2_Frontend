@@ -17,6 +17,15 @@ const proveedores = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
 
+// Estado para controlar las secciones desplegables
+const seccionesExpanded = ref({
+  activos: false,
+  cancelados: false,
+  sinSuscripcion: false,
+  periodoGratuitoActivo: false,
+  periodoGratuitoFinalizado: false
+});
+
 const redirigirSiNoEsAdmin = () => {
   const adminEmail = 'edgarcoronel66@gmail.com';
   if (userStore.user?.email !== adminEmail) {
@@ -116,6 +125,23 @@ const reintentarCarga = () => {
   cargarProveedores();
 };
 
+// Funciones para manejar las secciones desplegables
+const toggleSeccion = (seccion) => {
+  seccionesExpanded.value[seccion] = !seccionesExpanded.value[seccion];
+};
+
+const expandirTodas = () => {
+  Object.keys(seccionesExpanded.value).forEach(key => {
+    seccionesExpanded.value[key] = true;
+  });
+};
+
+const colapsarTodas = () => {
+  Object.keys(seccionesExpanded.value).forEach(key => {
+    seccionesExpanded.value[key] = false;
+  });
+};
+
 redirigirSiNoEsAdmin();
 
 onMounted(cargarProveedores);
@@ -166,6 +192,28 @@ onMounted(cargarProveedores);
 
       <!-- Contenido principal -->
       <div v-else class="space-y-8">
+        <!-- Controles de secciones -->
+        <div class="flex justify-end gap-2 mb-4">
+          <button 
+            @click="expandirTodas"
+            class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+            Expandir Todo
+          </button>
+          <button 
+            @click="colapsarTodas"
+            class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+            </svg>
+            Colapsar Todo
+          </button>
+        </div>
+
         <!-- Estadísticas rápidas -->
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
           <div class="bg-white rounded-lg p-4 shadow-sm border">
@@ -243,97 +291,164 @@ onMounted(cargarProveedores);
         <div class="space-y-8">
           <!-- Proveedores Activos -->
           <div v-if="proveedoresAgrupados.activos.length > 0" class="space-y-4">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 cursor-pointer" @click="toggleSeccion('activos')">
               <div class="w-4 h-4 bg-green-500 rounded-full"></div>
               <h2 class="text-2xl font-bold text-gray-800">Proveedores Activos</h2>
               <span class="bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
                 {{ proveedoresAgrupados.activos.length }}
               </span>
+              <button class="ml-auto p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                <svg 
+                  class="w-5 h-5 text-gray-600 transition-transform duration-200"
+                  :class="{ 'rotate-180': seccionesExpanded.activos }"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
             </div>
-            <div class="grid grid-cols-1 gap-6">
-              <TransitionGroup name="proveedor" tag="div" class="grid grid-cols-1 lg:grid-cols-2 gap-6" appear>
-                <ProveedorItem
-                  v-for="(proveedor, index) in proveedoresAgrupados.activos"
-                  :key="proveedor._id"
-                  v-bind="proveedor"
-                  :style="{ animationDelay: `${index * 100}ms` }"
-                />
-              </TransitionGroup>
-            </div>
+            <Transition name="collapse" appear>
+              <div v-if="seccionesExpanded.activos" class="grid grid-cols-1 gap-6">
+                <TransitionGroup name="proveedor" tag="div" class="grid grid-cols-1 lg:grid-cols-2 gap-6" appear>
+                  <ProveedorItem
+                    v-for="(proveedor, index) in proveedoresAgrupados.activos"
+                    :key="proveedor._id"
+                    v-bind="proveedor"
+                    :style="{ animationDelay: `${index * 100}ms` }"
+                  />
+                </TransitionGroup>
+              </div>
+            </Transition>
           </div>
 
           <!-- Proveedores Cancelados -->
           <div v-if="proveedoresAgrupados.cancelados.length > 0" class="space-y-4">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 cursor-pointer" @click="toggleSeccion('cancelados')">
               <div class="w-4 h-4 bg-red-500 rounded-full"></div>
               <h2 class="text-2xl font-bold text-gray-800">Proveedores Cancelados</h2>
               <span class="bg-red-100 text-red-800 text-sm font-medium px-3 py-1 rounded-full">
                 {{ proveedoresAgrupados.cancelados.length }}
               </span>
+              <button class="ml-auto p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                <svg 
+                  class="w-5 h-5 text-gray-600 transition-transform duration-200"
+                  :class="{ 'rotate-180': seccionesExpanded.cancelados }"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
             </div>
-            <div class="grid grid-cols-1 gap-6">
-              <TransitionGroup name="proveedor" tag="div" class="grid grid-cols-1 lg:grid-cols-2 gap-6" appear>
-                <ProveedorItem
-                  v-for="(proveedor, index) in proveedoresAgrupados.cancelados"
-                  :key="proveedor._id"
-                  v-bind="proveedor"
-                  :style="{ animationDelay: `${index * 100}ms` }"
-                />
-              </TransitionGroup>
-            </div>
+            <Transition name="collapse" appear>
+              <div v-if="seccionesExpanded.cancelados" class="grid grid-cols-1 gap-6">
+                <TransitionGroup name="proveedor" tag="div" class="grid grid-cols-1 lg:grid-cols-2 gap-6" appear>
+                  <ProveedorItem
+                    v-for="(proveedor, index) in proveedoresAgrupados.cancelados"
+                    :key="proveedor._id"
+                    v-bind="proveedor"
+                    :style="{ animationDelay: `${index * 100}ms` }"
+                  />
+                </TransitionGroup>
+              </div>
+            </Transition>
           </div>
 
           <!-- Proveedores Sin Suscripción -->
           <div v-if="proveedoresAgrupados.sinSuscripcion.periodoGratuitoActivo.length > 0 || proveedoresAgrupados.sinSuscripcion.periodoGratuitoFinalizado.length > 0" class="space-y-6">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 cursor-pointer" @click="toggleSeccion('sinSuscripcion')">
               <div class="w-4 h-4 bg-yellow-500 rounded-full"></div>
               <h2 class="text-2xl font-bold text-gray-800">Proveedores Sin Suscripción</h2>
               <span class="bg-yellow-100 text-yellow-800 text-sm font-medium px-3 py-1 rounded-full">
                 {{ estadisticas.sinSuscripcion }}
               </span>
+              <button class="ml-auto p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
+                <svg 
+                  class="w-5 h-5 text-gray-600 transition-transform duration-200"
+                  :class="{ 'rotate-180': seccionesExpanded.sinSuscripcion }"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
             </div>
+            <Transition name="collapse" appear>
+              <div v-if="seccionesExpanded.sinSuscripcion" class="space-y-6">
 
-            <!-- Periodo Gratuito Activo -->
-            <div v-if="proveedoresAgrupados.sinSuscripcion.periodoGratuitoActivo.length > 0" class="space-y-4 ml-6">
-              <div class="flex items-center gap-3">
-                <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                <h3 class="text-xl font-semibold text-gray-700">Periodo Gratuito Activo</h3>
-                <span class="bg-emerald-100 text-emerald-800 text-sm font-medium px-2 py-1 rounded-full">
-                  {{ proveedoresAgrupados.sinSuscripcion.periodoGratuitoActivo.length }}
-                </span>
-              </div>
-              <div class="grid grid-cols-1 gap-6">
-                <TransitionGroup name="proveedor" tag="div" class="grid grid-cols-1 lg:grid-cols-2 gap-6" appear>
-                  <ProveedorItem
-                    v-for="(proveedor, index) in proveedoresAgrupados.sinSuscripcion.periodoGratuitoActivo"
-                    :key="proveedor._id"
-                    v-bind="proveedor"
-                    :style="{ animationDelay: `${index * 100}ms` }"
-                  />
-                </TransitionGroup>
-              </div>
-            </div>
+                <!-- Periodo Gratuito Activo -->
+                <div v-if="proveedoresAgrupados.sinSuscripcion.periodoGratuitoActivo.length > 0" class="space-y-4 ml-6">
+                  <div class="flex items-center gap-3 cursor-pointer" @click="toggleSeccion('periodoGratuitoActivo')">
+                    <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                    <h3 class="text-xl font-semibold text-gray-700">Periodo Gratuito Activo</h3>
+                    <span class="bg-emerald-100 text-emerald-800 text-sm font-medium px-2 py-1 rounded-full">
+                      {{ proveedoresAgrupados.sinSuscripcion.periodoGratuitoActivo.length }}
+                    </span>
+                    <button class="ml-auto p-1 hover:bg-gray-100 rounded transition-colors duration-200">
+                      <svg 
+                        class="w-4 h-4 text-gray-600 transition-transform duration-200"
+                        :class="{ 'rotate-180': seccionesExpanded.periodoGratuitoActivo }"
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
+                  <Transition name="collapse" appear>
+                    <div v-if="seccionesExpanded.periodoGratuitoActivo" class="grid grid-cols-1 gap-6">
+                      <TransitionGroup name="proveedor" tag="div" class="grid grid-cols-1 lg:grid-cols-2 gap-6" appear>
+                        <ProveedorItem
+                          v-for="(proveedor, index) in proveedoresAgrupados.sinSuscripcion.periodoGratuitoActivo"
+                          :key="proveedor._id"
+                          v-bind="proveedor"
+                          :style="{ animationDelay: `${index * 100}ms` }"
+                        />
+                      </TransitionGroup>
+                    </div>
+                  </Transition>
+                </div>
 
-            <!-- Periodo Gratuito Finalizado -->
-            <div v-if="proveedoresAgrupados.sinSuscripcion.periodoGratuitoFinalizado.length > 0" class="space-y-4 ml-6">
-              <div class="flex items-center gap-3">
-                <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
-                <h3 class="text-xl font-semibold text-gray-700">Periodo Gratuito Finalizado</h3>
-                <span class="bg-gray-100 text-gray-800 text-sm font-medium px-2 py-1 rounded-full">
-                  {{ proveedoresAgrupados.sinSuscripcion.periodoGratuitoFinalizado.length }}
-                </span>
+                <!-- Periodo Gratuito Finalizado -->
+                <div v-if="proveedoresAgrupados.sinSuscripcion.periodoGratuitoFinalizado.length > 0" class="space-y-4 ml-6">
+                  <div class="flex items-center gap-3 cursor-pointer" @click="toggleSeccion('periodoGratuitoFinalizado')">
+                    <div class="w-3 h-3 bg-gray-500 rounded-full"></div>
+                    <h3 class="text-xl font-semibold text-gray-700">Periodo Gratuito Finalizado</h3>
+                    <span class="bg-gray-100 text-gray-800 text-sm font-medium px-2 py-1 rounded-full">
+                      {{ proveedoresAgrupados.sinSuscripcion.periodoGratuitoFinalizado.length }}
+                    </span>
+                    <button class="ml-auto p-1 hover:bg-gray-100 rounded transition-colors duration-200">
+                      <svg 
+                        class="w-4 h-4 text-gray-600 transition-transform duration-200"
+                        :class="{ 'rotate-180': seccionesExpanded.periodoGratuitoFinalizado }"
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
+                  <Transition name="collapse" appear>
+                    <div v-if="seccionesExpanded.periodoGratuitoFinalizado" class="grid grid-cols-1 gap-6">
+                      <TransitionGroup name="proveedor" tag="div" class="grid grid-cols-1 lg:grid-cols-2 gap-6" appear>
+                        <ProveedorItem
+                          v-for="(proveedor, index) in proveedoresAgrupados.sinSuscripcion.periodoGratuitoFinalizado"
+                          :key="proveedor._id"
+                          v-bind="proveedor"
+                          :style="{ animationDelay: `${index * 100}ms` }"
+                        />
+                      </TransitionGroup>
+                    </div>
+                  </Transition>
+                </div>
               </div>
-              <div class="grid grid-cols-1 gap-6">
-                <TransitionGroup name="proveedor" tag="div" class="grid grid-cols-1 lg:grid-cols-2 gap-6" appear>
-                  <ProveedorItem
-                    v-for="(proveedor, index) in proveedoresAgrupados.sinSuscripcion.periodoGratuitoFinalizado"
-                    :key="proveedor._id"
-                    v-bind="proveedor"
-                    :style="{ animationDelay: `${index * 100}ms` }"
-                  />
-                </TransitionGroup>
-              </div>
-            </div>
+            </Transition>
           </div>
         </div>
 
@@ -402,5 +517,26 @@ onMounted(cargarProveedores);
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* Transiciones para el colapso/expansión de secciones */
+.collapse-enter-active,
+.collapse-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.collapse-enter-from,
+.collapse-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.collapse-enter-to,
+.collapse-leave-from {
+  opacity: 1;
+  max-height: 1000px;
+  transform: translateY(0);
 }
 </style>

@@ -10,8 +10,10 @@ const trabajadores = useTrabajadoresStore();
 const { formDataCertificadoExpedito } = useFormDataStore();
 const documentos = useDocumentosStore();
 
-// Valor local para la cuerpoCertificado principal, inicializado con el valor actual del store
-const cuerpoCertificado = ref(formDataCertificadoExpedito.cuerpoCertificado || '');
+const inicioSugerido = "Se encuentra con BUEN estado de salud, niega alergias, niega enfermedades crónicas, en la exploración física no se encuentran defectos ni anormalidades físicas; presentando integras su agudeza visual y auditiva. Su aparato cardio-respiratorio en óptimas condiciones, el examen neurológico revela buena coordinación y reflejos, sin alteraciones musculares y buen equilibrio."
+
+// Valor local para la cuerpoCertificado principal, inicializado con el valor actual del store o el inicio sugerido
+const cuerpoCertificado = ref(formDataCertificadoExpedito.cuerpoCertificado || inicioSugerido);
 
 // Sincronizar el valor seleccionado con formDataCertificadoExpedito.cuerpoCertificado
 watch(cuerpoCertificado, (newValue) => {
@@ -52,8 +54,6 @@ const copiarTexto = (texto) => {
     });
 };
 
-const inicioSugerido = "Se encuentra con BUEN estado de salud, niega alergias, niega enfermedades crónicas, en la exploración física no se encuentran defectos ni anormalidades físicas; presentando integras su agudeza visual y auditiva. Su aparato cardio-respiratorio en óptimas condiciones, el examen neurológico revela buena coordinación y reflejos, sin alteraciones musculares y buen equilibrio."
-
 </script>
 
 <template>
@@ -64,7 +64,7 @@ const inicioSugerido = "Se encuentra con BUEN estado de salud, niega alergias, n
         <div class="font-light mb-4">
             <textarea
                 class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 custom-height"
-                v-model="formDataCertificadoExpedito.cuerpoCertificado" :placeholder="inicioSugerido || 'Cargando datos...'" required>
+                v-model="formDataCertificadoExpedito.cuerpoCertificado" placeholder="Escriba el cuerpo del certificado..." required>
             </textarea>
         </div>
         <!-- <div class="mb-4">
