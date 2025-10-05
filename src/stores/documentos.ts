@@ -13,6 +13,8 @@ import type {
   HistoriaClinica,
   NotaMedica,
   ControlPrenatal,
+  HistoriaOtologica,
+  PrevioEspirometria,
 } from "@/interfaces/documentos.inteface";
 
 export type DocumentsByYear = {
@@ -28,6 +30,8 @@ export type DocumentsByYear = {
     historiasClinicas?: HistoriaClinica[];
     notasMedicas?: NotaMedica[];
     controlPrenatal?: ControlPrenatal[];
+    historiaOtologica?: HistoriaOtologica[];
+    previoEspirometria?: PrevioEspirometria[];
   };
 };
 
@@ -66,7 +70,9 @@ export const useDocumentosStore = defineStore("documentos", () => {
         exploracionesFisicas,
         historiasClinicas,
         notasMedicas,
-        controlPrenatal
+        controlPrenatal,
+        historiaOtologica,
+        previoEspirometria
       ] = await Promise.all([
         DocumentosAPI.getAntidopings(trabajadorId).catch(error => {
           console.error("Error al obtener antidopings", error);
@@ -111,6 +117,14 @@ export const useDocumentosStore = defineStore("documentos", () => {
         DocumentosAPI.getControlPrenatal(trabajadorId).catch(error => {
           console.error("Error al obtener controlPrenatal", error);
           return { data: [] };
+        }),
+        DocumentosAPI.getHistoriaOtologica(trabajadorId).catch(error => {
+          console.error("Error al obtener historiaOtologica", error);
+          return { data: [] };
+        }),
+        DocumentosAPI.getPrevioEspirometria(trabajadorId).catch(error => {
+          console.error("Error al obtener previoEspirometria", error);
+          return { data: [] };
         })
       ]);
 
@@ -126,7 +140,9 @@ export const useDocumentosStore = defineStore("documentos", () => {
         exploracionesFisicas: Array.isArray(exploracionesFisicas.data) ? exploracionesFisicas.data : [],
         historiasClinicas: Array.isArray(historiasClinicas.data) ? historiasClinicas.data : [],
         notasMedicas: Array.isArray(notasMedicas.data) ? notasMedicas.data : [],
-        controlPrenatal: Array.isArray(controlPrenatal.data) ? controlPrenatal.data : []
+        controlPrenatal: Array.isArray(controlPrenatal.data) ? controlPrenatal.data : [],
+        historiaOtologica: Array.isArray(historiaOtologica.data) ? historiaOtologica.data : [],
+        previoEspirometria: Array.isArray(previoEspirometria.data) ? previoEspirometria.data : []
       };
 
       // Procesar documentos y agrupar por año
@@ -169,7 +185,9 @@ export const useDocumentosStore = defineStore("documentos", () => {
       exploracionesFisicas: "fechaExploracionFisica",
       historiasClinicas: "fechaHistoriaClinica",
       notasMedicas: "fechaNotaMedica",
-      controlPrenatal: "fechaInicioControlPrenatal"
+      controlPrenatal: "fechaInicioControlPrenatal",
+      historiaOtologica: "fechaHistoriaOtologica",
+      previoEspirometria: "fechaPrevioEspirometria"
     };
 
     return documento?.[fechaCampos[tipoDocumento]] || "";

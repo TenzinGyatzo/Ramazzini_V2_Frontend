@@ -52,7 +52,18 @@ watch(fechaExploracionFisica, (newValue) => {
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Fecha de exploración física</h1>
-    <FormKit type="date" name="fechaExploracionFisica" placeholder="Seleccione una fecha" v-model="fechaExploracionFisica" />
+    <!-- Jerarquía Visual Mejorada -->
+    <h1 class="text-2xl font-bold mb-4 text-gray-900">Exploración Física</h1>
+    
+    <!-- Sección de fecha con mejor espaciado -->
+    <div class="mt-6">
+      <h2 class="text-lg font-medium mb-3 text-gray-800">Fecha de Exploración Física</h2>
+      <FormKit 
+        type="date" 
+        name="fechaExploracionFisica" 
+        placeholder="Seleccione una fecha"
+        v-model="fechaExploracionFisica" 
+      />
+    </div>
   </div>
 </template>

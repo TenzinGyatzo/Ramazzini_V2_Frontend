@@ -64,29 +64,161 @@ watch(fechaHistoriaClinica, (newValue) => {
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Historia Clínica</h1>
-    <!-- Pregunta principal -->
-    <div class="mb-4">
-      <p class="font-medium mb-1 text-gray-800 leading-5">¿Motivo del examen médico?</p>
-      <div class="flex items-center space-x-6 font-light">
-        <label class="flex items-center space-x-2">
-          <input type="radio" value="Ingreso" v-model="motivoExamen" class="form-radio accent-emerald-600" />
-          <span>Ingreso</span>
+    <!-- Jerarquía Visual Mejorada -->
+    <h1 class="text-2xl font-bold mb-4 text-gray-900">Historia Clínica</h1>
+    
+    <!-- Pregunta principal con mejor jerarquía -->
+    <div class="mb-8">
+      <p class="text-lg font-medium mb-4 text-gray-800">¿Motivo del examen médico?</p>
+      
+      <!-- Diseño de Radio Buttons más Visual tipo Card -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <!-- Opción Ingreso -->
+        <label 
+          :class="[
+            'relative flex flex-col items-center justify-center py-3 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+            motivoExamen === 'Ingreso' 
+              ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+              : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+          ]"
+        >
+          <input 
+            type="radio" 
+            value="Ingreso" 
+            v-model="motivoExamen" 
+            class="sr-only" 
+          />
+          <!-- Icono -->
+          <div 
+            :class="[
+              'w-8 h-8 rounded-full flex items-center justify-center mb-1.5 transition-colors duration-200',
+              motivoExamen === 'Ingreso' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
+            ]"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </div>
+          <span 
+            :class="[
+              'text-base font-semibold transition-colors duration-200',
+              motivoExamen === 'Ingreso' ? 'text-emerald-700' : 'text-gray-700'
+            ]"
+          >
+            Ingreso
+          </span>
+          <!-- Indicador de selección -->
+          <div 
+            v-if="motivoExamen === 'Ingreso'"
+            class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </div>
         </label>
-        <label class="flex items-center space-x-2">
-          <input type="radio" value="Inicial" v-model="motivoExamen" class="form-radio accent-emerald-600" />
-          <span>Inicial</span>
+
+        <!-- Opción Inicial -->
+        <label 
+          :class="[
+            'relative flex flex-col items-center justify-center py-3 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+            motivoExamen === 'Inicial' 
+              ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+              : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+          ]"
+        >
+          <input 
+            type="radio" 
+            value="Inicial" 
+            v-model="motivoExamen" 
+            class="sr-only" 
+          />
+          <!-- Icono -->
+          <div 
+            :class="[
+              'w-8 h-8 rounded-full flex items-center justify-center mb-1.5 transition-colors duration-200',
+              motivoExamen === 'Inicial' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
+            ]"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <span 
+            :class="[
+              'text-base font-semibold transition-colors duration-200',
+              motivoExamen === 'Inicial' ? 'text-emerald-700' : 'text-gray-700'
+            ]"
+          >
+            Inicial
+          </span>
+          <!-- Indicador de selección -->
+          <div 
+            v-if="motivoExamen === 'Inicial'"
+            class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </div>
         </label>
-        <label class="flex items-center space-x-2">
-          <input type="radio" value="Periódico" v-model="motivoExamen" class="form-radio accent-emerald-600" />
-          <span>Periódico</span>
+
+        <!-- Opción Periódico -->
+        <label 
+          :class="[
+            'relative flex flex-col items-center justify-center py-3 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+            motivoExamen === 'Periódico' 
+              ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+              : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+          ]"
+        >
+          <input 
+            type="radio" 
+            value="Periódico" 
+            v-model="motivoExamen" 
+            class="sr-only" 
+          />
+          <!-- Icono -->
+          <div 
+            :class="[
+              'w-8 h-8 rounded-full flex items-center justify-center mb-1.5 transition-colors duration-200',
+              motivoExamen === 'Periódico' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
+            ]"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </div>
+          <span 
+            :class="[
+              'text-base font-semibold transition-colors duration-200',
+              motivoExamen === 'Periódico' ? 'text-emerald-700' : 'text-gray-700'
+            ]"
+          >
+            Periódico
+          </span>
+          <!-- Indicador de selección -->
+          <div 
+            v-if="motivoExamen === 'Periódico'"
+            class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </div>
         </label>
       </div>
     </div>
-    <div class="mt-6">
-      <h1 class="font-medium mb-2 text-gray-800 leading-5">Fecha de Historia Clínica</h1>
-      <FormKit type="date" name="fechaHistoriaClinica" placeholder="Seleccione una fecha"
-        v-model="fechaHistoriaClinica" />
+
+    <!-- Sección de fecha con mejor espaciado -->
+    <div class="mt-8">
+      <h2 class="text-lg font-medium mb-3 text-gray-800">Fecha de Historia Clínica</h2>
+      <FormKit 
+        type="date" 
+        name="fechaHistoriaClinica" 
+        placeholder="Seleccione una fecha"
+        v-model="fechaHistoriaClinica" 
+      />
     </div>
   </div>
 </template>

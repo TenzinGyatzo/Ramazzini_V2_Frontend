@@ -167,6 +167,8 @@ const documentTypeLabels = {
   certificado: "Certificado",
   documentoExterno: "Documento Externo",
   notaMedica: "Nota Médica",
+  historiaOtologica: "Historia Otologica",
+  previoEspirometria: "Previo Espirometria",
 };
 
 const fetchData = async () => {
@@ -376,6 +378,22 @@ const handleDeleteSelected = async () => {
                     documentosAEliminar.push({ id: controlPrenatal._id, tipo: 'controlPrenatal' });
                 }
             });
+
+            // Historia Otologica
+            yearData.historiaOtologica?.forEach(historiaOtologica => {
+                const rutaBase = obtenerRutaDocumento(historiaOtologica, 'Historia Otologica');
+                const fecha = obtenerFechaDocumento(historiaOtologica) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(historiaOtologica, 'Historia Otologica', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            });
+
+            // Previo Espirometria
+            yearData.previoEspirometria?.forEach(previoEspirometria => {
+                const rutaBase = obtenerRutaDocumento(previoEspirometria, 'Previo Espirometria');
+                const fecha = obtenerFechaDocumento(previoEspirometria) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(previoEspirometria, 'Previo Espirometria', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            });
         });
                 
         // Eliminar documentos uno por uno
@@ -446,7 +464,9 @@ const totalDocumentosCreados = computed(() => {
       (yearData.certificados?.length || 0) +
       (yearData.certificadosExpedito?.length || 0) +
       (yearData.notasMedicas?.length || 0) +
-      (yearData.controlPrenatal?.length || 0) 
+      (yearData.controlPrenatal?.length || 0) +
+      (yearData.historiaOtologica?.length || 0) +
+      (yearData.previoEspirometria?.length || 0)
     );
   }, 0);
 });
@@ -486,17 +506,15 @@ const añoMasReciente = computed(() => {
           @closeModalUpdate="toggleDocumentoExternoUpdateModal" @updateData="fetchData"/>
       </Transition>
 
-             <Transition appear name="fade">
-         <ModalEliminar v-if="showDeleteModal && selectedDocumentId && selectedDocumentType" :idRegistro="selectedDocumentId"
-           :identificacion="selectedDocumentName" :tipoRegistro="documentTypeLabels[selectedDocumentType]"
-           @closeModal="toggleDeleteModal" @confirmDelete="handleDeleteDocument" />
-       </Transition>
+      <Transition appear name="fade">
+        <ModalEliminar v-if="showDeleteModal && selectedDocumentId && selectedDocumentType" :idRegistro="selectedDocumentId"
+          :identificacion="selectedDocumentName" :tipoRegistro="documentTypeLabels[selectedDocumentType]"
+          @closeModal="toggleDeleteModal" @confirmDelete="handleDeleteDocument" />
+      </Transition>
 
-       <Transition appear name="fade">
-         <ModalCuestionarios v-if="showCuestionariosModal" @closeModal="toggleCuestionariosModal" />
-       </Transition>
-
-
+      <Transition appear name="fade">
+        <ModalCuestionarios v-if="showCuestionariosModal" @closeModal="toggleCuestionariosModal" />
+      </Transition>
 
         <!-- Header principal con información del trabajador -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden mb-4">

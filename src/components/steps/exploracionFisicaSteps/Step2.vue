@@ -8,6 +8,7 @@ const trabajadores = useTrabajadoresStore();
 const { formDataExploracionFisica } = useFormDataStore();
 const documentos = useDocumentosStore();
 
+// Valores por defecto que se ajustarán según el sexo
 const peso = ref(80);
 const altura = ref(1.7);
 const indiceMasaCorporal = ref(27.68);
@@ -16,7 +17,13 @@ const circunferenciaCintura = ref(89);
 const categoriaCircunferenciaCintura = ref('Bajo Riesgo');
 
 onMounted(() => {
-  // Prioridad: formData > documentos.currentDocument > valores por defecto
+  // Establecer valores por defecto según el sexo
+  const esHombre = trabajadores.currentTrabajador.sexo === 'Masculino';
+  const pesoPorDefecto = esHombre ? 80 : 70;
+  const alturaPorDefecto = esHombre ? 1.7 : 1.6;
+  const circunferenciaPorDefecto = esHombre ? 93 : 79;
+  
+  // Prioridad: formData > documentos.currentDocument > valores por defecto según sexo
   if (formDataExploracionFisica.peso !== undefined) {
     peso.value = formDataExploracionFisica.peso;
     altura.value = formDataExploracionFisica.altura;
@@ -31,8 +38,14 @@ onMounted(() => {
     categoriaIMC.value = documentos.currentDocument.categoriaIMC;
     circunferenciaCintura.value = documentos.currentDocument.circunferenciaCintura;
     categoriaCircunferenciaCintura.value = documentos.currentDocument.categoriaCircunferenciaCintura; 
+  } else {
+    // Si no hay datos previos, establecer valores según el sexo
+    peso.value = pesoPorDefecto;
+    altura.value = alturaPorDefecto;
+    circunferenciaCintura.value = circunferenciaPorDefecto;
+    // Recalcular IMC con los valores por defecto
+    calcularIMC(pesoPorDefecto, alturaPorDefecto);
   }
-  // Si no hay formData ni currentDocument, se mantienen los valores por defecto
 });
 
 onUnmounted(() => {
@@ -142,52 +155,167 @@ const mensajeErrorCircunferenciaCintura = computed(() => {
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 ">Medidas del cuerpo</h1>
-    <h2 class="mb-4">SOMATOMETRÍA</h2>
+    <!-- Jerarquía Visual Mejorada -->
+    <h1 class="text-2xl font-bold mb-4 text-gray-900">SOMATOMETRÍA</h1>
 
-    <div class="flex gap-4 mb-4">
+    <!-- Peso y Altura -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
       <div>
-        <label for="peso">Peso (Kg)</label>
-        <input type="number"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="peso" min="45" max="200" step="0.1">
-        <p v-if="mensajeErrorPeso" class="text-red-500 text-sm mt-1">{{ mensajeErrorPeso }}</p>
+        <label for="peso" class="block text-base font-medium text-gray-800 mb-2">
+          Peso (Kg)
+        </label>
+        <input 
+          type="number"
+          id="peso"
+          class="w-full p-3 text-center border-2 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
+          v-model="peso" 
+          min="45" 
+          max="200" 
+          step="0.1"
+          placeholder="45-200"
+        >
+        <transition
+          enter-active-class="transition-all duration-200 ease-out"
+          enter-from-class="opacity-0 transform -translate-y-1"
+          enter-to-class="opacity-100 transform translate-y-0"
+          leave-active-class="transition-all duration-150 ease-in"
+          leave-from-class="opacity-100 transform translate-y-0"
+          leave-to-class="opacity-0 transform -translate-y-1"
+        >
+          <p v-if="mensajeErrorPeso" class="text-red-600 text-sm mt-2 font-medium">
+            ⚠️ {{ mensajeErrorPeso }}
+          </p>
+        </transition>
       </div>
+
       <div>
-        <label for="altura">Altura (m)</label>
-        <input type="number"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="altura" step="0.01" min="1.40" max="2.20" />
-        <p v-if="mensajeErrorAltura" class="text-red-500 text-sm mt-1">{{ mensajeErrorAltura }}</p>
+        <label for="altura" class="block text-base font-medium text-gray-800 mb-2">
+          Altura (m)
+        </label>
+        <input 
+          type="number"
+          id="altura"
+          class="w-full p-3 text-center border-2 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
+          v-model="altura" 
+          step="0.01" 
+          min="1.40" 
+          max="2.20"
+          placeholder="1.40-2.20"
+        />
+        <transition
+          enter-active-class="transition-all duration-200 ease-out"
+          enter-from-class="opacity-0 transform -translate-y-1"
+          enter-to-class="opacity-100 transform translate-y-0"
+          leave-active-class="transition-all duration-150 ease-in"
+          leave-from-class="opacity-100 transform translate-y-0"
+          leave-to-class="opacity-0 transform -translate-y-1"
+        >
+          <p v-if="mensajeErrorAltura" class="text-red-600 text-sm mt-2 font-medium">
+            ⚠️ {{ mensajeErrorAltura }}
+          </p>
+        </transition>
       </div>
     </div>
 
-    <label for="indiceMasaCorporal">Índice de Masa Corporal</label>
-    <div class="flex gap-4 mb-4">
-      <div>
-        <input type="number"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
-          v-model="indiceMasaCorporal" readonly title="El IMC se calcula automáticamente en función al peso y altura" />
-      </div>
-      <div>
-        <input type="text"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
-          v-model="categoriaIMC" readonly title="La categoría se determina automáticamente según su IMC"/>
+    <!-- Índice de Masa Corporal -->
+    <div class="mb-6">
+      <label class="block text-base font-medium text-gray-800 mb-2">
+        Índice de Masa Corporal
+      </label>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="relative">
+          <input 
+            type="number"
+            class="w-full p-3 text-center border-2 border-gray-200 rounded-lg text-gray-700 bg-gray-50 cursor-not-allowed font-semibold"
+            v-model="indiceMasaCorporal" 
+            readonly 
+            title="El IMC se calcula automáticamente en función al peso y altura"
+          />
+          <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </div>
+        </div>
+        <div class="relative">
+          <input 
+            type="text"
+            :class="[
+              'w-full py-3 px-2 text-center border-2 border-gray-200 rounded-lg cursor-not-allowed font-semibold',
+              categoriaIMC === 'Normal' ? 'bg-emerald-50 text-emerald-800' : '',
+              categoriaIMC === 'Bajo peso' ? 'bg-yellow-50 text-yellow-800' : '',
+              categoriaIMC === 'Sobrepeso' ? 'bg-yellow-50 text-yellow-800' : '',
+              categoriaIMC === 'Obesidad clase I' ? 'bg-red-50 text-red-900' : '',
+              categoriaIMC === 'Obesidad clase II' ? 'bg-red-100 text-red-900' : '',
+              categoriaIMC === 'Obesidad clase III' ? 'bg-red-200 text-red-950' : ''
+            ]"
+            v-model="categoriaIMC" 
+            readonly 
+            title="La categoría se determina automáticamente según su IMC"
+          />
+          <div 
+            v-if="categoriaIMC === 'Normal'" 
+            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
 
-    <label for="circunferenciaCintura">Circunferencia de Cintura</label>
-    <div class="flex gap-4 mb-4">
-      <div>
-        <input type="number"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="circunferenciaCintura" min="50"/>
-        <p v-if="mensajeErrorCircunferenciaCintura" class="text-red-500 text-sm mt-1">{{ mensajeErrorCircunferenciaCintura }}</p>
-      </div>
-      <div>
-        <input type="text"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
-          v-model="categoriaCircunferenciaCintura" readonly title="Clasificación automática según el sexo y la circunferencia de cintura ingresada" />
+    <!-- Circunferencia de Cintura -->
+    <div class="mb-4">
+      <label class="block text-base font-medium text-gray-800 mb-2">
+        Circunferencia de Cintura (cm)
+      </label>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <div class="relative">
+            <input 
+              type="number"
+              class="w-full p-3 text-center border-2 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
+              v-model="circunferenciaCintura" 
+              min="50"
+              placeholder="50-160"
+            />
+          </div>
+          <transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 transform -translate-y-1"
+            enter-to-class="opacity-100 transform translate-y-0"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="opacity-100 transform translate-y-0"
+            leave-to-class="opacity-0 transform -translate-y-1"
+          >
+            <p v-if="mensajeErrorCircunferenciaCintura" class="text-red-600 text-sm mt-2 font-medium">
+              ⚠️ {{ mensajeErrorCircunferenciaCintura }}
+            </p>
+          </transition>
+        </div>
+        <div class="relative">
+          <input 
+            type="text"
+            :class="[
+              'w-full py-3 px-2 text-center border-2 border-gray-200 rounded-lg cursor-not-allowed font-semibold',
+              categoriaCircunferenciaCintura === 'Bajo Riesgo' ? 'bg-emerald-50 text-emerald-800' : '',
+              categoriaCircunferenciaCintura === 'Riesgo Aumentado' ? 'bg-yellow-50 text-yellow-800 text-sm' : '',
+              categoriaCircunferenciaCintura === 'Alto Riesgo' ? 'bg-red-100 text-red-900' : ''
+            ]"
+            v-model="categoriaCircunferenciaCintura" 
+            readonly 
+            title="Clasificación automática según el sexo y la circunferencia de cintura ingresada"
+          />
+          <div 
+            v-if="categoriaCircunferenciaCintura === 'Bajo Riesgo'" 
+            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -13,6 +13,23 @@ import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento, obte
 import ModalPdfEliminado from './ModalPdfEliminado.vue';
 
 const router = useRouter();
+
+// Función para obtener el color según el resultado del cuestionario
+const getResultadoCuestionarioColor = (resultado) => {
+  if (!resultado) return 'gray';
+  
+  const resultadoLower = resultado.toLowerCase();
+  
+  if (resultadoLower === 'procedente') {
+    return 'green';
+  } else if (resultadoLower === 'procedente con precaución') {
+    return 'yellow';
+  } else if (resultadoLower === 'no procedente') {
+    return 'red';
+  }
+  
+  return 'gray';
+};
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
@@ -392,8 +409,6 @@ const handleGlobalMouseUp = (event) => {
     document.body.style.cursor = 'default';
 };
 
-
-
 // Funciones para el pan (desplazamiento) de la imagen
 const startDrag = (event) => {
     // Prevenir el comportamiento de arrastre por defecto del navegador
@@ -509,6 +524,14 @@ const descargarPdfActual = async () => {
                 case 'controlprenatal':
                     documento = props.controlPrenatal;
                     tipoDocumento = 'Control Prenatal';
+                    break;
+                case 'historiaotologica':
+                    documento = props.historiaOtologica;
+                    tipoDocumento = 'Historia Otologica';
+                    break;
+                case 'previoespirometria':
+                    documento = props.previoEspirometria;
+                    tipoDocumento = 'Previo Espirometria';
                     break;
                 case 'documentoexterno':
                     documento = props.documentoExterno;
@@ -632,6 +655,8 @@ const props = defineProps({
     historiaClinica: [Object, String],
     notaMedica: [Object, String],
     controlPrenatal: [Object, String],
+    historiaOtologica: [Object, String],
+    previoEspirometria: [Object, String],
 });
 
 const { antidoping } = props; // Desestructuración para acceder a antidoping
@@ -831,9 +856,11 @@ const construirRutaYNombrePDF = () => {
     'historiaclinica': props.historiaClinica,
     'notamedica': props.notaMedica,
     'controlprenatal': props.controlPrenatal,
+    'historiaotologica': props.historiaOtologica,
+    'previoespirometria': props.previoEspirometria,
   }[tipoSinEspacios];
 
-  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal;
+  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria;
 
   const tiposDocumentos = {
     'antidoping': 'Antidoping',
@@ -845,7 +872,9 @@ const construirRutaYNombrePDF = () => {
     'exploracionfisica': 'Exploracion Fisica',
     'historiaclinica': 'Historia Clinica',
     'notamedica': 'Nota Medica',
-    'controlprenatal': 'Control Prenatal'
+    'controlprenatal': 'Control Prenatal',
+    'historiaotologica': 'Historia Otologica',
+    'previoespirometria': 'Previo Espirometria',
   };
 
   const tipoDocumentoFormateado = tiposDocumentos[tipoSinEspacios];
@@ -953,7 +982,7 @@ onMounted(() => {
 });
 
 // Watcher para verificar disponibilidad cuando cambien las props
-watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certificado, props.certificadoExpedito, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal], () => {
+watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certificado, props.certificadoExpedito, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal, props.historiaOtologica, props.previoEspirometria], () => {
   verificarDisponibilidadPDF();
 }, { deep: true });
 
@@ -994,6 +1023,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
         
         <div class="flex items-center justify-between p-4 pl-6 min-h-[80px]">
             <div class="flex items-center flex-1">
+
+                <!-- Antidoping -->
                 <div v-if="typeof antidoping === 'object'" class="flex items-center w-full h-full">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
@@ -1048,6 +1079,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                 </div>
 
+                <!-- Aptitud al Puesto -->
                 <div v-if="typeof aptitud === 'object'" class="flex items-center w-full h-full">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
@@ -1107,6 +1139,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                 </div>
 
+                <!-- Audiometría -->
                 <div v-if="typeof audiometria === 'object'" class="flex items-center w-full h-full">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
@@ -1160,6 +1193,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                 </div>
 
+                <!-- Certificado -->
                 <div v-if="typeof certificado === 'object'" class="flex items-center w-full h-full">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
@@ -1212,6 +1246,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                 </div>
 
+                <!-- Certificado Expedito -->
                 <div v-if="typeof certificadoExpedito === 'object'" class="flex items-center w-full h-full">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
@@ -1271,6 +1306,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                 </div>
 
+                <!-- Documento Externo -->
                 <div v-if="typeof documentoExterno === 'object'" class="flex items-center w-full h-full">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
@@ -1338,6 +1374,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                 </div>
 
+                <!-- Examen de la Vista -->
                 <div v-if="typeof examenVista === 'object'" class="flex items-center w-full h-full">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
@@ -1418,6 +1455,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                 </div>
 
+                <!-- Exploracion Fisica -->
                 <div v-if="typeof exploracionFisica === 'object'" class="flex items-center w-full h-full">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
@@ -1501,6 +1539,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                 </div>
 
+                <!-- Historia Clínica -->
                 <div v-if="typeof historiaClinica === 'object'" class="flex items-center w-full h-full">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
@@ -1568,6 +1607,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                 </div>
 
+                <!-- Nota Medica -->
                 <div v-if="typeof notaMedica === 'object'" class="flex items-center w-full h-full">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
@@ -1616,6 +1656,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                 </div>
 
+                <!-- Control Prenatal -->   
                 <div v-if="typeof controlPrenatal === 'object'" class="flex items-center w-full h-full">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
@@ -1751,6 +1792,135 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                     </div>
                 </div>
+
+                <!-- Historia Otologica -->
+                <div v-if="typeof historiaOtologica === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, historiaOtologica, 'Historia Otologica')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${historiaOtologica.rutaPDF}`,
+                        `Historia Otologica ${convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mr-4 group-hover:bg-purple-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-ear-listen text-purple-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Historia Otologica
+                                </h3>
+                                <span v-if="historiaOtologica.resultadoCuestionario" 
+                                      class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                      :class="{
+                                        'bg-green-100 text-green-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'green',
+                                        'bg-yellow-100 text-yellow-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'yellow',
+                                        'bg-red-100 text-red-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'red',
+                                        'bg-gray-100 text-gray-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'gray'
+                                      }">
+                                    {{ historiaOtologica.resultadoCuestionario.toUpperCase() }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica) }}
+                            </p>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div v-if="historiaOtologica.resultadoCuestionario" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resultado</p>
+                                    <p class="font-medium text-sm truncate max-w-full"
+                                       :class="{
+                                         'text-green-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'green',
+                                         'text-yellow-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'yellow',
+                                         'text-red-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'red',
+                                         'text-gray-800': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'gray'
+                                       }">
+                                        {{ historiaOtologica.resultadoCuestionario.toUpperCase() }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Previo Espirometria -->
+                <div v-if="typeof previoEspirometria === 'object'" class="flex items-center w-full h-full">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, previoEspirometria, 'Previo Espirometria')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${previoEspirometria.rutaPDF}`,
+                        `Previo Espirometria ${convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria)}.pdf`)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-sky-100 rounded-lg mr-4 group-hover:bg-sky-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-wind text-sky-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                    Previo Espirometria
+                                </h3>
+                                <span v-if="previoEspirometria.resultadoCuestionario" 
+                                      class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                      :class="{
+                                        'bg-green-100 text-green-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'green',
+                                        'bg-yellow-100 text-yellow-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'yellow',
+                                        'bg-red-100 text-red-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'red',
+                                        'bg-gray-100 text-gray-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'gray'
+                                      }">
+                                    {{ previoEspirometria.resultadoCuestionario.toUpperCase() }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria) }}
+                            </p>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div v-if="previoEspirometria.resultadoCuestionario" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resultado</p>
+                                    <p class="font-medium text-sm truncate max-w-full"
+                                       :class="{
+                                         'text-green-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'green',
+                                         'text-yellow-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'yellow',
+                                         'text-red-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'red',
+                                         'text-gray-800': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'gray'
+                                       }">
+                                        {{ previoEspirometria.resultadoCuestionario.toUpperCase() }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Botones de acción -->

@@ -93,6 +93,8 @@ const documentTypeLabels = {
   certificadoExpedito: "Certificado Expedito",
   notaMedica: "Nota Médica",
   controlPrenatal: "Control Prenatal",
+  historiaOtologica: "Historia Otologica",
+  previoEspirometria: "Previo Espirometria",
 };
 
 // Computed properties para mejorar la legibilidad

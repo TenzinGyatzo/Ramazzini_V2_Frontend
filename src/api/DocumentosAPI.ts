@@ -45,6 +45,14 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/controlPrenatal`);
     },
 
+    getHistoriaOtologica(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/historiaOtologica`);
+    },
+
+    getPrevioEspirometria(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/previoEspirometria`);
+    },
+
     getAlturaDisponible(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/altura-disponible`);
     },

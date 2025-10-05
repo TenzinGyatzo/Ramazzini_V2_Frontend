@@ -30,46 +30,252 @@ watch(gestas, (newValue) => {
 
 <template>
     <div>
-        <h1 class="font-bold mb-4 text-gray-800 leading-5">Antecedentes Gineco Obstétricos</h1>
-        <h2>GESTAS</h2>
-        <!-- Pregunta principal -->
-        <div class="mb-4">
-            <p class="font-medium mb-2 text-gray-800 leading-5">¿Cuántos embarazos ha tenido la trabajadora, incluyendo el actual si lo hay?</p>
-            <div class="grid grid-cols-1 gap-2 font-light">
-                <label class="flex items-center space-x-2">
-                    <input type="radio" value="0 (Ninguna)" v-model="gestas"
-                        class="form-radio accent-emerald-600" />
-                    <span>0 (Ninguna)</span>
+        <!-- Jerarquía Visual Mejorada -->
+        <h1 class="text-2xl font-bold mb-4 text-gray-900">Antecedentes Gineco Obstétricos</h1>
+        <h2 class="text-lg font-semibold mb-4 text-gray-700">GESTAS</h2>
+        
+        <!-- Pregunta principal con mejor jerarquía -->
+        <div class="mb-8">
+            <p class="text-lg font-medium mb-4 text-gray-800">¿Cuántos embarazos ha tenido la trabajadora, incluyendo el actual si lo hay?</p>
+            
+            <!-- Diseño de Radio Buttons más Visual tipo Card sin iconos - 2 columnas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Opción 0 (Ninguna) -->
+                <label 
+                    :class="[
+                        'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+                        gestas === '0 (Ninguna)' 
+                            ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+                            : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+                    ]"
+                >
+                    <input 
+                        type="radio" 
+                        value="0 (Ninguna)" 
+                        v-model="gestas" 
+                        class="sr-only" 
+                    />
+                    <span 
+                        :class="[
+                            'text-sm transition-colors duration-200',
+                            gestas === '0 (Ninguna)' ? 'text-emerald-700 font-semibold' : 'text-gray-700'
+                        ]"
+                    >
+                        0 (Ninguna)
+                    </span>
+                    <!-- Indicador de selección -->
+                    <div 
+                        v-if="gestas === '0 (Ninguna)'"
+                        class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
                 </label>
-                <label class="flex items-center space-x-2">
-                    <input type="radio" value="1 gesta" v-model="gestas"
-                        class="form-radio accent-emerald-600" />
-                    <span>1 gesta</span>
+
+                <!-- Opción 1 gesta -->
+                <label 
+                    :class="[
+                        'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+                        gestas === '1 gesta' 
+                            ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+                            : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+                    ]"
+                >
+                    <input 
+                        type="radio" 
+                        value="1 gesta" 
+                        v-model="gestas" 
+                        class="sr-only" 
+                    />
+                    <span 
+                        :class="[
+                            'text-sm transition-colors duration-200',
+                            gestas === '1 gesta' ? 'text-emerald-700 font-semibold' : 'text-gray-700'
+                        ]"
+                    >
+                        1 gesta
+                    </span>
+                    <!-- Indicador de selección -->
+                    <div 
+                        v-if="gestas === '1 gesta'"
+                        class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
                 </label>
-                <label class="flex items-center space-x-2">
-                    <input type="radio" value="2 gestas" v-model="gestas"
-                        class="form-radio accent-emerald-600" />
-                    <span>2 gestas</span>
+
+                <!-- Opción 2 gestas -->
+                <label 
+                    :class="[
+                        'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+                        gestas === '2 gestas' 
+                            ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+                            : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+                    ]"
+                >
+                    <input 
+                        type="radio" 
+                        value="2 gestas" 
+                        v-model="gestas" 
+                        class="sr-only" 
+                    />
+                    <span 
+                        :class="[
+                            'text-sm transition-colors duration-200',
+                            gestas === '2 gestas' ? 'text-emerald-700 font-semibold' : 'text-gray-700'
+                        ]"
+                    >
+                        2 gestas
+                    </span>
+                    <!-- Indicador de selección -->
+                    <div 
+                        v-if="gestas === '2 gestas'"
+                        class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
                 </label>
-                <label class="flex items-center space-x-2">
-                    <input type="radio" value="3 gestas" v-model="gestas"
-                        class="form-radio accent-emerald-600" />
-                    <span>3 gestas</span>
+
+                <!-- Opción 3 gestas -->
+                <label 
+                    :class="[
+                        'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+                        gestas === '3 gestas' 
+                            ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+                            : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+                    ]"
+                >
+                    <input 
+                        type="radio" 
+                        value="3 gestas" 
+                        v-model="gestas" 
+                        class="sr-only" 
+                    />
+                    <span 
+                        :class="[
+                            'text-sm transition-colors duration-200',
+                            gestas === '3 gestas' ? 'text-emerald-700 font-semibold' : 'text-gray-700'
+                        ]"
+                    >
+                        3 gestas
+                    </span>
+                    <!-- Indicador de selección -->
+                    <div 
+                        v-if="gestas === '3 gestas'"
+                        class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
                 </label>
-                <label class="flex items-center space-x-2">
-                    <input type="radio" value="4 gestas" v-model="gestas"
-                        class="form-radio accent-emerald-600" />
-                    <span>4 gestas</span>
+
+                <!-- Opción 4 gestas -->
+                <label 
+                    :class="[
+                        'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+                        gestas === '4 gestas' 
+                            ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+                            : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+                    ]"
+                >
+                    <input 
+                        type="radio" 
+                        value="4 gestas" 
+                        v-model="gestas" 
+                        class="sr-only" 
+                    />
+                    <span 
+                        :class="[
+                            'text-sm transition-colors duration-200',
+                            gestas === '4 gestas' ? 'text-emerald-700 font-semibold' : 'text-gray-700'
+                        ]"
+                    >
+                        4 gestas
+                    </span>
+                    <!-- Indicador de selección -->
+                    <div 
+                        v-if="gestas === '4 gestas'"
+                        class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
                 </label>
-                <label class="flex items-center space-x-2">
-                    <input type="radio" value="5 gestas" v-model="gestas"
-                        class="form-radio accent-emerald-600" />
-                    <span>5 gestas</span>
+
+                <!-- Opción 5 gestas -->
+                <label 
+                    :class="[
+                        'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+                        gestas === '5 gestas' 
+                            ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+                            : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+                    ]"
+                >
+                    <input 
+                        type="radio" 
+                        value="5 gestas" 
+                        v-model="gestas" 
+                        class="sr-only" 
+                    />
+                    <span 
+                        :class="[
+                            'text-sm transition-colors duration-200',
+                            gestas === '5 gestas' ? 'text-emerald-700 font-semibold' : 'text-gray-700'
+                        ]"
+                    >
+                        5 gestas
+                    </span>
+                    <!-- Indicador de selección -->
+                    <div 
+                        v-if="gestas === '5 gestas'"
+                        class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
                 </label>
-                <label class="flex items-center space-x-2">
-                    <input type="radio" value="Más de 5 gestas" v-model="gestas"
-                        class="form-radio accent-emerald-600" />
-                    <span>Más de 5 gestas</span>
+
+                <!-- Opción Más de 5 gestas -->
+                <label 
+                    :class="[
+                        'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+                        gestas === 'Más de 5 gestas' 
+                            ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+                            : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+                    ]"
+                >
+                    <input 
+                        type="radio" 
+                        value="Más de 5 gestas" 
+                        v-model="gestas" 
+                        class="sr-only" 
+                    />
+                    <span 
+                        :class="[
+                            'text-sm transition-colors duration-200',
+                            gestas === 'Más de 5 gestas' ? 'text-emerald-700 font-semibold' : 'text-gray-700'
+                        ]"
+                    >
+                        Más de 5 gestas
+                    </span>
+                    <!-- Indicador de selección -->
+                    <div 
+                        v-if="gestas === 'Más de 5 gestas'"
+                        class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
                 </label>
             </div>
         </div>

@@ -60,7 +60,9 @@ const totalDocumentos = computed(() => {
            (props.documents.certificadosExpedito?.length || 0) +
            (props.documents.documentosExternos?.length || 0) +
            (props.documents.notasMedicas?.length || 0) +
-           (props.documents.controlPrenatal?.length || 0);
+           (props.documents.controlPrenatal?.length || 0) +
+           (props.documents.historiaOtologica?.length || 0) +
+           (props.documents.previoEspirometria?.length || 0);
 });
 
 // Obtener todas las rutas de documentos de este grupo específico
@@ -173,6 +175,26 @@ const rutasDelGrupo = computed(() => {
             const rutaBase = obtenerRutaDocumento(controlPrenatal, 'Control Prenatal');
             const fecha = obtenerFechaDocumento(controlPrenatal) || 'SinFecha';
             const nombreArchivo = obtenerNombreArchivo(controlPrenatal, 'Control Prenatal', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            rutas.push(ruta);
+        });
+    }
+
+    if (props.documents.historiaOtologica) {
+        props.documents.historiaOtologica.forEach(historiaOtologica => {
+            const rutaBase = obtenerRutaDocumento(historiaOtologica, 'Historia Otologica');
+            const fecha = obtenerFechaDocumento(historiaOtologica) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(historiaOtologica, 'Historia Otologica', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            rutas.push(ruta);
+        });
+    }
+
+    if (props.documents.previoEspirometria) {
+        props.documents.previoEspirometria.forEach(previoEspirometria => {
+            const rutaBase = obtenerRutaDocumento(previoEspirometria, 'Previo Espirometria');
+            const fecha = obtenerFechaDocumento(previoEspirometria) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(previoEspirometria, 'Previo Espirometria', fecha);
             const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
             rutas.push(ruta);
         });
@@ -312,6 +334,7 @@ const toggleSelectAll = () => {
 
         <!-- Contenido de documentos con espaciado mejorado -->
         <div class="divide-gray-100">
+
             <!-- Aptitudes -->
             <div v-if="documents.aptitudes && documents.aptitudes.length > 0">
                 <div v-for="(aptitud, index) in documents.aptitudes" :key="aptitud._id" 
@@ -408,6 +431,30 @@ const toggleSelectAll = () => {
                 </div>
             </div>
 
+            <!-- Historia Otologica -->
+            <div v-if="documents.historiaOtologica && documents.historiaOtologica.length > 0">
+                <div v-for="(historiaOtologica, index) in documents.historiaOtologica" :key="historiaOtologica._id"
+                     class="transition-all duration-200 hover:bg-gray-50"
+                     :style="{ animationDelay: `${index * 50}ms` }">
+                    <DocumentoItem 
+                        :historiaOtologica="historiaOtologica" 
+                        :documentoId="historiaOtologica._id" 
+                        :documentoTipo="'historiaOtologica'" 
+                        :toggleRouteSelection="toggleRouteSelection"
+                        :isDeletionMode="isDeletionMode"
+                        :isSelected="(() => {
+                            const rutaBase = obtenerRutaDocumento(historiaOtologica, 'Historia Otologica');
+                            const fecha = obtenerFechaDocumento(historiaOtologica) || 'SinFecha';
+                            const nombreArchivo = obtenerNombreArchivo(historiaOtologica, 'Historia Otologica', fecha);
+                            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                            return props.selectedRoutes.includes(ruta);
+                        })()"
+                        @eliminarDocumento="$emit('eliminarDocumento', historiaOtologica._id, convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica), 'historiaOtologica')" 
+                        @openSubscriptionModal="emit('openSubscriptionModal')"
+                    />
+                </div>
+            </div>
+
             <!-- Audiometrías -->
             <div v-if="documents.audiometrias && documents.audiometrias.length > 0">
                 <div v-for="(audiometria, index) in documents.audiometrias" :key="audiometria._id"
@@ -475,6 +522,30 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', certificado._id, convertirFechaISOaDDMMYYYY(certificado.fechaCertificado), 'certificado')" 
+                        @openSubscriptionModal="emit('openSubscriptionModal')"
+                    />
+                </div>
+            </div>
+
+            <!-- Previo Espirometria -->
+            <div v-if="documents.previoEspirometria && documents.previoEspirometria.length > 0">
+                <div v-for="(previoEspirometria, index) in documents.previoEspirometria" :key="previoEspirometria._id"
+                     class="transition-all duration-200 hover:bg-gray-50"
+                     :style="{ animationDelay: `${index * 50}ms` }">
+                    <DocumentoItem 
+                        :previoEspirometria="previoEspirometria" 
+                        :documentoId="previoEspirometria._id" 
+                        :documentoTipo="'previoEspirometria'" 
+                        :toggleRouteSelection="toggleRouteSelection"
+                        :isDeletionMode="isDeletionMode"
+                        :isSelected="(() => {
+                            const rutaBase = obtenerRutaDocumento(previoEspirometria, 'Previo Espirometria');
+                            const fecha = obtenerFechaDocumento(previoEspirometria) || 'SinFecha';
+                            const nombreArchivo = obtenerNombreArchivo(previoEspirometria, 'Previo Espirometria', fecha);
+                            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                            return props.selectedRoutes.includes(ruta);
+                        })()"
+                        @eliminarDocumento="$emit('eliminarDocumento', previoEspirometria._id, convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria), 'previoEspirometria')" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
                     />
                 </div>
@@ -552,6 +623,7 @@ const toggleSelectAll = () => {
                     />
                 </div>
             </div>
+            
         </div>
 
         <!-- Certificados Expedito -->

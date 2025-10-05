@@ -19,6 +19,8 @@ import VisualizadorExploracionFisica from '@/components/steps/VisualizadorExplor
 import VisualizadorHistoriaClinica from '@/components/steps/VisualizadorHistoriaClinica.vue';
 import VisualizadorNotaMedica from '@/components/steps/VisualizadorNotaMedica.vue';
 import VisualizadorControlPrenatal from '@/components/steps/VisualizadorControlPrenatal.vue';
+import VisualizadorHistoriaOtologica from '@/components/steps/VisualizadorHistoriaOtologica.vue';
+import VisualizadorPrevioEspirometria from '@/components/steps/VisualizadorPrevioEspirometria.vue';
 
 const route = useRoute();
 const empresas = useEmpresasStore();
@@ -108,6 +110,8 @@ watchEffect(async () => {
       historiaClinica: formData.formDataHistoriaClinica,
       notaMedica: formData.formDataNotaMedica,
       controlPrenatal: formData.formDataControlPrenatal,
+      historiaOtologica: formData.formDataHistoriaOtologica,
+      previoEspirometria: formData.formDataPrevioEspirometria,
     };
 
     const documentoForm = documentoMap[tipoDocumento.value];
@@ -512,6 +516,30 @@ const marcarSinHallazgos = () => {
           </div>
           <div class="w-full xl:w-2/3 max-w-3xl mx-auto">
             <VisualizadorControlPrenatal />
+          </div>
+        </div>
+      </Transition>
+      
+      <Transition appear mode="out-in" name="slide-up">
+        <div v-if="documentos.currentTypeOfDocument === 'historiaOtologica'"
+          class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/4">
+            <FormStepper />
+          </div>
+          <div class="w-full xl:w-3/4">
+            <VisualizadorHistoriaOtologica />
+          </div>
+        </div>
+      </Transition>
+
+      <Transition appear mode="out-in" name="slide-up">
+        <div v-if="documentos.currentTypeOfDocument === 'previoEspirometria'"
+          class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/4">
+            <FormStepper />
+          </div>
+          <div class="w-full xl:w-3/4">
+            <VisualizadorPrevioEspirometria />
           </div>
         </div>
       </Transition>

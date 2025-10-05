@@ -225,82 +225,258 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 ">Mediciones de las funciones más básicas del cuerpo</h1>
-    <h2 class="mb-4">SIGNOS VITALES</h2>
+    <!-- Jerarquía Visual Mejorada -->
+    <h1 class="text-2xl font-bold mb-4 text-gray-900">SIGNOS VITALES</h1>
 
-    <h2>Tensión Arterial</h2>
-    <div class="flex gap-4 mb-1">
-      <div>
-        <label for="tensionArterialSistolica">Sistólica (mmHg)</label>
-        <input type="number"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="tensionArterialSistolica" min="60" max="200">
-        <p v-if="mensajeErrorTensionSistolica" class="text-red-500 text-sm mt-1">
-        {{ mensajeErrorTensionSistolica }}
-        </p>
+    <!-- Tensión Arterial -->
+    <div class="mb-6">
+      <h3 class="text-base font-semibold text-gray-800 mb-3">Tensión Arterial</h3>
+      <div class="grid grid-cols-2 gap-4 mb-3">
+        <div>
+          <label for="tensionArterialSistolica" class="block text-sm font-medium text-gray-700 mb-2">
+            Sistólica (mmHg)
+          </label>
+          <input 
+            type="number"
+            id="tensionArterialSistolica"
+            class="w-full p-3 text-center border-2 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
+            v-model="tensionArterialSistolica" 
+            min="60" 
+            max="200"
+            placeholder="60-200"
+          >
+          <transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 transform -translate-y-1"
+            enter-to-class="opacity-100 transform translate-y-0"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="opacity-100 transform translate-y-0"
+            leave-to-class="opacity-0 transform -translate-y-1"
+          >
+            <p v-if="mensajeErrorTensionSistolica" class="text-red-600 text-sm mt-2 font-medium">
+              ⚠️ {{ mensajeErrorTensionSistolica }}
+            </p>
+          </transition>
+        </div>
+        <div>
+          <label for="tensionArterialDiastolica" class="block text-sm font-medium text-gray-700 mb-2">
+            Diastólica (mmHg)
+          </label>
+          <input 
+            type="number"
+            id="tensionArterialDiastolica"
+            class="w-full p-3 text-center border-2 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
+            v-model="tensionArterialDiastolica" 
+            min="40" 
+            max="150"
+            placeholder="40-150"
+          />
+          <transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 transform -translate-y-1"
+            enter-to-class="opacity-100 transform translate-y-0"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="opacity-100 transform translate-y-0"
+            leave-to-class="opacity-0 transform -translate-y-1"
+          >
+            <p v-if="mensajeErrorTensionDiastolica" class="text-red-600 text-sm mt-2 font-medium">
+              ⚠️ {{ mensajeErrorTensionDiastolica }}
+            </p>
+          </transition>
+        </div>
       </div>
-      <div>
-        <label for="tensionArterialDiastolica">Diastólica (mmHg)</label>
-        <input type="number"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="tensionArterialDiastolica" min="40" max="150" />
-        <p v-if="mensajeErrorTensionDiastolica" class="text-red-500 text-sm mt-1">
-          {{ mensajeErrorTensionDiastolica }}
-        </p>
+      <div class="relative">
+        <input 
+          type="text"
+          :class="[
+            'w-full p-3 text-center border-2 border-gray-200 rounded-lg cursor-not-allowed font-semibold',
+            categoriaTensionArterial === 'Óptima' ? 'bg-emerald-50 text-emerald-800' : '',
+            categoriaTensionArterial === 'Normal' ? 'bg-emerald-50 text-emerald-800' : '',
+            categoriaTensionArterial === 'Alta' ? 'bg-yellow-50 text-yellow-800' : '',
+            categoriaTensionArterial === 'Hipertensión ligera' ? 'bg-red-50 text-red-900' : '',
+            categoriaTensionArterial === 'Hipertensión moderada' ? 'bg-red-100 text-red-900' : '',
+            categoriaTensionArterial === 'Hipertensión severa' ? 'bg-red-200 text-red-950' : ''
+          ]"
+          v-model="categoriaTensionArterial" 
+          readonly 
+          title="Se determina automáticamente según los valores de presión arterial"
+        />
+        <div 
+          v-if="categoriaTensionArterial === 'Óptima'" 
+          class="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
       </div>
     </div>
-    <input type="text"
-      class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 mb-4 bg-gray-100 cursor-default"
-      v-model="categoriaTensionArterial" readonly title="Se determina automáticamente según los valores de presión arterial" />
 
-    <label for="frecuenciaCardiaca">Frecuencia Cardiáca (lpm)</label>
-    <div class="flex gap-4 mb-4">
-      <div>
-        <input type="number"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="frecuenciaCardiaca" min="40" max="150" />
-        <p v-if="mensajeErrorFrecuenciaCardiaca" class="text-red-500 text-sm mt-1">
-          {{ mensajeErrorFrecuenciaCardiaca }}
-        </p>
-      </div>
-      <div>
-        <input type="text"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
-          v-model="categoriaFrecuenciaCardiaca" readonly title="Se determina automáticamente según la frecuencia cardiaca ingresada" />
+    <!-- Frecuencia Cardíaca -->
+    <div class="mb-6">
+      <label for="frecuenciaCardiaca" class="block text-base font-medium text-gray-800 mb-2">
+        Frecuencia Cardíaca (lpm)
+      </label>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <input 
+            type="number"
+            id="frecuenciaCardiaca"
+            class="w-full p-3 text-center border-2 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
+            v-model="frecuenciaCardiaca" 
+            min="40" 
+            max="150"
+            placeholder="40-150"
+          />
+          <transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 transform -translate-y-1"
+            enter-to-class="opacity-100 transform translate-y-0"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="opacity-100 transform translate-y-0"
+            leave-to-class="opacity-0 transform -translate-y-1"
+          >
+            <p v-if="mensajeErrorFrecuenciaCardiaca" class="text-red-600 text-sm mt-2 font-medium">
+              ⚠️ {{ mensajeErrorFrecuenciaCardiaca }}
+            </p>
+          </transition>
+        </div>
+        <div class="relative">
+          <input 
+            type="text"
+            :class="[
+              'w-full p-3 text-center border-2 border-gray-200 rounded-lg cursor-not-allowed font-semibold',
+              categoriaFrecuenciaCardiaca === 'Excelente' ? 'bg-emerald-50 text-emerald-800' : '',
+              categoriaFrecuenciaCardiaca === 'Buena' ? 'bg-emerald-50 text-emerald-800' : '',
+              categoriaFrecuenciaCardiaca === 'Normal' ? 'bg-emerald-50 text-emerald-800' : '',
+              categoriaFrecuenciaCardiaca === 'Elevada' ? 'bg-yellow-50 text-yellow-800' : '',
+              categoriaFrecuenciaCardiaca === 'Alta' ? 'bg-red-50 text-red-900' : '',
+              categoriaFrecuenciaCardiaca === 'Muy Alta' ? 'bg-red-200 text-red-950' : ''
+            ]"
+            v-model="categoriaFrecuenciaCardiaca" 
+            readonly 
+            title="Se determina automáticamente según la frecuencia cardiaca ingresada"
+          />
+          <div 
+            v-if="categoriaFrecuenciaCardiaca === 'Excelente' || categoriaFrecuenciaCardiaca === 'Buena'" 
+            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
 
-    <label for="frecuenciaRespiratoria">Frecuencia Respiratoria (rpm)</label>
-    <div class="flex gap-4 mb-4">
-      <div>
-        <input type="number"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="frecuenciaRespiratoria" min="12" max="45" />
-        <p v-if="mensajeErrorFrecuenciaRespiratoria" class="text-red-500 text-sm mt-1">
-          {{ mensajeErrorFrecuenciaRespiratoria }}
-        </p>
-      </div>
-      <div>
-        <input type="text"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
-          v-model="categoriaFrecuenciaRespiratoria" readonly title="Se determina automáticamente según la frecunecia respiratoria ingresada" />
+    <!-- Frecuencia Respiratoria -->
+    <div class="mb-6">
+      <label for="frecuenciaRespiratoria" class="block text-base font-medium text-gray-800 mb-2">
+        Frecuencia Respiratoria (rpm)
+      </label>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <input 
+            type="number"
+            id="frecuenciaRespiratoria"
+            class="w-full p-3 text-center border-2 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
+            v-model="frecuenciaRespiratoria" 
+            min="12" 
+            max="45"
+            placeholder="12-45"
+          />
+          <transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 transform -translate-y-1"
+            enter-to-class="opacity-100 transform translate-y-0"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="opacity-100 transform translate-y-0"
+            leave-to-class="opacity-0 transform -translate-y-1"
+          >
+            <p v-if="mensajeErrorFrecuenciaRespiratoria" class="text-red-600 text-sm mt-2 font-medium">
+              ⚠️ {{ mensajeErrorFrecuenciaRespiratoria }}
+            </p>
+          </transition>
+        </div>
+        <div class="relative">
+          <input 
+            type="text"
+            :class="[
+              'w-full p-3 text-center border-2 border-gray-200 rounded-lg cursor-not-allowed font-semibold',
+              categoriaFrecuenciaRespiratoria === 'Normal' ? 'bg-emerald-50 text-emerald-800' : '',
+              categoriaFrecuenciaRespiratoria === 'Bradipnea' ? 'bg-yellow-50 text-yellow-800' : '',
+              categoriaFrecuenciaRespiratoria === 'Taquipnea' ? 'bg-yellow-50 text-yellow-800' : '',
+              categoriaFrecuenciaRespiratoria === 'Hiperventilación' ? 'bg-red-100 text-red-900' : ''
+            ]"
+            v-model="categoriaFrecuenciaRespiratoria" 
+            readonly 
+            title="Se determina automáticamente según la frecuencia respiratoria ingresada"
+          />
+          <div 
+            v-if="categoriaFrecuenciaRespiratoria === 'Normal'" 
+            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
 
-    <label for="saturacionOxigeno">Saturación de Oxígeno (%)</label>
-    <div class="flex gap-4 mb-4">
-      <div>
-        <input type="number"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="saturacionOxigeno" min="80" max="100" />
-        <p v-if="mensajeErrorSaturacionOxigeno" class="text-red-500 text-sm mt-1">
-          {{ mensajeErrorSaturacionOxigeno }}
-        </p>
-      </div>
-      <div>
-        <input type="text"
-          class="w-full p-1.5 text-center mt-1 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
-          v-model="categoriaSaturacionOxigeno" readonly title="Se determina automáticamente según la saturación de oxígeno ingresada" />
+    <!-- Saturación de Oxígeno -->
+    <div class="mb-4">
+      <label for="saturacionOxigeno" class="block text-base font-medium text-gray-800 mb-2">
+        Saturación de Oxígeno (%)
+      </label>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <input 
+            type="number"
+            id="saturacionOxigeno"
+            class="w-full p-3 text-center border-2 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
+            v-model="saturacionOxigeno" 
+            min="80" 
+            max="100"
+            placeholder="80-100"
+          />
+          <transition
+            enter-active-class="transition-all duration-200 ease-out"
+            enter-from-class="opacity-0 transform -translate-y-1"
+            enter-to-class="opacity-100 transform translate-y-0"
+            leave-active-class="transition-all duration-150 ease-in"
+            leave-from-class="opacity-100 transform translate-y-0"
+            leave-to-class="opacity-0 transform -translate-y-1"
+          >
+            <p v-if="mensajeErrorSaturacionOxigeno" class="text-red-600 text-sm mt-2 font-medium">
+              ⚠️ {{ mensajeErrorSaturacionOxigeno }}
+            </p>
+          </transition>
+        </div>
+        <div class="relative">
+          <input 
+            type="text"
+            :class="[
+              'w-full p-3 text-center border-2 border-gray-200 rounded-lg cursor-not-allowed font-semibold',
+              categoriaSaturacionOxigeno === 'Normal' ? 'bg-emerald-50 text-emerald-800' : '',
+              categoriaSaturacionOxigeno === 'Aceptable' ? 'bg-emerald-50 text-emerald-800' : '',
+              categoriaSaturacionOxigeno === 'Moderadamente baja' ? 'bg-yellow-50 text-yellow-800' : '',
+              categoriaSaturacionOxigeno === 'Hipoxemia leve' ? 'bg-red-50 text-red-900' : '',
+              categoriaSaturacionOxigeno === 'Hipoxemia grave' ? 'bg-red-100 text-red-950' : ''
+            ]"
+            v-model="categoriaSaturacionOxigeno" 
+            readonly 
+            title="Se determina automáticamente según la saturación de oxígeno ingresada"
+          />
+          <div 
+            v-if="categoriaSaturacionOxigeno === 'Normal'" 
+            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
 

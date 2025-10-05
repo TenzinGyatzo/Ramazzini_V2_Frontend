@@ -50,6 +50,9 @@ const documentTypes = computed(() => {
     else if (route.includes('Examen Vista')) {
       types.examenesVista = (types.examenesVista || 0) + 1;
     }
+    else if (route.includes('Historia Otologica')) {
+      types.historiaOtologica = (types.historiaOtologica || 0) + 1;
+    }
     else if (route.includes('Audiometria')) {
       types.audiometrias = (types.audiometrias || 0) + 1;
     }
@@ -58,6 +61,9 @@ const documentTypes = computed(() => {
     }
     else if (route.includes('Certificado')) {
       types.certificados = (types.certificados || 0) + 1;
+    }
+    else if (route.includes('Previo Espirometria')) {
+      types.previoEspirometria = (types.previoEspirometria || 0) + 1;
     }
     else if (route.includes('Documento Externo')) {
       types.documentosExternos = (types.documentosExternos || 0) + 1;
@@ -143,6 +149,10 @@ const documentTypes = computed(() => {
                         <i class="fas fa-eye text-yellow-600"></i>
                         <span>{{ documentTypes.examenesVista }} Examen{{ documentTypes.examenesVista !== 1 ? 'es' : '' }} Vista</span>
                       </div>
+                      <div v-if="documentTypes.historiaOtologica" class="flex items-center space-x-2">
+                        <i class="fas fa-ear-deaf text-purple-600"></i>
+                        <span>{{ documentTypes.historiaOtologica }} Historia{{ documentTypes.historiaOtologica !== 1 ? 's' : '' }} Otológica{{ documentTypes.historiaOtologica !== 1 ? 's' : '' }}</span>
+                      </div>
                       <div v-if="documentTypes.audiometrias" class="flex items-center space-x-2">
                         <i class="fas fa-volume-up text-purple-600"></i>
                         <span>{{ documentTypes.audiometrias }} Audiometría{{ documentTypes.audiometrias !== 1 ? 's' : '' }}</span>
@@ -162,6 +172,10 @@ const documentTypes = computed(() => {
                       <div v-if="documentTypes.notasMedicas" class="flex items-center space-x-2">
                         <i class="fas fa-stethoscope text-pink-600"></i>
                         <span>{{ documentTypes.notasMedicas }} Nota{{ documentTypes.notasMedicas !== 1 ? 's' : '' }} Médica{{ documentTypes.notasMedicas !== 1 ? 's' : '' }}</span>
+                      </div>
+                      <div v-if="documentTypes.previoEspirometria" class="flex items-center space-x-2">
+                        <i class="fas fa-lungs text-sky-600"></i>
+                        <span>{{ documentTypes.previoEspirometria }} Previo{{ documentTypes.previoEspirometria !== 1 ? 's' : '' }} Espirometría{{ documentTypes.previoEspirometria !== 1 ? 's' : '' }}</span>
                       </div>
                     </div>
                   </div>

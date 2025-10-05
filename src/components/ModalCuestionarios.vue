@@ -50,6 +50,24 @@ const handleQuestionnaireSelect = (questionnaireType) => {
         tipoDocumento: 'certificadoExpedito'
       }
     });
+  } else if (questionnaireType === 'historia-otologica') {
+    router.push({
+      name: 'crear-documento',
+      params: {
+        idEmpresa: empresas.currentEmpresaId,
+        idTrabajador: trabajadores.currentTrabajadorId,
+        tipoDocumento: 'historiaOtologica'
+      }
+    });
+  } else if (questionnaireType === 'previo-espirometria') {
+    router.push({
+      name: 'crear-documento',
+      params: {
+        idEmpresa: empresas.currentEmpresaId,
+        idTrabajador: trabajadores.currentTrabajadorId,
+        tipoDocumento: 'previoEspirometria'
+      }
+    });
   }
 };
 </script>
@@ -89,6 +107,20 @@ const handleQuestionnaireSelect = (questionnaireType) => {
               >
                 <i class="fas fa-file-alt text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Certificado Expedito
+              </button>
+              <button 
+                @click="handleQuestionnaireSelect('historia-otologica')"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+              >
+                <i class="fas fa-ear-deaf text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
+                Historia Otológica (Previo a Audiometría)
+              </button>
+              <button 
+                @click="handleQuestionnaireSelect('previo-espirometria')"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+              >
+                <i class="fas fa-lungs text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
+                Cuestionario Previo a Espirometría
               </button>
             </div>
           </div>

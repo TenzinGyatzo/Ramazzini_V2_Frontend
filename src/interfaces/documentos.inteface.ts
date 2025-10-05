@@ -421,4 +421,69 @@ export interface ControlPrenatal {
     rutaPDF: string;
     createdBy: string;
     updatedBy: string;
-  }
+}
+
+export interface HistoriaOtologica {
+    _id: string;
+    fechaHistoriaOtologica: string;
+    dolorOido: string;
+    supuracionOido: string;
+    mareoVertigo: string;
+    zumbidoTinnitus: string;
+    perdidaAudicion: string;
+    oidoTapadoPlenitud: string;
+    otitisFrecuentesInfancia: string;
+    cirugiasOido: string;
+    traumatismoCranealBarotrauma: string;
+    usoAudifonos: string;
+    historiaFamiliarHipoacusia: string;
+    meningitisInfeccionGraveInfancia: string;
+    diabetes: string;
+    enfermedadRenal: string;
+    medicamentosOtotoxicos: string;
+    trabajoAmbientesRuidosos: string;
+    tiempoExposicionLaboral: string;
+    usoProteccionAuditiva: string;
+    musicaFuerteAudifonos: string;
+    armasFuegoPasatiemposRuidosos: string;
+    servicioMilitar: string;
+    alergias: string;
+    resfriadoDiaPrueba: string;
+    otoscopiaOidoDerecho: string;
+    otoscopiaOidoIzquierdo: string;
+    resultadoCuestionario: string;
+}
+
+export interface PrevioEspirometria {
+    _id: string;
+    fechaPrevioEspirometria: string;
+    tabaquismo: string;
+    cigarrosSemana: string;
+    exposicionHumosBiomasa: string;
+    exposicionLaboralPolvos: string;
+    exposicionVaporesGasesIrritantes: string;
+    antecedentesTuberculosisInfeccionesRespiratorias: string;
+    tosCronica: string;
+    expectoracionFrecuente: string;
+    disnea: string;
+    sibilancias: string;
+    hemoptisis: string;
+    otrosSintomas: string;
+    asma: string;
+    epocBronquitisCronica: string;
+    fibrosisPulmonar: string;
+    apneaSueno: string;
+    medicamentosActuales: string;
+    medicamentosActualesEspecificar: string;
+    cirugiaReciente: string;
+    infeccionRespiratoriaActiva: string;
+    embarazoComplicado: string;
+    derramePleural: string;
+    neumotorax: string;
+    infartoAgudoAnginaInestable: string;
+    aneurismaAorticoConocido: string;
+    inestabilidadHemodinamicaGrave: string;
+    hipertensionIntracraneal: string;
+    desprendimientoAgudoRetina: string;
+    resultadoCuestionario: string;
+}

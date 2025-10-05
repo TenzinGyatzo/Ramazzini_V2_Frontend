@@ -10,6 +10,51 @@ const trabajadores = useTrabajadoresStore();
 const { formDataAptitud } = useFormDataStore();
 const documentos = useDocumentosStore();
 
+// Función para determinar qué guía mostrar basada en el valor de aptitudPuesto
+const getGuiaRecomendada = () => {
+    const aptitudPuesto = formDataAptitud.aptitudPuesto;
+    
+    if (!aptitudPuesto) {
+        return null; // No hay valor seleccionado, mostrar todas las opciones
+    }
+    
+    // Mapear los valores de aptitudPuesto a las secciones correspondientes
+    // Para mujeres: guiaAptaSinRestricciones, para hombres: guiaAptoSinRestricciones
+    const mapeoGuias = {
+        'Apto Sin Restricciones': trabajadores.currentTrabajador.sexo === 'Femenino' ? 'guiaAptaSinRestricciones' : 'guiaAptoSinRestricciones',
+        'Apto Con Precaución': 'guiaAptoConPrecaucion', 
+        'Apto Con Restricciones': 'guiaAptoConRestricciones',
+        'No Apto': trabajadores.currentTrabajador.sexo === 'Femenino' ? 'guiaNoApta' : 'guiaNoApto',
+        'Evaluación No Completada': 'guiaEvaluacionNoCompletada'
+    };
+    
+    return mapeoGuias[aptitudPuesto] || null;
+};
+
+// Función para verificar si debe mostrar una sección específica
+const shouldShowSection = (sectionName) => {
+    const guiaRecomendada = getGuiaRecomendada();
+    
+    // Si no hay guía recomendada, mostrar todas las secciones
+    if (!guiaRecomendada) {
+        return true;
+    }
+    
+    // Mostrar solo la sección recomendada
+    return sectionName === guiaRecomendada;
+};
+
+// Función para obtener el mensaje de guía recomendada
+const getMensajeGuiaRecomendada = () => {
+    const aptitudPuesto = formDataAptitud.aptitudPuesto;
+    
+    if (!aptitudPuesto) {
+        return null;
+    }
+    
+    return `Guía recomendada para: ${aptitudPuesto}`;
+};
+
 // Valor local para la resultados principal, inicializado con el valor actual del store
 const resultados = ref(formDataAptitud.resultados || '');
 
@@ -75,11 +120,27 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 
         <div v-if="trabajadores.currentTrabajador.sexo === 'Femenino'" class="mb-4">
             <div class="flex justify-between">
-                <p class="font-medium mb-1 text-gray-800 leading-5">Guías para concluir: </p>
+                <p class="font-medium mb-1 text-gray-800 leading-5">Guía para concluir: </p>
                 <span v-if="mensajeCopiado" class="ml-2 text-emerald-600 text-sm">¡Copiado!</span>
             </div>
+            
+            <!-- Mensaje informativo sobre guía recomendada -->
+            <div v-if="getMensajeGuiaRecomendada()" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-sm font-medium text-blue-800">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    {{ getMensajeGuiaRecomendada() }}
+                </p>
+            </div>
+            
+            <!-- Botón de debug (temporal) -->
+            <div class="mb-4">
+                <button @click="debugGuiaRecomendada()" 
+                    class="bg-gray-500 text-white px-3 py-1 rounded text-xs">
+                    Debug Info (Ver consola)
+                </button>
+            </div>
             <!-- Apta Sin Restricciones -->
-            <div class="space-y-2">
+            <div v-if="shouldShowSection('guiaAptaSinRestricciones')" class="space-y-2">
                 <!-- Botón principal -->
                 <button
                     class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
@@ -181,7 +242,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                 </div>
             </div>
             <!-- Apta Con Precauciones -->
-            <div class="space-y-2">
+            <div v-if="shouldShowSection('guiaAptoConPrecaucion')" class="space-y-2">
                 <!-- Botón principal -->
                 <button
                     class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
@@ -396,7 +457,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                 </div>
             </div>
             <!-- Apta Con Restricciones -->
-            <div class="space-y-2">
+            <div v-if="shouldShowSection('guiaAptaConRestricciones')" class="space-y-2">
                 <!-- Botón principal -->
                 <button
                     class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
@@ -642,7 +703,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                 </div>
             </div>
             <!-- No Apta -->
-            <div class="space-y-2">
+            <div v-if="shouldShowSection('guiaNoApta')" class="space-y-2">
                 <!-- Botón principal -->
                 <button
                     class="bg-white text-red-600 border border-red-600 hover:bg-red-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
@@ -673,7 +734,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                 </div>
             </div>
             <!-- Evaluación No Completada -->
-            <div class="space-y-2">
+            <div v-if="shouldShowSection('guiaEvaluacionNoCompletada')" class="space-y-2">
                 <!-- Botón principal -->
                 <button
                     class="bg-white text-gray-600 border border-gray-600 hover:bg-gray-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
@@ -752,11 +813,11 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
 
         <div v-else class="mb-4">
             <div class="flex justify-between">
-                <p class="font-medium mb-1 text-gray-800 leading-5">Guías para concluir: </p>
+                <p class="font-medium mb-1 text-gray-800 leading-5">Guía para concluir: </p>
                 <span v-if="mensajeCopiado" class="ml-2 text-emerald-600 text-sm">¡Copiado!</span>
             </div>
             <!-- Apto Sin Restricciones -->
-            <div class="space-y-2">
+            <div v-if="shouldShowSection('guiaAptoSinRestricciones')" class="space-y-2">
                 <!-- Botón principal -->
                 <button
                     class="bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-600 hover:text-white font-medium py-2 px-4 rounded-lg block"
@@ -858,7 +919,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                 </div>
             </div>
             <!-- Apto Con Precauciones -->
-            <div class="space-y-2">
+            <div v-if="shouldShowSection('guiaAptoConPrecaucion')" class="space-y-2">
                 <!-- Botón principal -->
                 <button
                     class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
@@ -1073,7 +1134,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                 </div>
             </div>
             <!-- Apto Con Restricciones -->
-            <div class="space-y-2">
+            <div v-if="shouldShowSection('guiaAptoConRestricciones')" class="space-y-2">
                 <!-- Botón principal -->
                 <button
                     class="bg-white text-orange-600 border border-orange-600 hover:bg-orange-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
@@ -1319,7 +1380,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                 </div>
             </div>
             <!-- No Apto -->
-            <div class="space-y-2">
+            <div v-if="shouldShowSection('guiaNoApto')" class="space-y-2">
                 <!-- Botón principal -->
                 <button
                     class="bg-white text-red-600 border border-red-600 hover:bg-red-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
@@ -1350,7 +1411,7 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                 </div>
             </div>
             <!-- Evaluación No Completada -->
-            <div class="space-y-2">
+            <div v-if="shouldShowSection('guiaEvaluacionNoCompletada')" class="space-y-2">
                 <!-- Botón principal -->
                 <button
                     class="bg-white text-gray-600 border border-gray-600 hover:bg-gray-600 hover:text-white font-medium py-2 px-4 rounded-lg mt-2"
