@@ -27,36 +27,70 @@ const evaluacionSugerencias = [
 
 </script>
 
+
 <template>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Evaluación Adicional 2</h1>
     <div>
-        <div class="mb-4">
-            <p class="font-medium mb-1 text-gray-800 leading-5">Nombre de evaluación, prueba o estudio:</p>
-            <div class="font-light mb-4">
-                <!-- Input con lista de sugerencias -->
-                <input type="text" name="nombreEvaluacion" data-skip-validation
-                    class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                    v-model="formDataAptitud.evaluacionAdicional2" required
-                    list="evaluaciones-sugerencias">
-                <!-- Datalist con opciones -->
-                <datalist id="evaluaciones-sugerencias">
-                    <option v-for="sugerencia in evaluacionSugerencias" :key="sugerencia" :value="sugerencia">
-                        {{ sugerencia }}
-                    </option>
-                </datalist>
+        <!-- Jerarquía Visual Mejorada -->
+        <h1 class="text-2xl font-bold mb-4 text-gray-900">EVALUACIÓN ADICIONAL 2</h1>
+        
+        <div class="space-y-6">
+            <!-- Campo 1: Nombre de evaluación -->
+            <div class="mb-6">
+                <label for="nombreEvaluacion" class="block text-base font-medium leading-5 text-gray-800 mb-1">
+                    Nombre de evaluación, prueba o estudio
+                </label>
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        name="nombreEvaluacion" 
+                        data-skip-validation
+                        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                        v-model="formDataAptitud.evaluacionAdicional2" 
+                        required
+                        list="evaluaciones-sugerencias"
+                        placeholder="Selecciona o escribe"
+                    />
+                    <!-- Datalist con opciones -->
+                    <datalist id="evaluaciones-sugerencias">
+                        <option v-for="sugerencia in evaluacionSugerencias" :key="sugerencia" :value="sugerencia">
+                            {{ sugerencia }}
+                        </option>
+                    </datalist>
+                </div>
             </div>
-            <p class="font-medium mb-1 text-gray-800 leading-5">Fecha de resultados:</p>
-            <div class="font-light mb-4">
-                <input type="date" name="fechaEvaluacion" data-skip-validation
-                    class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                    v-model="formDataAptitud.fechaEvaluacionAdicional2" required>
+
+            <!-- Campo 2: Fecha de resultados -->
+            <div class="mb-6">
+                <label for="fechaEvaluacion" class="block text-base font-medium leading-5 text-gray-800 mb-1">
+                    Fecha de resultados
+                </label>
+                <div class="relative">
+                    <input 
+                        type="date" 
+                        name="fechaEvaluacion" 
+                        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                        v-model="formDataAptitud.fechaEvaluacionAdicional2" 
+                        required
+                    />
+                </div>
             </div>
-            <p class="font-medium mb-1 text-gray-800 leading-5">Resumen de resultados y/o alteraciones encontradas:
-            </p>
-            <div class="font-light mb-4">
-                <input type="text" name="resultadosEvaluacion" data-skip-validation
-                    class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                    v-model="formDataAptitud.resultadosEvaluacionAdicional2" required>
+
+            <!-- Campo 3: Resumen de resultados -->
+            <div class="mb-6">
+                <label for="resultadosEvaluacion" class="block text-base font-medium leading-5 text-gray-800 mb-1">
+                    Resumen de resultados y/o alteraciones encontradas
+                </label>
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        name="resultadosEvaluacion" 
+                        data-skip-validation
+                        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                        v-model="formDataAptitud.resultadosEvaluacionAdicional2" 
+                        required
+                        placeholder="Describe el resultado"
+                    />
+                </div>
             </div>
         </div>
     </div>

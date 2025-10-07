@@ -220,11 +220,62 @@ import Step87ControlPrenatal from '../steps/controlPrenatalSteps/Step87.vue';
 import Step88ControlPrenatal from '../steps/controlPrenatalSteps/Step88.vue';
 import Step89ControlPrenatal from '../steps/controlPrenatalSteps/Step89.vue';
 import Step1HistoriaOtologica from '../steps/historiaOtologicaSteps/Step1.vue';
+import Step2HistoriaOtologica from '../steps/historiaOtologicaSteps/Step2.vue';
+import Step3HistoriaOtologica from '../steps/historiaOtologicaSteps/Step3.vue';
+import Step4HistoriaOtologica from '../steps/historiaOtologicaSteps/Step4.vue';
+import Step5HistoriaOtologica from '../steps/historiaOtologicaSteps/Step5.vue';
+import Step6HistoriaOtologica from '../steps/historiaOtologicaSteps/Step6.vue';
+import Step7HistoriaOtologica from '../steps/historiaOtologicaSteps/Step7.vue';
+import Step8HistoriaOtologica from '../steps/historiaOtologicaSteps/Step8.vue';
+import Step9HistoriaOtologica from '../steps/historiaOtologicaSteps/Step9.vue';
+import Step10HistoriaOtologica from '../steps/historiaOtologicaSteps/Step10.vue';
+import Step11HistoriaOtologica from '../steps/historiaOtologicaSteps/Step11.vue';
+import Step12HistoriaOtologica from '../steps/historiaOtologicaSteps/Step12.vue';
+import Step13HistoriaOtologica from '../steps/historiaOtologicaSteps/Step13.vue';
+import Step14HistoriaOtologica from '../steps/historiaOtologicaSteps/Step14.vue';
+import Step15HistoriaOtologica from '../steps/historiaOtologicaSteps/Step15.vue';
+import Step16HistoriaOtologica from '../steps/historiaOtologicaSteps/Step16.vue';
+import Step17HistoriaOtologica from '../steps/historiaOtologicaSteps/Step17.vue';
+import Step18HistoriaOtologica from '../steps/historiaOtologicaSteps/Step18.vue';
+import Step19HistoriaOtologica from '../steps/historiaOtologicaSteps/Step19.vue';
+import Step20HistoriaOtologica from '../steps/historiaOtologicaSteps/Step20.vue';
+import Step21HistoriaOtologica from '../steps/historiaOtologicaSteps/Step21.vue';
+import Step22HistoriaOtologica from '../steps/historiaOtologicaSteps/Step22.vue';
+import Step23HistoriaOtologica from '../steps/historiaOtologicaSteps/Step23.vue';
+import Step24HistoriaOtologica from '../steps/historiaOtologicaSteps/Step24.vue';
+import Step25HistoriaOtologica from '../steps/historiaOtologicaSteps/Step25.vue';
 import Step1PrevioEspirometria from '../steps/previoEspirometriaSteps/Step1.vue';
+import Step2PrevioEspirometria from '../steps/previoEspirometriaSteps/Step2.vue';
+import Step3PrevioEspirometria from '../steps/previoEspirometriaSteps/Step3.vue';
+import Step4PrevioEspirometria from '../steps/previoEspirometriaSteps/Step4.vue';
+import Step5PrevioEspirometria from '../steps/previoEspirometriaSteps/Step5.vue';
+import Step6PrevioEspirometria from '../steps/previoEspirometriaSteps/Step6.vue';
+import Step7PrevioEspirometria from '../steps/previoEspirometriaSteps/Step7.vue';
+import Step8PrevioEspirometria from '../steps/previoEspirometriaSteps/Step8.vue';
+import Step9PrevioEspirometria from '../steps/previoEspirometriaSteps/Step9.vue';
+import Step10PrevioEspirometria from '../steps/previoEspirometriaSteps/Step10.vue';
+import Step11PrevioEspirometria from '../steps/previoEspirometriaSteps/Step11.vue';
+import Step12PrevioEspirometria from '../steps/previoEspirometriaSteps/Step12.vue';
+import Step13PrevioEspirometria from '../steps/previoEspirometriaSteps/Step13.vue';
+import Step14PrevioEspirometria from '../steps/previoEspirometriaSteps/Step14.vue';
+import Step15PrevioEspirometria from '../steps/previoEspirometriaSteps/Step15.vue';
+import Step16PrevioEspirometria from '../steps/previoEspirometriaSteps/Step16.vue';
+import Step17PrevioEspirometria from '../steps/previoEspirometriaSteps/Step17.vue';
+import Step18PrevioEspirometria from '../steps/previoEspirometriaSteps/Step18.vue';
+import Step19PrevioEspirometria from '../steps/previoEspirometriaSteps/Step19.vue';
+import Step20PrevioEspirometria from '../steps/previoEspirometriaSteps/Step20.vue';
+import Step21PrevioEspirometria from '../steps/previoEspirometriaSteps/Step21.vue';
+import Step22PrevioEspirometria from '../steps/previoEspirometriaSteps/Step22.vue';
+import Step23PrevioEspirometria from '../steps/previoEspirometriaSteps/Step23.vue';
+import Step24PrevioEspirometria from '../steps/previoEspirometriaSteps/Step24.vue';
+import Step25PrevioEspirometria from '../steps/previoEspirometriaSteps/Step25.vue';
+import Step26PrevioEspirometria from '../steps/previoEspirometriaSteps/Step26.vue';
+import Step27PrevioEspirometria from '../steps/previoEspirometriaSteps/Step27.vue';
+import Step28PrevioEspirometria from '../steps/previoEspirometriaSteps/Step28.vue';
 import ModalFaltanCampos from '../ModalFaltanCampos.vue';
 
 export default {
-  components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Audiometria, Step2Audiometria, Step3Audiometria, Step4Audiometria, Step5Audiometria, Step6Audiometria, Step7Audiometria, Step1Certificado, Step2Certificado, Step1CertificadoExpedito, Step2CertificadoExpedito, Step3CertificadoExpedito, Step4CertificadoExpedito, Step5CertificadoExpedito, Step6CertificadoExpedito, Step7CertificadoExpedito, Step8CertificadoExpedito, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica, Step1NotaMedica, Step2NotaMedica, Step3NotaMedica, Step4NotaMedica, Step5NotaMedica, Step6NotaMedica, Step7NotaMedica, Step8NotaMedica, Step9NotaMedica, Step1ControlPrenatal, Step2ControlPrenatal, Step3ControlPrenatal, Step4ControlPrenatal, Step5ControlPrenatal, Step6ControlPrenatal, Step7ControlPrenatal, Step8ControlPrenatal, Step9ControlPrenatal, Step10ControlPrenatal, Step11ControlPrenatal, Step12ControlPrenatal, Step13ControlPrenatal, Step14ControlPrenatal, Step15ControlPrenatal, Step16ControlPrenatal, Step17ControlPrenatal, Step18ControlPrenatal, Step19ControlPrenatal, Step20ControlPrenatal, Step21ControlPrenatal, Step22ControlPrenatal, Step23ControlPrenatal, Step24ControlPrenatal, Step25ControlPrenatal, Step26ControlPrenatal, Step27ControlPrenatal, Step28ControlPrenatal, Step29ControlPrenatal, Step30ControlPrenatal, Step31ControlPrenatal, Step32ControlPrenatal, Step33ControlPrenatal, Step34ControlPrenatal, Step35ControlPrenatal, Step36ControlPrenatal, Step37ControlPrenatal, Step38ControlPrenatal, Step39ControlPrenatal, Step40ControlPrenatal, Step41ControlPrenatal, Step42ControlPrenatal, Step43ControlPrenatal, Step44ControlPrenatal, Step45ControlPrenatal, Step46ControlPrenatal, Step47ControlPrenatal, Step48ControlPrenatal, Step49ControlPrenatal, Step50ControlPrenatal, Step51ControlPrenatal, Step52ControlPrenatal, Step53ControlPrenatal, Step54ControlPrenatal, Step55ControlPrenatal, Step56ControlPrenatal, Step57ControlPrenatal, Step58ControlPrenatal, Step59ControlPrenatal, Step60ControlPrenatal, Step61ControlPrenatal, Step62ControlPrenatal, Step63ControlPrenatal, Step64ControlPrenatal, Step65ControlPrenatal, Step66ControlPrenatal, Step67ControlPrenatal, Step68ControlPrenatal, Step69ControlPrenatal, Step70ControlPrenatal, Step71ControlPrenatal, Step72ControlPrenatal, Step73ControlPrenatal, Step74ControlPrenatal, Step75ControlPrenatal, Step76ControlPrenatal, Step77ControlPrenatal, Step78ControlPrenatal, Step79ControlPrenatal, Step80ControlPrenatal, Step81ControlPrenatal, Step82ControlPrenatal, Step83ControlPrenatal, Step84ControlPrenatal, Step85ControlPrenatal, Step86ControlPrenatal, Step87ControlPrenatal, Step88ControlPrenatal, Step89ControlPrenatal, Step1HistoriaOtologica, Step1PrevioEspirometria, ModalFaltanCampos },
+  components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Audiometria, Step2Audiometria, Step3Audiometria, Step4Audiometria, Step5Audiometria, Step6Audiometria, Step7Audiometria, Step1Certificado, Step2Certificado, Step1CertificadoExpedito, Step2CertificadoExpedito, Step3CertificadoExpedito, Step4CertificadoExpedito, Step5CertificadoExpedito, Step6CertificadoExpedito, Step7CertificadoExpedito, Step8CertificadoExpedito, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica, Step1NotaMedica, Step2NotaMedica, Step3NotaMedica, Step4NotaMedica, Step5NotaMedica, Step6NotaMedica, Step7NotaMedica, Step8NotaMedica, Step9NotaMedica, Step1ControlPrenatal, Step2ControlPrenatal, Step3ControlPrenatal, Step4ControlPrenatal, Step5ControlPrenatal, Step6ControlPrenatal, Step7ControlPrenatal, Step8ControlPrenatal, Step9ControlPrenatal, Step10ControlPrenatal, Step11ControlPrenatal, Step12ControlPrenatal, Step13ControlPrenatal, Step14ControlPrenatal, Step15ControlPrenatal, Step16ControlPrenatal, Step17ControlPrenatal, Step18ControlPrenatal, Step19ControlPrenatal, Step20ControlPrenatal, Step21ControlPrenatal, Step22ControlPrenatal, Step23ControlPrenatal, Step24ControlPrenatal, Step25ControlPrenatal, Step26ControlPrenatal, Step27ControlPrenatal, Step28ControlPrenatal, Step29ControlPrenatal, Step30ControlPrenatal, Step31ControlPrenatal, Step32ControlPrenatal, Step33ControlPrenatal, Step34ControlPrenatal, Step35ControlPrenatal, Step36ControlPrenatal, Step37ControlPrenatal, Step38ControlPrenatal, Step39ControlPrenatal, Step40ControlPrenatal, Step41ControlPrenatal, Step42ControlPrenatal, Step43ControlPrenatal, Step44ControlPrenatal, Step45ControlPrenatal, Step46ControlPrenatal, Step47ControlPrenatal, Step48ControlPrenatal, Step49ControlPrenatal, Step50ControlPrenatal, Step51ControlPrenatal, Step52ControlPrenatal, Step53ControlPrenatal, Step54ControlPrenatal, Step55ControlPrenatal, Step56ControlPrenatal, Step57ControlPrenatal, Step58ControlPrenatal, Step59ControlPrenatal, Step60ControlPrenatal, Step61ControlPrenatal, Step62ControlPrenatal, Step63ControlPrenatal, Step64ControlPrenatal, Step65ControlPrenatal, Step66ControlPrenatal, Step67ControlPrenatal, Step68ControlPrenatal, Step69ControlPrenatal, Step70ControlPrenatal, Step71ControlPrenatal, Step72ControlPrenatal, Step73ControlPrenatal, Step74ControlPrenatal, Step75ControlPrenatal, Step76ControlPrenatal, Step77ControlPrenatal, Step78ControlPrenatal, Step79ControlPrenatal, Step80ControlPrenatal, Step81ControlPrenatal, Step82ControlPrenatal, Step83ControlPrenatal, Step84ControlPrenatal, Step85ControlPrenatal, Step86ControlPrenatal, Step87ControlPrenatal, Step88ControlPrenatal, Step89ControlPrenatal, Step1HistoriaOtologica, Step2HistoriaOtologica, Step3HistoriaOtologica, Step4HistoriaOtologica, Step5HistoriaOtologica, Step6HistoriaOtologica, Step7HistoriaOtologica, Step8HistoriaOtologica, Step9HistoriaOtologica, Step10HistoriaOtologica, Step11HistoriaOtologica, Step12HistoriaOtologica, Step13HistoriaOtologica, Step14HistoriaOtologica, Step15HistoriaOtologica, Step16HistoriaOtologica, Step17HistoriaOtologica, Step18HistoriaOtologica, Step19HistoriaOtologica, Step20HistoriaOtologica, Step21HistoriaOtologica, Step22HistoriaOtologica, Step23HistoriaOtologica, Step24HistoriaOtologica, Step25HistoriaOtologica, Step1PrevioEspirometria, Step2PrevioEspirometria, Step3PrevioEspirometria, Step4PrevioEspirometria, Step5PrevioEspirometria, Step6PrevioEspirometria, Step7PrevioEspirometria, Step8PrevioEspirometria, Step9PrevioEspirometria, Step10PrevioEspirometria, Step11PrevioEspirometria, Step12PrevioEspirometria, Step13PrevioEspirometria, Step14PrevioEspirometria, Step15PrevioEspirometria, Step16PrevioEspirometria, Step17PrevioEspirometria, Step18PrevioEspirometria, Step19PrevioEspirometria, Step20PrevioEspirometria, Step21PrevioEspirometria, Step22PrevioEspirometria, Step23PrevioEspirometria, Step24PrevioEspirometria, Step25PrevioEspirometria, Step26PrevioEspirometria, Step27PrevioEspirometria, Step28PrevioEspirometria, ModalFaltanCampos },
   setup() {
     const empresas = useEmpresasStore();
     const trabajadores = useTrabajadoresStore();
@@ -507,10 +558,61 @@ export default {
       } else if (documentos.currentTypeOfDocument === 'historiaOtologica') {
         stepsStore.setSteps([
           { component: Step1HistoriaOtologica, name: 'Paso 1' },
+          { component: Step2HistoriaOtologica, name: 'Paso 2' },
+          { component: Step3HistoriaOtologica, name: 'Paso 3' },
+          { component: Step4HistoriaOtologica, name: 'Paso 4' },
+          { component: Step5HistoriaOtologica, name: 'Paso 5' },
+          { component: Step6HistoriaOtologica, name: 'Paso 6' },
+          { component: Step7HistoriaOtologica, name: 'Paso 7' },
+          { component: Step8HistoriaOtologica, name: 'Paso 8' },
+          { component: Step9HistoriaOtologica, name: 'Paso 9' },
+          { component: Step10HistoriaOtologica, name: 'Paso 10' },
+          { component: Step11HistoriaOtologica, name: 'Paso 11' },
+          { component: Step12HistoriaOtologica, name: 'Paso 12' },
+          { component: Step13HistoriaOtologica, name: 'Paso 13' },
+          { component: Step14HistoriaOtologica, name: 'Paso 14' },
+          { component: Step15HistoriaOtologica, name: 'Paso 15' },
+          { component: Step16HistoriaOtologica, name: 'Paso 16' },
+          { component: Step17HistoriaOtologica, name: 'Paso 17' },
+          { component: Step18HistoriaOtologica, name: 'Paso 18' },
+          { component: Step19HistoriaOtologica, name: 'Paso 19' },
+          { component: Step20HistoriaOtologica, name: 'Paso 20' },
+          { component: Step21HistoriaOtologica, name: 'Paso 21' },
+          { component: Step22HistoriaOtologica, name: 'Paso 22' },
+          { component: Step23HistoriaOtologica, name: 'Paso 23' },
+          { component: Step24HistoriaOtologica, name: 'Paso 24' },
+          { component: Step25HistoriaOtologica, name: 'Paso 25' },
         ]);
       } else if (documentos.currentTypeOfDocument === 'previoEspirometria') {
         stepsStore.setSteps([
           { component: Step1PrevioEspirometria, name: 'Paso 1' },
+          { component: Step2PrevioEspirometria, name: 'Paso 2' },
+          { component: Step3PrevioEspirometria, name: 'Paso 3' },
+          { component: Step4PrevioEspirometria, name: 'Paso 4' },
+          { component: Step5PrevioEspirometria, name: 'Paso 5' },
+          { component: Step6PrevioEspirometria, name: 'Paso 6' },
+          { component: Step7PrevioEspirometria, name: 'Paso 7' },
+          { component: Step8PrevioEspirometria, name: 'Paso 8' },
+          { component: Step9PrevioEspirometria, name: 'Paso 9' },
+          { component: Step10PrevioEspirometria, name: 'Paso 10' },
+          { component: Step11PrevioEspirometria, name: 'Paso 11' },
+          { component: Step12PrevioEspirometria, name: 'Paso 12' },
+          { component: Step13PrevioEspirometria, name: 'Paso 13' },
+          { component: Step14PrevioEspirometria, name: 'Paso 14' },
+          { component: Step15PrevioEspirometria, name: 'Paso 15' },
+          { component: Step16PrevioEspirometria, name: 'Paso 16' },
+          { component: Step17PrevioEspirometria, name: 'Paso 17' },
+          { component: Step18PrevioEspirometria, name: 'Paso 18' },
+          { component: Step19PrevioEspirometria, name: 'Paso 19' },
+          { component: Step20PrevioEspirometria, name: 'Paso 20' },
+          { component: Step21PrevioEspirometria, name: 'Paso 21' },
+          { component: Step22PrevioEspirometria, name: 'Paso 22' },
+          { component: Step23PrevioEspirometria, name: 'Paso 23' },
+          { component: Step24PrevioEspirometria, name: 'Paso 24' },
+          { component: Step25PrevioEspirometria, name: 'Paso 25' },
+          { component: Step26PrevioEspirometria, name: 'Paso 26' },
+          { component: Step27PrevioEspirometria, name: 'Paso 27' },
+          { component: Step28PrevioEspirometria, name: 'Paso 28' },
         ]);
       } else {
         console.error(`Tipo de documento no reconocido: ${documentos.currentTypeOfDocument}`);

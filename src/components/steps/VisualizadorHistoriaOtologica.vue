@@ -49,7 +49,7 @@ const goToStep = (stepNumber) => {
               NOMBRE
             </td>
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
-                              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
+              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               EDAD
@@ -91,86 +91,320 @@ const goToStep = (stepNumber) => {
     </div>
 
     <!-- En los últimos 2 meses -->
-    <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-medium mb-1 text-center">EN LOS ÚLTIMOS 2 MESES</h2>
-      <table class="table-auto w-full border-collapse border border-gray-200">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
-            <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(24)" style="height: 1.75rem;"
-          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 24 }">
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">DOLOR OÍDO</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataHistoriaOtologica.dolorOido }}</td>
-          </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(25)" style="height: 1.75rem;"
-          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 25 }">
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">SUPURACIÓN OÍDO</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataHistoriaOtologica.supuracionOido }}</td>
-          </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(26)" style="height: 1.75rem;"
-          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 26 }">
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">MAREO O VÉRTIGO</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataHistoriaOtologica.mareoVertigo }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="w-full">
+      <h2 class="text-lg font-medium mb-1 text-center">EN LOS ÚLTIMOS DOS MESES</h2>
+      <div class="flex flex-wrap gap-2">
+        <!-- Tabla izquierda -->
+        <div class="w-full md:w-[calc(50%-0.25rem)]">
+          <table class="table-auto w-full border-collapse border border-gray-200">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="w-3/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
+                <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)" style="height: 1.75rem;"
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">DOLOR OÍDO</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.dolorOido === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.dolorOido }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(3)" style="height: 1.75rem;"
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 3 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">SUPURACIÓN OÍDO</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.supuracionOido === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.supuracionOido }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(4)" style="height: 1.75rem;"
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 4 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">MAREO O VÉRTIGO</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.mareoVertigo === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.mareoVertigo }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Tabla derecha -->
+        <div class="w-full md:w-[calc(50%-0.25rem)]">
+          <table class="table-auto w-full border-collapse border border-gray-200">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="w-3/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
+                <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(5)" style="height: 1.75rem;"
+                :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 5 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">ZUMBIDO (TINNITUS)</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.zumbidoTinnitus === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.zumbidoTinnitus }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(6)" style="height: 1.75rem;"
+                :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">PÉRDIDA DE AUDICIÓN</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.perdidaAudicion === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.perdidaAudicion }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(7)" style="height: 1.75rem;"
+                :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 7 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">OÍDO TAPADO / PLENITUD</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.oidoTapadoPlenitud === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.oidoTapadoPlenitud }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <!-- Neurológico -->
-    <div class="w-full md:w-[calc(50%-0.5rem)]">
-      <h2 class="text-lg font-medium mb-1 text-center">EN LOS ÚLTIMOS 2 MESES</h2>
-      <table class="table-auto w-full border-collapse border border-gray-200">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="w-1/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
-            <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(27)"
-            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 27 }">
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">ZUMBIDO (TINNITUS)</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataHistoriaOtologica.zumbidoTinnitus }}</td>
-          </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(28)"
-            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 28 }">
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">PÉRDIDA DE AUDICIÓN</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataHistoriaOtologica.perdidaAudicion }}</td>
-          </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(29)" 
-            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 29 }">
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">OÍDO TAPADO / PLENITUD</td>
-            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataHistoriaOtologica.oidoTapadoPlenitud }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Antecedentes personales -->
+    <div class="w-full">
+      <h2 class="text-lg font-medium mb-1 text-center">ANTEDENTES PERSONALES</h2>
+      <div class="flex flex-wrap gap-2">
+        <!-- Tabla izquierda -->
+        <div class="w-full md:w-[calc(50%-0.25rem)]">
+          <table class="table-auto w-full border-collapse border border-gray-200">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="w-3/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
+                <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(8)" 
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 8 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">OTITIS FRECUENTES EN INFANCIA</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.otitisFrecuentesInfancia === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.otitisFrecuentesInfancia }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(9)" 
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 9 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">CIRUGÍAS DE OÍDO</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.cirugiasOido === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.cirugiasOido }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(10)" 
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 10 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">TRAUMATISMO CRANEAL</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.traumatismoCranealBarotrauma === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.traumatismoCranealBarotrauma }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(11)" 
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 11 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">USO DE AUDÍFONOS</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.usoAudifonos === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.usoAudifonos }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Tabla derecha -->
+        <div class="w-full md:w-[calc(50%-0.25rem)]">
+          <table class="table-auto w-full border-collapse border border-gray-200">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="w-3/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
+                <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(12)" 
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 12 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">MENINGITIS U INFECCIÓN GRAVE</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.meningitisInfeccionGraveInfancia === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.meningitisInfeccionGraveInfancia }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(13)" 
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 13 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">DIABETES</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.diabetes === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.diabetes }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(14)" 
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 14 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">ENFERMEDAD RENAL</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.enfermedadRenal === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.enfermedadRenal }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(15)" 
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 15 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">MEDICAMENTOS OTOXICOS</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.medicamentosOtotoxicos === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.medicamentosOtotoxicos }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exposición a ruido -->
+    <div class="w-full">
+      <h2 class="text-lg font-medium mb-1 text-center">EXPOSICIÓN A RUIDO</h2>
+      <div class="flex flex-wrap gap-2">
+        <!-- Tabla izquierda -->
+        <div class="w-full md:w-[calc(50%-0.25rem)]">
+          <table class="table-auto w-full border-collapse border border-gray-200">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="w-3/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
+                <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(16)"
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 16 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">TRABAJO EN AMBIENTES RUIDOSOS</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.trabajoAmbientesRuidosos === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.trabajoAmbientesRuidosos }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(17)"
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 17 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">TIEMPO DE EXPOSICIÓN A RUIDO LABORAL</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+                  {{ formData.formDataHistoriaOtologica.tiempoExposicionLaboral }}</td>
+              </tr>
+                <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(18)"
+                :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 18 }">
+                  <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">USO DE PROTECCIÓN AUDITIVA</td>
+                  <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                    :class="formData.formDataHistoriaOtologica.usoProteccionAuditiva === 'A VECES' ? 'text-orange-600 font-medium' : formData.formDataHistoriaOtologica.usoProteccionAuditiva === 'NUNCA' ? 'text-red-600 font-medium' : ''">
+                    {{ formData.formDataHistoriaOtologica.usoProteccionAuditiva }}</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Tabla derecha -->
+        <div class="w-full md:w-[calc(50%-0.25rem)]">
+          <table class="table-auto w-full border-collapse border border-gray-200">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="w-3/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
+                <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(19)"
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 19 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">MÚSICA FUERTE CON AUDÍFONOS</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.musicaFuerteAudifonos === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.musicaFuerteAudifonos }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(20)"
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 20 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">ARMAS DE FUEGO O PASATIEMPOS RUIDOSOS</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.armasFuegoPasatiemposRuidosos === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.armasFuegoPasatiemposRuidosos }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(21)"
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 21 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">SERVICIO MILITAR</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.servicioMilitar === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.servicioMilitar }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección inferior: Otros y Otoscopia lado a lado -->
+    <div class="w-full">
+      <div class="flex flex-wrap gap-2">
+        <!-- Otros -->
+        <div class="w-full md:w-[calc(50%-0.25rem)]">
+          <h2 class="text-lg font-medium mb-1 text-center">OTROS</h2>
+          <table class="table-auto w-full border-collapse border border-gray-200">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="w-3/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
+                <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(22)"
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 22 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">ALERGIAS</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.alergias === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.alergias }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;" @click="goToStep(23)"
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 23 }">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">RESFRIADO DÍA DE PRUEBA</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.resfriadoDiaPrueba === 'SI' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.resfriadoDiaPrueba }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Otoscopia -->
+        <div class="w-full md:w-[calc(50%-0.25rem)]" @click="goToStep(24)" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 24 }">
+          <h2 class="text-lg font-medium mb-1 text-center">OTOSCOPIA</h2>
+          <table class="table-auto w-full border-collapse border border-gray-200">
+            <thead>
+              <tr class="bg-gray-200">
+                <th class="w-3/4 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">-</th>
+                <th class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">Hallazgos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">OÍDO DERECHO</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.otoscopiaOidoDerecho === 'NO PERMEABLE' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.otoscopiaOidoDerecho }}</td>
+              </tr>
+              <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" style="height: 1.75rem;">
+                <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">OÍDO IZQUIERDO</td>
+                <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
+                  :class="formData.formDataHistoriaOtologica.otoscopiaOidoIzquierdo === 'NO PERMEABLE' ? 'text-red-600 font-medium' : ''">
+                  {{ formData.formDataHistoriaOtologica.otoscopiaOidoIzquierdo }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- Resultado cuestionario -->
-    <div class="w-full" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 31 }">
-      <h2 class="text-lg font-medium mb-1 text-center">RESULTADO</h2>
+    <div class="w-full" @click="goToStep(25)" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 25 }">
+      <h2 class="text-lg font-medium mb-1 text-center">RESULTADO CUESTIONARIO</h2>
       <table class="table-auto w-full border-collapse border border-gray-200">
         <tbody>
           <!-- Encabezado -->
-          <tr class="bg-gray-200 cursor-pointer" @click="goToStep(31)">
+          <tr class="bg-gray-200 cursor-pointer">
             <td class="w-1/2 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light text-center">
               AUDIOMETRIA
             </td>
           </tr>
           <!-- Fila combinada -->
-          <tr class="bg-white cursor-pointer" @click="goToStep(31)">
-            <td class="w-1/2 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center align-middle"
-              style="height: calc(2 * 1.3rem);">
+          <tr class="bg-white cursor-pointer">
+            <td class="w-1/2 text-xl md:text-2xl px-2 py-0 border border-gray-300 text-center align-middle"
+              style="height: calc(2 * 1.3rem);"
+              :class="formData.formDataHistoriaOtologica.resultadoCuestionario === 'PROCEDENTE' ? 'text-green-600 font-medium' : formData.formDataHistoriaOtologica.resultadoCuestionario === 'PROCEDENTE CON PRECAUCIÓN' ? 'text-orange-600 font-medium' : 'text-red-600 font-medium'">
               {{ formData.formDataHistoriaOtologica.resultadoCuestionario }}
             </td>
           </tr>

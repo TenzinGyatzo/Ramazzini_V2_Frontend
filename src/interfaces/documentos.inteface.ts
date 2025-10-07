@@ -436,7 +436,6 @@ export interface HistoriaOtologica {
     cirugiasOido: string;
     traumatismoCranealBarotrauma: string;
     usoAudifonos: string;
-    historiaFamiliarHipoacusia: string;
     meningitisInfeccionGraveInfancia: string;
     diabetes: string;
     enfermedadRenal: string;

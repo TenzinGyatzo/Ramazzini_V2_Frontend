@@ -52,7 +52,15 @@ watch(fechaHistoriaOtologica, (newValue) => {
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Fecha de realización de la prueba</h1>
-    <FormKit type="date" name="fechaHistoriaOtologica" placeholder="Seleccione una fecha" v-model="fechaHistoriaOtologica" />
+    <h1 class="text-2xl font-bold mb-4 text-gray-900">Historia Otologica</h1>
+    <div class="mt-6">
+      <h2 class="text-lg font-medium mb-3 text-gray-800">Fecha de valoración</h2>
+      <FormKit 
+        type="date" 
+        name="fechaHistoriaOtologica" 
+        placeholder="Seleccione una fecha"
+        v-model="fechaHistoriaOtologica" 
+      />
+    </div>
   </div>
 </template>

@@ -124,21 +124,6 @@ const inicioSugerido = "Posterior a efectuar el examen integral de salud ocupaci
                 <span v-if="mensajeCopiado" class="ml-2 text-emerald-600 text-sm">¡Copiado!</span>
             </div>
             
-            <!-- Mensaje informativo sobre guía recomendada -->
-            <div v-if="getMensajeGuiaRecomendada()" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p class="text-sm font-medium text-blue-800">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    {{ getMensajeGuiaRecomendada() }}
-                </p>
-            </div>
-            
-            <!-- Botón de debug (temporal) -->
-            <div class="mb-4">
-                <button @click="debugGuiaRecomendada()" 
-                    class="bg-gray-500 text-white px-3 py-1 rounded text-xs">
-                    Debug Info (Ver consola)
-                </button>
-            </div>
             <!-- Apta Sin Restricciones -->
             <div v-if="shouldShowSection('guiaAptaSinRestricciones')" class="space-y-2">
                 <!-- Botón principal -->

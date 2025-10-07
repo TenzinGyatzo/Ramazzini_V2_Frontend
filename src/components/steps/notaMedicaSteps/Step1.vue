@@ -64,29 +64,128 @@ watch(fechaNotaMedica, (newValue) => {
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Nota Médica</h1>
-    <!-- Pregunta principal -->
-    <div class="mb-4">
-      <p class="font-medium mb-1 text-gray-800 leading-5">¿Tipo de Consulta?</p>
-      <div class="flex items-center space-x-6 font-light">
-        <label class="flex items-center space-x-2">
-          <input type="radio" value="Inicial" v-model="tipoNota" class="form-radio accent-emerald-600" />
-          <span>Inicial</span>
+    <!-- Jerarquía Visual Mejorada -->
+    <h1 class="text-2xl font-bold mb-4 text-gray-900">Nota Médica</h1>
+    
+    <!-- Pregunta principal con mejor jerarquía -->
+    <div class="mb-8">
+      <p class="text-lg font-medium mb-4 text-gray-800">¿Tipo de consulta?</p>
+      
+      <!-- Diseño de Radio Buttons más Visual tipo Card -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <!-- Opción Inicial -->
+        <label 
+          :class="[
+            'relative flex flex-col items-center justify-center py-3 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+            tipoNota === 'Inicial' 
+              ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+              : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+          ]"
+        >
+          <input 
+            type="radio" 
+            value="Inicial" 
+            v-model="tipoNota" 
+            class="sr-only" 
+          />
+          <span 
+            :class="[
+              'text-base font-semibold transition-colors duration-200',
+              tipoNota === 'Inicial' ? 'text-emerald-700' : 'text-gray-700'
+            ]"
+          >
+            Inicial
+          </span>
+          <!-- Indicador de selección -->
+          <div 
+            v-if="tipoNota === 'Inicial'"
+            class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </div>
         </label>
-        <label class="flex items-center space-x-2">
-          <input type="radio" value="Seguimiento" v-model="tipoNota" class="form-radio accent-emerald-600" />
-          <span>Seguimiento</span>
+
+        <!-- Opción Seguimiento -->
+        <label 
+          :class="[
+            'relative flex flex-col items-center justify-center py-3 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out ',
+            tipoNota === 'Seguimiento' 
+              ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+              : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+          ]"
+        >
+          <input 
+            type="radio" 
+            value="Seguimiento" 
+            v-model="tipoNota" 
+            class="sr-only" 
+          />
+          <span 
+            :class="[
+              'mt-1 text-base sm:text-sm font-semibold transition-colors duration-200',
+              tipoNota === 'Seguimiento' ? 'text-emerald-700' : 'text-gray-700'
+            ]"
+          >
+            Seguimiento
+          </span>
+          <!-- Indicador de selección -->
+          <div 
+            v-if="tipoNota === 'Seguimiento'"
+            class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </div>
         </label>
-        <label class="flex items-center space-x-2">
-          <input type="radio" value="Alta" v-model="tipoNota" class="form-radio accent-emerald-600" />
-          <span>Alta</span>
+
+        <!-- Opción Alta -->
+        <label 
+          :class="[
+            'relative flex flex-col items-center justify-center py-3 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+            tipoNota === 'Alta' 
+              ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+              : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+          ]"
+        >
+          <input 
+            type="radio" 
+            value="Alta" 
+            v-model="tipoNota" 
+            class="sr-only" 
+          />
+          <span 
+            :class="[
+              'text-base font-semibold transition-colors duration-200',
+              tipoNota === 'Alta' ? 'text-emerald-700' : 'text-gray-700'
+            ]"
+          >
+            Alta
+          </span>
+          <!-- Indicador de selección -->
+          <div 
+            v-if="tipoNota === 'Alta'"
+            class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+          </div>
         </label>
       </div>
     </div>
-    <div class="mt-6">
-      <h1 class="font-medium mb-2 text-gray-800 leading-5">Fecha de Consulta</h1>
-      <FormKit type="date" name="fechaNotaMedica" placeholder="Seleccione una fecha"
-        v-model="fechaNotaMedica" />
+
+    <!-- Sección de fecha con mejor espaciado -->
+    <div class="mt-8">
+      <h2 class="text-lg font-medium mb-3 text-gray-800">Fecha de Consulta</h2>
+      <FormKit 
+        type="date" 
+        name="fechaNotaMedica" 
+        placeholder="Seleccione una fecha"
+        v-model="fechaNotaMedica" 
+      />
     </div>
   </div>
 </template>

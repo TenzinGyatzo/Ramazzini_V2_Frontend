@@ -52,7 +52,15 @@ watch(fechaAntidoping, (newValue) => {
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 leading-5">Fecha de realización de la prueba</h1>
-    <FormKit type="date" name="fechaAntidoping" placeholder="Seleccione una fecha" v-model="fechaAntidoping" />
+    <h1 class="text-2xl font-bold mb-4 text-gray-900">Antidoping</h1>
+    <div class="mt-6">
+      <h2 class="text-lg font-medium mb-3 text-gray-800">Fecha de realización de la prueba</h2>
+      <FormKit 
+        type="date" 
+        name="fechaAntidoping" 
+        placeholder="Seleccione una fecha"  
+        v-model="fechaAntidoping" 
+      />
+    </div>
   </div>
 </template>

@@ -1937,7 +1937,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     'Exploracion Fisica': exploracionFisica,
                     'Historia Clinica': historiaClinica,
                     'Nota Medica': notaMedica,
-                    'Control Prenatal': controlPrenatal
+                    'Control Prenatal': controlPrenatal,
+                    'Historia Otologica': historiaOtologica,
+                    'Previo Espirometria': previoEspirometria,
                 }" :key="key">
                     <button v-if="documento && documento.rutaDocumento" @click="descargarArchivo(documento, key)"
                         type="button"
