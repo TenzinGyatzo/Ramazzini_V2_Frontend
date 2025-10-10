@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted, watch, computed, onBeforeUnmount } from "v
 import { useUserStore } from "@/stores/user";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
 import { useMedicoFirmanteStore } from "@/stores/medicoFirmante";
+import { useEnfermeraFirmanteStore } from "@/stores/enfermeraFirmante";
 import { useEmpresasStore } from "@/stores/empresas";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
@@ -11,6 +12,7 @@ import TooltipInfo from "@/components/TooltipInfo.vue";
 const user = useUserStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const medicoFirmanteStore = useMedicoFirmanteStore();
+const enfermeraFirmanteStore = useEnfermeraFirmanteStore();
 const empresas = useEmpresasStore();
 const route = useRoute();
 const router = useRouter();
@@ -91,6 +93,7 @@ onMounted(() => {
       }
       if (user?._id) {
         await medicoFirmanteStore.loadMedicoFirmante(user._id);
+        await enfermeraFirmanteStore.loadEnfermeraFirmante(user._id);
       }
       datosCargados.value = true;
     },
@@ -180,9 +183,23 @@ const camposPendientesMedico = computed(() => {
   return pendientes;
 });
 
+// Computed para verificar los campos pendientes en Enfermera Firmante
+const camposPendientesEnfermera = computed(() => {
+  const enfermera = enfermeraFirmanteStore.enfermeraFirmante;
+  const pendientes: string[] = [];
+
+  if (!enfermera?.nombre) pendientes.push("Nombre");
+  if (!enfermera?.sexo) pendientes.push("Sexo");
+  if (!enfermera?.tituloProfesional) pendientes.push("Título Profesional");
+  if (!enfermera?.numeroCedulaProfesional) pendientes.push("Número de Registro/Cédula Profesional");
+
+  return pendientes;
+});
+
 // Computed para determinar si mostrar el ícono del tooltip
 const mostrarTooltipProveedor = computed(() => camposPendientesProveedor.value.length > 0);
 const mostrarTooltipMedico = computed(() => camposPendientesMedico.value.length > 0);
+const mostrarTooltipEnfermera = computed(() => camposPendientesEnfermera.value.length > 0);
 
 // Controlar la aparición de las notificaciones con delay
 const mostrarNotificacionLogotipo = ref(false);
@@ -197,7 +214,21 @@ watch(
 );
 
 watch(
-  () => camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0,
+  () => {
+    const userRole = user.user?.role;
+    
+    // Para roles de médicos
+    if (userRole === 'Administrador' || userRole === 'Principal' || userRole === 'Secundario' || userRole === 'Médico') {
+      return camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0;
+    }
+    
+    // Para rol de enfermera
+    if (userRole === 'Enfermero/a') {
+      return camposPendientesEnfermera.value.length > 0;
+    }
+    
+    return false;
+  },
   (newVal) => {
     mostrarNotificacionCampos.value = newVal;
   }
@@ -208,8 +239,21 @@ onMounted(() => {
     if (logotipoPendiente.value) {
       mostrarNotificacionLogotipo.value = true;
     }
-    if (camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0) {
-      mostrarNotificacionCampos.value = true;
+    
+    const userRole = user.user?.role;
+    
+    // Para roles de médicos
+    if (userRole === 'Administrador' || userRole === 'Principal' || userRole === 'Secundario' || userRole === 'Médico') {
+      if (camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0) {
+        mostrarNotificacionCampos.value = true;
+      }
+    }
+    
+    // Para rol de enfermera
+    if (userRole === 'Enfermero/a') {
+      if (camposPendientesEnfermera.value.length > 0) {
+        mostrarNotificacionCampos.value = true;
+      }
     }
   }, 1200);
 });
@@ -218,13 +262,16 @@ onMounted(() => {
 const animacionNotificacion = ref("notificacion-animada");
 const animacionTooltipProveedor = ref("tooltip-pulse");
 const animacionTooltipMedico = ref("tooltip-pulse");
+const animacionTooltipEnfermera = ref("tooltip-pulse");
 const showTooltipProveedor = ref(false);
 const showTooltipMedico = ref(false);
+const showTooltipEnfermera = ref(false);
 const showTooltipLogotipo = ref(false);
 
 let intervaloAnimacion: ReturnType<typeof setInterval> | null = null;
 let intervaloTooltipProveedor: ReturnType<typeof setInterval> | null = null;
 let intervaloTooltipMedico: ReturnType<typeof setInterval> | null = null;
+let intervaloTooltipEnfermera: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
   intervaloAnimacion = setInterval(() => {
@@ -245,43 +292,93 @@ onBeforeUnmount(() => {
   if (intervaloTooltipMedico !== null) {
     clearInterval(intervaloTooltipMedico);
   }
+  if (intervaloTooltipEnfermera !== null) {
+    clearInterval(intervaloTooltipEnfermera);
+  }
 });
 
 // Verificar si se debe mostrar el mensaje de configuración pendiente
 const mostrarMensajePendiente = computed(() => {
-  return logotipoPendiente.value || 
-    camposPendientesProveedor.value.length > 0 || 
-    camposPendientesMedico.value.length > 0;
+  const userRole = user.user?.role;
+  
+  // Para roles de médicos (Administrador, Principal, Secundario, Médico)
+  if (userRole === 'Administrador' || userRole === 'Principal' || userRole === 'Secundario' || userRole === 'Médico') {
+    return logotipoPendiente.value || 
+      camposPendientesProveedor.value.length > 0 || 
+      camposPendientesMedico.value.length > 0;
+  }
+  
+  // Para rol de enfermera
+  if (userRole === 'Enfermero/a') {
+    return camposPendientesEnfermera.value.length > 0;
+  }
+  
+  return false;
 });
 
-// Definir el mensaje adecuado según el estado
+// Definir el mensaje adecuado según el estado y el rol
 const mensajeConfiguracion = computed(() => {
-  if ((camposPendientesProveedor.value.length === 4) && (camposPendientesMedico.value.length === 3)) {
-    return "Tus informes aún no están configurados correctamente.";
-  } else if (camposPendientesProveedor.value.length > 0) {
-    return 'Hay campos pendientes en "Mi Negocio".';
-  } else if (logotipoPendiente.value) {
-    return "Aún no has subido el logotipo.";
-  } else if (camposPendientesMedico.value.length > 0) {
-    return 'Hay campos pendientes en "Médico Firmante".';
-  } else {
-    return "Algunos campos están incompletos en tu configuración.";
+  const userRole = user.user?.role;
+  
+  // Mensajes para roles de médicos
+  if (userRole === 'Administrador' || userRole === 'Principal' || userRole === 'Secundario' || userRole === 'Médico') {
+    if ((camposPendientesProveedor.value.length === 4) && (camposPendientesMedico.value.length === 3)) {
+      return "Tus informes aún no están configurados correctamente.";
+    } else if (camposPendientesProveedor.value.length > 0) {
+      return 'Hay campos pendientes en "Mi Negocio".';
+    } else if (logotipoPendiente.value) {
+      return "Aún no has subido el logotipo.";
+    } else if (camposPendientesMedico.value.length > 0) {
+      return 'Hay campos pendientes en "Médico Firmante".';
+    } else {
+      return "Algunos campos están incompletos en tu configuración.";
+    }
   }
+  
+  // Mensajes para rol de enfermera
+  if (userRole === 'Enfermero/a') {
+    if (camposPendientesEnfermera.value.length > 0) {
+      return 'Hay campos pendientes en "Enfermera Firmante".';
+    }
+  }
+  
+  return "Algunos campos están incompletos en tu configuración.";
 });
 
 // Definir el texto del enlace dependiendo de la situación
 const textoEnlace = computed(() => {
-  if (logotipoPendiente.value && !(camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0)) {
-    return "Sigue esta guía para hacerlo";
-  } else {
+  const userRole = user.user?.role;
+  
+  if (userRole === 'Administrador' || userRole === 'Principal' || userRole === 'Secundario' || userRole === 'Médico') {
+    if (logotipoPendiente.value && !(camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0)) {
+      return "Sigue esta guía para hacerlo";
+    } else {
+      return "Sigue esta guía para configurarlos";
+    }
+  }
+  
+  if (userRole === 'Enfermero/a') {
     return "Sigue esta guía para configurarlos";
   }
+  
+  return "Sigue esta guía para configurarlos";
 });
 
 // Computed para determinar el tipo de notificación
 const tipoNotificacion = computed(() => {
-  if (logotipoPendiente.value) return 'error';
-  if (camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0) return 'warning';
+  const userRole = user.user?.role;
+  
+  // Para roles de médicos
+  if (userRole === 'Administrador' || userRole === 'Principal' || userRole === 'Secundario' || userRole === 'Médico') {
+    if (logotipoPendiente.value) return 'error';
+    if (camposPendientesProveedor.value.length > 0 || camposPendientesMedico.value.length > 0) return 'warning';
+  }
+  
+  // Para rol de enfermera
+  if (userRole === 'Enfermero/a') {
+    if (camposPendientesEnfermera.value.length > 0) return 'warning';
+  }
+  
   return 'info';
 });
 
@@ -334,12 +431,32 @@ watch([datosCargados, mostrarMensajePendiente], ([nuevosDatosCargados, nuevoMost
 });
 
 // Watcher adicional para cuando datosCargados cambie a true y ya haya campos pendientes
-watch([datosCargados, logotipoPendiente, camposPendientesProveedor, camposPendientesMedico], ([nuevosDatosCargados, nuevoLogotipoPendiente, nuevosCamposProveedor, nuevosCamposMedico]) => {
-  if (nuevosDatosCargados && (nuevoLogotipoPendiente || nuevosCamposProveedor.length > 0 || nuevosCamposMedico.length > 0)) {
-    // Mostrar la notificación después de un pequeño delay para mejor UX
+watch([datosCargados, logotipoPendiente, camposPendientesProveedor, camposPendientesMedico, camposPendientesEnfermera], ([nuevosDatosCargados, nuevoLogotipoPendiente, nuevosCamposProveedor, nuevosCamposMedico, nuevosCamposEnfermera]) => {
+  const userRole = user.user?.role;
+  
+  // Para roles de médicos
+  if ((userRole === 'Administrador' || userRole === 'Principal' || userRole === 'Secundario' || userRole === 'Médico') && 
+      nuevosDatosCargados && 
+      (nuevoLogotipoPendiente || nuevosCamposProveedor.length > 0 || nuevosCamposMedico.length > 0)) {
     setTimeout(() => {
       isNotificationVisible.value = true;
     }, 1000);
+  }
+  
+  // Para rol de enfermera
+  if (userRole === 'Enfermero/a' && nuevosDatosCargados && nuevosCamposEnfermera.length > 0) {
+    setTimeout(() => {
+      isNotificationVisible.value = true;
+    }, 1000);
+  }
+  
+  // Actualizar mostrarNotificacionCampos según el rol
+  if (nuevosDatosCargados) {
+    if (userRole === 'Administrador' || userRole === 'Principal' || userRole === 'Secundario' || userRole === 'Médico') {
+      mostrarNotificacionCampos.value = nuevosCamposProveedor.length > 0 || nuevosCamposMedico.length > 0;
+    } else if (userRole === 'Enfermero/a') {
+      mostrarNotificacionCampos.value = nuevosCamposEnfermera.length > 0;
+    }
   }
 });
 
@@ -412,6 +529,22 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
         animacionTooltipMedico.value === "tooltip-bounce" 
         ? "tooltip-pulse" 
         : "tooltip-pulse";
+    }, 2000);
+  }
+});
+
+watch(mostrarTooltipEnfermera, (nuevoValor) => {
+  if (intervaloTooltipEnfermera) {
+    clearInterval(intervaloTooltipEnfermera);
+    intervaloTooltipEnfermera = null;
+  }
+  
+  if (nuevoValor) {
+    intervaloTooltipEnfermera = setInterval(() => {
+      animacionTooltipEnfermera.value = 
+        animacionTooltipEnfermera.value === "tooltip-bounce" 
+        ? "tooltip-pulse" 
+        : "tooltip-bounce";
     }, 2000);
   }
 });
@@ -540,7 +673,7 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
     <!-- Botón del engrane mejorado -->
     <Transition name="delayed-appear">
       <button 
-        v-if="isVisible && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
+        v-if="isVisible && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'enfermera-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
         @click="toggleMenu"
         class="fixed top-6 right-6 p-4 bg-white text-gray-700 rounded-full hover:bg-gray-50 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl border border-gray-200 z-50 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-200"
         :aria-label="isMenuOpen ? 'Cerrar menú de configuración' : 'Abrir menú de configuración'"
@@ -569,7 +702,7 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
     <!-- Menú desplegable mejorado -->
     <Transition name="fade">
       <div 
-        v-if="isMenuOpen && ['inicio', 'add-user', 'remove-users', 'user-productivity', 'perfil-proveedor', 'medico-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
+        v-if="isMenuOpen && ['inicio', 'add-user', 'remove-users', 'user-productivity', 'perfil-proveedor', 'medico-firmante', 'enfermera-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
         ref="menuRef"
         class="fixed top-20 right-6 bg-white rounded-2xl shadow-2xl p-6 w-72 z-40 border border-gray-100 backdrop-blur-sm bg-white/95">
 
@@ -643,7 +776,7 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
             </a>
 
             <!-- Médico Firmante -->
-            <a @click="router.push({ name: 'medico-firmante' })" 
+            <a v-if="user.user?.role === 'Principal' || user.user?.role === 'Secundario' || user.user?.role === 'Médico' || user.user?.role === 'Administrador'" @click="router.push({ name: 'medico-firmante' })" 
                :class="[
                  'block py-3 px-4 rounded-xl mt-2 transition-all duration-300 ease-in-out cursor-pointer border group',
                  mostrarTooltipMedico 
@@ -671,6 +804,38 @@ watch(mostrarTooltipMedico, (nuevoValor) => {
                     ? 'text-yellow-700 group-hover:text-yellow-800'
                     : 'text-gray-700 group-hover:text-gray-900'
                 ]">Médico Firmante</span>
+              </div>
+            </a>
+
+            <!-- Enfermera Firmante -->
+            <a v-if="user.user?.role === 'Enfermero/a'" @click="router.push({ name: 'enfermera-firmante' })" 
+               :class="[
+                 'block py-3 px-4 rounded-xl mt-2 transition-all duration-300 ease-in-out cursor-pointer border group',
+                 mostrarTooltipEnfermera 
+                   ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 border-yellow-300 hover:border-yellow-400'
+                   : 'bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 border-gray-200 hover:border-blue-300'
+               ]">
+              <div class="flex items-center gap-3">
+                <!-- Icono con animación para campos pendientes de la enfermera -->
+                <div v-if="mostrarTooltipEnfermera" class="relative group" @mouseenter="showTooltipEnfermera = true" @mouseleave="showTooltipEnfermera = false">
+                  <i :class="['fa-solid fa-exclamation-circle text-yellow-500 text-lg cursor-pointer', animacionTooltipEnfermera]"></i>
+                  <div v-if="showTooltipEnfermera" class="absolute right-full -mr-4 top-1/2 transform -translate-y-1/2 z-50 bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64">
+                    <p class="font-semibold mb-1 text-base">Para un mejor pie de página, se recomienda guardar:</p>
+                    <ul class="list-disc pl-4 mt-2 text-gray-300">
+                      <li v-for="item in camposPendientesEnfermera" :key="item">{{ item }}</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <i v-if="!mostrarTooltipEnfermera" :class="[
+                  'fa-solid fa-user-nurse transition-colors duration-200 text-pink-500 group-hover:text-pink-600'
+                ]"></i>
+                <span :class="[
+                  'font-medium transition-colors duration-200',
+                  mostrarTooltipEnfermera 
+                    ? 'text-yellow-700 group-hover:text-yellow-800'
+                    : 'text-gray-700 group-hover:text-gray-900'
+                ]">Enfermero/a Firmante</span>
               </div>
             </a>
           </div>
@@ -1532,6 +1697,10 @@ a:focus-visible {
   color: #22c55e !important;
 }
 
+.dark-mode .text-pink-500 {
+  color: #ec4899 !important;
+}
+
 .dark-mode .text-purple-500 {
   color: #a855f7 !important;
 }
@@ -1563,6 +1732,10 @@ a:focus-visible {
 
 .dark-mode .group-hover\:text-green-600:hover {
   color: #16a34a !important;
+}
+
+.dark-mode .group-hover\:text-pink-600:hover {
+  color: #db2777 !important;
 }
 
 .dark-mode .group-hover\:text-purple-600:hover {

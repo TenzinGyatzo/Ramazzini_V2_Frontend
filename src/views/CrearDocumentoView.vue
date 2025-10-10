@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watchEffect } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -8,6 +8,7 @@ import { useDocumentosStore } from '@/stores/documentos';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
 import { useCurrentUser } from '@/composables/useCurrentUser';
+import { useUserPermissions } from '@/composables/useUserPermissions';
 import FormStepper from '@/components/steps/FormStepper.vue';
 import VisualizadorAntidoping from '@/components/steps/VisualizadorAntidoping.vue';
 import VisualizadorAptitud from '@/components/steps/VisualizadorAptitud.vue';
@@ -23,6 +24,7 @@ import VisualizadorHistoriaOtologica from '@/components/steps/VisualizadorHistor
 import VisualizadorPrevioEspirometria from '@/components/steps/VisualizadorPrevioEspirometria.vue';
 
 const route = useRoute();
+const router = useRouter();
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
@@ -30,6 +32,7 @@ const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 const steps = useStepsStore();
 const { ensureUserLoaded } = useCurrentUser();
+const { canCreateDocument, getRestrictionMessage } = useUserPermissions();
 
 const empresaId = ref('');
 const centroTrabajoId = ref('');
@@ -78,6 +81,21 @@ onMounted(() => {
         }
       })
       .catch(error => console.log('No se pudo consultar altura disponible:', error));
+  }
+
+  // Verificar permisos de usuario para el tipo de documento
+  if (tipoDocumento.value && !canCreateDocument(tipoDocumento.value)) {
+    console.warn(`Acceso no autorizado: ${tipoDocumento.value}`);
+    // Redireccionar al expediente médico
+    router.push({ 
+      name: "expediente-medico", 
+      params: { 
+        idEmpresa: empresaId.value,
+        idCentroTrabajo: centroTrabajoId.value,
+        idTrabajador: trabajadorId.value
+      }
+    });
+    return;
   }
 });
 

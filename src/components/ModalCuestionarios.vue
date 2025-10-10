@@ -3,6 +3,7 @@ import { inject } from 'vue';
 import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { useUserPermissions } from '@/composables/useUserPermissions';
 
 const toast = inject('toast');
 
@@ -10,6 +11,7 @@ const emit = defineEmits(['closeModal']);
 const router = useRouter();
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
+const { canCreateDocument, getRestrictionMessage } = useUserPermissions();
 
 const closeModal = () => {
   emit('closeModal');
@@ -42,6 +44,15 @@ const handleQuestionnaireSelect = (questionnaireType) => {
     // Cerrar el modal después de navegar
     closeModal();
   } else if (questionnaireType === 'certificado-expedito') {
+    // Validar permisos para certificado expedito
+    if (!canCreateDocument('certificadoExpedito')) {
+      toast.open({
+        message: getRestrictionMessage('certificadoExpedito'),
+        type: 'error',
+      });
+      return;
+    }
+    
     router.push({
       name: 'crear-documento',
       params: {
@@ -103,9 +114,20 @@ const handleQuestionnaireSelect = (questionnaireType) => {
             <div class="space-y-2">
               <button 
                 @click="handleQuestionnaireSelect('certificado-expedito')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                :class="[
+                  'w-full text-left px-4 py-3 rounded-lg text-sm transition-colors duration-150 flex items-center group border',
+                  canCreateDocument('certificadoExpedito')
+                    ? 'hover:bg-emerald-50 text-emerald-700 border-gray-200 hover:border-emerald-300 cursor-pointer'
+                    : 'disabled bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed'
+                ]"
+                :disabled="!canCreateDocument('certificadoExpedito')"
               >
-                <i class="fas fa-file-alt text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
+                <i :class="[
+                  'fas fa-file-alt mr-3 text-sm',
+                  canCreateDocument('certificadoExpedito')
+                    ? 'text-emerald-500 group-hover:text-emerald-600'
+                    : 'text-gray-400'
+                ]"></i>
                 Certificado Expedito
               </button>
               <button 

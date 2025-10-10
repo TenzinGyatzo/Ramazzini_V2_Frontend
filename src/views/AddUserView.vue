@@ -23,6 +23,12 @@ const proveedorSalud = ref(
 const maxUsuariosPermitidos = proveedorSalud.value?.maxUsuariosPermitidos;
 let usuariosCreados = 0;
 
+// Opciones de roles disponibles
+const roles = [
+  { value: "Médico", label: "Médico" },
+  { value: "Enfermero/a", label: "Enfermero/a" },
+];
+
 onMounted(async () => {
   const resultado = await userStore.fetchUsersByProveedorId(
     user.value.idProveedorSalud
@@ -36,7 +42,7 @@ const formDataUser = reactive({
   phone: "",
   country: "MX", // Default to Mexico
   password: "",
-  role: "Secundario",
+  role: "",
   idProveedorSalud: user.value.idProveedorSalud,
 });
 
@@ -145,6 +151,19 @@ const volver = () => {
           :initial-country="formDataUser.country"
           @update:country="formDataUser.country = $event"
           validation="required"
+        />
+
+        <FormKit
+          type="select"
+          label="¿Cuál es el rol del usuario?"
+          name="role"
+          placeholder="Selecciona el rol"
+          :options="roles"
+          validation="required"
+          :validation-messages="{
+            required: 'Este campo es obligatorio',
+          }"
+          v-model="formDataUser.role"
         />
 
         <FormKit

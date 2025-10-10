@@ -4,6 +4,7 @@ import AuthAPI from "@/api/AuthAPI";
 import axios from "axios";
 import { useUserStore } from "@/stores/user";
 import { usePostHog } from "../composables/usePostHog";
+import { useUserPermissions } from "@/composables/useUserPermissions";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,6 +72,11 @@ const router = createRouter({
           path: "medico-firmante",
           name: "medico-firmante",
           component: () => import("../views/MedicoFirmanteView.vue"),
+        },
+        {
+          path: "enfermera-firmante",
+          name: "enfermera-firmante",
+          component: () => import("../views/EnfermeraFirmanteView.vue"),
         },
         {
           path: "dashboard/:idEmpresa",
@@ -183,6 +189,21 @@ router.beforeEach((to, from) => {
       if (requiresAdmin && (!user || user.role !== "Administrador")) {
         console.warn("Acceso denegado: no eres administrador");
         return next({ name: "inicio" });
+      }
+
+      // Validar restricciones de documentos para enfermeros
+      if (to.name === 'crear-documento' && user) {
+        const { canCreateDocument } = useUserPermissions();
+        const documentType = to.params.tipoDocumento as string;
+        
+        if (!canCreateDocument(documentType)) {
+          console.warn(`Acceso denegado: ${user.role} no puede crear documento ${documentType}`);
+          return next({ name: "expediente-medico", params: { 
+            idEmpresa: to.params.idEmpresa,
+            idCentroTrabajo: to.params.idCentroTrabajo,
+            idTrabajador: to.params.idTrabajador
+          }});
+        }
       }
 
       next();

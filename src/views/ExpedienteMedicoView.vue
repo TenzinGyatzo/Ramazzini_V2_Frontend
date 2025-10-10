@@ -21,6 +21,7 @@ import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
 import ModalCuestionarios from '@/components/ModalCuestionarios.vue';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
+import { useUserPermissions } from '@/composables/useUserPermissions';
 
 const toast: any = inject('toast');
 
@@ -33,6 +34,7 @@ const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const medicoFirmanteStore = useMedicoFirmanteStore();
+const { canCreateDocument, getRestrictionMessage } = useUserPermissions();
 
 const showDocumentoExternoModal = ref(false);
 const showDocumentoExternoUpdateModal = ref(false);
@@ -220,6 +222,15 @@ const navigateTo = (routeName, params) => {
 
   if (routeName === 'crear-documento' && params.tipoDocumento === 'historiaClinica' && historiasDelMes.value != null && historiasDelMes.value >= proveedorSaludStore.proveedorSalud?.maxHistoriasPermitidasAlMes) {
     showSubscriptionModal.value = true;
+    return;
+  }
+
+  // Validar permisos para enfermeros
+  if (routeName === 'crear-documento' && !canCreateDocument(params.tipoDocumento)) {
+    toast.open({
+      message: getRestrictionMessage(params.tipoDocumento),
+      type: 'error',
+    });
     return;
   }
 
@@ -726,13 +737,29 @@ const añoMasReciente = computed(() => {
                 idEmpresa: empresas.currentEmpresaId,
                 idTrabajador: trabajadores.currentTrabajadorId,
                 tipoDocumento: 'aptitud'
-              })" class="group relative bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 border-2 border-green-200 hover:border-green-400 rounded-xl p-4 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+              })" :class="[
+                'group relative rounded-xl p-4 transition-all duration-300 border-2',
+                canCreateDocument('aptitud') 
+                  ? 'bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 border-green-200 hover:border-green-400 transform hover:scale-105 hover:shadow-lg cursor-pointer'
+                  : 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 opacity-60 cursor-not-allowed'
+              ]" :disabled="!canCreateDocument('aptitud')">
                 <div class="text-center">
-                  <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-green-600 transition-colors">
+                  <div :class="[
+                    'w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 transition-colors',
+                    canCreateDocument('aptitud') 
+                      ? 'bg-green-500 group-hover:bg-green-600'
+                      : 'bg-gray-400'
+                  ]">
                     <i class="fas fa-user-check text-white text-lg"></i>
                   </div>
-                  <h3 class="font-semibold text-gray-900 text-sm mb-1">Aptitud</h3>
-                  <p class="text-xs text-gray-600">Evaluación laboral</p>
+                  <h3 :class="[
+                    'font-semibold text-sm mb-1',
+                    canCreateDocument('aptitud') ? 'text-gray-900' : 'text-gray-500'
+                  ]">Aptitud</h3>
+                  <p :class="[
+                    'text-xs',
+                    canCreateDocument('aptitud') ? 'text-gray-600' : 'text-gray-400'
+                  ]">Evaluación laboral</p>
                 </div>
               </button>
 
@@ -741,13 +768,29 @@ const añoMasReciente = computed(() => {
                 idEmpresa: empresas.currentEmpresaId,
                 idTrabajador: trabajadores.currentTrabajadorId,
                 tipoDocumento: 'certificado'
-              })" class="group relative bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border-2 border-blue-200 hover:border-blue-400 rounded-xl p-4 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+              })" :class="[
+                'group relative rounded-xl p-4 transition-all duration-300 border-2',
+                canCreateDocument('certificado') 
+                  ? 'bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border-blue-200 hover:border-blue-400 transform hover:scale-105 hover:shadow-lg cursor-pointer'
+                  : 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 opacity-60 cursor-not-allowed'
+              ]" :disabled="!canCreateDocument('certificado')">
                 <div class="text-center">
-                  <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-600 transition-colors">
+                  <div :class="[
+                    'w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 transition-colors',
+                    canCreateDocument('certificado') 
+                      ? 'bg-blue-500 group-hover:bg-blue-600'
+                      : 'bg-gray-400'
+                  ]">
                     <i class="fas fa-certificate text-white text-lg"></i>
                   </div>
-                  <h3 class="font-semibold text-gray-900 text-sm mb-1">Certificado</h3>
-                  <p class="text-xs text-gray-600">Certificación médica</p>
+                  <h3 :class="[
+                    'font-semibold text-sm mb-1',
+                    canCreateDocument('certificado') ? 'text-gray-900' : 'text-gray-500'
+                  ]">Certificado</h3>
+                  <p :class="[
+                    'text-xs',
+                    canCreateDocument('certificado') ? 'text-gray-600' : 'text-gray-400'
+                  ]">Certificación médica</p>
                 </div>
               </button>
 
