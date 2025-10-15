@@ -466,67 +466,156 @@ export function contarPorCategoriaTensionArterial(data: { categoriaTensionArteri
   });
 }
 
-// Función para calcular la proporción Normal/Anormal de audiometría
-export function calcularProporcionAudiometria(data: { hipoacusiaBilateralCombinada: number | null }[]): { Normal: number; Anormal: number } {
-  const total = data.length;
-  if (total === 0) return { Normal: 0, Anormal: 0 };
+// ===== NUEVA LÓGICA DE CLASIFICACIÓN AUDIOMETRÍA =====
 
-  let normal = 0;
-  let anormal = 0;
+type Metodo = 'AMA' | 'LFT';
+type Binario = 'Normal' | 'Anormal' | 'Indeterminado';
+type Categoria =
+  | 'Normal'
+  | 'Hipoacusia leve'
+  | 'Hipoacusia moderada'
+  | 'H. moderada-severa'
+  | 'Hipoacusia severa'
+  | 'Hipoacusia profunda'
+  | 'Indeterminado';
 
-  data.forEach(item => {
-    if (item.hipoacusiaBilateralCombinada !== null && item.hipoacusiaBilateralCombinada !== undefined) {
-      if (item.hipoacusiaBilateralCombinada <= 10.999) {
-        normal++;
-      } else {
-        anormal++;
-      }
-    }
-  });
-
-  return { Normal: normal, Anormal: anormal };
+export interface AudiometriaResumen {
+  metodoAudiometria: Metodo | null | undefined;
+  hipoacusiaBilateralCombinada: number | null | undefined; // HBC (%)
+  perdidaAuditivaBilateralAMA: number | null | undefined;   // PPAB (%)
+  caidaMaxDb: number | null | undefined;                    // dB (máximo)
 }
 
-// Función para distribuir los resultados de HBC en rangos específicos
-export function distribuirResultadosHBC(data: { hipoacusiaBilateralCombinada: number | null }[]): [string, number, number][] {
-  const rangos = [
-    { min: 0, max: 10.999, label: 'Normal' },
-    { min: 11, max: 25.999, label: 'Hipoacusia leve' },
-    { min: 26, max: 40.999, label: 'Hipoacusia moderada' },
-    { min: 41, max: 55.999, label: 'H. moderada-severa' },
-    { min: 56, max: 69.999, label: 'Hipoacusia severa' },
-    { min: 70, max: 100, label: 'Hipoacusia profunda' }
+const CATS_ORDEN: Categoria[] = [
+  'Normal',
+  'Hipoacusia leve',
+  'Hipoacusia moderada',
+  'H. moderada-severa',
+  'Hipoacusia severa',
+  'Hipoacusia profunda',
+];
+
+const isNum = (v: any): v is number => typeof v === 'number' && Number.isFinite(v);
+
+// ---- Binario por método ----
+function binarioAMA(ppab?: number | null): Binario {
+  if (!isNum(ppab)) return 'Indeterminado';
+  return ppab <= 25 ? 'Normal' : 'Anormal';
+}
+function binarioLFT(hbc?: number | null): Binario {
+  if (!isNum(hbc)) return 'Indeterminado';
+  // Corte definido por el cliente: HBC >= 10% es Anormal
+  return hbc >= 10 ? 'Anormal' : 'Normal';
+}
+
+// ---- Categorías por método ----
+function categoriaAMA(ppab?: number | null): Categoria {
+  if (!isNum(ppab)) return 'Indeterminado';
+  if (ppab <= 25) return 'Normal';
+  if (ppab <= 40) return 'Hipoacusia leve';
+  if (ppab <= 60) return 'Hipoacusia moderada';
+  if (ppab <= 80) return 'Hipoacusia severa';
+  return 'Hipoacusia profunda';
+}
+
+function categoriaLFT_porCaidaMax(db?: number | null): Categoria {
+  if (!isNum(db)) return 'Indeterminado';
+  if (db <= 25) return 'Normal';
+  if (db <= 40) return 'Hipoacusia leve';
+  if (db <= 55) return 'Hipoacusia moderada';
+  if (db <= 70) return 'H. moderada-severa';
+  if (db <= 90) return 'Hipoacusia severa';
+  return 'Hipoacusia profunda';
+}
+
+// ---- Orquestadores ----
+function clasificarBinario(item: AudiometriaResumen): Binario {
+  const m = item.metodoAudiometria;
+  if (m === 'AMA') return binarioAMA(item.perdidaAuditivaBilateralAMA);
+  if (m === 'LFT') return binarioLFT(item.hipoacusiaBilateralCombinada);
+  return 'Indeterminado';
+}
+
+function clasificarCategoria(item: AudiometriaResumen): Categoria {
+  const m = item.metodoAudiometria;
+  if (m === 'AMA') return categoriaAMA(item.perdidaAuditivaBilateralAMA);
+  if (m === 'LFT') return categoriaLFT_porCaidaMax(item.caidaMaxDb);
+  return 'Indeterminado';
+}
+
+// ======================================================
+// 1) Proporción Normal/Anormal (para la gráfica de anillo)
+//    Firma compatible con la antigua, pero ahora acepta AudiometriaResumen.
+export function calcularProporcionAudiometria(
+  data: AudiometriaResumen[],
+  opts?: { incluirIndeterminado?: boolean }
+): { Normal: number; Anormal: number; Indeterminado?: number } {
+  let Normal = 0, Anormal = 0, Indeterminado = 0;
+
+  for (const item of data) {
+    const b = clasificarBinario(item);
+    if (b === 'Normal') Normal++;
+    else if (b === 'Anormal') Anormal++;
+    else Indeterminado++;
+  }
+
+  return opts?.incluirIndeterminado
+    ? { Normal, Anormal, Indeterminado }
+    : { Normal, Anormal };
+}
+
+// ======================================================
+// 2) Distribución por categoría (para la gráfica de barras)
+//    Devuelve: [label, cantidad, porcentaje][];
+//    Combina AMA y LFT usando la categoría correcta por método.
+export function distribuirResultadosAudiometria(
+  data: AudiometriaResumen[],
+  opts?: { incluirIndeterminado?: boolean }
+): [string, number, number][] {
+  const counts: Record<Categoria, number> = {
+    Normal: 0,
+    'Hipoacusia leve': 0,
+    'Hipoacusia moderada': 0,
+    'H. moderada-severa': 0,
+    'Hipoacusia severa': 0,
+    'Hipoacusia profunda': 0,
+    Indeterminado: 0,
+  };
+
+  // Contabilizar
+  for (const item of data) {
+    const cat = clasificarCategoria(item);
+    counts[cat] = (counts[cat] ?? 0) + 1;
+  }
+
+  // Total para porcentaje (excluye Indeterminado si no se quiere mostrar)
+  const totalParaPct = Object.entries(counts)
+    .filter(([k]) => (opts?.incluirIndeterminado ? true : k !== 'Indeterminado'))
+    .reduce((acc, [, v]) => acc + v, 0);
+
+  const labels = opts?.incluirIndeterminado ? [...CATS_ORDEN, 'Indeterminado'] : [...CATS_ORDEN];
+
+  return labels.map(label => {
+    const cantidad = counts[label as Categoria] || 0;
+    const porcentaje = totalParaPct > 0 ? Math.round((cantidad / totalParaPct) * 100) : 0;
+    return [label, cantidad, porcentaje];
+  });
+}
+
+// ===== Alias para compatibilidad retro (si hay llamadas antiguas) =====
+export const distribuirResultadosHBC = distribuirResultadosAudiometria;
+
+// (Opcional) Series separadas por método
+export function distribuirPorMetodo(
+  data: AudiometriaResumen[]
+): { metodo: Metodo; series: [string, number, number][] }[] {
+  const ama = data.filter(d => d.metodoAudiometria === 'AMA');
+  const lft = data.filter(d => d.metodoAudiometria === 'LFT');
+
+  return [
+    { metodo: 'AMA', series: distribuirResultadosAudiometria(ama) },
+    { metodo: 'LFT', series: distribuirResultadosAudiometria(lft) },
   ];
-
-  const conteo: Record<string, number> = {};
-  let total = 0;
-
-  // Inicializar conteo
-  rangos.forEach(rango => {
-    conteo[rango.label] = 0;
-  });
-
-  // Contar valores en cada rango
-  data.forEach(item => {
-    if (item.hipoacusiaBilateralCombinada !== null && item.hipoacusiaBilateralCombinada !== undefined) {
-      const valor = item.hipoacusiaBilateralCombinada;
-      
-      for (const rango of rangos) {
-        if (valor >= rango.min && valor <= rango.max) {
-          conteo[rango.label]++;
-          total++;
-          break;
-        }
-      }
-    }
-  });
-
-  // Retornar resultados con porcentajes
-  return rangos.map(rango => {
-    const cantidad = conteo[rango.label] || 0;
-    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
-    return [rango.label, cantidad, porcentaje];
-  });
 }
 
 

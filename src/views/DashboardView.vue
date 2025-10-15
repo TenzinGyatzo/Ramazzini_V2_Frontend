@@ -397,13 +397,13 @@ const tablaTensionArterial = computed(() => {
 const tablaAudiometriaDistribucion = computed(() => {
   if (!dashboardData.value.length) return [];
 
-  const datosHBC = centroSeleccionado.value === 'Todos'
-    ? dashboardData.value.flatMap((d) => d.hbc[0] || [])
+  const datosAudio = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.audiometriaResumen || [])
     : dashboardData.value[
         centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
-      ]?.hbc[0] || [];
+      ]?.audiometriaResumen || [];
 
-  return distribuirResultadosHBC(datosHBC);
+  return distribuirResultadosHBC(datosAudio);
 });
 
 const graficaTensionArterialData = computed(() => {
@@ -986,10 +986,10 @@ const graficaAudiometriaDistribucionOptionsPDF = {
           const cantidad = context.parsed.x;
           const distribucion = distribuirResultadosHBC(
             centroSeleccionado.value === 'Todos'
-              ? dashboardData.value.flatMap((d) => d.hbc[0] || [])
+              ? dashboardData.value.flatMap((d) => d.audiometriaResumen || [])
               : dashboardData.value[
                   centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
-                ]?.hbc[0] || []
+                ]?.audiometriaResumen || []
           );
           const porcentaje = distribucion[index]?.[2] || 0;
           return `Trabajadores: ${cantidad} (${porcentaje}%)`;
@@ -1008,10 +1008,10 @@ const graficaAudiometriaDistribucionOptionsPDF = {
         const cantidad = context.parsed.x;
         const distribucion = distribuirResultadosHBC(
           centroSeleccionado.value === 'Todos'
-            ? dashboardData.value.flatMap((d) => d.hbc[0] || [])
+            ? dashboardData.value.flatMap((d) => d.audiometriaResumen || [])
             : dashboardData.value[
                 centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
-              ]?.hbc[0] || []
+              ]?.audiometriaResumen || []
         );
         const porcentaje = distribucion[context.dataIndex]?.[2] || 0;
         return `${cantidad} (${porcentaje}%)`;
@@ -1047,6 +1047,70 @@ const graficaAudiometriaDistribucionOptionsPDF = {
     bar: {
       borderWidth: 1,
       borderColor: '#000000'
+    }
+  }
+};
+
+// Opciones para gráfica de distribución de HBC (barras horizontales) - Igual patrón que IMC/Aptitud/Tensión
+const graficaAudiometriaDistribucionOptions = {
+  indexAxis: 'y',
+  responsive: true,
+  layout: { padding: { right: 60 } },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        title: (context) => context[0].label,
+        label: (context) => {
+          const index = context.dataIndex;
+          const entry = (tablaAudiometriaDistribucion?.value || [])[index];
+          if (!entry) return '';
+          const [, cantidad, porcentaje] = entry;
+          return `Trabajadores: ${cantidad} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      anchor: 'end',
+      align: 'end',
+      color: '#374151',
+      font: { weight: 'bold', size: 12 },
+      clamp: true,
+      formatter: (_valor, context) => {
+        const index = context.dataIndex;
+        const entry = (tablaAudiometriaDistribucion?.value || [])[index];
+        if (!entry) return '';
+        const [, cantidad, porcentaje] = entry;
+        return `${cantidad} (${porcentaje}%)`;
+      }
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        stepSize: 1,
+        maxTicksLimit: 10,
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      grid: { display: false },
+      categoryPercentage: 1.0,
+      barPercentage: 0.7,
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
     }
   }
 };
@@ -1326,13 +1390,13 @@ const graficaDaltonismoData = computed(() => {
 const graficaAudiometriaProporcionData = computed(() => {
   if (!dashboardData.value.length) return { conAnormal: 0, porcentaje: 0, chart: { labels: [], datasets: [] } };
 
-  const datosHBC = centroSeleccionado.value === 'Todos'
-    ? dashboardData.value.flatMap((d) => d.hbc[0] || [])
+  const datosAudio = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.audiometriaResumen || [])
     : dashboardData.value[
         centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
-      ]?.hbc[0] || [];
+      ]?.audiometriaResumen || [];
 
-  const proporcion = calcularProporcionAudiometria(datosHBC);
+  const proporcion = calcularProporcionAudiometria(datosAudio);
   
   const total = proporcion.Normal + proporcion.Anormal;
   const porcentaje = total > 0 ? Math.round((proporcion.Anormal / total) * 100) : 0;
@@ -1355,13 +1419,13 @@ const graficaAudiometriaProporcionData = computed(() => {
 const graficaAudiometriaDistribucionData = computed(() => {
   if (!dashboardData.value.length) return { labels: [], datasets: [] };
 
-  const datosHBC = centroSeleccionado.value === 'Todos'
-    ? dashboardData.value.flatMap((d) => d.hbc[0] || [])
+  const datosAudio = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.audiometriaResumen || [])
     : dashboardData.value[
         centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
-      ]?.hbc[0] || [];
+      ]?.audiometriaResumen || [];
 
-  const distribucion = distribuirResultadosHBC(datosHBC);
+  const distribucion = distribuirResultadosHBC(datosAudio);
   
   return {
     labels: distribucion.map(([label]) => label),
@@ -2115,48 +2179,48 @@ function handleClickTablaCintura(categoria) {
 function handleClickTablaAudiometriaDistribucion(categoria) {
   if (centroSeleccionado.value === 'Todos') {
     toast.open({
-      message: 'Selecciona un centro de trabajo para ver los trabajadores con esa categoría de HBC.',
+      message: 'Selecciona un centro de trabajo para ver los trabajadores con esa categoría de audiometría.',
       type: 'info'
     });
     return;
   }
 
-  // Mapeo de categorías de HBC a rangos de filtro
-  const mapaHBC = {
-    'Normal': '0-10%',
-    'Hipoacusia leve': '11-25%',
-    'Hipoacusia moderada': '26-40%',
-    'H. moderada-severa': '41-55%',
-    'Hipoacusia severa': '56-70%',
-    'Hipoacusia profunda': '>70%'
+  // Mapeo directo de categorías de audiometría (ahora usamos categoriaAudiometria)
+  const mapaCategoriaAudiometria = {
+    'Normal': 'Normal',
+    'Hipoacusia leve': 'Hipoacusia leve',
+    'Hipoacusia moderada': 'Hipoacusia moderada',
+    'H. moderada-severa': 'H. moderada-severa',
+    'Hipoacusia severa': 'Hipoacusia severa',
+    'Hipoacusia profunda': 'Hipoacusia profunda'
   };
 
-  const valorFiltro = mapaHBC[categoria];
+  const valorFiltro = mapaCategoriaAudiometria[categoria];
   if (!valorFiltro) return;
 
-  manejarRedireccionFiltroChart(valorFiltro, 'hbc');
+  manejarRedireccionFiltroChart(valorFiltro, 'categoriaAudiometria');
 }
 
 function handleClickGraficaAudiometriaDistribucion(evt, elements) {
   if (!elements.length) return;
 
   const index = elements[0].index;
-  const label = graficaAudiometriaDistribucionData.value.labels[index]; // ← categoría HBC
+  const label = graficaAudiometriaDistribucionData.value.labels[index]; // ← categoría de audiometría
 
-  // Mapeo de categorías de HBC a rangos de filtro
-  const mapaHBC = {
-    'Normal': '0-10%',
-    'Hipoacusia leve': '11-25%',
-    'Hipoacusia moderada': '26-40%',
-    'H. moderada-severa': '41-55%',
-    'Hipoacusia severa': '56-70%',
-    'Hipoacusia profunda': '>70%'
+  // Mapeo directo de categorías de audiometría (ahora usamos categoriaAudiometria)
+  const mapaCategoriaAudiometria = {
+    'Normal': 'Normal',
+    'Hipoacusia leve': 'Hipoacusia leve',
+    'Hipoacusia moderada': 'Hipoacusia moderada',
+    'H. moderada-severa': 'H. moderada-severa',
+    'Hipoacusia severa': 'Hipoacusia severa',
+    'Hipoacusia profunda': 'Hipoacusia profunda'
   };
 
-  const valorFiltro = mapaHBC[label];
+  const valorFiltro = mapaCategoriaAudiometria[label];
   if (!valorFiltro) return;
 
-  manejarRedireccionFiltroChart(valorFiltro, 'hbc');
+  manejarRedireccionFiltroChart(valorFiltro, 'categoriaAudiometria');
 }
 
 function handleClickGraficaAudiometriaProporcion(evt, elements) {
@@ -3224,7 +3288,7 @@ const tablaCintura = computed(() => {
                   <span class="relative cursor-help">
                     <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
                     <span class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none">
-                      Muestra la distribución de trabajadores según el grado de <span class="font-semibold text-emerald-600">hipoacusia bilateral combinada (HBC)</span> en rangos específicos.
+                      Muestra la distribución de trabajadores según el grado de <span class="font-semibold text-emerald-600">Pérdida Auditiva Bilateral </span>según método AMA o <span class="font-semibold text-emerald-600">Caída Máxima </span>según método LFT en rangos específicos.
                     </span>
                   </span>
                 </h3>
@@ -3257,97 +3321,13 @@ const tablaCintura = computed(() => {
               <div class="flex-1 overflow-x-auto">
                 <Transition name="fade" mode="out-in">
                   <template v-if="vistaAudiometriaDistribucion === 'grafico'">
-                    <div class="h-80">
-                      <GraficaBarras
-                        v-if="graficaAudiometriaDistribucionData.labels?.length"
-                        ref="refAudiometriaDistribucion"
-                        :key="vistaAudiometriaDistribucionKey"
-                        :data="graficaAudiometriaDistribucionData"
-                        :options="{
-                          indexAxis: 'y',
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          layout: { padding: { right: 60 } },
-                          plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                              enabled: true,
-                              callbacks: {
-                                title: (context) => context[0].label,
-                                label: (context) => {
-                                  if (!context || !context.parsed || context.parsed.x === undefined) {
-                                    return '';
-                                  }
-                                  const cantidad = context.parsed.x;
-                                  const distribucion = distribuirResultadosHBC(
-                                    centroSeleccionado === 'Todos'
-                                      ? dashboardData.flatMap((d) => d.hbc[0] || [])
-                                      : dashboardData[
-                                          centrosTrabajo.findIndex(c => c.nombreCentro === centroSeleccionado)
-                                        ]?.hbc[0] || []
-                                  );
-                                  const porcentaje = distribucion[context.dataIndex]?.[2] || 0;
-                                  return `Trabajadores: ${cantidad} (${porcentaje}%)`;
-                                }
-                              }
-                            },
-                            datalabels: {
-                              anchor: 'end',
-                              align: 'end',
-                              color: '#374151',
-                              font: { weight: 'bold', size: 12 },
-                              formatter: (_valor, context) => {
-                                if (!context || !context.parsed || context.parsed.x === undefined) {
-                                  return '';
-                                }
-                                const cantidad = context.parsed.x;
-                                const distribucion = distribuirResultadosHBC(
-                                  centroSeleccionado === 'Todos'
-                                    ? dashboardData.flatMap((d) => d.hbc[0] || [])
-                                    : dashboardData[
-                                        centrosTrabajo.findIndex(c => c.nombreCentro === centroSeleccionado)
-                                      ]?.hbc[0] || []
-                                );
-                                const porcentaje = distribucion[context.dataIndex]?.[2] || 0;
-                                return `${cantidad} (${porcentaje}%)`;
-                              }
-                            }
-                          },
-                          scales: {
-                            x: {
-                              beginAtZero: true,
-                              grid: { display: false },
-                              ticks: {
-                                stepSize: 1,
-                                maxTicksLimit: 10,
-                                color: '#374151',
-                                font: { size: 12 }
-                              }
-                            },
-                            y: {
-                              grid: { display: false },
-                              ticks: {
-                                color: '#374151',
-                                font: { size: 12 }
-                              }
-                            }
-                          },
-                          onHover: (event, elements) => {
-                            const canvas = event.chart?.canvas;
-                            if (canvas) {
-                              canvas.style.cursor = elements.length ? 'pointer' : 'default';
-                            }
-                          },
-                          onClick: handleClickGraficaAudiometriaDistribucion,
-                          elements: {
-                            bar: {
-                              borderWidth: 1,
-                              borderColor: '#000000'
-                            }
-                          }
-                        }"
-                      />
-                    </div>
+                    <GraficaBarras
+                      v-if="graficaAudiometriaDistribucionData.labels?.length"
+                      ref="refAudiometriaDistribucion"
+                      :key="vistaAudiometriaDistribucionKey"
+                      :data="graficaAudiometriaDistribucionData"
+                      :options="{ ...graficaAudiometriaDistribucionOptions, onClick: handleClickGraficaAudiometriaDistribucion, elements: { bar: { borderWidth: 1, borderColor: '#000000' } } }"
+                    />
                   </template>
 
                   <template v-else>
@@ -3392,7 +3372,7 @@ const tablaCintura = computed(() => {
               </div>
 
               <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
-                Distribución por rangos de HBC (%).
+                Distribución por rangos de PAB (%) o Caída Máxima (dB).
               </h4>
             </div>
 

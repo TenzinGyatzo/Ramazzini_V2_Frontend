@@ -113,9 +113,16 @@ const filtrosConfig = [
     'Temperaturas elevadas', 'Temperaturas abatidas', 'Vibraciones', 'Biológicos Infecciosos', '-'
   ]},
   { id: 'consultas', label: 'Consultas', opciones: ['Si', 'No']},
-  { id: 'audiometria', label: 'Diagnóstico Audiometría', opciones: ['Normal', 'Anormal']},
-  { id: 'pab', label: 'PAB (%)', opciones: ['0-10%', '11-25%', '26-40%', '41-55%', '56-70%', '>70%']},
-  { id: 'hbc', label: 'HBC (%)', opciones: ['0-10%', '11-25%', '26-40%', '41-55%', '56-70%', '>70%']},
+  { id: 'audiometria', label: 'Audiometría', opciones: ['Normal', 'Anormal', '-']},
+  { id: 'categoriaAudiometria', label: 'Categoría Audiometría', opciones: [
+    'Normal',
+    'Hipoacusia leve',
+    'Hipoacusia moderada',
+    'H. moderada-severa',
+    'Hipoacusia severa',
+    'Hipoacusia profunda',
+    '-'
+  ]},
 ];
 
 const filtros = reactive<Record<string, string>>({
@@ -142,8 +149,7 @@ const filtros = reactive<Record<string, string>>({
   exposicion: '',
   consultas: '',
   audiometria: '',
-  pab: '',
-  hbc: '',
+  categoriaAudiometria: '',
   periodo: '',
   estadoLaboral: 'Activo',
 });
@@ -466,8 +472,67 @@ const exportarFiltrados = () => {
       ? row.agentesRiesgoActuales.join(', ')
       : '-',
     consultas: row.consultaResumen?.fechaNotaMedica ? 'Si' : 'No',
-    audiometria: row.audiometriaResumen?.diagnosticoAudiometria || '-',
-    hbc: row.audiometriaResumen?.hipoacusiaBilateralCombinada || '-',
+    audiometria: (() => {
+      const resumen = row.audiometriaResumen || null;
+      if (!resumen) return '-';
+      
+      const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+      
+      const binarioAMA = (ppab) => {
+        if (!isNum(ppab)) return 'Indeterminado';
+        return ppab <= 25 ? 'Normal' : 'Anormal';
+      };
+      
+      const binarioLFT = (hbc) => {
+        if (!isNum(hbc)) return 'Indeterminado';
+        return hbc >= 10 ? 'Anormal' : 'Normal';
+      };
+      
+      let resultado = 'Indeterminado';
+      if (resumen.metodoAudiometria === 'AMA') {
+        resultado = binarioAMA(resumen.perdidaAuditivaBilateralAMA);
+      } else if (resumen.metodoAudiometria === 'LFT') {
+        resultado = binarioLFT(resumen.hipoacusiaBilateralCombinada);
+      }
+      
+      return resultado === 'Indeterminado' ? '-' : resultado;
+    })(),
+    categoriaAudiometria: (() => {
+      const resumen = row.audiometriaResumen || null;
+      if (!resumen) return '-';
+      
+      const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+      
+      const categoriaAMA = (ppab) => {
+        if (!isNum(ppab)) return 'Indeterminado';
+        if (ppab <= 25) return 'Normal';
+        if (ppab <= 40) return 'Hipoacusia leve';
+        if (ppab <= 60) return 'Hipoacusia moderada';
+        if (ppab <= 80) return 'Hipoacusia severa';
+        return 'Hipoacusia profunda';
+      };
+      
+      // Para LFT, usamos HBC ya que caidaMaxDb no existe en la base de datos
+      const categoriaLFT_porHBC = (hbc) => {
+        if (!isNum(hbc)) return 'Indeterminado';
+        // Usando rangos de HBC para categorizar (aproximación)
+        if (hbc <= 10) return 'Normal';
+        if (hbc <= 25) return 'Hipoacusia leve';
+        if (hbc <= 40) return 'Hipoacusia moderada';
+        if (hbc <= 60) return 'H. moderada-severa';
+        if (hbc <= 80) return 'Hipoacusia severa';
+        return 'Hipoacusia profunda';
+      };
+      
+      let resultado = 'Indeterminado';
+      if (resumen.metodoAudiometria === 'AMA') {
+        resultado = categoriaAMA(resumen.perdidaAuditivaBilateralAMA);
+      } else if (resumen.metodoAudiometria === 'LFT') {
+        resultado = categoriaLFT_porHBC(resumen.hipoacusiaBilateralCombinada);
+      }
+      
+      return resultado === 'Indeterminado' ? '-' : resultado;
+    })(),
     estadoLaboral: row.estadoLaboral || '-'
   }));
 
@@ -503,8 +568,10 @@ const filtrosValidos = {
     'Vibraciones', 'Biológicos Infecciosos', '-'
   ],
   consultas: ['Si', 'No'],
-  audiometria: ['Normal', 'Anormal'],
-  hbc: ['0-10%', '11-25%', '26-40%', '41-55%', '56-70%', '>70%'],
+  audiometria: ['Normal', 'Anormal', '-'],
+  categoriaAudiometria: [
+    'Normal', 'Hipoacusia leve', 'Hipoacusia moderada', 'H. moderada-severa', 'Hipoacusia severa', 'Hipoacusia profunda', '-'
+  ],
 };
 
 function aplicarFiltrosDesdeQuery(query: RouteLocationNormalizedLoaded['query']) {

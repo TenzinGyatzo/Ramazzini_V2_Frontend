@@ -203,12 +203,93 @@ function inicializarDataTable() {
         { data: 'historiaClinicaResumen.alcoholismo', title: 'Alcohol', defaultContent: '-' }, // 31 (antes era 29)
         { data: 'historiaClinicaResumen.tabaquismo', title: 'Tabaco', defaultContent: '-' }, // 32 (antes era 30)
         { data: 'historiaClinicaResumen.accidenteLaboral', title: 'Acc. Laboral', defaultContent: '-' }, // 33 (antes era 31)
-        { data: 'audiometriaResumen.diagnosticoAudiometria', title: 'Audiometria', defaultContent: '-' }, // 34 
-        { data: 'audiometriaResumen.perdidaAuditivaBilateralAMA', title: 'PAB', defaultContent: '-' }, // 35
-        { data: 'audiometriaResumen.hipoacusiaBilateralCombinada', title: 'HBC', defaultContent: '-' }, // 36 
-        { data: 'agentesRiesgoActuales', title: 'Agentes Riesgo', render: d => Array.isArray(d) ? d.join(', ') : '-', defaultContent: '-' }, // 37 (antes era 34)
-        { data: 'consultaResumen.fechaNotaMedica', title: 'Consultas', render: d => d ? 'Si' : 'No', defaultContent: '-' }, // 38 (antes era 35)
-        { data: 'estadoLaboral', title: 'Estado Laboral' }, // 39 (antes era 36)
+        { 
+          data: null,
+          title: 'Audiometría',
+          render: function(_data, type, row) {
+            const resumen = row.audiometriaResumen || null;
+            if (!resumen) return '-';
+            
+            // Lógica para determinar Normal/Anormal (binario)
+            const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+            
+            const binarioAMA = (ppab) => {
+              if (!isNum(ppab)) return 'Indeterminado';
+              return ppab <= 25 ? 'Normal' : 'Anormal';
+            };
+            
+            const binarioLFT = (hbc) => {
+              if (!isNum(hbc)) return 'Indeterminado';
+              return hbc >= 10 ? 'Anormal' : 'Normal';
+            };
+            
+            let resultado = 'Indeterminado';
+            if (resumen.metodoAudiometria === 'AMA') {
+              resultado = binarioAMA(resumen.perdidaAuditivaBilateralAMA);
+            } else if (resumen.metodoAudiometria === 'LFT') {
+              resultado = binarioLFT(resumen.hipoacusiaBilateralCombinada);
+            }
+            
+            // Para el filtrado, retornar solo el valor cuando se solicita 'filter'
+            if (type === 'filter') {
+              return resultado === 'Indeterminado' ? '-' : resultado;
+            }
+            
+            return resultado === 'Indeterminado' ? '-' : resultado;
+          },
+          defaultContent: '-'
+        }, // 34
+        { 
+          data: null,
+          title: 'Categoría Audiometría',
+          render: function(_data, type, row) {
+            const resumen = row.audiometriaResumen || null;
+            if (!resumen) return '-';
+            
+            
+            // Lógica para determinar categoría
+            const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+            
+            const categoriaAMA = (ppab) => {
+              if (!isNum(ppab)) return 'Indeterminado';
+              if (ppab <= 25) return 'Normal';
+              if (ppab <= 40) return 'Hipoacusia leve';
+              if (ppab <= 60) return 'Hipoacusia moderada';
+              if (ppab <= 80) return 'Hipoacusia severa';
+              return 'Hipoacusia profunda';
+            };
+            
+            // Para LFT, usamos HBC ya que caidaMaxDb no existe en la base de datos
+            const categoriaLFT_porHBC = (hbc) => {
+              if (!isNum(hbc)) return 'Indeterminado';
+              // Usando rangos de HBC para categorizar (aproximación)
+              if (hbc <= 10) return 'Normal';
+              if (hbc <= 25) return 'Hipoacusia leve';
+              if (hbc <= 40) return 'Hipoacusia moderada';
+              if (hbc <= 60) return 'H. moderada-severa';
+              if (hbc <= 80) return 'Hipoacusia severa';
+              return 'Hipoacusia profunda';
+            };
+            
+            let resultado = 'Indeterminado';
+            if (resumen.metodoAudiometria === 'AMA') {
+              resultado = categoriaAMA(resumen.perdidaAuditivaBilateralAMA);
+            } else if (resumen.metodoAudiometria === 'LFT') {
+              resultado = categoriaLFT_porHBC(resumen.hipoacusiaBilateralCombinada);
+            }
+            
+            // Para el filtrado, retornar solo el valor cuando se solicita 'filter'
+            if (type === 'filter') {
+              return resultado === 'Indeterminado' ? '-' : resultado;
+            }
+            
+            return resultado === 'Indeterminado' ? '-' : resultado;
+          },
+          defaultContent: '-'
+        }, // 35 
+        { data: 'agentesRiesgoActuales', title: 'Agentes Riesgo', render: d => Array.isArray(d) ? d.join(', ') : '-', defaultContent: '-' }, // 36
+        { data: 'consultaResumen.fechaNotaMedica', title: 'Consultas', render: d => d ? 'Si' : 'No', defaultContent: '-' }, // 37
+        { data: 'estadoLaboral', title: 'Estado Laboral' }, // 38
         {
           data: null,
           title: 'Expediente',
@@ -232,7 +313,7 @@ function inicializarDataTable() {
               </a>
             `;
           }
-        }, // 38 (antes era 37)
+        }, // 39 
         {
           data: null,
           title: 'Acciones',
@@ -309,7 +390,7 @@ function inicializarDataTable() {
               </div>
             `;
           }
-        }, // 40 (antes era 38)
+        }, // 40
       ],
       deferRender: true,
       scrollX: true,
@@ -340,10 +421,11 @@ function inicializarDataTable() {
         { targets: 10, width: '100px' }, // Puesto
         { targets: 14, width: '60px' }, // IMC
         { targets: 32, width: '70px' }, // Tabaco
-        { targets: 34, width: '80px' }, // Audiometria
-        { targets: 35, width: '60px' }, // PAB
-        { targets: 36, width: '60px' }, // HBC
-        { targets: 41, width: '248px', className: 'columna-acciones' } // Acciones con clase específica
+        { targets: 34, width: '80px' }, // Audiometría
+        { targets: 35, width: '100px' }, // Categoría Audiometría
+        { targets: 36, width: '60px' }, // Agentes Riesgo
+        { targets: 37, width: '60px' }, // Consultas
+        { targets: 40, width: '248px', className: 'columna-acciones' } // Acciones con clase específica
       ]
     });
 
@@ -460,12 +542,11 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
     { id: 'traumatico', columna: 30 },
     { id: 'aptitud', columna: 4 },
     { id: 'vigencia', columna: 5 }, // <-- Ahora funciona con filtro estándar
-    { id: 'exposicion', columna: 37 }, // <-- este tiene lógica especial
-    { id: 'consultas', columna: 38 },
-    { id: 'audiometria', columna: 34 }, // <-- nuevo filtro para audiometría
-    { id: 'pab', columna: 35 }, // <-- nuevo filtro para PAB
-    { id: 'hbc', columna: 36 }, // <-- nuevo filtro para HBC
-    { id: 'estadoLaboral', columna: 39 }
+    { id: 'exposicion', columna: 36 }, // <-- este tiene lógica especial
+    { id: 'consultas', columna: 37 },
+    { id: 'audiometria', columna: 34 }, // Nueva columna audiometría (Normal/Anormal)
+    { id: 'categoriaAudiometria', columna: 35 }, // Nueva columna categoría audiometría
+    { id: 'estadoLaboral', columna: 38 }
   ];
 
       // 1. Limpiar filtros anteriores
@@ -476,7 +557,7 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
     }
 
 
-    // 1.5. Aplicar visibilidad de columnas de vigencias
+  // 1.5. Aplicar visibilidad de columnas de vigencias
     // Si columnas está ON, respetar el estado de vigencias
     // Si columnas está OFF, solo mostrar si vigencias está ON
     const mostrarVigencias = props.mostrarColumnasOcultas ? mostrarVigenciasLocal.value : mostrarVigenciasLocal.value;
@@ -491,60 +572,9 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
       // Aplicar como expresión regular simple, sin anclar (^$) para permitir coincidencias parciales
       const regex = valor === '' ? '' : valor === '-' ? '^-$' : valor;
       dataTableInstance.column(columna).search(regex, true, false);
-    } else if (id === 'audiometria') {
-      // Lógica especial para audiometría: Normal = "Audición normal bilateral.", Anormal = cualquier otra cosa excepto "-"
-      let regex = '';
-      if (valor === '') {
-        regex = '';
-      } else if (valor === 'Normal') {
-        regex = '^Audición normal bilateral\\.$';
-      } else if (valor === 'Anormal') {
-        regex = '^(?!Audición normal bilateral\\.)(?!-).*$';
-      } else {
-        regex = `^${valor}$`;
-      }
-      dataTableInstance.column(columna).search(regex, true, false);
-    } else if (id === 'pab') {
-      // Lógica especial para PAB: convertir rangos a expresiones regulares para números decimales
-      let regex = '';
-      if (valor === '') {
-        regex = '';
-      } else if (valor === '0-10%') {
-        regex = '^(0(\\.\\d+)?|[1-9](\\.\\d+)?|10(\\.\\d+)?)$';
-      } else if (valor === '11-25%') {
-        regex = '^(1[1-9](\\.\\d+)?|2[0-4](\\.\\d+)?|25(\\.\\d+)?)$';
-      } else if (valor === '26-40%') {
-        regex = '^(2[6-9](\\.\\d+)?|3[0-9](\\.\\d+)?|40(\\.\\d+)?)$';
-      } else if (valor === '41-55%') {
-        regex = '^(4[1-9](\\.\\d+)?|5[0-4](\\.\\d+)?|55(\\.\\d+)?)$';
-      } else if (valor === '56-70%') {
-        regex = '^(5[6-9](\\.\\d+)?|6[0-9](\\.\\d+)?|70(\\.\\d+)?)$';
-      } else if (valor === '>70%') {
-        regex = '^(7[0-9](\\.\\d+)?|[8-9][0-9](\\.\\d+)?|100(\\.\\d+)?)$';
-      } else {
-        regex = `^${valor}$`;
-      }
-      dataTableInstance.column(columna).search(regex, true, false);
-    } else if (id === 'hbc') {
-      // Lógica especial para HBC: convertir rangos a expresiones regulares para números decimales
-      let regex = '';
-      if (valor === '') {
-        regex = '';
-      } else if (valor === '0-10%') {
-        regex = '^(0(\\.\\d+)?|[1-9](\\.\\d+)?|10(\\.\\d+)?)$';
-      } else if (valor === '11-25%') {
-        regex = '^(1[1-9](\\.\\d+)?|2[0-4](\\.\\d+)?|25(\\.\\d+)?)$';
-      } else if (valor === '26-40%') {
-        regex = '^(2[6-9](\\.\\d+)?|3[0-9](\\.\\d+)?|40(\\.\\d+)?)$';
-      } else if (valor === '41-55%') {
-        regex = '^(4[1-9](\\.\\d+)?|5[0-4](\\.\\d+)?|55(\\.\\d+)?)$';
-      } else if (valor === '56-70%') {
-        regex = '^(5[6-9](\\.\\d+)?|6[0-9](\\.\\d+)?|70(\\.\\d+)?)$';
-      } else if (valor === '>70%') {
-        regex = '^(7[0-9](\\.\\d+)?|[8-9][0-9](\\.\\d+)?|100(\\.\\d+)?)$';
-      } else {
-        regex = `^${valor}$`;
-      }
+    } else if (id === 'categoriaAudiometria') {
+      // Ahora usa filtro estándar de DataTables en la columna 35
+      const regex = valor === '' ? '' : valor === '-' ? '^-$' : `^${valor}$`;
       dataTableInstance.column(columna).search(regex, true, false);
     } else {
       const regex = valor === '' ? '' : valor === '-' ? '^-$' : `^${valor}$`;
@@ -663,7 +693,7 @@ defineExpose({
 // Agregar watcher para la prop mostrarColumnasOcultas
 watch(() => props.mostrarColumnasOcultas, (nuevoValor) => {
   if (dataTableInstance) {
-    const columnasOcultas = [2, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38];
+    const columnasOcultas = [2, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39];
     
     // Cambiar la visibilidad de las columnas
     columnasOcultas.forEach((columnaIndex) => {
