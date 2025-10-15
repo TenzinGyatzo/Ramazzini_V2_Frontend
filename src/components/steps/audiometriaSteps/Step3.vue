@@ -246,17 +246,129 @@ const getValorActual = (frecuencia) => {
   }
 };
 
-// Función para calcular el porcentaje de pérdida auditiva
-const calcularPorcentajePerdida = () => {
-  const A = oidoIzquierdo500.value || 0;  // 500 Hz
-  const B = oidoIzquierdo1000.value || 0; // 1000 Hz
-  const C = oidoIzquierdo2000.value || 0; // 2000 Hz
-  const D = oidoIzquierdo4000.value || 0; // 4000 Hz
+// Función para calcular PTA (Pure Tone Average) para AMA
+const calcularPTA_AMA = () => {
+  const frecuencias = [500, 1000, 2000, 3000];
+  const valores = frecuencias.map(freq => {
+    switch(freq) {
+      case 500: return oidoIzquierdo500.value || 0;
+      case 1000: return oidoIzquierdo1000.value || 0;
+      case 2000: return oidoIzquierdo2000.value || 0;
+      case 3000: return oidoIzquierdo3000.value || 0;
+      default: return 0;
+    }
+  });
+  
+  const suma = valores.reduce((acc, val) => acc + val, 0);
+  return suma / frecuencias.length;
+};
+
+// Función para calcular PTA para LFT (Rango A: 250, 500, 1000, 2000 Hz)
+const calcularPTA_LFT_RangoA = () => {
+  const frecuencias = [250, 500, 1000, 2000];
+  const valores = frecuencias.map(freq => {
+    switch(freq) {
+      case 250: return oidoIzquierdo250.value || 0;
+      case 500: return oidoIzquierdo500.value || 0;
+      case 1000: return oidoIzquierdo1000.value || 0;
+      case 2000: return oidoIzquierdo2000.value || 0;
+      default: return 0;
+    }
+  });
+  
+  const suma = valores.reduce((acc, val) => acc + val, 0);
+  return suma / frecuencias.length;
+};
+
+// Función para calcular PTA para LFT (Rango B: 2000, 3000, 4000, 6000 Hz)
+const calcularPTA_LFT_RangoB = () => {
+  const frecuencias = [2000, 3000, 4000, 6000];
+  const valores = frecuencias.map(freq => {
+    switch(freq) {
+      case 2000: return oidoIzquierdo2000.value || 0;
+      case 3000: return oidoIzquierdo3000.value || 0;
+      case 4000: return oidoIzquierdo4000.value || 0;
+      case 6000: return oidoIzquierdo6000.value || 0;
+      default: return 0;
+    }
+  });
+  
+  const suma = valores.reduce((acc, val) => acc + val, 0);
+  return suma / frecuencias.length;
+};
+
+// Función para aplicar reglas LFT (120 dB si no hay respuesta, 5 dB si contralateral ≤ 0 dB)
+const aplicarReglasLFT = (valor, valorContralateral) => {
+  // Si no hay respuesta (valor null/undefined), usar 120 dB
+  if (valor === null || valor === undefined) {
+    return 120;
+  }
+  
+  // Si el contralateral en esa frecuencia tiene ≤ 0 dB, considerar 5 dB
+  if (valorContralateral !== null && valorContralateral !== undefined && valorContralateral <= 0) {
+    return 5;
+  }
+  
+  return valor;
+};
+
+// Función para calcular porcentaje por oído según método
+const calcularPorcentajePorOido = () => {
+  const metodo = formDataAudiometria.metodoAudiometria;
+  
+  if (metodo === 'AMA') {
+    // AMA: max(0, (PTA - 25)) * 1.5
+    const pta = calcularPTA_AMA();
+    const perdida = Math.max(0, (pta - 25)) * 1.5;
+    return {
+      porcentaje: Math.round(perdida * 100) / 100,
+      frecuencias: [500, 1000, 2000, 3000],
+      metodo: 'AMA'
+    };
+  } else if (metodo === 'LFT') {
+    // LFT: Elegir entre Rango A y Rango B, el que produzca mayor porcentaje
+    const ptaA = calcularPTA_LFT_RangoA();
+    const ptaB = calcularPTA_LFT_RangoB();
+    
+    const porcentajeA = ptaA * 0.8;
+    const porcentajeB = ptaB * 0.8;
+    
+    if (porcentajeA >= porcentajeB) {
+      return {
+        porcentaje: Math.round(porcentajeA * 100) / 100,
+        frecuencias: [250, 500, 1000, 2000],
+        metodo: 'LFT',
+        rango: 'A'
+      };
+    } else {
+      return {
+        porcentaje: Math.round(porcentajeB * 100) / 100,
+        frecuencias: [2000, 3000, 4000, 6000],
+        metodo: 'LFT',
+        rango: 'B'
+      };
+    }
+  }
+  
+  // Fallback al método anterior si no se reconoce el método
+  const A = oidoIzquierdo500.value || 0;
+  const B = oidoIzquierdo1000.value || 0;
+  const C = oidoIzquierdo2000.value || 0;
+  const D = oidoIzquierdo4000.value || 0;
   
   const promedio = (A + B + C + D) / 4;
   const porcentaje = promedio * 0.8;
   
-  return Math.round(porcentaje * 100) / 100; // Redondear a 2 decimales
+  return {
+    porcentaje: Math.round(porcentaje * 100) / 100,
+    frecuencias: [500, 1000, 2000, 4000],
+    metodo: 'LEGACY'
+  };
+};
+
+// Función legacy para compatibilidad
+const calcularPorcentajePerdida = () => {
+  return calcularPorcentajePorOido().porcentaje;
 };
 
 // Computed para el porcentaje de pérdida
@@ -266,7 +378,14 @@ const porcentajePerdidaOI = computed(() => {
 
 // Watch para actualizar el formData cuando cambie el porcentaje
 watch(porcentajePerdidaOI, (newValue) => {
-  formDataAudiometria.porcentajePerdidaOI = newValue;
+  const metodo = formDataAudiometria.metodoAudiometria || 'AMA';
+  
+  if (metodo === 'AMA') {
+    formDataAudiometria.perdidaMonauralOI_AMA = newValue;
+  } else if (metodo === 'LFT') {
+    formDataAudiometria.porcentajePerdidaOI = newValue;
+  }
+  
   calcularHipoacusiaBilateralCombinada();
 });
 
@@ -275,17 +394,52 @@ watch(() => formDataAudiometria.porcentajePerdidaOD, () => {
   calcularHipoacusiaBilateralCombinada();
 });
 
+// Watch para recalcular cuando cambien los valores de AMA
+watch(() => formDataAudiometria.perdidaMonauralOD_AMA, () => {
+  calcularHipoacusiaBilateralCombinada();
+});
+
+// Watch para recalcular cuando cambie el método
+watch(() => formDataAudiometria.metodoAudiometria, () => {
+  calcularHipoacusiaBilateralCombinada();
+});
+
 // Función para calcular la hipoacusia bilateral combinada
 const calcularHipoacusiaBilateralCombinada = () => {
-  const porcentajeOD = formDataAudiometria.porcentajePerdidaOD || 0;
-  const porcentajeOI = formDataAudiometria.porcentajePerdidaOI || 0;
+  const metodo = formDataAudiometria.metodoAudiometria || 'AMA';
   
-  const minPorcentaje = Math.min(porcentajeOD, porcentajeOI);
-  const maxPorcentaje = Math.max(porcentajeOD, porcentajeOI);
-  
-  const hipoacusiaBilateral = ((minPorcentaje * 7) + maxPorcentaje) / 8;
-  
-  formDataAudiometria.hipoacusiaBilateralCombinada = Math.round(hipoacusiaBilateral * 1000) / 1000;
+  if (metodo === 'AMA') {
+    // Para AMA: usar valores específicos de AMA
+    const perdidaOD = formDataAudiometria.perdidaMonauralOD_AMA || 0;
+    const perdidaOI = formDataAudiometria.perdidaMonauralOI_AMA || 0;
+    
+    // Fórmula AMA: (5*menor + 1*mayor) / 6
+    const menor = Math.min(perdidaOD, perdidaOI);
+    const mayor = Math.max(perdidaOD, perdidaOI);
+    const perdidaBilateralAMA = ((5 * menor) + mayor) / 6;
+    
+    formDataAudiometria.perdidaAuditivaBilateralAMA = Math.round(perdidaBilateralAMA * 100) / 100;
+  } else if (metodo === 'LFT') {
+    // Para LFT: usar valores legacy
+    const porcentajeOD = formDataAudiometria.porcentajePerdidaOD || 0;
+    const porcentajeOI = formDataAudiometria.porcentajePerdidaOI || 0;
+    
+    const minPorcentaje = Math.min(porcentajeOD, porcentajeOI);
+    const maxPorcentaje = Math.max(porcentajeOD, porcentajeOI);
+    
+    // Fórmula LFT: (7*menor + 1*mayor) / 8
+    let hipoacusiaBilateral = ((minPorcentaje * 7) + maxPorcentaje) / 8;
+    
+    // Aplicar redondeo LFT
+    const decimal = hipoacusiaBilateral % 1;
+    if (decimal >= 0.6) {
+      hipoacusiaBilateral = Math.ceil(hipoacusiaBilateral);
+    } else {
+      hipoacusiaBilateral = Math.floor(hipoacusiaBilateral);
+    }
+    
+    formDataAudiometria.hipoacusiaBilateralCombinada = hipoacusiaBilateral;
+  }
 };
 
 // Función para sincronizar valores locales con formData
@@ -407,15 +561,28 @@ watch(() => formDataAudiometria.oidoIzquierdo8000, (newValue) => {
         <div class="flex items-center justify-evenly">
           <div>
             <p class="text-sm font-medium text-emerald-800">
-              Porcentaje de Pérdida Auditiva
+              {{ formDataAudiometria.metodoAudiometria === 'AMA' ? 'Pérdida Monoaural' : 'Índice de Fletcher' }} <br>({{ formDataAudiometria.metodoAudiometria || 'AMA' }})
             </p>
           </div>
           <div class="text-center">
-            <span class="text-2xl font-bold text-emerald-800">
+            <span 
+              class="text-2xl font-bold text-emerald-800"
+              :title="formDataAudiometria.metodoAudiometria === 'AMA' 
+                ? 'Pérdida monaural (%) = max(0,(PTA-25))*1.5. Frecuencias 500–3000 Hz.' 
+                : 'Índice de Fletcher (%) = PTA*0.8. Se elige Rango A (250–2000) o B (2000–6000) que produzca mayor pérdida. Reglas 120/5.'"
+            >
               {{ porcentajePerdidaOI }}%
             </span>
           </div>
         </div>
+      </div>
+
+      <!-- Información de frecuencias usadas -->
+      <div class="w-full mt-2 text-center">
+        <p class="text-xs text-gray-600">
+          Frecuencias usadas OI: [{{ calcularPorcentajePorOido().frecuencias.join(', ') }}] Hz
+          {{ calcularPorcentajePorOido().rango ? ` (Rango ${calcularPorcentajePorOido().rango})` : '' }}
+        </p>
       </div>
  
     </div>

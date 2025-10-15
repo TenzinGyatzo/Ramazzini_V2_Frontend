@@ -466,6 +466,69 @@ export function contarPorCategoriaTensionArterial(data: { categoriaTensionArteri
   });
 }
 
+// Función para calcular la proporción Normal/Anormal de audiometría
+export function calcularProporcionAudiometria(data: { hipoacusiaBilateralCombinada: number | null }[]): { Normal: number; Anormal: number } {
+  const total = data.length;
+  if (total === 0) return { Normal: 0, Anormal: 0 };
+
+  let normal = 0;
+  let anormal = 0;
+
+  data.forEach(item => {
+    if (item.hipoacusiaBilateralCombinada !== null && item.hipoacusiaBilateralCombinada !== undefined) {
+      if (item.hipoacusiaBilateralCombinada <= 10.999) {
+        normal++;
+      } else {
+        anormal++;
+      }
+    }
+  });
+
+  return { Normal: normal, Anormal: anormal };
+}
+
+// Función para distribuir los resultados de HBC en rangos específicos
+export function distribuirResultadosHBC(data: { hipoacusiaBilateralCombinada: number | null }[]): [string, number, number][] {
+  const rangos = [
+    { min: 0, max: 10.999, label: 'Normal' },
+    { min: 11, max: 25.999, label: 'Hipoacusia leve' },
+    { min: 26, max: 40.999, label: 'Hipoacusia moderada' },
+    { min: 41, max: 55.999, label: 'H. moderada-severa' },
+    { min: 56, max: 69.999, label: 'Hipoacusia severa' },
+    { min: 70, max: 100, label: 'Hipoacusia profunda' }
+  ];
+
+  const conteo: Record<string, number> = {};
+  let total = 0;
+
+  // Inicializar conteo
+  rangos.forEach(rango => {
+    conteo[rango.label] = 0;
+  });
+
+  // Contar valores en cada rango
+  data.forEach(item => {
+    if (item.hipoacusiaBilateralCombinada !== null && item.hipoacusiaBilateralCombinada !== undefined) {
+      const valor = item.hipoacusiaBilateralCombinada;
+      
+      for (const rango of rangos) {
+        if (valor >= rango.min && valor <= rango.max) {
+          conteo[rango.label]++;
+          total++;
+          break;
+        }
+      }
+    }
+  });
+
+  // Retornar resultados con porcentajes
+  return rangos.map(rango => {
+    const cantidad = conteo[rango.label] || 0;
+    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+    return [rango.label, cantidad, porcentaje];
+  });
+}
+
 
 
 

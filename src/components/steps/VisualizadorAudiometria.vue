@@ -25,6 +25,158 @@ const goToStep = (stepNumber) => {
 // Computed para asegurar reactividad completa
 const formDataAudiometria = computed(() => formData.formDataAudiometria);
 
+// Computed para el texto del diagnóstico según el método de audiometría
+const textoDiagnosticoBilateral = computed(() => {
+  const metodo = formDataAudiometria.value.metodoAudiometria || 'AMA';
+  if (metodo === 'AMA') {
+    return 'PÉRDIDA AUDITIVA BILATERAL';
+  } else if (metodo === 'LFT') {
+    return 'HIPOACUSIA BILATERAL COMBINADA';
+  }
+  return 'HIPOACUSIA BILATERAL COMBINADA'; // Valor por defecto
+});
+
+// Función para calcular PTA AMA (500, 1000, 2000, 3000 Hz)
+const calcularPTA_AMA = (oido) => {
+  const frecuencias = [500, 1000, 2000, 3000];
+  const valores = frecuencias.map(freq => {
+    const campo = `oido${oido}${freq}`;
+    return formDataAudiometria.value[campo] || 0;
+  });
+  
+  const suma = valores.reduce((acc, val) => acc + val, 0);
+  return suma / frecuencias.length;
+};
+
+// Función para calcular PTA LFT Rango A (250, 500, 1000, 2000 Hz)
+const calcularPTA_LFT_RangoA = (oido) => {
+  const frecuencias = [250, 500, 1000, 2000];
+  const valores = frecuencias.map(freq => {
+    const campo = `oido${oido}${freq}`;
+    return formDataAudiometria.value[campo] || 0;
+  });
+  
+  const suma = valores.reduce((acc, val) => acc + val, 0);
+  return suma / frecuencias.length;
+};
+
+// Función para calcular PTA LFT Rango B (2000, 3000, 4000, 6000 Hz)
+const calcularPTA_LFT_RangoB = (oido) => {
+  const frecuencias = [2000, 3000, 4000, 6000];
+  const valores = frecuencias.map(freq => {
+    const campo = `oido${oido}${freq}`;
+    return formDataAudiometria.value[campo] || 0;
+  });
+  
+  const suma = valores.reduce((acc, val) => acc + val, 0);
+  return suma / frecuencias.length;
+};
+
+// Función para calcular porcentaje por oído según método
+const calcularPorcentajePorOido = (oido) => {
+  const metodo = formDataAudiometria.value.metodoAudiometria || 'AMA';
+  
+  if (metodo === 'AMA') {
+    // AMA: max(0, (PTA - 25)) * 1.5
+    const pta = calcularPTA_AMA(oido);
+    const perdida = Math.max(0, (pta - 25)) * 1.5;
+    return {
+      porcentaje: Math.round(perdida * 1000) / 1000,
+      frecuencias: [500, 1000, 2000, 3000],
+      metodo: 'AMA'
+    };
+  } else if (metodo === 'LFT') {
+    // LFT: Elegir entre Rango A y Rango B, el que produzca mayor porcentaje
+    const ptaA = calcularPTA_LFT_RangoA(oido);
+    const ptaB = calcularPTA_LFT_RangoB(oido);
+    
+    const porcentajeA = ptaA * 0.8;
+    const porcentajeB = ptaB * 0.8;
+    
+    if (porcentajeA >= porcentajeB) {
+      return {
+        porcentaje: Math.round(porcentajeA * 1000) / 1000,
+        frecuencias: [250, 500, 1000, 2000],
+        metodo: 'LFT',
+        rango: 'A'
+      };
+    } else {
+      return {
+        porcentaje: Math.round(porcentajeB * 1000) / 1000,
+        frecuencias: [2000, 3000, 4000, 6000],
+        metodo: 'LFT',
+        rango: 'B'
+      };
+    }
+  }
+  
+  // Fallback al método anterior si no se reconoce el método
+  const frecuencias = [500, 1000, 2000, 4000];
+  const valores = frecuencias.map(freq => {
+    const campo = `oido${oido}${freq}`;
+    return formDataAudiometria.value[campo] || 0;
+  });
+  
+  const promedio = valores.reduce((acc, val) => acc + val, 0) / frecuencias.length;
+  const porcentaje = promedio * 0.8;
+  
+  return {
+    porcentaje: Math.round(porcentaje * 1000) / 1000,
+    frecuencias: frecuencias,
+    metodo: 'LEGACY'
+  };
+};
+
+// Función para calcular resultado binaural según método
+const calcularResultadoBinaural = () => {
+  const metodo = formDataAudiometria.value.metodoAudiometria || 'AMA';
+  const resultadoOD = calcularPorcentajePorOido('Derecho');
+  const resultadoOI = calcularPorcentajePorOido('Izquierdo');
+  
+  // Ordenar para combinación: menor = oído menos sordo
+  const menor = Math.min(resultadoOD.porcentaje, resultadoOI.porcentaje);
+  const mayor = Math.max(resultadoOD.porcentaje, resultadoOI.porcentaje);
+  
+  if (metodo === 'AMA') {
+    // AMA (bilateral %): (5*menor + 1*mayor) / 6
+    const bilateral = ((5 * menor) + mayor) / 6;
+    return {
+      porcentaje: Math.round(bilateral * 1000) / 1000,
+      metodo: 'AMA',
+      etiqueta: 'Pérdida auditiva bilateral'
+    };
+  } else if (metodo === 'LFT') {
+    // LFT (HBC %): (7*menor + 1*mayor) / 8 y luego aplicar redondeo LFT
+    let hbc = ((7 * menor) + mayor) / 8;
+    
+    // Aplicar redondeo LFT: décimas 0.0–0.5 hacia abajo, 0.6–0.9 hacia arriba
+    const decimal = hbc % 1;
+    if (decimal >= 0.6) {
+      hbc = Math.ceil(hbc);
+    } else {
+      hbc = Math.floor(hbc);
+    }
+    
+    return {
+      porcentaje: Math.round(hbc * 1000) / 1000,
+      metodo: 'LFT',
+      etiqueta: 'Hipoacusia bilateral combinada (HBC)'
+    };
+  }
+  
+  // Fallback
+  return {
+    porcentaje: formDataAudiometria.value.hipoacusiaBilateralCombinada || 0,
+    metodo: 'LEGACY',
+    etiqueta: 'Hipoacusia bilateral combinada'
+  };
+};
+
+// Computed para el resultado binaural dinámico
+const resultadoBinaural = computed(() => {
+  return calcularResultadoBinaural();
+});
+
 // Computed para datos de la gráfica audiométrica
 const graficaAudiometriaData = computed(() => {
   const frecuencias = [125, 250, 500, 1000, 2000, 3000, 4000, 6000, 8000];
@@ -410,7 +562,7 @@ defineExpose({
               {{ formDataAudiometria.oidoDerecho8000 ?? '' }}
             </td>
             <td class="w-16 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formDataAudiometria.porcentajePerdidaOD ?? '' }}
+              {{ calcularPorcentajePorOido('Derecho').porcentaje ?? '' }}
             </td>
           </tr>
           <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 3 }"
@@ -444,17 +596,27 @@ defineExpose({
               {{ formDataAudiometria.oidoIzquierdo8000 ?? '' }}
             </td>
             <td class="w-16 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formDataAudiometria.porcentajePerdidaOI ?? '' }}
+              {{ calcularPorcentajePorOido('Izquierdo').porcentaje ?? '' }}
             </td>
           </tr>
           <tr class="odd:bg-white even:bg-gray-50">
-            <td colspan="10" class="w-32 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">Hipoacusia Bilateral Combinada</td>
+            <td colspan="10" class="w-32 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">{{ textoDiagnosticoBilateral }}</td>
             <td class="w-16 text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">
-              {{ formDataAudiometria.hipoacusiaBilateralCombinada ?? '' }}
+              {{ resultadoBinaural.porcentaje ?? '' }}
             </td>
           </tr>
         </tbody>
       </table>
+      
+      <!-- Leyenda discreta con método y frecuencias -->
+      <div class="mt-2 text-center">
+        <p class="text-xs text-gray-500 italic">
+          Método: {{ (formDataAudiometria.metodoAudiometria || 'AMA') }}
+          {{ (formDataAudiometria.metodoAudiometria || 'AMA') === 'AMA' 
+            ? '- Frecuencias: 500, 1000, 2000, 3000 Hz' 
+            : `- OD: [${calcularPorcentajePorOido('Derecho').frecuencias.join(', ')}] Hz${calcularPorcentajePorOido('Derecho').rango ? ` (Rango ${calcularPorcentajePorOido('Derecho').rango})` : ''} | OI: [${calcularPorcentajePorOido('Izquierdo').frecuencias.join(', ')}] Hz${calcularPorcentajePorOido('Izquierdo').rango ? ` (Rango ${calcularPorcentajePorOido('Izquierdo').rango})` : ''}` }}
+        </p>
+      </div>
     </div>
 
     <!-- Gráfica Audiométrica -->
@@ -507,7 +669,7 @@ defineExpose({
       :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }"
       @click="goToStep(6)"
     >
-      <p class="text-justify font-medium">DIAGNÓSTICO: <span class="font-semibold text-lg text-gray-900">{{ formDataAudiometria.diagnosticoAudiometria.toUpperCase() }} HBC DE {{ formDataAudiometria.hipoacusiaBilateralCombinada }}%</span></p>
+      <p class="text-justify font-medium">DIAGNÓSTICO: <span class="font-semibold text-lg text-gray-900">{{ formDataAudiometria.diagnosticoAudiometria.toUpperCase() }} {{ (formDataAudiometria.metodoAudiometria || 'AMA') === 'AMA' ? 'PA' : 'HBC' }} DE {{ resultadoBinaural.porcentaje }}%</span></p>
     </div>
     <div v-else 
       class="w-full text-center cursor-pointer text-gray-500 italic" 

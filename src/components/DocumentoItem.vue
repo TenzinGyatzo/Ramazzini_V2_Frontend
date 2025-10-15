@@ -1166,7 +1166,14 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
                                     Audiometría
                                 </h3>
-                                <span v-if="audiometria.hipoacusiaBilateralCombinada" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                <!-- Mostrar resultado según método de audiometría -->
+                                <span v-if="audiometria.metodoAudiometria === 'AMA' && audiometria.perdidaAuditivaBilateralAMA" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                    PAB: {{ audiometria.perdidaAuditivaBilateralAMA }}%
+                                </span>
+                                <span v-else-if="audiometria.metodoAudiometria === 'LFT' && audiometria.hipoacusiaBilateralCombinada" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                    HBC: {{ audiometria.hipoacusiaBilateralCombinada }}%
+                                </span>
+                                <span v-else-if="!audiometria.metodoAudiometria && audiometria.hipoacusiaBilateralCombinada" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
                                     HBC: {{ audiometria.hipoacusiaBilateralCombinada }}%
                                 </span>
                                 <span v-else class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">

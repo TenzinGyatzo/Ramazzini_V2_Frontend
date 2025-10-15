@@ -113,6 +113,9 @@ const filtrosConfig = [
     'Temperaturas elevadas', 'Temperaturas abatidas', 'Vibraciones', 'Biológicos Infecciosos', '-'
   ]},
   { id: 'consultas', label: 'Consultas', opciones: ['Si', 'No']},
+  { id: 'audiometria', label: 'Diagnóstico Audiometría', opciones: ['Normal', 'Anormal']},
+  { id: 'pab', label: 'PAB (%)', opciones: ['0-10%', '11-25%', '26-40%', '41-55%', '56-70%', '>70%']},
+  { id: 'hbc', label: 'HBC (%)', opciones: ['0-10%', '11-25%', '26-40%', '41-55%', '56-70%', '>70%']},
 ];
 
 const filtros = reactive<Record<string, string>>({
@@ -138,6 +141,9 @@ const filtros = reactive<Record<string, string>>({
   traumatico: '',
   exposicion: '',
   consultas: '',
+  audiometria: '',
+  pab: '',
+  hbc: '',
   periodo: '',
   estadoLaboral: 'Activo',
 });
@@ -254,7 +260,6 @@ onMounted(async () => {
 watch(mostrarFiltros, (nuevoValor) => {
   localStorage.setItem('mostrarFiltros', String(nuevoValor));
 });
-
 
 // 6. Funciones de modales
 const toggleImportModal = () => {
@@ -461,6 +466,8 @@ const exportarFiltrados = () => {
       ? row.agentesRiesgoActuales.join(', ')
       : '-',
     consultas: row.consultaResumen?.fechaNotaMedica ? 'Si' : 'No',
+    audiometria: row.audiometriaResumen?.diagnosticoAudiometria || '-',
+    hbc: row.audiometriaResumen?.hipoacusiaBilateralCombinada || '-',
     estadoLaboral: row.estadoLaboral || '-'
   }));
 
@@ -496,6 +503,8 @@ const filtrosValidos = {
     'Vibraciones', 'Biológicos Infecciosos', '-'
   ],
   consultas: ['Si', 'No'],
+  audiometria: ['Normal', 'Anormal'],
+  hbc: ['0-10%', '11-25%', '26-40%', '41-55%', '56-70%', '>70%'],
 };
 
 function aplicarFiltrosDesdeQuery(query: RouteLocationNormalizedLoaded['query']) {

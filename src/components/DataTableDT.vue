@@ -70,7 +70,7 @@ function inicializarDataTable() {
     };
 
     // Definir las columnas que se ocultan por defecto
-    const columnasOcultas = [2, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36];
+    const columnasOcultas = [2, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38];
 
     dataTableInstance = new DataTablesCore('#customTable', {
       data: props.rows,
@@ -203,9 +203,12 @@ function inicializarDataTable() {
         { data: 'historiaClinicaResumen.alcoholismo', title: 'Alcohol', defaultContent: '-' }, // 31 (antes era 29)
         { data: 'historiaClinicaResumen.tabaquismo', title: 'Tabaco', defaultContent: '-' }, // 32 (antes era 30)
         { data: 'historiaClinicaResumen.accidenteLaboral', title: 'Acc. Laboral', defaultContent: '-' }, // 33 (antes era 31)
-        { data: 'agentesRiesgoActuales', title: 'Agentes Riesgo', render: d => Array.isArray(d) ? d.join(', ') : '-', defaultContent: '-' }, // 34 (antes era 34)
-        { data: 'consultaResumen.fechaNotaMedica', title: 'Consultas', render: d => d ? 'Si' : 'No', defaultContent: '-' }, // 35 (antes era 35)
-        { data: 'estadoLaboral', title: 'Estado Laboral' }, // 36 (antes era 36)
+        { data: 'audiometriaResumen.diagnosticoAudiometria', title: 'Audiometria', defaultContent: '-' }, // 34 
+        { data: 'audiometriaResumen.perdidaAuditivaBilateralAMA', title: 'PAB', defaultContent: '-' }, // 35
+        { data: 'audiometriaResumen.hipoacusiaBilateralCombinada', title: 'HBC', defaultContent: '-' }, // 36 
+        { data: 'agentesRiesgoActuales', title: 'Agentes Riesgo', render: d => Array.isArray(d) ? d.join(', ') : '-', defaultContent: '-' }, // 37 (antes era 34)
+        { data: 'consultaResumen.fechaNotaMedica', title: 'Consultas', render: d => d ? 'Si' : 'No', defaultContent: '-' }, // 38 (antes era 35)
+        { data: 'estadoLaboral', title: 'Estado Laboral' }, // 39 (antes era 36)
         {
           data: null,
           title: 'Expediente',
@@ -229,7 +232,7 @@ function inicializarDataTable() {
               </a>
             `;
           }
-        }, // 37 (antes era 37)
+        }, // 38 (antes era 37)
         {
           data: null,
           title: 'Acciones',
@@ -306,7 +309,7 @@ function inicializarDataTable() {
               </div>
             `;
           }
-        }, // 38 (antes era 38)
+        }, // 40 (antes era 38)
       ],
       deferRender: true,
       scrollX: true,
@@ -337,7 +340,10 @@ function inicializarDataTable() {
         { targets: 10, width: '100px' }, // Puesto
         { targets: 14, width: '60px' }, // IMC
         { targets: 32, width: '70px' }, // Tabaco
-        { targets: 38, width: '248px', className: 'columna-acciones' } // Acciones con clase específica
+        { targets: 34, width: '80px' }, // Audiometria
+        { targets: 35, width: '60px' }, // PAB
+        { targets: 36, width: '60px' }, // HBC
+        { targets: 41, width: '248px', className: 'columna-acciones' } // Acciones con clase específica
       ]
     });
 
@@ -454,9 +460,12 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
     { id: 'traumatico', columna: 30 },
     { id: 'aptitud', columna: 4 },
     { id: 'vigencia', columna: 5 }, // <-- Ahora funciona con filtro estándar
-    { id: 'exposicion', columna: 34 }, // <-- este tiene lógica especial
-    { id: 'consultas', columna: 35 },
-    { id: 'estadoLaboral', columna: 36 }
+    { id: 'exposicion', columna: 37 }, // <-- este tiene lógica especial
+    { id: 'consultas', columna: 38 },
+    { id: 'audiometria', columna: 34 }, // <-- nuevo filtro para audiometría
+    { id: 'pab', columna: 35 }, // <-- nuevo filtro para PAB
+    { id: 'hbc', columna: 36 }, // <-- nuevo filtro para HBC
+    { id: 'estadoLaboral', columna: 39 }
   ];
 
       // 1. Limpiar filtros anteriores
@@ -481,6 +490,61 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
     if (id === 'exposicion') {
       // Aplicar como expresión regular simple, sin anclar (^$) para permitir coincidencias parciales
       const regex = valor === '' ? '' : valor === '-' ? '^-$' : valor;
+      dataTableInstance.column(columna).search(regex, true, false);
+    } else if (id === 'audiometria') {
+      // Lógica especial para audiometría: Normal = "Audición normal bilateral.", Anormal = cualquier otra cosa excepto "-"
+      let regex = '';
+      if (valor === '') {
+        regex = '';
+      } else if (valor === 'Normal') {
+        regex = '^Audición normal bilateral\\.$';
+      } else if (valor === 'Anormal') {
+        regex = '^(?!Audición normal bilateral\\.)(?!-).*$';
+      } else {
+        regex = `^${valor}$`;
+      }
+      dataTableInstance.column(columna).search(regex, true, false);
+    } else if (id === 'pab') {
+      // Lógica especial para PAB: convertir rangos a expresiones regulares para números decimales
+      let regex = '';
+      if (valor === '') {
+        regex = '';
+      } else if (valor === '0-10%') {
+        regex = '^(0(\\.\\d+)?|[1-9](\\.\\d+)?|10(\\.\\d+)?)$';
+      } else if (valor === '11-25%') {
+        regex = '^(1[1-9](\\.\\d+)?|2[0-4](\\.\\d+)?|25(\\.\\d+)?)$';
+      } else if (valor === '26-40%') {
+        regex = '^(2[6-9](\\.\\d+)?|3[0-9](\\.\\d+)?|40(\\.\\d+)?)$';
+      } else if (valor === '41-55%') {
+        regex = '^(4[1-9](\\.\\d+)?|5[0-4](\\.\\d+)?|55(\\.\\d+)?)$';
+      } else if (valor === '56-70%') {
+        regex = '^(5[6-9](\\.\\d+)?|6[0-9](\\.\\d+)?|70(\\.\\d+)?)$';
+      } else if (valor === '>70%') {
+        regex = '^(7[0-9](\\.\\d+)?|[8-9][0-9](\\.\\d+)?|100(\\.\\d+)?)$';
+      } else {
+        regex = `^${valor}$`;
+      }
+      dataTableInstance.column(columna).search(regex, true, false);
+    } else if (id === 'hbc') {
+      // Lógica especial para HBC: convertir rangos a expresiones regulares para números decimales
+      let regex = '';
+      if (valor === '') {
+        regex = '';
+      } else if (valor === '0-10%') {
+        regex = '^(0(\\.\\d+)?|[1-9](\\.\\d+)?|10(\\.\\d+)?)$';
+      } else if (valor === '11-25%') {
+        regex = '^(1[1-9](\\.\\d+)?|2[0-4](\\.\\d+)?|25(\\.\\d+)?)$';
+      } else if (valor === '26-40%') {
+        regex = '^(2[6-9](\\.\\d+)?|3[0-9](\\.\\d+)?|40(\\.\\d+)?)$';
+      } else if (valor === '41-55%') {
+        regex = '^(4[1-9](\\.\\d+)?|5[0-4](\\.\\d+)?|55(\\.\\d+)?)$';
+      } else if (valor === '56-70%') {
+        regex = '^(5[6-9](\\.\\d+)?|6[0-9](\\.\\d+)?|70(\\.\\d+)?)$';
+      } else if (valor === '>70%') {
+        regex = '^(7[0-9](\\.\\d+)?|[8-9][0-9](\\.\\d+)?|100(\\.\\d+)?)$';
+      } else {
+        regex = `^${valor}$`;
+      }
       dataTableInstance.column(columna).search(regex, true, false);
     } else {
       const regex = valor === '' ? '' : valor === '-' ? '^-$' : `^${valor}$`;
@@ -599,7 +663,7 @@ defineExpose({
 // Agregar watcher para la prop mostrarColumnasOcultas
 watch(() => props.mostrarColumnasOcultas, (nuevoValor) => {
   if (dataTableInstance) {
-    const columnasOcultas = [2, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36];
+    const columnasOcultas = [2, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38];
     
     // Cambiar la visibilidad de las columnas
     columnasOcultas.forEach((columnaIndex) => {
@@ -637,8 +701,6 @@ watch(() => props.mostrarColumnasOcultas, (nuevoValor) => {
 watch(() => props.mostrarLeyenda, (nuevoValor) => {
   mostrarLeyendaLocal.value = nuevoValor !== false;
 });
-
-
 
 // Agregar watcher para la prop mostrarVigencias
 watch(() => props.mostrarVigencias, (nuevoValor) => {
