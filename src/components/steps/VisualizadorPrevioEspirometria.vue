@@ -283,7 +283,7 @@ const goToStep = (stepNumber) => {
                   <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">OTROS SÍNTOMAS</td>
                   <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300"
                     :class="formData.formDataPrevioEspirometria.otrosSintomas && formData.formDataPrevioEspirometria.otrosSintomas !== 'NO' ? 'text-red-600 font-medium' : ''">
-                    {{ formData.formDataPrevioEspirometria.otrosSintomas.toUpperCase() }}</td>
+                    {{ formData.formDataPrevioEspirometria.otrosSintomas ? formData.formDataPrevioEspirometria.otrosSintomas.toUpperCase() : '' }}</td>
                 </tr>
               </tbody>
             </table>
@@ -310,7 +310,7 @@ const goToStep = (stepNumber) => {
                 <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(17)" style="height: 5.25rem;">
                   <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">ESPECIFICAR MEDICAMENTOS</td>
                   <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-                    {{ formData.formDataPrevioEspirometria.medicamentosActualesEspecificar.toUpperCase() }}</td>
+                    {{ formData.formDataPrevioEspirometria.medicamentosActualesEspecificar ? formData.formDataPrevioEspirometria.medicamentosActualesEspecificar.toUpperCase() : '' }}</td>
                 </tr>
               </tbody>
             </table>
