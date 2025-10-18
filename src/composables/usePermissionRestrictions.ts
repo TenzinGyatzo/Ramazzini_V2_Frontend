@@ -237,6 +237,32 @@ export function usePermissionRestrictions() {
     }
   };
 
+  // Ejecutar acción solo si puede gestionar documentos de diagnóstico
+  const executeIfCanManageDocumentosDiagnostico = (callback: () => void, action: string = 'gestionar documentos de diagnóstico') => {
+    if (!canManageDocumentosDiagnostico.value) {
+      toast?.open({
+        message: `No tienes permisos para gestionar documentos de diagnóstico y certificación.`,
+        type: 'warning',
+        position: 'top-right'
+      });
+      return;
+    }
+    callback();
+  };
+
+  // Ejecutar acción solo si puede gestionar documentos de evaluación
+  const executeIfCanManageDocumentosEvaluacion = (callback: () => void, action: string = 'gestionar documentos de evaluación') => {
+    if (!canManageDocumentosEvaluacion.value) {
+      toast?.open({
+        message: `No tienes permisos para gestionar documentos de evaluación.`,
+        type: 'warning',
+        position: 'top-right'
+      });
+      return;
+    }
+    callback();
+  };
+
   return {
     // Computed properties
     userRole,
@@ -267,6 +293,8 @@ export function usePermissionRestrictions() {
     executeIfCanManageTrabajadores,
     executeIfCanCreateDocument,
     executeIfCanManageDocumentosExternos,
-    executeIfCanManageCuestionariosAdicionales
+    executeIfCanManageCuestionariosAdicionales,
+    executeIfCanManageDocumentosDiagnostico,
+    executeIfCanManageDocumentosEvaluacion
   };
 }
