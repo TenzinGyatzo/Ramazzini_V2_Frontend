@@ -673,7 +673,7 @@ watch(mostrarTooltipEnfermera, (nuevoValor) => {
     <!-- Botón del engrane mejorado -->
     <Transition name="delayed-appear">
       <button 
-        v-if="isVisible && ['inicio', 'add-user', 'remove-users', 'perfil-proveedor', 'medico-firmante', 'enfermera-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
+        v-if="isVisible && ['inicio', 'add-user', 'remove-users', 'manage-permissions', 'user-productivity', 'perfil-proveedor', 'medico-firmante', 'enfermera-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
         @click="toggleMenu"
         class="fixed top-6 right-6 p-4 bg-white text-gray-700 rounded-full hover:bg-gray-50 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl border border-gray-200 z-50 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-200"
         :aria-label="isMenuOpen ? 'Cerrar menú de configuración' : 'Abrir menú de configuración'"
