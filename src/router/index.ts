@@ -59,6 +59,12 @@ const router = createRouter({
           component: () => import("../views/RemoveUsersView.vue"),
         },
         {
+          path: "/gestionar-permisos",
+          name: "manage-permissions",
+          component: () => import("../views/ManagePermissionsView.vue"),
+          meta: { requiresAuth: true }
+        },
+        {
           path: "/productividad-usuarios",
           name: "user-productivity",
           component: () => import("../views/UserProductivityView.vue"),
@@ -191,13 +197,13 @@ router.beforeEach((to, from) => {
         return next({ name: "inicio" });
       }
 
-      // Validar restricciones de documentos para enfermeros
+      // Validar restricciones de documentos según permisos
       if (to.name === 'crear-documento' && user) {
         const { canCreateDocument } = useUserPermissions();
         const documentType = to.params.tipoDocumento as string;
         
         if (!canCreateDocument(documentType)) {
-          console.warn(`Acceso denegado: ${user.role} no puede crear documento ${documentType}`);
+          console.warn(`Acceso denegado: Usuario ${user.username} (${user.role}) no tiene permisos para crear documento ${documentType}`);
           return next({ name: "expediente-medico", params: { 
             idEmpresa: to.params.idEmpresa,
             idCentroTrabajo: to.params.idCentroTrabajo,

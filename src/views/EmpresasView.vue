@@ -9,12 +9,16 @@ import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
 import type { Empresa } from '@/interfaces/empresa.interface';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useRouter } from 'vue-router';
+import { useUserPermissions } from '@/composables/useUserPermissions';
+import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 
 const toast: any = inject('toast');
 
 const empresas = useEmpresasStore();
 const proveedorSalud = useProveedorSaludStore();
 const router = useRouter();
+const { canManageEmpresas } = useUserPermissions();
+const { executeIfCanManageEmpresas } = usePermissionRestrictions();
 
 const showModal = ref(false);
 const showDeleteModal = ref(false);
@@ -37,6 +41,22 @@ const empresasFiltradas = computed(() => {
 
 
 const openModal = async (empresa: Empresa | null = null) => {
+  // Si es una nueva empresa (empresa === null), validar permisos
+  if (!empresa) {
+    executeIfCanManageEmpresas(() => {
+      // Solo ejecutar si tiene permisos
+      openModalInternal(empresa);
+    }, 'crear nuevas empresas');
+    return;
+  }
+  
+  // Si es editar empresa existente, también validar permisos
+  executeIfCanManageEmpresas(() => {
+    openModalInternal(empresa);
+  }, 'editar empresas');
+};
+
+const openModalInternal = async (empresa: Empresa | null = null) => {
   showModal.value = false;  // Cerramos el modal antes de cargar
   empresas.loadingModal = true;  // Iniciamos la carga del modal
 
@@ -159,7 +179,14 @@ if (periodoDePruebaFinalizado && estadoSuscripcion === 'cancelled' && finDeSuscr
               <button 
                 type="button"
                 @click="openModal(null)"
-                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-normal rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-200 active:scale-95 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl"
+                :disabled="!canManageEmpresas"
+                :class="[
+                  'w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-normal rounded-xl transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-emerald-200 active:scale-95 shadow-lg',
+                  canManageEmpresas 
+                    ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-600 hover:to-emerald-700 text-white hover:scale-105 hover:shadow-xl' 
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                ]"
+                :title="canManageEmpresas ? 'Crear nueva empresa' : 'No tienes permisos para crear empresas'"
               >
                 <i class="fas fa-building text-sm"></i>
                 <span>Nuevo Cliente</span>
@@ -307,7 +334,9 @@ if (periodoDePruebaFinalizado && estadoSuscripcion === 'cancelled' && finDeSuscr
                   <GreenButton 
                     text="Registrar Nueva Empresa" 
                     size="medium"
+                    :disabled="!canManageEmpresas"
                     @click="openModal(null)" 
+                    title="Registrar una nueva empresa"
                   />
                 </div>
               </div>

@@ -9,6 +9,7 @@ import { convertirFechaISOaDDMMYYYY, calcularEdad, calcularAntiguedad, determina
 import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
+import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 
 const props = defineProps<{ 
   rows: any[];
@@ -29,6 +30,7 @@ let dataTableInstance: any = null;
 const router = useRouter();
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
+const { canManageTrabajadores, executeIfCanManageTrabajadores } = usePermissionRestrictions();
 
 function guardarFiltroEnLocalStorage(id: string, valor: string) {
   localStorage.setItem(`filtro-${id}`, valor);
@@ -350,8 +352,14 @@ function inicializarDataTable() {
               <!-- Editar -->
                 <button
                   type="button"
-                  class="btn-editar group absolute left-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-sky-100 whitespace-nowrap flex items-center overflow-hidden"
+                  ${canManageTrabajadores ? '' : 'disabled'}
+                  class="btn-editar group absolute left-0 z-10 hover:z-40 px-2.5 py-1 rounded-full transition-all duration-300 transform shadow-md hover:shadow-lg border-2 whitespace-nowrap flex items-center overflow-hidden ${
+                    canManageTrabajadores 
+                      ? 'bg-sky-100 hover:bg-sky-200 text-sky-600 hover:scale-105 border-sky-100' 
+                      : 'bg-gray-50 text-gray-400 cursor-not-allowed opacity-60 border-gray-100'
+                  }"
                   data-id="${row._id}"
+                  title="${canManageTrabajadores ? 'Editar trabajador' : 'No tienes permisos para editar trabajadores'}"
                 >
                   <i class="fa-regular fa-pen-to-square"></i>
                   <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-300 text-sm">
@@ -362,13 +370,23 @@ function inicializarDataTable() {
               <!-- Alta o Baja -->
                 ${
                   esInactivo
-                    ? `<button type="button" class="btn-alta-baja group absolute right-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-green-100 whitespace-nowrap flex items-center overflow-hidden"
-                        data-id="${row._id}">
+                    ? `<button type="button" ${canManageTrabajadores ? '' : 'disabled'} class="btn-alta-baja group absolute right-12 z-10 hover:z-40 px-2.5 py-1 rounded-full transition-all duration-300 transform shadow-md hover:shadow-lg border-2 whitespace-nowrap flex items-center overflow-hidden ${
+                        canManageTrabajadores 
+                          ? 'bg-green-100 hover:bg-green-200 text-green-600 hover:scale-105 border-green-100' 
+                          : 'bg-gray-50 text-gray-400 cursor-not-allowed opacity-60 border-gray-100'
+                      }"
+                        data-id="${row._id}"
+                        title="${canManageTrabajadores ? 'Dar de alta trabajador' : 'No tienes permisos para cambiar estado laboral de trabajadores'}">
                         <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:mr-2 transition-all duration-300 text-sm">Alta</span>
                         <i class="fa-solid fa-person-arrow-up-from-line"></i>
                       </button>`
-                    : `<button type="button" class="btn-alta-baja group absolute right-12 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-orange-100 hover:bg-orange-200 text-orange-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-orange-100 whitespace-nowrap flex items-center overflow-hidden"
-                        data-id="${row._id}">
+                    : `<button type="button" ${canManageTrabajadores ? '' : 'disabled'} class="btn-alta-baja group absolute right-12 z-10 hover:z-40 px-2.5 py-1 rounded-full transition-all duration-300 transform shadow-md hover:shadow-lg border-2 whitespace-nowrap flex items-center overflow-hidden ${
+                        canManageTrabajadores 
+                          ? 'bg-orange-100 hover:bg-orange-200 text-orange-600 hover:scale-105 border-orange-100' 
+                          : 'bg-gray-50 text-gray-400 cursor-not-allowed opacity-60 border-gray-100'
+                      }"
+                        data-id="${row._id}"
+                        title="${canManageTrabajadores ? 'Dar de baja trabajador' : 'No tienes permisos para cambiar estado laboral de trabajadores'}">
                         <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:mr-2 transition-all duration-300 text-sm">Baja</span>
                         <i class="fa-solid fa-person-arrow-down-to-line"></i>
                       </button>`
@@ -377,9 +395,15 @@ function inicializarDataTable() {
                 <!-- Eliminar -->
                 <button
                   type="button"
-                  class="btn-eliminar group absolute right-0 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-red-100 whitespace-nowrap flex items-center overflow-hidden"
+                  ${canManageTrabajadores ? '' : 'disabled'}
+                  class="btn-eliminar group absolute right-0 z-10 hover:z-40 px-2.5 py-1 rounded-full transition-all duration-300 transform shadow-md hover:shadow-lg border-2 whitespace-nowrap flex items-center overflow-hidden ${
+                    canManageTrabajadores 
+                      ? 'bg-red-100 hover:bg-red-200 text-red-600 hover:scale-105 border-red-100' 
+                      : 'bg-gray-50 text-gray-400 cursor-not-allowed opacity-60 border-gray-100'
+                  }"
                   data-id="${row._id}"
                   data-nombre="${row.nombre}"
+                  title="${canManageTrabajadores ? 'Eliminar trabajador' : 'No tienes permisos para eliminar trabajadores'}"
                 >
                   <span class="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:mr-2 transition-all duration-300 text-sm order-1">
                     Eliminar
@@ -470,7 +494,9 @@ function inicializarDataTable() {
       const id = $(this).data('id');
       const trabajador = props.rows.find(t => t._id === id);
       if (trabajador) {
-        emit('editar', trabajador);
+        executeIfCanManageTrabajadores(() => {
+          emit('editar', trabajador);
+        }, 'editar trabajadores');
       }
     });
 
@@ -478,14 +504,18 @@ function inicializarDataTable() {
       const id = $(this).data('id');
       const trabajador = props.rows.find(t => t._id === id);
       if (trabajador) {
-        emit('toggle-estado-laboral', trabajador);
+        executeIfCanManageTrabajadores(() => {
+          emit('toggle-estado-laboral', trabajador);
+        }, 'cambiar estado laboral de trabajadores');
       }
     });
 
     $(document).on('click', '.btn-eliminar', function () {
       const id = $(this).data('id');
       const nombre = $(this).data('nombre');
-      emit('eliminar', { id, nombre });
+      executeIfCanManageTrabajadores(() => {
+        emit('eliminar', { id, nombre });
+      }, 'eliminar trabajadores');
     });
 
     dataTableInstance.on('init', function () {

@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useUserPermissions } from '@/composables/useUserPermissions';
+import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 
 const toast = inject('toast');
 
@@ -12,6 +13,7 @@ const router = useRouter();
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
 const { canCreateDocument, getRestrictionMessage } = useUserPermissions();
+const { executeIfCanManageCuestionariosAdicionales } = usePermissionRestrictions();
 
 const closeModal = () => {
   emit('closeModal');
@@ -19,67 +21,61 @@ const closeModal = () => {
 
 // Función para manejar la selección de cuestionarios
 const handleQuestionnaireSelect = (questionnaireType) => {
-  // Solo permitir cuestionarios habilitados
-  if (questionnaireType === 'control-prenatal') {
-    
-    // Validar que el trabajador sea de sexo femenino
-    if (trabajadores.currentTrabajador?.sexo === 'Masculino') {
-      toast.open({
-        message: `No puedes hacer control prenatal al sexo masculino.`,
-        type: 'error',
+  // Validar permisos para cuestionarios adicionales
+  executeIfCanManageCuestionariosAdicionales(() => {
+    // Solo permitir cuestionarios habilitados
+    if (questionnaireType === 'control-prenatal') {
+      
+      // Validar que el trabajador sea de sexo femenino
+      if (trabajadores.currentTrabajador?.sexo === 'Masculino') {
+        toast.open({
+          message: `No puedes hacer control prenatal al sexo masculino.`,
+          type: 'error',
+        });
+        return; // No avanzar si es masculino
+      }
+      
+      // Si es femenino, navegar a la vista crear-documento con el tipo controlPrenatal
+      router.push({
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'controlPrenatal'
+        }
       });
-      return; // No avanzar si es masculino
-    }
-    
-    // Si es femenino, navegar a la vista crear-documento con el tipo controlPrenatal
-    router.push({
-      name: 'crear-documento',
-      params: {
-        idEmpresa: empresas.currentEmpresaId,
-        idTrabajador: trabajadores.currentTrabajadorId,
-        tipoDocumento: 'controlPrenatal'
-      }
-    });
-    
-    // Cerrar el modal después de navegar
-    closeModal();
-  } else if (questionnaireType === 'certificado-expedito') {
-    // Validar permisos para certificado expedito
-    if (!canCreateDocument('certificadoExpedito')) {
-      toast.open({
-        message: getRestrictionMessage('certificadoExpedito'),
-        type: 'error',
+      
+      // Cerrar el modal después de navegar
+      closeModal();
+    } else if (questionnaireType === 'certificado-expedito') {
+      router.push({
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'certificadoExpedito'
+        }
       });
-      return;
+    } else if (questionnaireType === 'historia-otologica') {
+      router.push({
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'historiaOtologica'
+        }
+      });
+    } else if (questionnaireType === 'previo-espirometria') {
+      router.push({
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'previoEspirometria'
+        }
+      });
     }
-    
-    router.push({
-      name: 'crear-documento',
-      params: {
-        idEmpresa: empresas.currentEmpresaId,
-        idTrabajador: trabajadores.currentTrabajadorId,
-        tipoDocumento: 'certificadoExpedito'
-      }
-    });
-  } else if (questionnaireType === 'historia-otologica') {
-    router.push({
-      name: 'crear-documento',
-      params: {
-        idEmpresa: empresas.currentEmpresaId,
-        idTrabajador: trabajadores.currentTrabajadorId,
-        tipoDocumento: 'historiaOtologica'
-      }
-    });
-  } else if (questionnaireType === 'previo-espirometria') {
-    router.push({
-      name: 'crear-documento',
-      params: {
-        idEmpresa: empresas.currentEmpresaId,
-        idTrabajador: trabajadores.currentTrabajadorId,
-        tipoDocumento: 'previoEspirometria'
-      }
-    });
-  }
+  }, 'acceder a cuestionarios adicionales');
 };
 </script>
 
@@ -114,20 +110,9 @@ const handleQuestionnaireSelect = (questionnaireType) => {
             <div class="space-y-2">
               <button 
                 @click="handleQuestionnaireSelect('certificado-expedito')"
-                :class="[
-                  'w-full text-left px-4 py-3 rounded-lg text-sm transition-colors duration-150 flex items-center group border',
-                  canCreateDocument('certificadoExpedito')
-                    ? 'hover:bg-emerald-50 text-emerald-700 border-gray-200 hover:border-emerald-300 cursor-pointer'
-                    : 'disabled bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed'
-                ]"
-                :disabled="!canCreateDocument('certificadoExpedito')"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
               >
-                <i :class="[
-                  'fas fa-file-alt mr-3 text-sm',
-                  canCreateDocument('certificadoExpedito')
-                    ? 'text-emerald-500 group-hover:text-emerald-600'
-                    : 'text-gray-400'
-                ]"></i>
+                <i class="fas fa-file-alt text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Certificado Expedito
               </button>
               <button 

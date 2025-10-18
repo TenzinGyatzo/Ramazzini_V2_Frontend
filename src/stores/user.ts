@@ -10,6 +10,16 @@ interface User {
     email: string;
     role: string;
     idProveedorSalud?: string;
+  permisos?: {
+    gestionarEmpresas: boolean;
+    gestionarCentrosTrabajo: boolean;
+    gestionarTrabajadores: boolean;
+    gestionarDocumentosDiagnostico: boolean;
+    gestionarDocumentosEvaluacion: boolean;
+    gestionarDocumentosExternos: boolean;
+    gestionarCuestionariosAdicionales: boolean;
+  };
+    cuentaActiva?: boolean;
 }
 
 // Define el store

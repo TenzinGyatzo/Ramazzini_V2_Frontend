@@ -11,6 +11,8 @@ import { useDocumentosStore } from '@/stores/documentos';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento, obtenerNombreDescargaCertificadoExpedito } from '@/helpers/rutas.ts';
 import ModalPdfEliminado from './ModalPdfEliminado.vue';
+import { useUserPermissions } from '@/composables/useUserPermissions';
+import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 
 const router = useRouter();
 
@@ -42,6 +44,19 @@ const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? 
 
 const user = ref(JSON.parse(localStorage.getItem('user') || '{}'));
 
+// Composables de permisos
+const { canCreateDocument } = useUserPermissions();
+const { 
+  canManageDocumentosDiagnostico, 
+  canManageDocumentosEvaluacion, 
+  canManageDocumentosExternos,
+  canManageCuestionariosAdicionales,
+  executeIfCanManageDocumentosDiagnostico,
+  executeIfCanManageDocumentosEvaluacion,
+  executeIfCanManageDocumentosExternos,
+  executeIfCanManageCuestionariosAdicionales
+} = usePermissionRestrictions();
+
 const mostrarModalPdfEliminado = ref(false);
 
 // Estado para verificar disponibilidad del PDF
@@ -49,6 +64,88 @@ const pdfDisponible = ref(true);
 const verificandoPDF = ref(false);
 
 const emit = defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate', 'openSubscriptionModal']);
+
+// Función para determinar si se puede editar un documento según su tipo
+const canEditDocument = (documentType) => {
+  const tipoSinEspacios = documentType.toLowerCase().replace(/\s+/g, '');
+  
+  // Documentos de diagnóstico y certificación (solo aptitud y certificado)
+  if (['aptitud', 'certificado'].includes(tipoSinEspacios)) {
+    return canManageDocumentosDiagnostico.value;
+  }
+  
+  // Cuestionarios adicionales (incluye certificadoExpedito)
+  if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito'].includes(tipoSinEspacios)) {
+    return canManageCuestionariosAdicionales.value;
+  }
+  
+  // Documentos externos
+  if (tipoSinEspacios === 'documentoexterno') {
+    return canManageDocumentosExternos.value;
+  }
+  
+  // Documentos de evaluación (resto de documentos)
+  return canManageDocumentosEvaluacion.value;
+};
+
+// Función para determinar si se puede eliminar un documento según su tipo
+const canDeleteDocument = (documentType) => {
+  return canEditDocument(documentType); // Mismo permiso para editar y eliminar
+};
+
+// Función para manejar la edición con validación de permisos
+const handleEditDocument = (documentoId, documentoTipo) => {
+  const tipoSinEspacios = documentoTipo.toLowerCase().replace(/\s+/g, '');
+  
+  if (['aptitud', 'certificado'].includes(tipoSinEspacios)) {
+    executeIfCanManageDocumentosDiagnostico(() => {
+      editarDocumento(documentoId, documentoTipo);
+    }, 'editar documentos de diagnóstico y certificación');
+  } else if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito'].includes(tipoSinEspacios)) {
+    executeIfCanManageCuestionariosAdicionales(() => {
+      editarDocumento(documentoId, documentoTipo);
+    }, 'editar cuestionarios adicionales');
+  } else if (tipoSinEspacios === 'documentoexterno') {
+    executeIfCanManageDocumentosExternos(() => {
+      editarDocumento(documentoId, documentoTipo);
+    }, 'editar documentos externos');
+  } else {
+    executeIfCanManageDocumentosEvaluacion(() => {
+      editarDocumento(documentoId, documentoTipo);
+    }, 'editar documentos de evaluación');
+  }
+};
+
+// Función para manejar la edición de documentos externos con validación de permisos
+const handleEditDocumentoExterno = async () => {
+  executeIfCanManageDocumentosExternos(async () => {
+    await documentos.fetchDocumentById(documentoTipo, trabajadores.currentTrabajador._id, documentoExterno._id);
+    emit('abrirModalUpdate');
+  }, 'editar documentos externos');
+};
+
+// Función para manejar la eliminación con validación de permisos
+const handleDeleteDocument = (documentoId, documentoNombre, documentoTipo) => {
+  const tipoSinEspacios = documentoTipo.toLowerCase().replace(/\s+/g, '');
+  
+  if (['aptitud', 'certificado'].includes(tipoSinEspacios)) {
+    executeIfCanManageDocumentosDiagnostico(() => {
+      emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo);
+    }, 'eliminar documentos de diagnóstico y certificación');
+  } else if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito'].includes(tipoSinEspacios)) {
+    executeIfCanManageCuestionariosAdicionales(() => {
+      emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo);
+    }, 'eliminar cuestionarios adicionales');
+  } else if (tipoSinEspacios === 'documentoexterno') {
+    executeIfCanManageDocumentosExternos(() => {
+      emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo);
+    }, 'eliminar documentos externos');
+  } else {
+    executeIfCanManageDocumentosEvaluacion(() => {
+      emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo);
+    }, 'eliminar documentos de evaluación');
+  }
+};
 
 const editarDocumento = (documentoId, documentoTipo) => {
     if (!proveedorSaludStore.proveedorSalud) return;
@@ -1960,20 +2057,37 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </template>
 
                 <button v-if="documentoTipo === 'documentoExterno'" type="button"
-                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5"
-                    @click="async () => {
-                        await documentos.fetchDocumentById(documentoTipo, trabajadores.currentTrabajador._id, documentoExterno._id);
-                        $emit('abrirModalUpdate');
-                    }">
+                    :class="[
+                        'py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full transition-transform duration-200 ease-in-out transform shadow-sm z-5',
+                        canEditDocument(documentoTipo) 
+                            ? 'bg-sky-100 hover:bg-sky-200 text-sky-600 hover:scale-110' 
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
+                    ]"
+                    :disabled="!canEditDocument(documentoTipo)"
+                    @click="handleEditDocumentoExterno">
                     <i class="fa-regular fa-pen-to-square fa-lg"></i>
                 </button>
-                <button v-else type="button" @click="editarDocumento(documentoId, documentoTipo)"
-                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-sky-100 hover:bg-sky-200 text-sky-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5">
+                <button v-else type="button" 
+                    :class="[
+                        'py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full transition-transform duration-200 ease-in-out transform shadow-sm z-5',
+                        canEditDocument(documentoTipo) 
+                            ? 'bg-sky-100 hover:bg-sky-200 text-sky-600 hover:scale-110' 
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
+                    ]"
+                    :disabled="!canEditDocument(documentoTipo)"
+                    @click="handleEditDocument(documentoId, documentoTipo)">
                     <i class="fa-regular fa-pen-to-square fa-lg"></i>
                 </button>
 
-                <button type="button" @click="$emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo)"
-                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-red-100 hover:bg-red-200 text-red-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5">
+                <button type="button" 
+                    :class="[
+                        'py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full transition-transform duration-200 ease-in-out transform shadow-sm z-5',
+                        canDeleteDocument(documentoTipo) 
+                            ? 'bg-red-100 hover:bg-red-200 text-red-600 hover:scale-110' 
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
+                    ]"
+                    :disabled="!canDeleteDocument(documentoTipo)"
+                    @click="handleDeleteDocument(documentoId, documentoNombre, documentoTipo)">
                     <i class="fa-solid fa-trash-can fa-lg"></i>
                 </button>
             </div>

@@ -4,6 +4,7 @@ import { useUserStore } from "@/stores/user";
 import UserItem from "@/components/UserItem.vue";
 import ModalEliminar from "@/components/ModalEliminar.vue";
 import AuthAPI from "@/api/AuthAPI";
+import PermissionsAPI from "@/api/PermissionsAPI";
 
 const toast = inject("toast");
 
@@ -44,6 +45,30 @@ const deleteUsuarioByEmail = async (email) => {
     console.error('Error al eliminar la empresa:', error);
   }
 };
+
+const toggleAccountStatus = async (email) => {
+  try {
+    const usuario = usuarios.value.find(u => u.email === email);
+    if (!usuario) return;
+    
+    const nuevoEstado = !usuario.cuentaActiva;
+    await PermissionsAPI.toggleAccountStatus(usuario._id, nuevoEstado);
+    
+    usuario.cuentaActiva = nuevoEstado;
+    const estado = nuevoEstado ? 'reactivada' : 'suspendida';
+    
+    toast.open({
+      message: `Cuenta ${estado} correctamente`,
+      type: 'success'
+    });
+  } catch (error) {
+    console.error('Error al cambiar estado de cuenta:', error);
+    toast.open({
+      message: 'Error al cambiar estado de cuenta',
+      type: 'error'
+    });
+  }
+};
 </script>
 
 <template>
@@ -67,7 +92,9 @@ const deleteUsuarioByEmail = async (email) => {
         :email="usuario.email"
         :phone="usuario.phone"
         :role="usuario.role"
+        :cuentaActiva="usuario.cuentaActiva"
         @eliminarUsuario="toggleDeleteModal"
+        @toggleAccountStatus="toggleAccountStatus"
       />
     </div>
   </Transition>

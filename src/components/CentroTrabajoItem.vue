@@ -4,9 +4,11 @@ import { ref, onMounted, watch } from 'vue';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import type { Empresa } from '@/interfaces/empresa.interface';
 import type { CentroTrabajo } from '@/interfaces/centro-trabajo.interface';
+import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 
 const router = useRouter();
 const trabajadores = useTrabajadoresStore();
+const { canManageCentrosTrabajo, executeIfCanManageCentrosTrabajo } = usePermissionRestrictions();
 
 const props = defineProps({
     centro: {
@@ -19,10 +21,24 @@ const props = defineProps({
     },
 });
 
-defineEmits<{
+const emit = defineEmits<{
     (event: 'editarCentro', empresa: Empresa, centro: CentroTrabajo): void;
     (event: 'eliminarCentro', id: string, nombreCentro: string): void;
 }>();
+
+const handleEditarCentro = (empresa: Empresa, centro: CentroTrabajo) => {
+    executeIfCanManageCentrosTrabajo(() => {
+        // Emitir evento solo si tiene permisos
+        emit('editarCentro', empresa, centro);
+    }, 'editar centros de trabajo');
+};
+
+const handleEliminarCentro = (id: string, nombreCentro: string) => {
+    executeIfCanManageCentrosTrabajo(() => {
+        // Emitir evento solo si tiene permisos
+        emit('eliminarCentro', id, nombreCentro);
+    }, 'eliminar centros de trabajo');
+};
 
 // Estado para el número de trabajadores
 const numeroTrabajadores = ref(0);
@@ -144,16 +160,30 @@ onMounted(() => {
                     <div class="flex items-center gap-2">
                         <button 
                             type="button" 
-                            @click="$emit('editarCentro', empresa, centro)"
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                            @click="handleEditarCentro(empresa, centro)"
+                            :disabled="!canManageCentrosTrabajo"
+                            :class="[
+                                'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 transform focus:outline-none focus:ring-2',
+                                canManageCentrosTrabajo 
+                                    ? 'bg-gray-100 hover:bg-gray-200 text-gray-700 hover:scale-105 focus:ring-gray-200' 
+                                    : 'bg-gray-50 text-gray-400 cursor-not-allowed opacity-60'
+                            ]"
+                            :title="canManageCentrosTrabajo ? 'Editar centro de trabajo' : 'No tienes permisos para editar centros de trabajo'"
                         >
                             <i class="fas fa-edit text-xs"></i>
                             <span class="hidden sm:inline">Editar</span>
                         </button>
                         <button 
                             type="button" 
-                            @click="$emit('eliminarCentro', centro._id, centro.nombreCentro)"
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-medium rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-200"
+                            @click="handleEliminarCentro(centro._id, centro.nombreCentro)"
+                            :disabled="!canManageCentrosTrabajo"
+                            :class="[
+                                'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 transform focus:outline-none focus:ring-2',
+                                canManageCentrosTrabajo 
+                                    ? 'bg-red-50 hover:bg-red-100 text-red-600 hover:scale-105 focus:ring-red-200' 
+                                    : 'bg-gray-50 text-gray-400 cursor-not-allowed opacity-60'
+                            ]"
+                            :title="canManageCentrosTrabajo ? 'Eliminar centro de trabajo' : 'No tienes permisos para eliminar centros de trabajo'"
                         >
                             <i class="fas fa-trash text-xs"></i>
                             <span class="hidden sm:inline">Eliminar</span>

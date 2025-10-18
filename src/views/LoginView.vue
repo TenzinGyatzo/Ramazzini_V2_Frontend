@@ -29,6 +29,8 @@ const handleLogin = async () => {
         errorMessage.value = "El usuario no existe";
       } else if (error.response.data.message === 'Tu cuenta no ha sido confirmada aún, revisa tu email') {
         errorMessage.value = "Tu cuenta no ha sido confirmada aún, revisa tu email"
+      } else if (error.response.data.message === 'Tu cuenta ha sido suspendida. Contacta al administrador.') {
+        errorMessage.value = "Tu cuenta ha sido suspendida temporalmente. Contacta al administrador para reactivarla.";
       } else if (error.response.data.message === 'Contraseña incorrecta') {
         errorMessage.value = "Contraseña incorrecta";
       } else {
@@ -88,7 +90,23 @@ const handleLogin = async () => {
       >
         Entrar
       </button>
-      <p v-if="errorMessage" class="text-red-500 mt-2">{{ errorMessage }}</p>
+      <!-- Mensaje de error general -->
+      <div v-if="errorMessage && errorMessage !== 'Tu cuenta ha sido suspendida temporalmente. Contacta al administrador para reactivarla.'" 
+           class="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+        <p class="text-red-600 text-sm">{{ errorMessage }}</p>
+      </div>
+      
+      <!-- Mensaje específico para cuenta suspendida -->
+      <div v-if="errorMessage === 'Tu cuenta ha sido suspendida temporalmente. Contacta al administrador para reactivarla.'" 
+           class="mt-2 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-exclamation-triangle text-orange-500 text-lg"></i>
+          <div>
+            <p class="text-orange-700 font-medium text-sm">Cuenta Suspendida</p>
+            <p class="text-orange-600 text-sm">{{ errorMessage }}</p>
+          </div>
+        </div>
+      </div>
     </form> 
 
     <div class="grid grid-cols-2 gap-6">

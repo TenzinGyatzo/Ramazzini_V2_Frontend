@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import type { Empresa } from '@/interfaces/empresa.interface';
+import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 
 const router = useRouter();
+const { canManageEmpresas, executeIfCanManageEmpresas } = usePermissionRestrictions();
 
 defineProps({
     empresa: {
@@ -11,10 +13,24 @@ defineProps({
     }
 });
 
-defineEmits<{
+const emit = defineEmits<{
     (event: 'editarEmpresa', empresa: Empresa | null): void;
     (event: 'eliminarEmpresa', id: string, nombreComercial: string): void;
 }>();
+
+const handleEditarEmpresa = (empresa: Empresa) => {
+    executeIfCanManageEmpresas(() => {
+        // Emitir evento solo si tiene permisos
+        emit('editarEmpresa', empresa);
+    }, 'editar empresas');
+};
+
+const handleEliminarEmpresa = (id: string, nombreComercial: string) => {
+    executeIfCanManageEmpresas(() => {
+        // Emitir evento solo si tiene permisos
+        emit('eliminarEmpresa', id, nombreComercial);
+    }, 'eliminar empresas');
+};
 </script>
 
 <template>
@@ -56,16 +72,30 @@ defineEmits<{
                     <div class="flex items-center gap-2">
                         <button 
                             type="button" 
-                            @click="$emit('editarEmpresa', empresa)"
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                            @click="handleEditarEmpresa(empresa)"
+                            :disabled="!canManageEmpresas"
+                            :class="[
+                                'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 transform focus:outline-none focus:ring-2',
+                                canManageEmpresas 
+                                    ? 'bg-gray-100 hover:bg-gray-200 text-gray-700 hover:scale-105 focus:ring-gray-200' 
+                                    : 'bg-gray-50 text-gray-400 cursor-not-allowed opacity-60'
+                            ]"
+                            :title="canManageEmpresas ? 'Editar empresa' : 'No tienes permisos para editar empresas'"
                         >
                             <i class="fas fa-edit text-xs"></i>
                             <span class="hidden sm:inline">Editar</span>
                         </button>
                         <button 
                             type="button" 
-                            @click="$emit('eliminarEmpresa', empresa._id, empresa.nombreComercial)"
-                            class="inline-flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-medium rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-200"
+                            @click="handleEliminarEmpresa(empresa._id, empresa.nombreComercial)"
+                            :disabled="!canManageEmpresas"
+                            :class="[
+                                'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 transform focus:outline-none focus:ring-2',
+                                canManageEmpresas 
+                                    ? 'bg-red-50 hover:bg-red-100 text-red-600 hover:scale-105 focus:ring-red-200' 
+                                    : 'bg-gray-50 text-gray-400 cursor-not-allowed opacity-60'
+                            ]"
+                            :title="canManageEmpresas ? 'Eliminar empresa' : 'No tienes permisos para eliminar empresas'"
                         >
                             <i class="fas fa-trash text-xs"></i>
                             <span class="hidden sm:inline">Eliminar</span>

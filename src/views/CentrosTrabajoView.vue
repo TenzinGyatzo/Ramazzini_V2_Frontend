@@ -12,6 +12,8 @@ import ModalEliminar from '@/components/ModalEliminar.vue';
 import type { Empresa } from '@/interfaces/empresa.interface';
 import type { CentroTrabajo } from '@/interfaces/centro-trabajo.interface';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
+import { useUserPermissions } from '@/composables/useUserPermissions';
+import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 
 const toast: any = inject('toast');
 
@@ -22,6 +24,8 @@ const riesgosTrabajo = useRiesgoTrabajoStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const route = useRoute();
 const router = useRouter();
+const { canManageCentrosTrabajo } = useUserPermissions();
+const { executeIfCanManageCentrosTrabajo } = usePermissionRestrictions();
 
 const showModal = ref(false);
 const showDeleteModal = ref(false);
@@ -37,6 +41,22 @@ const esProveedorMexicano = computed(() => {
 });
 
 const openModal = async (empresa: Empresa | null = null, centroTrabajo: CentroTrabajo | null = null) => {
+  // Si es un nuevo centro de trabajo (centroTrabajo === null), validar permisos
+  if (!centroTrabajo) {
+    executeIfCanManageCentrosTrabajo(() => {
+      // Solo ejecutar si tiene permisos
+      openModalInternal(empresa, centroTrabajo);
+    }, 'crear nuevos centros de trabajo');
+    return;
+  }
+  
+  // Si es editar centro de trabajo existente, también validar permisos
+  executeIfCanManageCentrosTrabajo(() => {
+    openModalInternal(empresa, centroTrabajo);
+  }, 'editar centros de trabajo');
+};
+
+const openModalInternal = async (empresa: Empresa | null = null, centroTrabajo: CentroTrabajo | null = null) => {
   showModal.value = false;
   centrosTrabajo.loadingModal;
 
@@ -227,7 +247,14 @@ onMounted(async () => {
                     <button 
                       type="button"
                       @click="openModal(null)"
-                      class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-normal rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-200 active:scale-95 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl"
+                      :disabled="!canManageCentrosTrabajo"
+                      :class="[
+                        'w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-normal rounded-xl transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-emerald-200 active:scale-95 shadow-lg',
+                        canManageCentrosTrabajo 
+                          ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-600 hover:to-emerald-700 text-white hover:scale-105 hover:shadow-xl' 
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                      ]"
+                      :title="canManageCentrosTrabajo ? 'Crear nuevo centro de trabajo' : 'No tienes permisos para crear centros de trabajo'"
                     >
                       <i class="fas fa-plus text-sm"></i>
                       <span>Nueva Entidad</span>
@@ -382,7 +409,9 @@ onMounted(async () => {
                   <GreenButton 
                     text="Crear Primera Entidad" 
                     size="large"
+                    :disabled="!canManageCentrosTrabajo"
                     @click="openModal(null)" 
+                    title="Crear el primer centro de trabajo"
                   />
                 </div>
 

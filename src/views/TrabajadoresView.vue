@@ -23,6 +23,8 @@ import ModalResumenImportacion from '@/components/ModalResumenImportacion.vue';
 import type { Empresa } from '@/interfaces/empresa.interface';
 import type { CentroTrabajo } from '@/interfaces/centro-trabajo.interface';
 import type { Trabajador } from '../interfaces/trabajador.interface';
+import { useUserPermissions } from '@/composables/useUserPermissions';
+import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 
 // 2. Stores, rutas y helpers
 const toast: any = inject('toast');
@@ -32,6 +34,8 @@ const trabajadores = useTrabajadoresStore();
 const modalResumenImportacion = useModalResumenImportacionStore();
 const route = useRoute();
 const router = useRouter();
+const { canManageTrabajadores } = useUserPermissions();
+const { executeIfCanManageTrabajadores } = usePermissionRestrictions();
 
 // 3. Refs y estado reactivo
 const showModal = ref(false);
@@ -269,10 +273,28 @@ watch(mostrarFiltros, (nuevoValor) => {
 
 // 6. Funciones de modales
 const toggleImportModal = () => {
-  showImportModal.value = !showImportModal.value;
+  executeIfCanManageTrabajadores(() => {
+    showImportModal.value = !showImportModal.value;
+  }, 'realizar carga masiva de trabajadores');
 };
 
 const openModal = async (empresa: Empresa | null = null, centroTrabajo: CentroTrabajo | null = null, trabajador: Trabajador | null = null) => {
+  // Si es un nuevo trabajador (trabajador === null), validar permisos
+  if (!trabajador) {
+    executeIfCanManageTrabajadores(() => {
+      // Solo ejecutar si tiene permisos
+      openModalInternal(empresa, centroTrabajo, trabajador);
+    }, 'crear nuevos trabajadores');
+    return;
+  }
+  
+  // Si es editar trabajador existente, también validar permisos
+  executeIfCanManageTrabajadores(() => {
+    openModalInternal(empresa, centroTrabajo, trabajador);
+  }, 'editar trabajadores');
+};
+
+const openModalInternal = async (empresa: Empresa | null = null, centroTrabajo: CentroTrabajo | null = null, trabajador: Trabajador | null = null) => {
   showModal.value = false;
   trabajadores.loadingModal;
 
@@ -702,6 +724,7 @@ const toggleVigencias = () => {
               text="Nuevo Trabajador" 
               size="small"
               :class="['group', 'xl:!px-6 xl:!py-3 xl:!text-base']"
+              :disabled="!canManageTrabajadores"
               @click="openModal(null)" 
               title="Agregar un nuevo trabajador al centro de trabajo"
             >
@@ -715,6 +738,7 @@ const toggleVigencias = () => {
               variant="outline"
               size="small"
               :class="['group', 'xl:!px-6 xl:!py-3 xl:!text-base']"
+              :disabled="!canManageTrabajadores"
               @click="toggleImportModal" 
               title="Importar múltiples trabajadores desde un archivo Excel"
             >
@@ -928,7 +952,17 @@ const toggleVigencias = () => {
                   <p class="text-xs text-gray-600 mb-3">
                     Registra a un trabajador individualmente
                   </p>
-                  <button @click="openModal(null)" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors">
+                  <button 
+                    @click="openModal(null)" 
+                    :disabled="!canManageTrabajadores"
+                    :class="[
+                      'w-full text-xs font-medium py-2 px-3 rounded-lg transition-colors',
+                      canManageTrabajadores 
+                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white' 
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ]"
+                    :title="canManageTrabajadores ? 'Registrar nuevo trabajador' : 'No tienes permisos para crear trabajadores'"
+                  >
                     Registrar Trabajador
                   </button>
                 </div>
@@ -941,7 +975,17 @@ const toggleVigencias = () => {
                   <p class="text-xs text-gray-600 mb-3">
                     Importa múltiples trabajadores desde Excel
                   </p>
-                  <button @click="toggleImportModal" class="w-full bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium py-2 px-3 rounded-lg transition-colors">
+                  <button 
+                    @click="toggleImportModal" 
+                    :disabled="!canManageTrabajadores"
+                    :class="[
+                      'w-full text-xs font-medium py-2 px-3 rounded-lg transition-colors',
+                      canManageTrabajadores 
+                        ? 'bg-blue-500 hover:bg-blue-600 text-white' 
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ]"
+                    :title="canManageTrabajadores ? 'Importar trabajadores desde Excel' : 'No tienes permisos para realizar carga masiva de trabajadores'"
+                  >
                     Importar Trabajadores
                   </button>
                 </div>

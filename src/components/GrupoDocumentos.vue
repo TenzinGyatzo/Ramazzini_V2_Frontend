@@ -5,6 +5,7 @@ import DocumentoItem from './DocumentoItem.vue';
 import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
 import type { PropType } from 'vue';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento } from '@/helpers/rutas';
+import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 
 const props = defineProps({
     documents: {
@@ -47,6 +48,22 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['abrirModalUpdate', 'eliminarDocumento', 'openSubscriptionModal']);
+
+// Composables de permisos
+const { 
+  canManageDocumentosDiagnostico,
+  canManageDocumentosEvaluacion,
+  canManageDocumentosExternos,
+  canManageCuestionariosAdicionales
+} = usePermissionRestrictions();
+
+// Verificar si el usuario tiene todos los permisos necesarios para eliminar documentos
+const canDeleteAnyDocument = computed(() => {
+  return canManageDocumentosDiagnostico.value &&
+         canManageDocumentosEvaluacion.value &&
+         canManageDocumentosExternos.value &&
+         canManageCuestionariosAdicionales.value;
+});
 
 // Calcular el total de documentos para mostrar en el header
 const totalDocumentos = computed(() => {
@@ -316,8 +333,8 @@ const toggleSelectAll = () => {
                 </div>
             </div>
 
-            <!-- Botón de modo eliminación -->
-            <div class="flex items-center space-x-2">
+            <!-- Botón de modo eliminación (solo visible si tiene todos los permisos) -->
+            <div v-if="canDeleteAnyDocument" class="flex items-center space-x-2">
                 <button
                     @click="toggleDeletionMode"
                     class="flex items-center space-x-2 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm font-medium"
