@@ -48,8 +48,8 @@ export function exportarTrabajadoresDesdeFrontend(trabajadoresFiltrados: any[], 
     baseData['Tabaquismo'] = trabajador.tabaquismo;
     baseData['Accidente Laboral'] = trabajador.accidente;
     baseData.Aptitud = trabajador.aptitud;
-    baseData['Diagnóstico Audiometría'] = trabajador.audiometria;
-    baseData['HBC (%)'] = trabajador.hbc;
+    baseData['Audiometría'] = trabajador.audiometria;
+    baseData['Categoría Audiometría'] = trabajador.categoriaAudiometria;
     baseData['Agentes de Riesgo'] = trabajador.agentesRiesgo;
     baseData.Consultas = trabajador.consultas;
     baseData['Estado Laboral'] = trabajador.estadoLaboral;
