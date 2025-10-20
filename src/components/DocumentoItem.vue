@@ -119,7 +119,7 @@ const handleEditDocument = (documentoId, documentoTipo) => {
 // Función para manejar la edición de documentos externos con validación de permisos
 const handleEditDocumentoExterno = async () => {
   executeIfCanManageDocumentosExternos(async () => {
-    await documentos.fetchDocumentById(documentoTipo, trabajadores.currentTrabajador._id, documentoExterno._id);
+    await documentos.fetchDocumentById(props.documentoTipo, trabajadores.currentTrabajador._id, props.documentoExterno._id);
     emit('abrirModalUpdate');
   }, 'editar documentos externos');
 };
