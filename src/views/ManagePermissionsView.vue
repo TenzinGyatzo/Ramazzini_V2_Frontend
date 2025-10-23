@@ -356,78 +356,139 @@ onBeforeRouteLeave((to, from, next) => {
         </div>
 
         <!-- Permisos -->
-        <div class="space-y-3">
-          <h4 class="font-medium text-gray-900 mb-3">Permisos</h4>
-          
-          <label class="flex items-center space-x-3 cursor-pointer">
-            <input 
-              type="checkbox" 
-              v-model="usuario.permisos.gestionarEmpresas"
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-            >
-            <i class="fas fa-building text-gray-600"></i>
-            <span class="text-sm text-gray-700">Gestionar Empresas</span>
-          </label>
+        <div class="space-y-4">
+          <!-- Gestión de Entidades -->
+          <div>
+            <h4 class="font-medium text-gray-900 mb-3 flex items-center">
+              <i class="fas fa-cogs text-blue-600 mr-2"></i>
+              Gestión de Entidades
+            </h4>
+            <div class="space-y-3 pl-6">
+              <label class="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="usuario.permisos.gestionarEmpresas"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                >
+                <i class="fas fa-building text-gray-600"></i>
+                <span class="text-sm text-gray-700">Gestionar Empresas</span>
+              </label>
 
-          <label class="flex items-center space-x-3 cursor-pointer">
-            <input 
-              type="checkbox" 
-              v-model="usuario.permisos.gestionarCentrosTrabajo"
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-            >
-            <i class="fas fa-industry text-gray-600"></i>
-            <span class="text-sm text-gray-700">Gestionar Centros de Trabajo</span>
-          </label>
+              <label class="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="usuario.permisos.gestionarCentrosTrabajo"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                >
+                <i class="fas fa-industry text-gray-600"></i>
+                <span class="text-sm text-gray-700">Gestionar Centros de Trabajo</span>
+              </label>
 
-          <label class="flex items-center space-x-3 cursor-pointer">
-            <input 
-              type="checkbox" 
-              v-model="usuario.permisos.gestionarTrabajadores"
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-            >
-            <i class="fas fa-users text-gray-600"></i>
-            <span class="text-sm text-gray-700">Gestionar Trabajadores</span>
-          </label>
+              <label class="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="usuario.permisos.gestionarTrabajadores"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                >
+                <i class="fas fa-users text-gray-600"></i>
+                <span class="text-sm text-gray-700">Gestionar Trabajadores</span>
+              </label>
+            </div>
+          </div>
 
-          <label class="flex items-center space-x-3 cursor-pointer">
-            <input 
-              type="checkbox" 
-              v-model="usuario.permisos.gestionarDocumentosDiagnostico"
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-            >
-            <i class="fas fa-stethoscope text-gray-600"></i>
-            <span class="text-sm text-gray-700">Documentos de Diagnóstico y Certificación</span>
-          </label>
+          <!-- Separador visual -->
+          <div class="border-t border-gray-200"></div>
 
-          <label class="flex items-center space-x-3 cursor-pointer">
-            <input 
-              type="checkbox" 
-              v-model="usuario.permisos.gestionarDocumentosEvaluacion"
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-            >
-            <i class="fas fa-clipboard-check text-gray-600"></i>
-            <span class="text-sm text-gray-700">Documentos de Evaluación</span>
-          </label>
+          <!-- Gestión de Documentos -->
+          <div>
+            <h4 class="font-medium text-gray-900 mb-3 flex items-center">
+              <i class="fas fa-file-medical text-green-600 mr-2"></i>
+              Gestión de Documentos Médicos
+            </h4>
+            <div class="space-y-3 pl-6">
+              <label class="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="usuario.permisos.gestionarDocumentosDiagnostico"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                >
+                <i class="fas fa-stethoscope text-gray-600"></i>
+                <span class="text-sm text-gray-700">Documentos de Diagnóstico y Certificación</span>
+              </label>
 
-          <label class="flex items-center space-x-3 cursor-pointer">
-            <input 
-              type="checkbox" 
-              v-model="usuario.permisos.gestionarDocumentosExternos"
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-            >
-            <i class="fas fa-file-upload text-gray-600"></i>
-            <span class="text-sm text-gray-700">Documentos Externos</span>
-          </label>
+              <label class="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="usuario.permisos.gestionarDocumentosEvaluacion"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                >
+                <i class="fas fa-clipboard-check text-gray-600"></i>
+                <span class="text-sm text-gray-700">Documentos de Evaluación</span>
+              </label>
 
-          <label class="flex items-center space-x-3 cursor-pointer">
-            <input 
-              type="checkbox" 
-              v-model="usuario.permisos.gestionarCuestionariosAdicionales"
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-            >
-            <i class="fas fa-clipboard-list text-gray-600"></i>
-            <span class="text-sm text-gray-700">Cuestionarios Adicionales</span>
-          </label>
+              <label class="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="usuario.permisos.gestionarDocumentosExternos"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                >
+                <i class="fas fa-file-upload text-gray-600"></i>
+                <span class="text-sm text-gray-700">Documentos Externos</span>
+              </label>
+
+              <label class="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="usuario.permisos.gestionarCuestionariosAdicionales"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                >
+                <i class="fas fa-clipboard-list text-gray-600"></i>
+                <span class="text-sm text-gray-700">Cuestionarios Adicionales</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Separador visual -->
+          <div class="border-t border-gray-200"></div>
+
+          <!-- Acceso a Funcionalidades -->
+          <div>
+            <h4 class="font-medium text-gray-900 mb-3 flex items-center">
+              <i class="fas fa-shield-alt text-purple-600 mr-2"></i>
+              Acceso a Funcionalidades
+            </h4>
+            <div class="space-y-3 pl-6">
+              <label class="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="usuario.permisos.accesoCompletoEmpresasCentros"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                >
+                <i class="fas fa-globe text-gray-600"></i>
+                <span class="text-sm text-gray-700">Acceso Completo a Empresas y Centros</span>
+              </label>
+
+              <label class="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="usuario.permisos.accesoDashboardSalud"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                >
+                <i class="fas fa-chart-line text-gray-600"></i>
+                <span class="text-sm text-gray-700">Acceso al Dashboard de Salud</span>
+              </label>
+
+              <label class="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  v-model="usuario.permisos.accesoRiesgosTrabajo"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                >
+                <i class="fas fa-exclamation-triangle text-gray-600"></i>
+                <span class="text-sm text-gray-700">Acceso a Riesgos de Trabajo</span>
+              </label>
+            </div>
+          </div>
         </div>
 
         <!-- Información adicional -->

@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import EmpresasAPI from "../api/EmpresasAPI";
 import proveedor from "@/lib/axiosProveedor";
+import { useUserStore } from "./user";
 
 interface Empresa {
   _id: string;
@@ -47,7 +48,14 @@ export const useEmpresasStore = defineStore("empresas", () => {
   async function fetchEmpresas(idProveedorSalud: string) {
     try {
       loading.value = true;
-      const { data } = await EmpresasAPI.getEmpresas(idProveedorSalud);
+      const userStore = useUserStore();
+      
+      // Si el usuario es Principal o tiene acceso completo, no pasar userId
+      const userId = (userStore.isPrincipal() || userStore.user?.permisos?.accesoCompletoEmpresasCentros) 
+        ? undefined 
+        : userStore.user?._id;
+      const { data } = await EmpresasAPI.getEmpresas(idProveedorSalud, userId);
+      
       if (data.message) {
         empresas.value = []; // Si no hay empresas, mantenemos el array vacío
       } else {

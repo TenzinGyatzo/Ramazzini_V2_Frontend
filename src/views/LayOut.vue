@@ -673,7 +673,7 @@ watch(mostrarTooltipEnfermera, (nuevoValor) => {
     <!-- Botón del engrane mejorado -->
     <Transition name="delayed-appear">
       <button 
-        v-if="isVisible && ['inicio', 'add-user', 'remove-users', 'manage-permissions', 'user-productivity', 'perfil-proveedor', 'medico-firmante', 'enfermera-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
+        v-if="isVisible && ['inicio', 'add-user', 'remove-users', 'manage-permissions', 'manage-assignments', 'user-productivity', 'perfil-proveedor', 'medico-firmante', 'enfermera-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
         @click="toggleMenu"
         class="fixed top-6 right-6 p-4 bg-white text-gray-700 rounded-full hover:bg-gray-50 transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl border border-gray-200 z-50 transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-blue-200"
         :aria-label="isMenuOpen ? 'Cerrar menú de configuración' : 'Abrir menú de configuración'"
@@ -702,7 +702,7 @@ watch(mostrarTooltipEnfermera, (nuevoValor) => {
     <!-- Menú desplegable mejorado -->
     <Transition name="fade">
       <div 
-        v-if="isMenuOpen && ['inicio', 'add-user', 'remove-users', 'manage-permissions', 'user-productivity', 'perfil-proveedor', 'medico-firmante', 'enfermera-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
+        v-if="isMenuOpen && ['inicio', 'add-user', 'remove-users', 'manage-permissions', 'manage-assignments', 'user-productivity', 'perfil-proveedor', 'medico-firmante', 'enfermera-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador'].includes(route.name as string)"
         ref="menuRef"
         class="fixed top-20 right-6 bg-white rounded-2xl shadow-2xl p-6 w-72 z-40 border border-gray-100 backdrop-blur-sm bg-white/95">
 
@@ -865,6 +865,14 @@ watch(mostrarTooltipEnfermera, (nuevoValor) => {
               <div class="flex items-center gap-3">
                 <i class="fa-solid fa-shield-halved text-indigo-500 group-hover:text-indigo-600 transition-colors duration-200"></i>
                 <span class="font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Gestionar Permisos</span>
+              </div>
+            </a>
+            <a @click="router.push({ name: 'manage-assignments' })" 
+               v-if="user.user?.role === 'Principal'"
+               class="block py-3 px-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-purple-100 rounded-xl mt-2 transition-all duration-300 ease-in-out cursor-pointer border border-gray-200 hover:border-purple-300 group">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-users-gear text-purple-500 group-hover:text-purple-600 transition-colors duration-200"></i>
+                <span class="font-medium text-gray-700 group-hover:text-gray-900 transition-colors duration-200">Asignar Centros</span>
               </div>
             </a>
             <a @click="router.push({ name: 'remove-users' })" 

@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import CentrosTrabajoAPI from "../api/CentrosTrabajoAPI";
+import AssignmentsAPI from "../api/AssignmentsAPI";
+import { useUserStore } from "./user";
 
 interface CentroTrabajo {
   _id: string;
@@ -43,11 +45,41 @@ export const useCentrosTrabajoStore = defineStore("centros-trabajo", () => {
   async function fetchCentrosTrabajo(empresaId: string) {
     try {
       loading.value = true;
-      const { data } = await CentrosTrabajoAPI.getCentrosTrabajo(empresaId);
-      centrosTrabajo.value = data;
-      return data;
+      const userStore = useUserStore();
+      
+      // Si el usuario es Principal o tiene acceso completo, cargar todos los centros
+      if (userStore.isPrincipal() || userStore.user?.permisos?.accesoCompletoEmpresasCentros) {
+        const { data } = await CentrosTrabajoAPI.getCentrosTrabajo(empresaId);
+        centrosTrabajo.value = data;
+        return data;
+      }
+      
+      // Para otros usuarios, cargar solo los centros asignados
+      if (userStore.user?._id) {
+        // Usar método alternativo que funciona correctamente
+        // Cargar todos los centros de la empresa y filtrar por asignaciones del usuario
+        const { data: todosLosCentros } = await CentrosTrabajoAPI.getCentrosTrabajo(empresaId);
+        
+        // Obtener asignaciones del usuario desde el store
+        await userStore.loadUserAssignments();
+        const centrosAsignados = userStore.centrosTrabajoAsignados;
+        
+        // Filtrar centros por asignaciones
+        const centrosFiltrados = todosLosCentros.filter((centro: CentroTrabajo) => 
+          centrosAsignados.includes(centro._id)
+        );
+        
+        centrosTrabajo.value = centrosFiltrados;
+        return centrosFiltrados;
+      }
+      
+      // Si no hay usuario, retornar array vacío
+      centrosTrabajo.value = [];
+      return [];
     } catch (error) {
       console.log(error);
+      centrosTrabajo.value = [];
+      return [];
     } finally {
       loading.value = false;
     }

@@ -1,5 +1,6 @@
 import { computed, inject } from 'vue';
 import { useUserStore } from '@/stores/user';
+import { useUserPermissions } from './useUserPermissions';
 
 // Definir el tipo del toast
 interface Toast {
@@ -12,6 +13,7 @@ interface Toast {
 
 export function usePermissionRestrictions() {
   const userStore = useUserStore();
+  const { canAccessRiesgosTrabajo } = useUserPermissions();
   const toast = inject<Toast>('toast');
 
   // Computed para obtener el rol del usuario actual
@@ -63,6 +65,20 @@ export function usePermissionRestrictions() {
     if (userRole.value === 'Principal' || userRole.value === 'Administrador') return true;
     return userStore.user?.permisos?.gestionarCuestionariosAdicionales || false;
   });
+
+  // Función para verificar si un usuario puede acceder a una empresa específica
+  const canAccessEmpresa = (empresaId: string) => {
+    if (!userRole.value) return false;
+    if (userRole.value === 'Principal') return true;
+    return userStore.hasAccessToEmpresa(empresaId);
+  };
+
+  // Función para verificar si un usuario puede acceder a un centro de trabajo específico
+  const canAccessCentro = (centroId: string) => {
+    if (!userRole.value) return false;
+    if (userRole.value === 'Principal') return true;
+    return userStore.hasAccessToCentro(centroId);
+  };
 
   // Tipos de documentos de diagnóstico y certificación
   const documentosDiagnostico = ['aptitud', 'certificado'];
@@ -154,6 +170,19 @@ export function usePermissionRestrictions() {
     return true;
   };
 
+  // Validar acceso a riesgos de trabajo con toast
+  const validateRiesgosTrabajo = (action: string = 'acceder a riesgos de trabajo'): boolean => {
+    if (!canAccessRiesgosTrabajo.value) {
+      toast?.open({
+        message: `No tienes permisos para acceder a riesgos de trabajo. No puedes ${action}.`,
+        type: 'warning',
+        position: 'top-right'
+      });
+      return false;
+    }
+    return true;
+  };
+
   // Validar creación de documentos con toast
   const validateDocumentCreation = (documentType: string): boolean => {
     if (!canCreateDocument(documentType)) {
@@ -212,6 +241,13 @@ export function usePermissionRestrictions() {
   // Ejecutar acción solo si tiene permisos para trabajadores
   const executeIfCanManageTrabajadores = (callback: () => void, action: string = 'realizar esta acción') => {
     if (validateTrabajadorManagement(action)) {
+      callback();
+    }
+  };
+
+  // Ejecutar acción solo si tiene acceso a riesgos de trabajo
+  const executeIfCanAccessRiesgosTrabajo = (callback: () => void, action: string = 'acceder a riesgos de trabajo') => {
+    if (validateRiesgosTrabajo(action)) {
       callback();
     }
   };
@@ -278,11 +314,14 @@ export function usePermissionRestrictions() {
     canCreateDocument,
     isDocumentRestricted,
     getRestrictionMessage,
+    canAccessEmpresa,
+    canAccessCentro,
     
     // Funciones de validación con toast
     validateEmpresaManagement,
     validateCentroTrabajoManagement,
     validateTrabajadorManagement,
+    validateRiesgosTrabajo,
     validateDocumentCreation,
     validateDocumentosExternos,
     validateCuestionariosAdicionales,
@@ -291,6 +330,7 @@ export function usePermissionRestrictions() {
     executeIfCanManageEmpresas,
     executeIfCanManageCentrosTrabajo,
     executeIfCanManageTrabajadores,
+    executeIfCanAccessRiesgosTrabajo,
     executeIfCanCreateDocument,
     executeIfCanManageDocumentosExternos,
     executeIfCanManageCuestionariosAdicionales,

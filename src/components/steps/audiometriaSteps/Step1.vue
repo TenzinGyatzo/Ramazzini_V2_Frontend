@@ -100,17 +100,6 @@ watch(fechaAudiometria, (newValue) => {
             v-model="metodoAudiometria" 
             class="sr-only" 
           />
-          <!-- Icono -->
-          <div 
-            :class="[
-              'w-8 h-8 rounded-full flex items-center justify-center mb-1.5 transition-colors duration-200',
-              metodoAudiometria === 'AMA' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
-            ]"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-            </svg>
-          </div>
           <span 
             :class="[
               'text-base font-semibold transition-colors duration-200',
@@ -119,6 +108,7 @@ watch(fechaAudiometria, (newValue) => {
           >
             AMA
           </span>
+          <span class="text-xs text-center text-gray-500">American Medical Association</span>
           <!-- Indicador de selección -->
           <div 
             v-if="metodoAudiometria === 'AMA'"
@@ -145,17 +135,6 @@ watch(fechaAudiometria, (newValue) => {
             v-model="metodoAudiometria" 
             class="sr-only" 
           />
-          <!-- Icono -->
-          <div 
-            :class="[
-              'w-8 h-8 rounded-full flex items-center justify-center mb-1.5 transition-colors duration-200',
-              metodoAudiometria === 'LFT' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
-            ]"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-            </svg>
-          </div>
           <span 
             :class="[
               'text-base font-semibold transition-colors duration-200',
@@ -164,6 +143,7 @@ watch(fechaAudiometria, (newValue) => {
           >
             LFT
           </span>
+          <span class="text-xs text-center text-gray-500">Ley Federal de Trabajo (México)</span>
           <!-- Indicador de selección -->
           <div 
             v-if="metodoAudiometria === 'LFT'"

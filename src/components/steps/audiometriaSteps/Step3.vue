@@ -566,7 +566,7 @@ watch(() => formDataAudiometria.oidoIzquierdo8000, (newValue) => {
           </div>
           <div class="text-center">
             <span 
-              class="text-2xl font-bold text-emerald-800"
+              class="text-xl font-bold text-emerald-800"
               :title="formDataAudiometria.metodoAudiometria === 'AMA' 
                 ? 'Pérdida monaural (%) = max(0,(PTA-25))*1.5. Frecuencias 500–3000 Hz.' 
                 : 'Índice de Fletcher (%) = PTA*0.8. Se elige Rango A (250–2000) o B (2000–6000) que produzca mayor pérdida. Reglas 120/5.'"

@@ -1,6 +1,7 @@
 import { ref, onMounted, computed } from "vue";
 import { defineStore } from "pinia";
 import AuthAPI from "@/api/AuthAPI";
+import AssignmentsAPI from "@/api/AssignmentsAPI";
 import { useRouter } from "vue-router";
 
 // Define el tipo para el objeto usuario
@@ -18,8 +19,13 @@ interface User {
     gestionarDocumentosEvaluacion: boolean;
     gestionarDocumentosExternos: boolean;
     gestionarCuestionariosAdicionales: boolean;
+    accesoCompletoEmpresasCentros: boolean;
+    accesoDashboardSalud: boolean;
+    accesoRiesgosTrabajo: boolean;
   };
     cuentaActiva?: boolean;
+    empresasAsignadas?: string[];
+    centrosTrabajoAsignados?: string[];
 }
 
 // Define el store
@@ -27,6 +33,8 @@ export const useUserStore = defineStore("user", () => {
 
     const router = useRouter();
     const user = ref<User | null>(null);
+    const empresasAsignadas = ref<string[]>([]);
+    const centrosTrabajoAsignados = ref<string[]>([]);
 
     // Carga el usuario cuando el componente se monta
 /*     onMounted(async () => {
@@ -89,13 +97,49 @@ export const useUserStore = defineStore("user", () => {
             return { success: false, error };
         }
     }
+
+    async function loadUserAssignments() {
+        if (!user.value?._id) return;
+        
+        try {
+            const { data } = await AssignmentsAPI.getUserAssignments(user.value._id);
+            empresasAsignadas.value = data.empresasAsignadas || [];
+            centrosTrabajoAsignados.value = data.centrosTrabajoAsignados || [];
+        } catch (error) {
+            console.error('Error al cargar asignaciones del usuario:', error);
+        }
+    }
+
+    function hasAccessToEmpresa(empresaId: string): boolean {
+        if (!user.value) return false;
+        if (user.value.role === 'Principal') return true;
+        if (user.value.permisos?.accesoCompletoEmpresasCentros) return true;
+        return empresasAsignadas.value.includes(empresaId);
+    }
+
+    function hasAccessToCentro(centroId: string): boolean {
+        if (!user.value) return false;
+        if (user.value.role === 'Principal') return true;
+        if (user.value.permisos?.accesoCompletoEmpresasCentros) return true;
+        return centrosTrabajoAsignados.value.includes(centroId);
+    }
+
+    function isPrincipal(): boolean {
+        return user.value?.role === 'Principal';
+    }
     
     return {
         user,
+        empresasAsignadas,
+        centrosTrabajoAsignados,
         fetchUser,
         logout,
         registerUser,
         fetchUsersByProveedorId,
+        loadUserAssignments,
+        hasAccessToEmpresa,
+        hasAccessToCentro,
+        isPrincipal,
         getUsername,
     };
 });

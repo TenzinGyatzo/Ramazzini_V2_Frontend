@@ -54,6 +54,27 @@ export function useUserPermissions() {
     return userStore.user?.permisos?.gestionarCuestionariosAdicionales || false;
   });
 
+  // Función para verificar si un usuario tiene acceso completo a empresas y centros
+  const canAccessCompletoEmpresasCentros = computed(() => {
+    if (!userRole.value) return false;
+    if (userRole.value === 'Principal' || userRole.value === 'Administrador') return true;
+    return userStore.user?.permisos?.accesoCompletoEmpresasCentros || false;
+  });
+
+  // Función para verificar si un usuario puede acceder al dashboard de salud
+  const canAccessDashboardSalud = computed(() => {
+    if (!userRole.value) return false;
+    if (userRole.value === 'Principal' || userRole.value === 'Administrador') return true;
+    return userStore.user?.permisos?.accesoDashboardSalud || false;
+  });
+
+  // Función para verificar si un usuario puede acceder a riesgos de trabajo
+  const canAccessRiesgosTrabajo = computed(() => {
+    if (!userRole.value) return false;
+    if (userRole.value === 'Principal' || userRole.value === 'Administrador') return true;
+    return userStore.user?.permisos?.accesoRiesgosTrabajo || false;
+  });
+
   // Tipos de documentos de diagnóstico y certificación
   const documentosDiagnostico = ['aptitud', 'certificado'];
   
@@ -123,6 +144,9 @@ export function useUserPermissions() {
     canManageDocumentosDiagnostico,
     canManageDocumentosEvaluacion,
     canManageDocumentosExternos,
-    canManageCuestionariosAdicionales
+    canManageCuestionariosAdicionales,
+    canAccessCompletoEmpresasCentros,
+    canAccessDashboardSalud,
+    canAccessRiesgosTrabajo
   };
 }

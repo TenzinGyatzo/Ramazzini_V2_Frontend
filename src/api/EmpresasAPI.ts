@@ -1,8 +1,11 @@
 import api from "@/lib/axios";
 
 export default {
-  getEmpresas(idProveedorSalud: string) { 
-    return api.get(`/empresas/${idProveedorSalud}`);
+  getEmpresas(idProveedorSalud: string, userId?: string) { 
+    const url = userId 
+      ? `/empresas/${idProveedorSalud}?userId=${userId}`
+      : `/empresas/${idProveedorSalud}`;
+    return api.get(url);
   },
 
   getEmpresaById(empresaId: string) {

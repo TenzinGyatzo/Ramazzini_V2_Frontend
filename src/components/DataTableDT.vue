@@ -10,6 +10,7 @@ import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
+import { useUserPermissions } from '@/composables/useUserPermissions';
 
 const props = defineProps<{ 
   rows: any[];
@@ -30,7 +31,8 @@ let dataTableInstance: any = null;
 const router = useRouter();
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
-const { canManageTrabajadores, executeIfCanManageTrabajadores } = usePermissionRestrictions();
+const { canManageTrabajadores, executeIfCanManageTrabajadores, executeIfCanAccessRiesgosTrabajo } = usePermissionRestrictions();
+const { canAccessRiesgosTrabajo } = useUserPermissions();
 
 function guardarFiltroEnLocalStorage(id: string, valor: string) {
   localStorage.setItem(`filtro-${id}`, valor);
@@ -326,6 +328,7 @@ function inicializarDataTable() {
               <div class="relative h-[32px]">
 
               <!-- RTs -->
+                ${canAccessRiesgosTrabajo ? `
                 <button
                   type="button"
                   class="btn-rt group absolute right-25 z-10 hover:z-40 px-2.5 py-1 rounded-full bg-violet-200 hover:bg-violet-300 text-violet-600 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg border-2 border-violet-200 hover:border-violet-100 whitespace-nowrap flex items-center overflow-hidden text-sm"
@@ -336,6 +339,7 @@ function inicializarDataTable() {
                     Riesgo de Trabajo
                   </span>
                 </button>
+                ` : ''}
 
               <!-- Riesgos -->
                 <button
@@ -478,7 +482,9 @@ function inicializarDataTable() {
       const id = $(this).data('id');
       const trabajador = props.rows.find(t => t._id === id);
       if (trabajador) {
-        emit('riesgo-trabajo', trabajador);
+        executeIfCanAccessRiesgosTrabajo(() => {
+          emit('riesgo-trabajo', trabajador);
+        }, 'acceder a riesgos de trabajo');
       }
     });
 
@@ -542,9 +548,11 @@ function inicializarDataTable() {
 
 onBeforeUnmount(() => {
   $(document).off('click', '.btn-expediente');
+  $(document).off('click', '.btn-rt');
+  $(document).off('click', '.btn-riesgos');
   $(document).off('click', '.btn-editar');
+  $(document).off('click', '.btn-alta-baja');
   $(document).off('click', '.btn-eliminar');
-  // y así sucesivamente
 });
 
 // Fuera de la función principal

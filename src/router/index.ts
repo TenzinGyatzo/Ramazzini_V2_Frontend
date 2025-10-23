@@ -65,6 +65,12 @@ const router = createRouter({
           meta: { requiresAuth: true }
         },
         {
+          path: "/gestionar-asignaciones",
+          name: "manage-assignments",
+          component: () => import("../views/ManageAssignmentsView.vue"),
+          meta: { requiresAuth: true, requiresPrincipal: true }
+        },
+        {
           path: "/productividad-usuarios",
           name: "user-productivity",
           component: () => import("../views/UserProductivityView.vue"),
@@ -88,16 +94,19 @@ const router = createRouter({
           path: "dashboard/:idEmpresa",
           name: "dashboard-empresa",
           component: () => import("../views/DashboardView.vue"),
+          meta: { requiresAuth: true, requiresDashboardSalud: true }
         },
         {
           path: "riesgos-trabajo/:idEmpresa",
           name: "riesgos-trabajo",
           component: () => import("../views/RiesgosTrabajoView.vue"),
+          meta: { requiresAuth: true, requiresRiesgosTrabajo: true }
         },
         {
           path: "dashboard-rt/:idEmpresa",
           name: "dashboard-rt",
           component: () => import("../views/DashboardRTsView.vue"),
+          meta: { requiresAuth: true, requiresRiesgosTrabajo: true }
         },
         {
           path: "/informes-salud-ocupacional/:idEmpresa",
@@ -180,6 +189,7 @@ router.beforeEach((to, from) => {
     // const requiresAuth = to.matched.some((url) => url.meta.requiresAuth);
     const requiresAuth = to.meta.requiresAuth; // Verifica solo la ruta actual
     const requiresAdmin = to.meta.requiresAdmin; // Verifica solo
+    const requiresPrincipal = to.meta.requiresPrincipal; // Verifica solo
     const userStore = useUserStore();
 
     try {
@@ -195,6 +205,32 @@ router.beforeEach((to, from) => {
       if (requiresAdmin && (!user || user.role !== "Administrador")) {
         console.warn("Acceso denegado: no eres administrador");
         return next({ name: "inicio" });
+      }
+
+      // Validar si requiere ser Principal y no lo es
+      if (requiresPrincipal && (!user || user.role !== "Principal")) {
+        console.warn("Acceso denegado: solo usuarios Principal pueden gestionar asignaciones");
+        return next({ name: "inicio" });
+      }
+
+      // Validar si requiere acceso al dashboard de salud
+      const requiresDashboardSalud = to.meta.requiresDashboardSalud;
+      if (requiresDashboardSalud && user) {
+        const { canAccessDashboardSalud } = useUserPermissions();
+        if (!canAccessDashboardSalud.value) {
+          console.warn("Acceso denegado: no tienes permisos para acceder al dashboard de salud");
+          return next({ name: "inicio" });
+        }
+      }
+
+      // Validar si requiere acceso a riesgos de trabajo
+      const requiresRiesgosTrabajo = to.meta.requiresRiesgosTrabajo;
+      if (requiresRiesgosTrabajo && user) {
+        const { canAccessRiesgosTrabajo } = useUserPermissions();
+        if (!canAccessRiesgosTrabajo.value) {
+          console.warn("Acceso denegado: no tienes permisos para acceder a riesgos de trabajo");
+          return next({ name: "inicio" });
+        }
       }
 
       // Validar restricciones de documentos según permisos

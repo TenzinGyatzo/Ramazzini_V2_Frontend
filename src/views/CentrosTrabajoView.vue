@@ -24,7 +24,7 @@ const riesgosTrabajo = useRiesgoTrabajoStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const route = useRoute();
 const router = useRouter();
-const { canManageCentrosTrabajo } = useUserPermissions();
+const { canManageCentrosTrabajo, canAccessDashboardSalud, canAccessRiesgosTrabajo } = useUserPermissions();
 const { executeIfCanManageCentrosTrabajo } = usePermissionRestrictions();
 
 const showModal = ref(false);
@@ -269,6 +269,7 @@ onMounted(async () => {
                 <!-- Botones de otras vistas -->
                 <div class="flex flex-col sm:flex-row justify-center gap-3">
                   <button
+                    v-if="canAccessDashboardSalud"
                     type="button"
                     :disabled="!empresas.currentEmpresa || totalTrabajadores === 0"
                     @click="empresas.currentEmpresa && router.push({ name: 'dashboard-empresa', params: { idEmpresa: empresas.currentEmpresa._id } })"
@@ -279,7 +280,7 @@ onMounted(async () => {
                     <span>Estadísticas de Salud</span>
                   </button>
                   <button
-                    v-if="esProveedorMexicano"
+                    v-if="esProveedorMexicano && canAccessRiesgosTrabajo"
                     type="button"
                     :disabled="!empresas.currentEmpresa || !tieneRiesgosTrabajo"
                     @click="empresas.currentEmpresa && router.push({ name: 'riesgos-trabajo', params: { idEmpresa: empresas.currentEmpresa._id } })"
@@ -290,6 +291,7 @@ onMounted(async () => {
                     <span>Riesgos de Trabajo</span>
                   </button>
                 </div>
+                
               </div>
             </div>
           </div>
