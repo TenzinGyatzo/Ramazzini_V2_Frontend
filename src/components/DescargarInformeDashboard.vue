@@ -2,13 +2,17 @@
 declare const pdfMake: typeof import('pdfmake/build/pdfmake');
 import type { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { exportarGraficaAltaResolucion } from '@/helpers/exportChartImage';
-import { ref, nextTick, watch } from 'vue';
+import { ref, nextTick, watch, computed, onMounted } from 'vue';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
 const props = defineProps<{
   refsGraficas: Record<string, any>;
   nombreEmpresa?: string;
   razonSocial?: string;
   logoBase64?: string;
+  logoClienteBase64?: string;
+  logoProveedorBase64?: string;
+  nombreProveedorSalud?: string;
   periodo?: string;
   tablasDatos?: Record<string, any[] | any>;
   totalTrabajadores?: number;
@@ -16,6 +20,85 @@ const props = defineProps<{
   tituloMedicoFirmante?: string;
   nombreMedicoFirmante?: string;
 }>();
+
+// Store del proveedor de salud
+const proveedorSaludStore = useProveedorSaludStore();
+
+// Variables reactivas para el proveedor
+const proveedorSalud = computed(() => proveedorSaludStore.proveedorSalud);
+const logoProveedorBase64 = ref<string | undefined>();
+
+// Función para obtener el logo del proveedor en base64 usando el endpoint del backend
+const obtenerBase64LogoEndpoint = async (filename: string): Promise<string> => {
+  try {
+    const baseURL = import.meta.env.VITE_API_URL || 'https://ramazzini.app';
+    const logoUrl = `${baseURL}/proveedores-salud/logo/${filename}`;
+    
+    console.log('Obteniendo logo desde endpoint:', logoUrl);
+    
+    const response = await fetch(logoUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const blob = await response.blob();
+    
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        console.log('Logo obtenido desde endpoint:', result.substring(0, 50) + '...');
+        resolve(result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Error al obtener logo desde endpoint:', error);
+    throw error;
+  }
+};
+
+// Función para cargar el logo del proveedor
+const cargarLogoProveedor = async () => {
+  console.log('Proveedor de salud desde store:', proveedorSalud.value);
+  if (proveedorSalud.value?.logotipoEmpresa?.data) {
+    try {
+      const filename = proveedorSalud.value.logotipoEmpresa.data;
+      console.log('Nombre del archivo:', filename);
+      
+      // Usar el endpoint del backend para obtener el logo
+      console.log('Obteniendo logo desde endpoint del backend...');
+      const logoBase64 = await obtenerBase64LogoEndpoint(filename);
+      
+      // Validar que el logo sea un dataURL válido de imagen
+      if (logoBase64 && logoBase64.startsWith('data:image/')) {
+        logoProveedorBase64.value = logoBase64;
+        console.log('Logo del proveedor cargado exitosamente');
+      } else {
+        console.error('El logo no es un dataURL de imagen válido:', logoBase64?.substring(0, 50) + '...');
+        logoProveedorBase64.value = undefined;
+      }
+      
+    } catch (error) {
+      console.error('Error al cargar el logo del proveedor:', error);
+      console.log('Usando nombre del proveedor como fallback');
+      logoProveedorBase64.value = undefined;
+    }
+  } else {
+    console.log('No se encontró logo del proveedor en el store');
+  }
+};
+
+// Cargar el logo cuando se monte el componente o cambie el proveedor
+onMounted(async () => {
+  await cargarLogoProveedor();
+});
+
+// Watcher para recargar el logo cuando cambie el proveedor
+watch(proveedorSalud, async () => {
+  await cargarLogoProveedor();
+}, { deep: true });
 
 const obtenerBase64 = (graficaObj: any, customWidth?: number, customHeight?: number): string | undefined => {
   // Si es un objeto con ref y config (para alta resolución)
@@ -45,94 +128,235 @@ const obtenerBase64 = (graficaObj: any, customWidth?: number, customHeight?: num
   return canvas?.toDataURL?.();
 };
 
-const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinitions => {
-
-    const encabezado: Content[] = [];
-
-    // Logo y datos de empresa en una tabla
-    const headerTable: Content = {
-        table: {
-            widths: props.logoBase64 ? ['*', 'auto'] : ['*'],
-            body: [
-                [
-                    {
-                        stack: [
-                            {
-                                text: 'INFORME DE SALUD LABORAL',
-                                style: 'tituloInforme',
-                                margin: [0, 0, 0, 8],
-                                characterSpacing: 2
-                            },
-                            {
-                              text: (props.nombreEmpresa || 'Empresa').toUpperCase(),
-                              style: 'tituloEmpresa',
-                              margin: [0, 0, 0, 2],
-                            },
-                            ...(props.razonSocial ? [{
-                                text: props.razonSocial,
-                                style: 'razonSocial',
-                                margin: [0, 0, 0, 8]
-                            }] : []),
-                            ...(props.centroTrabajo ? [{
-                                text: [
-                                    { text: 'Centro de trabajo: ', style: 'centroTrabajoLabel' },
-                                    { text: props.centroTrabajo, style: 'centroTrabajoNombre' }
-                                ],
-                                margin: [0, 0, 0, 5]
-                            }] : []),
-                            {
-                                text: [
-                                    { text: 'Total de trabajadores evaluados: ', style: 'totalTrabajadoresLabel' },
-                                    { text: `${props.totalTrabajadores || 0}`, style: 'totalTrabajadoresNumero' }
-                                ],
-                                margin: [0, 0, 0, 5]
-                            },
-                            ...(props.periodo ? [{
-                                text: props.periodo,
-                                style: 'periodo',
-                                margin: [0, 0, 0, 5]
-                            }] : []),
-                            {
-                                text: `Generado el: ${new Date().toLocaleDateString('es-MX', { 
-                                    year: 'numeric', 
-                                    month: 'long', 
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                })}`,
-                                style: 'fecha',
-                                margin: [0, 0, 0, 0]
-                            },
-                            ...((props.tituloMedicoFirmante || props.nombreMedicoFirmante) ? [{
-                                text: `Generado por: ${props.tituloMedicoFirmante || ''} ${props.nombreMedicoFirmante || ''}`,
-                                style: 'fecha',
-                                margin: [0, 5, 0, 0]
-                            }] : [])
-                        ]
-                    },
-                    ...(props.logoBase64 ? [{
-                        image: props.logoBase64,
-                        width: 100,
-                        height: 100,
-                        fit: [100, 100],
-                        margin: [0, 0, 0, 0],
-                        alignment: 'right',
-                        border: [false, false, false, false]
-                    }] : [])
-                ]
-            ]
-        },
-        layout: 'noBorders',
-        margin: [0, 0, 0, 20]
-    };
-
-    encabezado.push(headerTable);
-
-    // Línea divisoria
-    encabezado.push({
-        canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1, lineColor: '#E5E7EB' }],
-        margin: [0, 0, 0, 20]
+const crearPortada = (): Content[] => {
+    // Variables locales con fallbacks - ahora usando datos del store
+    const logoCliente = props.logoClienteBase64 || props.logoBase64;
+    const logoProveedor = logoProveedorBase64.value || props.logoProveedorBase64;
+    const nombreProveedor = proveedorSalud.value?.nombre || props.nombreProveedorSalud || 'Proveedor de Salud';
+    const nombreComercialCliente = props.nombreEmpresa || 'Empresa';
+    const razonSocialCliente = props.razonSocial;
+    
+    // Validar que los logos sean dataURLs válidos de imagen
+    const logoClienteValido = logoCliente && logoCliente.startsWith('data:image/');
+    const logoProveedorValido = logoProveedor && logoProveedor.startsWith('data:image/');
+    
+    console.log('Datos para la portada:', {
+        logoCliente: !!logoCliente,
+        logoClienteValido,
+        logoProveedor: !!logoProveedor,
+        logoProveedorValido,
+        nombreProveedor,
+        nombreComercialCliente,
+        razonSocialCliente,
+        proveedorSalud: proveedorSalud.value
     });
+    
+    const portada: Content[] = [];
+    
+    // 1. Título principal con línea divisora elegante
+    portada.push({
+        text: 'INFORME DE SALUD LABORAL',
+        style: 'portadaTituloPrincipal',
+        alignment: 'center',
+        margin: [0, 40, 0, 15]
+    });
+    
+    // Línea divisora elegante bajo el título
+    portada.push({
+        canvas: [
+            { 
+                type: 'rect', 
+                x: 225, // Centrado: (515 - 64) / 2 = 225.5 ≈ 225
+                y: 0, 
+                w: 64, 
+                h: 1.2, 
+                color: '#059669'
+            }
+        ],
+        margin: [0, 0, 0, 25]
+    });
+    
+    // 2. Nombre comercial y razón social del cliente
+    const clienteStack: Content[] = [
+        {
+            text: nombreComercialCliente.toUpperCase(),
+            style: 'portadaSubtitulo',
+            alignment: 'center',
+            margin: [0, 0, 0, 8]
+        }
+    ];
+    
+    // Agregar razón social si existe
+    if (razonSocialCliente) {
+        clienteStack.push({
+            text: razonSocialCliente,
+            style: 'portadaRazonSocial',
+            alignment: 'center',
+            margin: [0, 0, 0, 0]
+        });
+    }
+    
+    portada.push({
+        stack: clienteStack,
+        margin: [0, 0, 0, 0]
+    });
+    
+    // 3. Logo del cliente (protagonista) - después de razón social
+    if (logoClienteValido) {
+        portada.push({
+            image: logoCliente,
+            fit: [600, 200],
+            alignment: 'center',
+            margin: [0, 0, 0, 0]
+        });
+    }
+    
+    // 4. Grid de datos ejecutivos (2 columnas x 3 filas)
+    const datosEjecutivos: Content = {
+        columns: [
+            // Columna izquierda - alineada a la derecha
+            {
+                width: '50%',
+                stack: [
+                    {
+                        text: [
+                            { text: 'Proveedor de Servicios', style: 'portadaLabelRight' },
+                            { text: '\n' + (nombreProveedor || '—'), style: 'portadaValueRight' }
+                        ],
+                        margin: [0, 0, 0, 20],
+                        alignment: 'right'
+                    },
+                    {
+                        text: [
+                            { text: 'Período de Evaluación', style: 'portadaLabelRight' },
+                            { text: '\n' + (props.periodo || '—'), style: 'portadaValueRight' }
+                        ],
+                        margin: [0, 0, 0, 20],
+                        alignment: 'right'
+                    },
+                    {
+                        text: [
+                            { text: 'Responsable Médico', style: 'portadaLabelRight' },
+                            { text: '\n' + (`${props.tituloMedicoFirmante || ''} ${props.nombreMedicoFirmante || ''}`.trim() || '—'), style: 'portadaValueRight' }
+                        ],
+                        margin: [0, 0, 0, 20],
+                        alignment: 'right'
+                    }
+                ]
+            },
+            // Columna derecha - alineada a la izquierda
+            {
+                width: '50%',
+                stack: [
+                    {
+                        text: [
+                            { text: 'Población Evaluada', style: 'portadaLabel' },
+                            { text: '\n' + `${props.totalTrabajadores || 0} trabajadores`, style: 'portadaValue' }
+                        ],
+                        margin: [0, 0, 0, 20],
+                        alignment: 'left'
+                    },
+                    {
+                        text: [
+                            { text: 'Centro de Trabajo', style: 'portadaLabel' },
+                            { text: '\n' + (props.centroTrabajo || '—'), style: 'portadaValue' }
+                        ],
+                        margin: [0, 0, 0, 20],
+                        alignment: 'left'
+                    },
+                    {
+                        text: [
+                            { text: 'Fecha de Generación', style: 'portadaLabel' },
+                            { text: '\n' + new Date().toLocaleDateString('es-MX', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric'
+                            }), style: 'portadaValue' }
+                        ],
+                        margin: [0, 0, 0, 20],
+                        alignment: 'left'
+                    }
+                ]
+            }
+        ],
+        columnGap: 40,
+        margin: [0, 0, 0, 40]
+    };
+    
+    portada.push(datosEjecutivos);
+    
+    // 5. Párrafo breve (texto actual) - centrado, estilo blurb
+    portada.push({
+        text: [
+            'Este informe consolida la informacióon clave sobre la salud laboral de la población evaluada, ',
+            'con el fin de proporcionbar una visión global del estado actual y servir como herramienta de apoyo ',
+            'para la gestión preventiva en la empresa.'
+        ],
+        style: 'portadaBlurb',
+        alignment: 'center',
+        margin: [0, 0, 0, 50]
+    });
+    
+    // 6. Pie de página con línea + logo proveedor discreto
+    // Línea horizontal
+    portada.push({
+        canvas: [
+            { 
+                type: 'rect', 
+                x: 0, 
+                y: 0, 
+                w: 515, 
+                h: 1.2, 
+                color: '#059669'
+            }
+        ],
+        margin: [0, 40, 0, 6]
+    });
+    
+    // Pie con texto y logo proveedor
+    if (logoProveedorValido) {
+        // Si hay logo proveedor, usar columns
+        const piePortada: any = {
+            columns: [
+                {
+                    width: '*',
+                    text: `Informe generado por ${nombreProveedor}`,
+                    style: 'portadaFooterBrand',
+                    alignment: 'left'
+                },
+                {
+                    width: 'auto',
+                    image: logoProveedor,
+                    fit: [80, 24],
+                    alignment: 'right'
+                }
+            ],
+            columnGap: 10,
+            margin: [0, 0, 0, 0]
+        };
+        portada.push(piePortada);
+    } else {
+        // Si no hay logo proveedor, solo texto
+        portada.push({
+            text: `Informe generado por ${nombreProveedor}`,
+            style: 'portadaFooterBrand',
+            alignment: 'left',
+            margin: [0, 0, 0, 0]
+        });
+    }
+    
+    // Salto de página después de la portada
+    portada.push({
+        text: '',
+        pageBreak: 'after'
+    });
+    
+    return portada;
+};
+
+const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinitions => {
+    // Crear la portada
+    const portada = crearPortada();
 
     // Generación de imágenes con calidad ajustable
     // Si altaCalidad es true, usa dimensiones altas para mejor calidad
@@ -268,7 +492,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 ]
             },
             layout: 'noBorders',
-            margin: [0, 10, 0, 20]
+            margin: [0, 30, 0, 20]
         } as Content;
         
         contenido.push(tablaSexoCombinada);
@@ -287,9 +511,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                     '\n\n',
                     'Una ',
                     { text: 'población mayor', bold: true },
-                    ' puede requerir mayor ',
-                    { text: 'vigilancia en enfermedades crónicas', bold: true },
-                    ', mientras que una ',
+                    'puede requerir mayor ',
+                    { text: 'vigilancia en enfermedades crónicas,', bold: true },
+                    'mientras que una ',
                     { text: 'plantilla joven', bold: true },
                     ' puede beneficiarse de ',
                     { text: 'acciones preventivas enfocadas en hábitos saludables y educación en seguridad', bold: true },
@@ -450,8 +674,8 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
             {
                 text: [
                     'La circunferencia de cintura es un indicador antropométrico útil para evaluar la ',
-                    { text: 'distribución de grasa corporal', bold: true },
-                    '. Un valor elevado se asocia con acumulación de grasa central, representando un ',
+                    { text: 'distribución de grasa corporal.', bold: true },
+                    'Un valor elevado se asocia con acumulación de grasa central, representando un ',
                     { text: 'riesgo incrementado de enfermedades metabólicas y cardiovasculares', bold: true },
                     ', incluso en personas con peso normal según el IMC. El exceso de grasa abdominal está directamente relacionado con un mayor riesgo de desarrollar ',
                     { text: 'síndrome metabólico, diabetes tipo 2, hipertensión arterial y enfermedad coronaria', bold: true },
@@ -604,9 +828,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 text: [
                     'La ',
                     { text: 'presión arterial elevada', bold: true },
-                    ' puede aumentar el riesgo de ',
+                    'puede aumentar el riesgo de ',
                     { text: 'eventos cardiovasculares', bold: true },
-                    ' durante la jornada laboral, especialmente en tareas que implican ',
+                    'durante la jornada laboral, especialmente en tareas que implican ',
                     { text: 'esfuerzo físico, turnos prolongados o exposición a calor', bold: true },
                     '.',
                     '\n',
@@ -762,7 +986,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         text: [
             'El ',
             { text: 'monitoreo continuo de estos antecedentes', bold: true },
-            ' fortalece la gestión integral de la salud en la empresa, y contribuye a un ',
+            'fortalece la gestión integral de la salud en la empresa, y contribuye a un ',
             { text: 'ambiente laboral más seguro, eficiente y humano', bold: true },
             '.'
         ],
@@ -897,14 +1121,14 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 {
                     text: [
                         'Esta sección permite identificar ',
-                        { text: 'agentes de riesgo presentes en el entorno laboral', bold: true },
-                        ' y detectar ',
+                        { text: 'agentes de riesgo presentes en el entorno laboral ', bold: true },
+                        'y detectar ',
                         { text: 'exposiciones que pueden afectar la salud', bold: true },
                         ' del trabajador.',
                         '\n',
                         'Conocer estos factores ayuda a ',
-                        { text: 'enfocar acciones preventivas', bold: true },
-                        ', cumplir con la normativa y ',
+                        { text: 'enfocar acciones preventivas, ', bold: true },
+                        'cumplir con la normativa y ',
                         { text: 'reducir el riesgo de enfermedades o accidentes laborales', bold: true },
                         '.'
                     ],
@@ -1158,8 +1382,8 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                     ' ya cuentan con lentes y los ',
                     { text: 'utilizan adecuadamente.', bold: true },
                     'Una ',
-                    { text: 'baja implementación', bold: true },
-                    ' puede señalar una ',
+                    { text: 'baja implementación ', bold: true },
+                    'puede señalar una ',
                     { text: 'brecha en el seguimiento médico', bold: true },
                     ' o en las ',
                     { text: 'medidas preventivas,', bold: true },
@@ -1415,8 +1639,64 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     );
 
     return {
-        content: [...encabezado, ...contenido],
+        content: [...portada, ...contenido],
         styles: {
+            // Estilos para la nueva portada corporativa
+            portadaTituloPrincipal: {
+                fontSize: 28,
+                bold: true,
+                color: '#059669',
+                alignment: 'center',
+                characterSpacing: 2,
+                margin: [0, 0, 0, 15]
+            },
+            portadaSubtitulo: {
+                fontSize: 22,
+                bold: true,
+                color: '#1F2937',
+                alignment: 'center',
+                margin: [0, 0, 0, 8]
+            },
+            portadaRazonSocial: {
+                fontSize: 16,
+                color: '#6B7280',
+                alignment: 'center',
+                italics: true,
+                margin: [0, 0, 0, 0]
+            },
+            portadaLabel: {
+                fontSize: 10,
+                bold: true,
+                color: '#059669',
+                alignment: 'left'
+            },
+            portadaValue: {
+                fontSize: 11,
+                color: '#374151',
+                alignment: 'left'
+            },
+            portadaLabelRight: {
+                fontSize: 10,
+                bold: true,
+                color: '#059669',
+                alignment: 'right'
+            },
+            portadaValueRight: {
+                fontSize: 11,
+                color: '#374151',
+                alignment: 'right'
+            },
+            portadaBlurb: {
+                fontSize: 10,
+                color: '#4B5563',
+                lineHeight: 1.4,
+                alignment: 'center'
+            },
+            portadaFooterBrand: {
+                fontSize: 9,
+                color: '#6B7280',
+                alignment: 'left'
+            },
             tituloEmpresa: { 
                 fontSize: 24, 
                 bold: true, 
@@ -1681,8 +1961,13 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
             font: 'Roboto'
         },
         footer: function(currentPage, pageCount) {
+            // No mostrar numeración en la portada (página 1)
+            if (currentPage === 1) {
+                return null;
+            }
+            // A partir de la página 2, mostrar "Página {n-1} de {total-1}"
             return {
-                text: `Página ${currentPage} de ${pageCount}`,
+                text: `Página ${currentPage - 1} de ${pageCount - 1}`,
                 alignment: 'center',
                 fontSize: 9,
                 color: '#9CA3AF',
