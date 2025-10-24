@@ -384,8 +384,8 @@ const goToStep = (stepNumber) => {
           <tr class="bg-white cursor-pointer" @click="goToStep(28)">
             <td class="w-1/2 text-xl md:text-2xl px-2 py-0 border border-gray-300 text-center align-middle"
               style="height: calc(2 * 1.3rem);"
-              :class="formData.formDataPrevioEspirometria.resultadoCuestionario === 'PROCEDENTE' ? 'text-green-600 font-medium' : formData.formDataPrevioEspirometria.resultadoCuestionario === 'PROCEDENTE CON PRECAUCIÓN' ? 'text-orange-600 font-medium' : 'text-red-600 font-medium'">
-              {{ formData.formDataPrevioEspirometria.resultadoCuestionario }}
+              :class="formData.formDataPrevioEspirometria.resultadoCuestionario === 'PROCEDENTE' ? 'text-green-600 font-medium' : formData.formDataPrevioEspirometria.resultadoCuestionario === 'PROCEDENTE CON PRECAUCIÓN' ? 'text-orange-600 font-medium' : (formData.formDataPrevioEspirometria.resultadoCuestionario === 'OTRO' || (formData.formDataPrevioEspirometria.resultadoCuestionario === '' && formData.formDataPrevioEspirometria.resultadoCuestionarioPersonalizado)) ? 'text-gray-600 font-medium' : 'text-red-600 font-medium'">
+              {{ (formData.formDataPrevioEspirometria.resultadoCuestionario === 'OTRO' || (formData.formDataPrevioEspirometria.resultadoCuestionario === '' && formData.formDataPrevioEspirometria.resultadoCuestionarioPersonalizado)) && formData.formDataPrevioEspirometria.resultadoCuestionarioPersonalizado ? formData.formDataPrevioEspirometria.resultadoCuestionarioPersonalizado.toUpperCase() : formData.formDataPrevioEspirometria.resultadoCuestionario }}
             </td>
           </tr>
         </tbody>

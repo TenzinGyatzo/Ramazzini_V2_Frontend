@@ -17,8 +17,14 @@ import { usePermissionRestrictions } from '@/composables/usePermissionRestrictio
 const router = useRouter();
 
 // Función para obtener el color según el resultado del cuestionario
-const getResultadoCuestionarioColor = (resultado) => {
-  if (!resultado) return 'gray';
+const getResultadoCuestionarioColor = (resultado, resultadoPersonalizado) => {
+  if (!resultado) {
+    // Si no hay resultado pero hay texto personalizado, usar color gris
+    if (resultadoPersonalizado) {
+      return 'gray';
+    }
+    return 'gray';
+  }
   
   const resultadoLower = resultado.toLowerCase();
   
@@ -28,10 +34,52 @@ const getResultadoCuestionarioColor = (resultado) => {
     return 'yellow';
   } else if (resultadoLower === 'no procedente') {
     return 'red';
+  } else if (resultadoLower === 'otro') {
+    return 'gray'; // Color gris para resultado personalizado
   }
   
   return 'gray';
 };
+
+const getResultadoCuestionarioTextoCorto = (resultado, resultadoPersonalizado) => {
+  if (!resultado) return '';
+  
+  const resultadoLower = resultado.toLowerCase();
+  
+  // Si es "OTRO" y hay texto personalizado, mostrar el texto personalizado
+  if (resultadoLower === 'otro' && resultadoPersonalizado) {
+    return 'PERSONALIZADO';
+  }
+  
+  // Si el resultado está vacío pero hay texto personalizado, mostrar el texto personalizado
+  if (!resultado && resultadoPersonalizado) {
+    return 'PERSONALIZADO';
+  }
+  
+  // Para otros casos, mostrar el resultado normal
+  return resultado.toUpperCase();
+};
+
+// Función para obtener el texto a mostrar del resultado
+const getResultadoCuestionarioTexto = (resultado, resultadoPersonalizado) => {
+  if (!resultado) return '';
+  
+  const resultadoLower = resultado.toLowerCase();
+  
+  // Si es "OTRO" y hay texto personalizado, mostrar el texto personalizado
+  if (resultadoLower === 'otro' && resultadoPersonalizado) {
+    return resultadoPersonalizado.toUpperCase();
+  }
+  
+  // Si el resultado está vacío pero hay texto personalizado, mostrar el texto personalizado
+  if (!resultado && resultadoPersonalizado) {
+    return resultadoPersonalizado.toUpperCase();
+  }
+  
+  // Para otros casos, mostrar el resultado normal
+  return resultado.toUpperCase();
+};
+
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
@@ -1924,15 +1972,15 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
                                     Historia Otologica
                                 </h3>
-                                <span v-if="historiaOtologica.resultadoCuestionario" 
+                                <span v-if="historiaOtologica.resultadoCuestionario || historiaOtologica.resultadoCuestionarioPersonalizado" 
                                       class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                       :class="{
-                                        'bg-green-100 text-green-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'green',
-                                        'bg-yellow-100 text-yellow-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'yellow',
-                                        'bg-red-100 text-red-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'red',
-                                        'bg-gray-100 text-gray-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'gray'
+                                        'bg-green-100 text-green-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario, historiaOtologica.resultadoCuestionarioPersonalizado) === 'green',
+                                        'bg-yellow-100 text-yellow-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario, historiaOtologica.resultadoCuestionarioPersonalizado) === 'yellow',
+                                        'bg-red-100 text-red-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario, historiaOtologica.resultadoCuestionarioPersonalizado) === 'red',
+                                        'bg-gray-100 text-gray-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario, historiaOtologica.resultadoCuestionarioPersonalizado) === 'gray'
                                       }">
-                                    {{ historiaOtologica.resultadoCuestionario.toUpperCase() }}
+                                    {{ getResultadoCuestionarioTextoCorto(historiaOtologica.resultadoCuestionario, historiaOtologica.resultadoCuestionarioPersonalizado) }}
                                 </span>
                             </div>
                             <p class="text-sm text-gray-500 flex items-center">
@@ -1942,18 +1990,18 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
-                        <div v-if="historiaOtologica.resultadoCuestionario" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                        <div v-if="historiaOtologica.resultadoCuestionario || historiaOtologica.resultadoCuestionarioPersonalizado" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
                             <div class="text-sm">
                                 <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resultado</p>
                                     <p class="font-medium text-sm truncate max-w-full"
                                        :class="{
-                                         'text-green-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'green',
-                                         'text-yellow-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'yellow',
-                                         'text-red-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'red',
-                                         'text-gray-800': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario) === 'gray'
+                                         'text-green-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario, historiaOtologica.resultadoCuestionarioPersonalizado) === 'green',
+                                         'text-yellow-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario, historiaOtologica.resultadoCuestionarioPersonalizado) === 'yellow',
+                                         'text-red-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario, historiaOtologica.resultadoCuestionarioPersonalizado) === 'red',
+                                         'text-gray-800': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario, historiaOtologica.resultadoCuestionarioPersonalizado) === 'gray'
                                        }">
-                                        {{ historiaOtologica.resultadoCuestionario.toUpperCase() }}
+                                        {{ getResultadoCuestionarioTexto(historiaOtologica.resultadoCuestionario, historiaOtologica.resultadoCuestionarioPersonalizado) }}
                                     </p>
                                 </div>
                             </div>
@@ -1988,15 +2036,15 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
                                     Previo Espirometria
                                 </h3>
-                                <span v-if="previoEspirometria.resultadoCuestionario" 
+                                <span v-if="previoEspirometria.resultadoCuestionario || previoEspirometria.resultadoCuestionarioPersonalizado" 
                                       class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                       :class="{
-                                        'bg-green-100 text-green-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'green',
-                                        'bg-yellow-100 text-yellow-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'yellow',
-                                        'bg-red-100 text-red-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'red',
-                                        'bg-gray-100 text-gray-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'gray'
+                                        'bg-green-100 text-green-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario, previoEspirometria.resultadoCuestionarioPersonalizado) === 'green',
+                                        'bg-yellow-100 text-yellow-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario, previoEspirometria.resultadoCuestionarioPersonalizado) === 'yellow',
+                                        'bg-red-100 text-red-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario, previoEspirometria.resultadoCuestionarioPersonalizado) === 'red',
+                                        'bg-gray-100 text-gray-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario, previoEspirometria.resultadoCuestionarioPersonalizado) === 'gray'
                                       }">
-                                    {{ previoEspirometria.resultadoCuestionario.toUpperCase() }}
+                                    {{ getResultadoCuestionarioTextoCorto(previoEspirometria.resultadoCuestionario, previoEspirometria.resultadoCuestionarioPersonalizado) }}
                                 </span>
                             </div>
                             <p class="text-sm text-gray-500 flex items-center">
@@ -2006,18 +2054,18 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
-                        <div v-if="previoEspirometria.resultadoCuestionario" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                        <div v-if="previoEspirometria.resultadoCuestionario || previoEspirometria.resultadoCuestionarioPersonalizado" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
                             <div class="text-sm">
                                 <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Resultado</p>
                                     <p class="font-medium text-sm truncate max-w-full"
                                        :class="{
-                                         'text-green-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'green',
-                                         'text-yellow-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'yellow',
-                                         'text-red-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'red',
-                                         'text-gray-800': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario) === 'gray'
+                                         'text-green-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario, previoEspirometria.resultadoCuestionarioPersonalizado) === 'green',
+                                         'text-yellow-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario, previoEspirometria.resultadoCuestionarioPersonalizado) === 'yellow',
+                                         'text-red-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario, previoEspirometria.resultadoCuestionarioPersonalizado) === 'red',
+                                         'text-gray-800': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario, previoEspirometria.resultadoCuestionarioPersonalizado) === 'gray'
                                        }">
-                                        {{ previoEspirometria.resultadoCuestionario.toUpperCase() }}
+                                        {{ getResultadoCuestionarioTexto(previoEspirometria.resultadoCuestionario, previoEspirometria.resultadoCuestionarioPersonalizado) }}
                                     </p>
                                 </div>
                             </div>

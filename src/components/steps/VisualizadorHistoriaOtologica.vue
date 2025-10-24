@@ -404,8 +404,8 @@ const goToStep = (stepNumber) => {
           <tr class="bg-white cursor-pointer">
             <td class="w-1/2 text-xl md:text-2xl px-2 py-0 border border-gray-300 text-center align-middle"
               style="height: calc(2 * 1.3rem);"
-              :class="formData.formDataHistoriaOtologica.resultadoCuestionario === 'PROCEDENTE' ? 'text-green-600 font-medium' : formData.formDataHistoriaOtologica.resultadoCuestionario === 'PROCEDENTE CON PRECAUCIÓN' ? 'text-orange-600 font-medium' : 'text-red-600 font-medium'">
-              {{ formData.formDataHistoriaOtologica.resultadoCuestionario }}
+              :class="formData.formDataHistoriaOtologica.resultadoCuestionario === 'PROCEDENTE' ? 'text-green-600 font-medium' : formData.formDataHistoriaOtologica.resultadoCuestionario === 'PROCEDENTE CON PRECAUCIÓN' ? 'text-orange-600 font-medium' : (formData.formDataHistoriaOtologica.resultadoCuestionario === 'OTRO' || (formData.formDataHistoriaOtologica.resultadoCuestionario === '' && formData.formDataHistoriaOtologica.resultadoCuestionarioPersonalizado)) ? 'text-gray-600 font-medium' : 'text-red-600 font-medium'">
+              {{ (formData.formDataHistoriaOtologica.resultadoCuestionario === 'OTRO' || (formData.formDataHistoriaOtologica.resultadoCuestionario === '' && formData.formDataHistoriaOtologica.resultadoCuestionarioPersonalizado)) && formData.formDataHistoriaOtologica.resultadoCuestionarioPersonalizado ? formData.formDataHistoriaOtologica.resultadoCuestionarioPersonalizado.toUpperCase() : formData.formDataHistoriaOtologica.resultadoCuestionario }}
             </td>
           </tr>
         </tbody>

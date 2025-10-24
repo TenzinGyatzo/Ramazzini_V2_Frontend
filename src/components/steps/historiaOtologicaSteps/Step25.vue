@@ -1,11 +1,15 @@
 <script setup>
-import { watch, ref, onMounted, onUnmounted, computed } from 'vue';
+import { watch, ref, onMounted, onUnmounted, computed, nextTick } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 
 const { formDataHistoriaOtologica } = useFormDataStore();
 
 // Valor local para la pregunta principal (se inicializará en onMounted)
 const resultadoCuestionario = ref('');
+const resultadoCuestionarioPersonalizado = ref('');
+
+// Referencia al input
+const inputPersonalizado = ref(null);
 
 // Función para calcular el resultado automático basado en el algoritmo médico
 const calcularResultadoAutomatico = () => {
@@ -144,20 +148,81 @@ const evaluacionAutomatica = computed(() => {
 });
 
 onMounted(() => {
-    // Calcular el resultado automático basado en las respuestas del cuestionario
-    const evaluacion = calcularResultadoAutomatico();
+    // LÓGICA DE PRIORIDAD:
+    // 1. Personalizado local (si hay texto en resultadoCuestionarioPersonalizado)
+    // 2. Personalizado guardado en BD (si hay resultadoCuestionarioPersonalizado en formData)
+    // 3. Selección local (si hay resultadoCuestionario seleccionado)
+    // 4. Selección guardada en BD (si hay resultadoCuestionario en formData)
+    // 5. Cálculo automático (como último recurso)
     
-    // Usar siempre el resultado automático calculado
-    // Esto asegura que el radio button refleje el algoritmo al renderizar el paso
+    // Verificar si hay resultado personalizado local
+    if (resultadoCuestionarioPersonalizado.value && resultadoCuestionarioPersonalizado.value.trim() !== '') {
+        resultadoCuestionario.value = 'OTRO';
+        formDataHistoriaOtologica.resultadoCuestionario = 'OTRO';
+        formDataHistoriaOtologica.resultadoCuestionarioPersonalizado = resultadoCuestionarioPersonalizado.value;
+        return;
+    }
+    
+    // Verificar si hay resultado personalizado guardado en BD
+    if (formDataHistoriaOtologica.resultadoCuestionarioPersonalizado && formDataHistoriaOtologica.resultadoCuestionarioPersonalizado.trim() !== '') {
+        resultadoCuestionario.value = 'OTRO';
+        resultadoCuestionarioPersonalizado.value = formDataHistoriaOtologica.resultadoCuestionarioPersonalizado;
+        formDataHistoriaOtologica.resultadoCuestionario = 'OTRO';
+        return;
+    }
+    
+    // Verificar si hay selección local
+    if (resultadoCuestionario.value && resultadoCuestionario.value !== '') {
+        formDataHistoriaOtologica.resultadoCuestionario = resultadoCuestionario.value;
+        return;
+    }
+    
+    // Verificar si hay selección guardada en BD
+    if (formDataHistoriaOtologica.resultadoCuestionario && formDataHistoriaOtologica.resultadoCuestionario !== '') {
+        resultadoCuestionario.value = formDataHistoriaOtologica.resultadoCuestionario;
+        return;
+    }
+    
+    // Como último recurso, usar el cálculo automático
+    const evaluacion = calcularResultadoAutomatico();
     resultadoCuestionario.value = evaluacion.resultado;
     formDataHistoriaOtologica.resultadoCuestionario = evaluacion.resultado;
 });
 
 // Sincronizar cambios manuales del usuario con el store
 // Esto permite que el usuario modifique libremente el resultado
-watch(resultadoCuestionario, (newValue) => {
+watch(resultadoCuestionario, async (newValue) => {
     if (newValue) {
-        formDataHistoriaOtologica.resultadoCuestionario = newValue;
+        // Si se selecciona "OTRO", limpiar el resultado hasta que se escriba algo personalizado
+        if (newValue === 'OTRO') {
+            formDataHistoriaOtologica.resultadoCuestionario = '';
+            // No limpiar el campo personalizado aquí, se maneja en el otro watch
+            
+            // Esperar a que el DOM se actualice y luego enfocar el input
+            await nextTick();
+            if (inputPersonalizado.value) {
+                inputPersonalizado.value.focus();
+            }
+        } else {
+            formDataHistoriaOtologica.resultadoCuestionario = newValue;
+            // Si no es "OTRO", limpiar el campo personalizado
+            resultadoCuestionarioPersonalizado.value = '';
+            formDataHistoriaOtologica.resultadoCuestionarioPersonalizado = '';
+        }
+    }
+});
+
+// Sincronizar el campo personalizado con el store
+watch(resultadoCuestionarioPersonalizado, (newValue) => {
+    formDataHistoriaOtologica.resultadoCuestionarioPersonalizado = newValue;
+    
+    // Si hay texto personalizado y el resultado actual es "OTRO", establecer el resultado
+    if (newValue && newValue.trim() !== '' && resultadoCuestionario.value === 'OTRO') {
+        formDataHistoriaOtologica.resultadoCuestionario = 'OTRO';
+    }
+    // Si se borra el texto personalizado y el resultado es "OTRO", limpiar el resultado
+    else if ((!newValue || newValue.trim() === '') && resultadoCuestionario.value === 'OTRO') {
+        formDataHistoriaOtologica.resultadoCuestionario = '';
     }
 });
 
@@ -335,7 +400,63 @@ watch(resultadoCuestionario, (newValue) => {
                     </div>
                 </label>
 
+                <!-- Opción Resultado Personalizado -->
+                <label 
+                    :class="[
+                        'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+                        resultadoCuestionario === 'OTRO' 
+                            ? 'border-emerald-600 bg-emerald-50 shadow-md' 
+                            : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+                    ]"
+                >
+                    <input 
+                        type="radio" 
+                        value="OTRO" 
+                        v-model="resultadoCuestionario" 
+                        class="sr-only" 
+                    />
+                    <span 
+                        :class="[
+                            'text-sm transition-colors duration-200',
+                            resultadoCuestionario === 'OTRO' ? 'text-emerald-700 font-semibold' : 'text-gray-700'
+                        ]"
+                    >
+                        RESULTADO PERSONALIZADO
+                    </span>
+                    <!-- Indicador de selección -->
+                    <div 
+                        v-if="resultadoCuestionario === 'OTRO'"
+                        class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </label>
+
             </div>
+            
+            <!-- Campo de texto personalizado con transición suave -->
+            <transition
+                enter-active-class="transition-all duration-300 ease-out"
+                enter-from-class="opacity-0 transform -translate-y-2"
+                enter-to-class="opacity-100 transform translate-y-0"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 transform translate-y-0"
+                leave-to-class="opacity-0 transform -translate-y-2"
+            >
+                <div v-if="resultadoCuestionario === 'OTRO'" class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Redactar resultado personalizado:
+                    </label>
+                    <input
+                        ref="inputPersonalizado"
+                        v-model="resultadoCuestionarioPersonalizado"
+                        placeholder="Redactar resultado"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    />
+                </div>
+            </transition>
         </div>
     </div>
 </template>
