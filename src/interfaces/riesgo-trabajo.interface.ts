@@ -7,7 +7,7 @@ export interface RiesgoTrabajo {
   sexoTrabajador: string;
   puestoTrabajador: string;
   fechaNacimiento: string;
-  fechaIngreso: string;
+  fechaIngreso?: string;
   numeroEmpleado?: string;
   recaida?: string;
   NSS?: string;

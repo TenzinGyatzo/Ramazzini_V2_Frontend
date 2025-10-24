@@ -7,7 +7,7 @@ export interface Trabajador {
   sexo: string;
   escolaridad: string;
   puesto: string;
-  fechaIngreso: string;
+  fechaIngreso?: string;
   telefono: string;
   estadoCivil: string;
   numeroEmpleado: string;

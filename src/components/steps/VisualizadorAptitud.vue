@@ -95,7 +95,7 @@ const historiaClinicaResumen = computed(() => {
   if (!nearestHistoriaClinica.value) {
     return 'No hay históricas clínicas disponibles';
   }
-  return nearestHistoriaClinica.value.resumenHistoriaClinica + '.';
+  return nearestHistoriaClinica.value.resumenHistoriaClinica;
 });
 
 const exploracionFisicaResumen = computed(() => {

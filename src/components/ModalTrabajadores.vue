@@ -135,7 +135,6 @@ const handleSubmit = async (data) => {
     sexo: data.sexo,
     escolaridad: data.escolaridad,
     puesto: data.puesto,
-    fechaIngreso: data.fechaIngreso,
     telefono: data.telefono,
     estadoCivil: data.estadoCivil,
     numeroEmpleado: data.numeroEmpleado,
@@ -144,6 +143,11 @@ const handleSubmit = async (data) => {
     createdBy: currentUserId,
     updatedBy: currentUserId
   };
+
+  // Solo agregar fechaIngreso si tiene un valor válido
+  if (data.fechaIngreso && data.fechaIngreso !== '') {
+    trabajadorData.fechaIngreso = data.fechaIngreso;
+  }
 
   // Agregar estadoLaboral solo si es un nuevo registro
   if (!trabajadores.currentTrabajador?._id) {
@@ -356,23 +360,22 @@ const cancelarTransferencia = () => {
                   <span class="font-medium text-lg text-gray-700">Puesto<span class="text-red-500">*</span></span>
                 </template>
               </FormKit>
-              <FormKit type="date" name="fechaIngreso" validation="required"
-                :validation-messages="{ required: 'Este campo es obligatorio' }"
-                :value="convertirFechaISOaYYYYMMDD(trabajadores.currentTrabajador?.fechaIngreso) || ''">
-                <template #label>
-                  <span class="font-medium text-lg text-gray-700">Fecha de Ingreso<span class="text-red-500">*</span></span>
-                </template>
-              </FormKit>
-              <FormKit type="text" label="Teléfono" name="telefono" placeholder="Número de teléfono"
-                validation="optional|phoneValidation" 
-                :validation-messages="{ phoneValidation: 'El número de teléfono debe tener entre 4 y 15 dígitos' }"
-                :value="trabajadores.currentTrabajador?.telefono || ''" />
               <FormKit type="select" name="estadoCivil" placeholder="-Seleccione un estado civil-"
                 :options="estadosCiviles" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
                 :value="trabajadores.currentTrabajador?.estadoCivil || ''">
                 <template #label>
                   <span class="font-medium text-lg text-gray-700">Estado Civil<span class="text-red-500">*</span></span>
+                </template>
+              </FormKit>
+              <FormKit type="text" label="Teléfono" name="telefono" placeholder="Número de teléfono"
+                validation="optional|phoneValidation" 
+                :validation-messages="{ phoneValidation: 'El número de teléfono debe tener entre 4 y 15 dígitos' }"
+                :value="trabajadores.currentTrabajador?.telefono || ''" />
+              <FormKit type="date" name="fechaIngreso" 
+                :value="convertirFechaISOaYYYYMMDD(trabajadores.currentTrabajador?.fechaIngreso) || ''">
+                <template #label>
+                  <span class="font-medium text-lg text-gray-700">Fecha de Ingreso</span>
                 </template>
               </FormKit>
               <FormKit type="text" label="Número de Empleado" name="numeroEmpleado" placeholder="Sólo números"
@@ -430,7 +433,7 @@ const cancelarTransferencia = () => {
             <!-- Información principal -->
             <div class="mb-3 flex gap-3">
               <p class="text-xl font-semibold text-emerald-700">
-                                 {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
+                {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
                 <!-- Número de empleado -->
               </p>
               <div v-if="trabajadores.currentTrabajador?.numeroEmpleado" class="flex items-center gap-2 text-sm">
