@@ -2,6 +2,12 @@
 declare const pdfMake: typeof import('pdfmake/build/pdfmake');
 import type { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { exportarGraficaAltaResolucion } from '@/helpers/exportChartImage';
+import { 
+  conclusionesToPdfMake, 
+  recomendacionesTextoToPdfMake, 
+  recomendacionesTablaToPdfMake,
+  isHtmlContentEmpty
+} from '@/helpers/pdfHtmlParser';
 import { ref, nextTick, watch, computed, onMounted } from 'vue';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
@@ -19,6 +25,11 @@ const props = defineProps<{
   centroTrabajo?: string;
   tituloMedicoFirmante?: string;
   nombreMedicoFirmante?: string;
+  // Secciones personalizadas
+  conclusiones?: string;
+  formatoRecomendaciones?: 'texto' | 'tabla';
+  recomendacionesTexto?: string;
+  recomendacionesTabla?: Array<{hallazgo: string, medidaPreventiva: string}>;
 }>();
 
 // Store del proveedor de salud
@@ -33,9 +44,7 @@ const obtenerBase64LogoEndpoint = async (filename: string): Promise<string> => {
   try {
     const baseURL = import.meta.env.VITE_API_URL || 'https://ramazzini.app';
     const logoUrl = `${baseURL}/proveedores-salud/logo/${filename}`;
-    
-    console.log('Obteniendo logo desde endpoint:', logoUrl);
-    
+        
     const response = await fetch(logoUrl);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -47,7 +56,6 @@ const obtenerBase64LogoEndpoint = async (filename: string): Promise<string> => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const result = reader.result as string;
-        console.log('Logo obtenido desde endpoint:', result.substring(0, 50) + '...');
         resolve(result);
       };
       reader.onerror = reject;
@@ -61,20 +69,16 @@ const obtenerBase64LogoEndpoint = async (filename: string): Promise<string> => {
 
 // Función para cargar el logo del proveedor
 const cargarLogoProveedor = async () => {
-  console.log('Proveedor de salud desde store:', proveedorSalud.value);
   if (proveedorSalud.value?.logotipoEmpresa?.data) {
     try {
       const filename = proveedorSalud.value.logotipoEmpresa.data;
-      console.log('Nombre del archivo:', filename);
       
       // Usar el endpoint del backend para obtener el logo
-      console.log('Obteniendo logo desde endpoint del backend...');
       const logoBase64 = await obtenerBase64LogoEndpoint(filename);
       
       // Validar que el logo sea un dataURL válido de imagen
       if (logoBase64 && logoBase64.startsWith('data:image/')) {
         logoProveedorBase64.value = logoBase64;
-        console.log('Logo del proveedor cargado exitosamente');
       } else {
         console.error('El logo no es un dataURL de imagen válido:', logoBase64?.substring(0, 50) + '...');
         logoProveedorBase64.value = undefined;
@@ -82,12 +86,9 @@ const cargarLogoProveedor = async () => {
       
     } catch (error) {
       console.error('Error al cargar el logo del proveedor:', error);
-      console.log('Usando nombre del proveedor como fallback');
       logoProveedorBase64.value = undefined;
     }
-  } else {
-    console.log('No se encontró logo del proveedor en el store');
-  }
+  } 
 };
 
 // Cargar el logo cuando se monte el componente o cambie el proveedor
@@ -139,17 +140,6 @@ const crearPortada = (): Content[] => {
     // Validar que los logos sean dataURLs válidos de imagen
     const logoClienteValido = logoCliente && logoCliente.startsWith('data:image/');
     const logoProveedorValido = logoProveedor && logoProveedor.startsWith('data:image/');
-    
-    console.log('Datos para la portada:', {
-        logoCliente: !!logoCliente,
-        logoClienteValido,
-        logoProveedor: !!logoProveedor,
-        logoProveedorValido,
-        nombreProveedor,
-        nombreComercialCliente,
-        razonSocialCliente,
-        proveedorSalud: proveedorSalud.value
-    });
     
     const portada: Content[] = [];
     
@@ -1623,6 +1613,24 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 tablaAptitud.forEach(item => contenido.push(item));
             }
         }
+        numeroSeccion++; // Incrementar para las siguientes secciones
+    }
+
+    // Secciones personalizadas
+    // Agregar conclusiones si existen
+    if (props.conclusiones && !isHtmlContentEmpty(props.conclusiones)) {
+        const conclusionesContent = conclusionesToPdfMake(props.conclusiones, numeroSeccion);
+        contenido.push(...conclusionesContent);
+        numeroSeccion++;
+    }
+
+    // Agregar recomendaciones si existen
+    if (props.formatoRecomendaciones === 'texto' && props.recomendacionesTexto && !isHtmlContentEmpty(props.recomendacionesTexto)) {
+        const recomendacionesContent = recomendacionesTextoToPdfMake(props.recomendacionesTexto, numeroSeccion);
+        contenido.push(...recomendacionesContent);
+    } else if (props.formatoRecomendaciones === 'tabla' && props.recomendacionesTabla && props.recomendacionesTabla.length > 0) {
+        const recomendacionesContent = recomendacionesTablaToPdfMake(props.recomendacionesTabla, numeroSeccion);
+        contenido.push(...recomendacionesContent);
     }
 
     // Pie de página

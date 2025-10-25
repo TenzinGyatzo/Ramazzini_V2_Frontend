@@ -1,0 +1,218 @@
+<template>
+  <div class="recomendaciones-tabla">
+    <div class="header">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        Recomendaciones de Medidas Preventivas
+      </h3>
+      <p class="text-sm text-gray-600 mb-4">
+        Agrega hallazgos específicos y sus medidas preventivas correspondientes.
+      </p>
+    </div>
+
+    <div class="table-container">
+      <table class="w-full border-collapse border border-gray-300">
+        <thead>
+          <tr class="bg-gray-50">
+            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">
+              HALLAZGO
+            </th>
+            <th class="border border-gray-300 px-4 py-3 text-left font-semibold text-gray-700">
+              MEDIDA PREVENTIVA RECOMENDADA
+            </th>
+            <th class="border border-gray-300 px-4 py-3 text-center font-semibold text-gray-700 w-20">
+              Acciones
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            v-for="(item, index) in localItems" 
+            :key="index"
+            class="hover:bg-gray-50"
+          >
+            <td class="border border-gray-300 px-4 py-3">
+              <textarea
+                v-model="item.hallazgo"
+                @input="updateItem(index, 'hallazgo', ($event.target as HTMLTextAreaElement).value)"
+                class="w-full p-2 border border-gray-300 rounded resize-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                rows="2"
+                placeholder="Describe el hallazgo..."
+              ></textarea>
+            </td>
+            <td class="border border-gray-300 px-4 py-3">
+              <textarea
+                v-model="item.medidaPreventiva"
+                @input="updateItem(index, 'medidaPreventiva', ($event.target as HTMLTextAreaElement).value)"
+                class="w-full p-2 border border-gray-300 rounded resize-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                rows="2"
+                placeholder="Describe la medida preventiva..."
+              ></textarea>
+            </td>
+            <td class="border border-gray-300 px-4 py-3 text-center">
+              <button
+                @click="removeItem(index)"
+                class="text-red-600 hover:text-red-800 transition-colors"
+                title="Eliminar fila"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="actions mt-4">
+      <button
+        @click="addItem"
+        class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+      >
+        <i class="fas fa-plus"></i>
+        Agregar Recomendación
+      </button>
+      
+      <div v-if="localItems.length === 0" class="text-center py-8 text-gray-500">
+        <i class="fas fa-table text-4xl mb-2"></i>
+        <p>No hay recomendaciones agregadas</p>
+        <p class="text-sm">Haz clic en "Agregar Recomendación" para comenzar</p>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue';
+import type { RecomendacionItem } from '@/interfaces/informe-personalizacion.interface';
+
+interface Props {
+  modelValue?: RecomendacionItem[];
+}
+
+interface Emits {
+  (e: 'update:modelValue', value: RecomendacionItem[]): void;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  modelValue: () => []
+});
+
+const emit = defineEmits<Emits>();
+
+const localItems = ref<RecomendacionItem[]>([]);
+
+// Inicializar con datos del prop
+onMounted(() => {
+  if (props.modelValue && props.modelValue.length > 0) {
+    localItems.value = [...props.modelValue];
+  } else {
+    // Agregar una fila vacía por defecto
+    addItem();
+  }
+});
+
+// Observar cambios en el prop
+watch(() => props.modelValue, (newValue) => {
+  if (newValue && newValue.length > 0) {
+    localItems.value = [...newValue];
+  }
+}, { deep: true });
+
+// Observar cambios locales y emitir al padre
+watch(localItems, (newValue) => {
+  emit('update:modelValue', [...newValue]);
+}, { deep: true });
+
+const addItem = () => {
+  localItems.value.push({
+    hallazgo: '',
+    medidaPreventiva: ''
+  });
+};
+
+const removeItem = (index: number) => {
+  if (localItems.value.length > 1) {
+    localItems.value.splice(index, 1);
+  }
+};
+
+const updateItem = (index: number, field: keyof RecomendacionItem, value: string) => {
+  if (localItems.value[index]) {
+    localItems.value[index][field] = value;
+  }
+};
+
+// Métodos públicos
+const getItems = () => {
+  return localItems.value;
+};
+
+const setItems = (items: RecomendacionItem[]) => {
+  localItems.value = [...items];
+};
+
+const clearItems = () => {
+  localItems.value = [];
+  addItem(); // Agregar una fila vacía
+};
+
+const validateItems = () => {
+  return localItems.value.every(item => 
+    item.hallazgo.trim() !== '' && item.medidaPreventiva.trim() !== ''
+  );
+};
+
+defineExpose({
+  getItems,
+  setItems,
+  clearItems,
+  validateItems
+});
+</script>
+
+<style scoped>
+.recomendaciones-tabla {
+  width: 100%;
+}
+
+.table-container {
+  overflow-x: auto;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+}
+
+table {
+  min-width: 100%;
+}
+
+textarea {
+  font-size: 0.875rem;
+}
+
+textarea:focus {
+  outline: none;
+}
+
+/* Estilos para el hover de las filas */
+tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Estilos para los botones de acción */
+button {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .table-container {
+    font-size: 0.75rem;
+  }
+  
+  textarea {
+    font-size: 0.75rem;
+  }
+}
+</style>

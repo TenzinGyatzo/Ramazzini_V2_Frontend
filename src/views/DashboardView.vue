@@ -5,6 +5,7 @@ import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
+import { useInformePersonalizacionStore } from '@/stores/informePersonalizacion';
 import { clasificarPorEdadYSexo, ordenarPorGrupoEtario, contarPorCategoriaIMC, etiquetasEnfermedades, contarEnfermedadesCronicas, etiquetasAntecedentesReferidos, contarAntecedentesReferidos, etiquetasVisionSinCorreccion, calcularRequierenLentes, contarVisionSinCorreccion, calcularVistaCorregida, calcularDaltonismo, etiquetasAptitudPuesto, etiquetasAptitudPuestoTabla, contarPorAptitudPuesto, calcularCircunferenciaCintura, contarConsultasUltimos30Dias, etiquetasAgentesRiesgo, contarAgentesRiesgo, contarPorSexo, categoriasTensionArterialOrdenadas, contarPorCategoriaTensionArterial, calcularProporcionAudiometria, distribuirResultadosHBC } from '@/helpers/dashboardDataProcessor';
 import GraficaBarras from '@/components/graficas/GraficaBarras.vue';
 import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
@@ -12,6 +13,7 @@ import GraficaPastel from '@/components/graficas/GraficaPastel.vue';
 import { subDays, format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import DescargarInformeDashboard from '@/components/DescargarInformeDashboard.vue';
+import ModalPersonalizarInforme from '@/components/ModalPersonalizarInforme.vue';
 
 const toast = inject('toast');
 const router = useRouter()
@@ -20,6 +22,7 @@ const empresasStore = useEmpresasStore();
 const centrosTrabajoStore = useCentrosTrabajoStore();
 const trabajadoresStore = useTrabajadoresStore();
 const medicoFirmanteStore = useMedicoFirmanteStore();
+const informePersonalizacionStore = useInformePersonalizacionStore();
 
 const centrosTrabajo = ref([]);
 const centroSeleccionado = ref('Todos')
@@ -208,12 +211,31 @@ const cargarDatos = async (empresaId, inicio, fin) => {
   }
 };
 
+// Función para cargar personalizaciones del informe
+const cargarPersonalizaciones = async () => {
+  if (!empresasStore.currentEmpresa?._id) return;
+  
+  try {
+    const idCentroTrabajo = centroSeleccionado.value !== 'Todos' 
+      ? centrosTrabajo.value.find(c => c.nombreCentro === centroSeleccionado.value)?._id 
+      : undefined;
+    
+    await informePersonalizacionStore.loadPersonalizacionByEmpresaAndCentro(
+      empresasStore.currentEmpresa._id,
+      idCentroTrabajo
+    );
+  } catch (error) {
+    console.error('Error loading personalizaciones:', error);
+  }
+};
+
 // Llama la función al montar y si cambia el ID
 watch(
   [() => route.params.idEmpresa, fechaInicio, fechaFin],
   ([idEmpresa, inicio, fin]) => {
     if (inicio && fin && new Date(inicio) > new Date(fin)) return;
     cargarDatos(idEmpresa, inicio, fin);
+    cargarPersonalizaciones(); // Cargar personalizaciones también
   },
   { immediate: true }
 );
@@ -221,6 +243,7 @@ watch(
 // Watcher para guardar el centro seleccionado en localStorage cuando cambie
 watch(centroSeleccionado, (nuevoCentro) => {
   guardarCentroSeleccionado(nuevoCentro);
+  cargarPersonalizaciones(); // Recargar personalizaciones cuando cambie el centro
 });
 
 watch([fechaInicio, fechaFin], ([inicio, fin]) => {
@@ -2253,7 +2276,20 @@ const obtenerBase64Logo = async (ruta) => {
   });
 };
 
+// Funciones para el modal de personalización
+const abrirModalPersonalizacion = () => {
+  mostrarModalPersonalizacion.value = true;
+};
+
+const cerrarModalPersonalizacion = () => {
+  mostrarModalPersonalizacion.value = false;
+};
+
+
 const logoBase64 = ref();
+
+// Variables para el modal de personalización
+const mostrarModalPersonalizacion = ref(false);
 
 watch(
   () => empresasStore.currentEmpresa,
@@ -2344,6 +2380,16 @@ const tablaCintura = computed(() => {
         <!-- Ajustado a nivel del encabezado -->
         <div class="mb-2 flex items-end gap-6">
           <div class="flex items-center gap-4 self-center">
+            <!-- Botón para personalizar informe -->
+            <button
+              @click="abrirModalPersonalizacion"
+              class="gap-2 px-4 py-2 rounded-lg shadow transition duration-300 flex items-center bg-blue-600 hover:bg-blue-700 text-white"
+              title="Personalizar secciones del informe"
+            >
+              <i class="fas fa-edit mr-1"></i>
+              Conclusiones y recomendaciones
+            </button>
+            
             <DescargarInformeDashboard
               v-if="dashboardData.length > 0"
               :refs-graficas="{
@@ -2385,6 +2431,10 @@ const tablaCintura = computed(() => {
                 sexo: tablaSexoPDF,
                 tensionArterial: tablaTensionArterial
               }"
+              :conclusiones="informePersonalizacionStore.currentPersonalizacion?.conclusiones"
+              :formato-recomendaciones="informePersonalizacionStore.currentPersonalizacion?.formatoRecomendaciones"
+              :recomendaciones-texto="informePersonalizacionStore.currentPersonalizacion?.recomendacionesTexto"
+              :recomendaciones-tabla="informePersonalizacionStore.currentPersonalizacion?.recomendacionesTabla"
             />
           </div>
           
@@ -3522,4 +3572,12 @@ const tablaCintura = computed(() => {
       </div>
     </div>
   </Transition>
+
+  <!-- Modal de personalización del informe -->
+  <ModalPersonalizarInforme
+    :is-open="mostrarModalPersonalizacion"
+    :id-empresa="empresasStore.currentEmpresa?._id"
+    :id-centro-trabajo="centroSeleccionado !== 'Todos' ? centrosTrabajo.find(c => c.nombreCentro === centroSeleccionado)?._id : undefined"
+    @close="cerrarModalPersonalizacion"
+  />
 </template>
