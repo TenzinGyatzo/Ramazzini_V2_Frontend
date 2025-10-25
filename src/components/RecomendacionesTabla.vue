@@ -82,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import type { RecomendacionItem } from '@/interfaces/informe-personalizacion.interface';
 
 interface Props {
@@ -100,6 +100,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>();
 
 const localItems = ref<RecomendacionItem[]>([]);
+const isUpdatingFromParent = ref(false);
 
 // Inicializar con datos del prop
 onMounted(() => {
@@ -111,16 +112,33 @@ onMounted(() => {
   }
 });
 
-// Observar cambios en el prop
+// Observar cambios en el prop (solo cuando cambia desde el padre)
 watch(() => props.modelValue, (newValue) => {
+  if (isUpdatingFromParent.value) return; // Evitar bucles
+  
   if (newValue && newValue.length > 0) {
-    localItems.value = [...newValue];
+    // Solo actualizar si es diferente para evitar bucles
+    const isDifferent = JSON.stringify(newValue) !== JSON.stringify(localItems.value);
+    if (isDifferent) {
+      localItems.value = [...newValue];
+    }
   }
 }, { deep: true });
 
-// Observar cambios locales y emitir al padre
+// Observar cambios locales y emitir al padre (con debounce para evitar bucles)
+let emitTimeout: NodeJS.Timeout | null = null;
 watch(localItems, (newValue) => {
-  emit('update:modelValue', [...newValue]);
+  if (emitTimeout) {
+    clearTimeout(emitTimeout);
+  }
+  emitTimeout = setTimeout(() => {
+    isUpdatingFromParent.value = true;
+    emit('update:modelValue', [...newValue]);
+    // Reset flag después de un pequeño delay
+    setTimeout(() => {
+      isUpdatingFromParent.value = false;
+    }, 50);
+  }, 10); // Pequeño delay para evitar bucles
 }, { deep: true });
 
 const addItem = () => {
@@ -161,6 +179,13 @@ const validateItems = () => {
     item.hallazgo.trim() !== '' && item.medidaPreventiva.trim() !== ''
   );
 };
+
+// Limpiar timeout al desmontar el componente
+onUnmounted(() => {
+  if (emitTimeout) {
+    clearTimeout(emitTimeout);
+  }
+});
 
 defineExpose({
   getItems,
