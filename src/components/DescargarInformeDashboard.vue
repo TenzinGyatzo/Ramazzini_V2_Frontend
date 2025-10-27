@@ -182,7 +182,7 @@ const crearPortada = (): Content[] => {
             text: razonSocialCliente,
             style: 'portadaRazonSocial',
             alignment: 'center',
-            margin: [0, 0, 0, 0]
+            margin: [0, 0, 0, 10]
         });
     }
     
@@ -197,7 +197,7 @@ const crearPortada = (): Content[] => {
             image: logoCliente,
             fit: [600, 200],
             alignment: 'center',
-            margin: [0, 0, 0, 0]
+            margin: [0, 0, 0, 10]
         });
     }
     
@@ -276,7 +276,7 @@ const crearPortada = (): Content[] => {
     portada.push(datosEjecutivos);
     
     // 5. Párrafo breve (texto actual) - centrado, estilo blurb
-    portada.push({
+    /* portada.push({
         text: [
             'Este informe consolida la informacióon clave sobre la salud laboral de la población evaluada, ',
             'con el fin de proporcionbar una visión global del estado actual y servir como herramienta de apoyo ',
@@ -285,55 +285,73 @@ const crearPortada = (): Content[] => {
         style: 'portadaBlurb',
         alignment: 'center',
         margin: [0, 0, 0, 50]
-    });
+    }); */
     
     // 6. Pie de página con línea + logo proveedor discreto
-    // Línea horizontal
-    portada.push({
-        canvas: [
-            { 
-                type: 'rect', 
-                x: 0, 
-                y: 0, 
-                w: 515, 
-                h: 1.2, 
-                color: '#059669'
-            }
-        ],
-        margin: [0, 40, 0, 6]
-    });
+    // Estructura centrada con ancho de 75%
+    const margenHorizontal = 65; // 12.5% a cada lado (para hacer 75% del ancho)
+    const anchoPie = 385; // 75% de 515
     
-    // Pie con texto y logo proveedor
-    if (logoProveedorValido) {
-        // Si hay logo proveedor, usar columns
-        const piePortada: any = {
-            columns: [
-                {
-                    width: '*',
-                    text: `Informe generado por ${nombreProveedor}`,
-                    style: 'portadaFooterBrand',
-                    alignment: 'left'
-                },
-                {
-                    width: 'auto',
-                    image: logoProveedor,
-                    fit: [80, 24],
-                    alignment: 'right'
-                }
-            ],
-            columnGap: 10,
-            margin: [0, 0, 0, 0]
-        };
-        portada.push(piePortada);
-    } else {
-        // Si no hay logo proveedor, solo texto
-        portada.push({
-            text: `Informe generado por ${nombreProveedor}`,
-            style: 'portadaFooterBrand',
-            alignment: 'left',
-            margin: [0, 0, 0, 0]
-        });
-    }
+    // Contenedor del pie con posicionamiento absoluto
+    const pieContainer: any = {
+        absolutePosition: { x: 105, y: 750 }, // 65 = margen izquierdo (40pt de pageMargin + 25pt), y: 750pt posiciona a ~1.5cm del borde inferior
+        columns: [
+            {
+                width: anchoPie,
+                stack: [
+                    // Línea horizontal
+                    {
+                        canvas: [
+                            { 
+                                type: 'rect', 
+                                x: 0, 
+                                y: 0, 
+                                w: anchoPie, 
+                                h: 1, 
+                                color: '#059669'
+                            }
+                        ],
+                        margin: [0, 0, 0, 5]
+                    },
+                    // Pie con texto y logo proveedor
+                    logoProveedorValido ? {
+                        columns: [
+                            {
+                                width: '*',
+                                text: [
+                                    {
+                                        text: `Informe hecho por ${nombreProveedor}`,
+                                        opacity: 0.75
+                                    }
+                                ],
+                                style: 'portadaFooterBrand',
+                                alignment: 'left'
+                            },
+                            {
+                                width: 'auto',
+                                image: logoProveedor,
+                                fit: [80, 24],
+                                alignment: 'right',
+                                opacity: 0.75
+                            }
+                        ],
+                        columnGap: 10
+                    } : {
+                        text: [
+                            {
+                                text: `Informe generado por ${nombreProveedor}`,
+                                opacity: 0.75
+                            }
+                        ],
+                        style: 'portadaFooterBrand',
+                        alignment: 'left'
+                    }
+                ]
+            }
+        ]
+    };
+    
+    portada.push(pieContainer);
     
     // Salto de página después de la portada
     portada.push({
@@ -1633,19 +1651,6 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         contenido.push(...recomendacionesContent);
     }
 
-    // Pie de página
-    contenido.push(
-        {
-            canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1, lineColor: '#E5E7EB' }],
-            margin: [0, 10, 0, 10]
-        },
-        {
-            text: 'Este informe fue generado automáticamente por el sistema de gestión de salud laboral Ramazzini.',
-            style: 'piePagina',
-            alignment: 'center'
-        }
-    );
-
     return {
         content: [...portada, ...contenido],
         styles: {
@@ -1968,18 +1973,102 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         defaultStyle: {
             font: 'Roboto'
         },
-        footer: function(currentPage, pageCount) {
-            // No mostrar numeración en la portada (página 1)
+        header: function(currentPage, pageCount) {
+            // No mostrar header en la portada (página 1)
             if (currentPage === 1) {
                 return null;
             }
-            // A partir de la página 2, mostrar "Página {n-1} de {total-1}"
+            const logoCliente = props.logoClienteBase64 || props.logoBase64;
+            const nombreEmpresa = props.nombreEmpresa || 'Empresa';
+            const logoClienteValido = logoCliente && logoCliente.startsWith('data:image/');
+            
+            const columns: any[] = [];
+            
+            // Siempre crear dos columnas: una para el logo (o vacía) y otra para el contenido
+            // Columna 1: Logo o espacio vacío
+            if (logoClienteValido) {
+                columns.push({
+                    width: '20%',
+                    image: logoCliente,
+                    fit: [80, 40],
+                    margin: [0, 0, 15, 0]
+                });
+            } else {
+                // Si no hay logo, crear una celda vacía que ocupe el mismo espacio
+                columns.push({
+                    width: '20%',
+                    text: ''
+                });
+            }
+            
+            // Columna 2: Contenido del header (siempre igual)
+            columns.push({
+                width: '80%',
+                stack: [
+                    {
+                        text: nombreEmpresa.toUpperCase(),
+                        fontSize: 14,
+                        bold: true,
+                        color: '#1F2937',
+                        margin: [0, 0, 0, 3],
+                        alignment: 'right'
+                    },
+                    {
+                        text: 'INFORME DE SALUD LABORAL',
+                        fontSize: 9,
+                        color: '#059669',
+                        bold: true,
+                        alignment: 'right',
+                        margin: [0, 0, 0, 3]
+                    },
+                    {
+                        canvas: [
+                            {
+                                type: 'rect',
+                                x: -100,
+                                y: 0,
+                                w: 515,
+                                h: 0.5,
+                                color: '#9CA3AF'
+                            }
+                        ],
+                        margin: [0, 5, 0, 0]
+                    }
+                ]
+            });
+            
             return {
-                text: `Página ${currentPage - 1} de ${pageCount - 1}`,
-                alignment: 'center',
-                fontSize: 9,
-                color: '#9CA3AF',
-                margin: [0, 10, 0, 0]
+                columns: columns,
+                margin: [40, 20, 40, 10]
+            };
+        },
+        footer: function(currentPage, pageCount) {
+            // No mostrar footer en la portada (página 1)
+            if (currentPage === 1) {
+                return null;
+            }
+            // A partir de la página 2, mostrar línea, texto del pie de página y numeración
+            return {
+                stack: [
+                    {
+                        canvas: [{ type: 'line', x1: 100, y1: 0, x2: 495, y2: 0, lineWidth: 1, lineColor: '#E5E7EB' }],
+                        margin: [0, 0, 0, 4]
+                    },
+                    {
+                        text: 'Este informe fue generado automáticamente por el sistema de gestión de salud laboral Ramazzini.',
+                        style: 'piePagina',
+                        alignment: 'center',
+                        margin: [0, 0, 0, 2]
+                    },
+                    {
+                        text: `Página ${currentPage - 1} de ${pageCount - 1}`,
+                        alignment: 'center',
+                        fontSize: 9,
+                        color: '#9CA3AF',
+                        margin: [0, 2, 0, 0]
+                    }
+                ],
+                margin: [0, 10, 0, 15]
             };
         }
     };
