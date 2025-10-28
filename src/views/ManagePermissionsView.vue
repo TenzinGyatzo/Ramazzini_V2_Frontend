@@ -18,10 +18,11 @@ const user = ref(
   JSON.parse(localStorage.getItem("user")) || null
 );
 
-// Filtrar usuarios para mostrar solo Médicos y Enfermeros/as
+// Filtrar usuarios para mostrar solo Médicos, Enfermeros/as, Administrativos y Técnicos Evaluadores
 const usuariosFiltrados = computed(() => {
   return usuarios.value.filter(usuario => 
-    usuario.role === 'Médico' || usuario.role === 'Enfermero/a'
+    usuario.role === 'Médico' || usuario.role === 'Enfermero/a' || 
+    usuario.role === 'Administrativo' || usuario.role === 'Técnico Evaluador'
   );
 });
 

@@ -212,8 +212,8 @@ const closeModal = () => {
             </FormKit>
             <FormKit type="text" label="Razón Social" name="razonSocial" placeholder="Razón social de la empresa"
               :value="empresas.currentEmpresa?.razonSocial || ''" />
-            <FormKit type="text" label="RFC" name="RFC" placeholder="RFC" validation="rfcValidation" :validation-messages="{
-                  rfcValidation: 'El RFC ingresado no es válido.',
+            <FormKit type="text" label="RFC/Registro Patronal" name="RFC" placeholder="RFC o Registro Patronal (opcional)" validation="rfcValidation" :validation-messages="{
+                  rfcValidation: 'Debe tener entre 6 y 28 caracteres alfanuméricos con separadores (RFC, Registro Patronal, etc.)',
                 }" :value="empresas.currentEmpresa?.RFC || ''" />
             <FormKit type="text" label="Giro de la empresa" name="giroDeEmpresa" placeholder="Giro de la Empresa"
               :value="empresas.currentEmpresa?.giroDeEmpresa || ''" />

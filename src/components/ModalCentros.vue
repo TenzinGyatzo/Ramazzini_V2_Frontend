@@ -105,7 +105,7 @@ const closeModal = () => {
             <FormKit type="text" label="Región/Provincia/Estado" name="estado" placeholder="Ej. Estado de México, Morelos, Chihuahua"
               :value="centrosTrabajo.currentCentroTrabajo?.estado || ''" />
 
-            <FormKit type="text" label="Ciudad/Municipio" name="municipio" placeholder="Ej. Juárez, Léon, Cuernavaca"
+            <FormKit type="text" label="Ciudad/Municipio/Corregimiento" name="municipio" placeholder="Ej. Juárez, Léon, Cuernavaca"
               :value="centrosTrabajo.currentCentroTrabajo?.municipio || ''" />
 
             <FormKit type="hidden" name="idEmpresa" :value="empresas.currentEmpresaId" />

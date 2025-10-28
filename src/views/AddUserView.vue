@@ -27,6 +27,8 @@ let usuariosCreados = 0;
 const roles = [
   { value: "Médico", label: "Médico" },
   { value: "Enfermero/a", label: "Enfermero/a" },
+  { value: "Administrativo", label: "Administrativo" },
+  { value: "Técnico Evaluador", label: "Técnico Evaluador" },
 ];
 
 onMounted(async () => {

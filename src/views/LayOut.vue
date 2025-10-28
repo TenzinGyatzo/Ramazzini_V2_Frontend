@@ -4,6 +4,7 @@ import { useUserStore } from "@/stores/user";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
 import { useMedicoFirmanteStore } from "@/stores/medicoFirmante";
 import { useEnfermeraFirmanteStore } from "@/stores/enfermeraFirmante";
+import { useTecnicoFirmanteStore } from "@/stores/tecnicoFirmante";
 import { useEmpresasStore } from "@/stores/empresas";
 import { useRoute } from "vue-router";
 import { useRouter } from "vue-router";
@@ -13,6 +14,7 @@ const user = useUserStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const medicoFirmanteStore = useMedicoFirmanteStore();
 const enfermeraFirmanteStore = useEnfermeraFirmanteStore();
+const tecnicoFirmanteStore = useTecnicoFirmanteStore();
 const empresas = useEmpresasStore();
 const route = useRoute();
 const router = useRouter();
@@ -94,6 +96,7 @@ onMounted(() => {
       if (user?._id) {
         await medicoFirmanteStore.loadMedicoFirmante(user._id);
         await enfermeraFirmanteStore.loadEnfermeraFirmante(user._id);
+        await tecnicoFirmanteStore.loadTecnicoFirmante(user._id);
       }
       datosCargados.value = true;
     },
@@ -196,10 +199,24 @@ const camposPendientesEnfermera = computed(() => {
   return pendientes;
 });
 
+// Técnico Evaluador – campos pendientes
+const camposPendientesTecnicoEvaluador = computed(() => {
+  const tecnico = (tecnicoFirmanteStore as any).tecnicoFirmante;
+  const pendientes: string[] = [];
+
+  if (!tecnico?.nombre) pendientes.push("Nombre");
+  if (!tecnico?.sexo) pendientes.push("Sexo");
+  if (!tecnico?.tituloProfesional) pendientes.push("Título Profesional (recomendado)");
+  if (!tecnico?.numeroCedulaProfesional) pendientes.push("Registro/Cédula Profesional (recomendado)");
+
+  return pendientes;
+});
+
 // Computed para determinar si mostrar el ícono del tooltip
 const mostrarTooltipProveedor = computed(() => camposPendientesProveedor.value.length > 0);
 const mostrarTooltipMedico = computed(() => camposPendientesMedico.value.length > 0);
 const mostrarTooltipEnfermera = computed(() => camposPendientesEnfermera.value.length > 0);
+const mostrarTooltipTecnicoEvaluador = computed(() => camposPendientesTecnicoEvaluador.value.length > 0);
 
 // Controlar la aparición de las notificaciones con delay
 const mostrarNotificacionLogotipo = ref(false);
@@ -225,6 +242,11 @@ watch(
     // Para rol de enfermera
     if (userRole === 'Enfermero/a') {
       return camposPendientesEnfermera.value.length > 0;
+    }
+    
+    // Para rol de técnico evaluador
+    if (userRole === 'Técnico Evaluador') {
+      return camposPendientesTecnicoEvaluador.value.length > 0;
     }
     
     return false;
@@ -255,6 +277,13 @@ onMounted(() => {
         mostrarNotificacionCampos.value = true;
       }
     }
+    
+    // Para rol de técnico evaluador
+    if (userRole === 'Técnico Evaluador') {
+      if (camposPendientesTecnicoEvaluador.value.length > 0) {
+        mostrarNotificacionCampos.value = true;
+      }
+    }
   }, 1200);
 });
 
@@ -263,15 +292,18 @@ const animacionNotificacion = ref("notificacion-animada");
 const animacionTooltipProveedor = ref("tooltip-pulse");
 const animacionTooltipMedico = ref("tooltip-pulse");
 const animacionTooltipEnfermera = ref("tooltip-pulse");
+const animacionTooltipTecnicoEvaluador = ref("tooltip-pulse");
 const showTooltipProveedor = ref(false);
 const showTooltipMedico = ref(false);
 const showTooltipEnfermera = ref(false);
 const showTooltipLogotipo = ref(false);
+const showTooltipTecnicoEvaluador = ref(false);
 
 let intervaloAnimacion: ReturnType<typeof setInterval> | null = null;
 let intervaloTooltipProveedor: ReturnType<typeof setInterval> | null = null;
 let intervaloTooltipMedico: ReturnType<typeof setInterval> | null = null;
 let intervaloTooltipEnfermera: ReturnType<typeof setInterval> | null = null;
+let intervaloTooltipTecnicoEvaluador: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
   intervaloAnimacion = setInterval(() => {
@@ -295,6 +327,9 @@ onBeforeUnmount(() => {
   if (intervaloTooltipEnfermera !== null) {
     clearInterval(intervaloTooltipEnfermera);
   }
+  if (intervaloTooltipTecnicoEvaluador !== null) {
+    clearInterval(intervaloTooltipTecnicoEvaluador);
+  }
 });
 
 // Verificar si se debe mostrar el mensaje de configuración pendiente
@@ -311,6 +346,11 @@ const mostrarMensajePendiente = computed(() => {
   // Para rol de enfermera
   if (userRole === 'Enfermero/a') {
     return camposPendientesEnfermera.value.length > 0;
+  }
+  
+  // Para rol de técnico evaluador
+  if (userRole === 'Técnico Evaluador') {
+    return camposPendientesTecnicoEvaluador.value.length > 0;
   }
   
   return false;
@@ -342,6 +382,13 @@ const mensajeConfiguracion = computed(() => {
     }
   }
   
+  // Mensajes para rol de técnico evaluador
+  if (userRole === 'Técnico Evaluador') {
+    if (camposPendientesTecnicoEvaluador.value.length > 0) {
+      return 'Hay campos pendientes en "Técnico Firmante".';
+    }
+  }
+  
   return "Algunos campos están incompletos en tu configuración.";
 });
 
@@ -357,7 +404,7 @@ const textoEnlace = computed(() => {
     }
   }
   
-  if (userRole === 'Enfermero/a') {
+  if (userRole === 'Enfermero/a' || userRole === 'Técnico Evaluador') {
     return "Sigue esta guía para configurarlos";
   }
   
@@ -377,6 +424,11 @@ const tipoNotificacion = computed(() => {
   // Para rol de enfermera
   if (userRole === 'Enfermero/a') {
     if (camposPendientesEnfermera.value.length > 0) return 'warning';
+  }
+  
+  // Para rol de técnico evaluador
+  if (userRole === 'Técnico Evaluador') {
+    if (camposPendientesTecnicoEvaluador.value.length > 0) return 'warning';
   }
   
   return 'info';
@@ -431,7 +483,7 @@ watch([datosCargados, mostrarMensajePendiente], ([nuevosDatosCargados, nuevoMost
 });
 
 // Watcher adicional para cuando datosCargados cambie a true y ya haya campos pendientes
-watch([datosCargados, logotipoPendiente, camposPendientesProveedor, camposPendientesMedico, camposPendientesEnfermera], ([nuevosDatosCargados, nuevoLogotipoPendiente, nuevosCamposProveedor, nuevosCamposMedico, nuevosCamposEnfermera]) => {
+watch([datosCargados, logotipoPendiente, camposPendientesProveedor, camposPendientesMedico, camposPendientesEnfermera, camposPendientesTecnicoEvaluador], ([nuevosDatosCargados, nuevoLogotipoPendiente, nuevosCamposProveedor, nuevosCamposMedico, nuevosCamposEnfermera, nuevosCamposTecnico]) => {
   const userRole = user.user?.role;
   
   // Para roles de médicos
@@ -450,12 +502,21 @@ watch([datosCargados, logotipoPendiente, camposPendientesProveedor, camposPendie
     }, 1000);
   }
   
+  // Para rol de técnico evaluador
+  if (userRole === 'Técnico Evaluador' && nuevosDatosCargados && nuevosCamposTecnico.length > 0) {
+    setTimeout(() => {
+      isNotificationVisible.value = true;
+    }, 1000);
+  }
+  
   // Actualizar mostrarNotificacionCampos según el rol
   if (nuevosDatosCargados) {
     if (userRole === 'Administrador' || userRole === 'Principal' || userRole === 'Secundario' || userRole === 'Médico') {
       mostrarNotificacionCampos.value = nuevosCamposProveedor.length > 0 || nuevosCamposMedico.length > 0;
     } else if (userRole === 'Enfermero/a') {
       mostrarNotificacionCampos.value = nuevosCamposEnfermera.length > 0;
+    } else if (userRole === 'Técnico Evaluador') {
+      mostrarNotificacionCampos.value = nuevosCamposTecnico.length > 0;
     }
   }
 });
@@ -543,6 +604,22 @@ watch(mostrarTooltipEnfermera, (nuevoValor) => {
     intervaloTooltipEnfermera = setInterval(() => {
       animacionTooltipEnfermera.value = 
         animacionTooltipEnfermera.value === "tooltip-bounce" 
+        ? "tooltip-pulse" 
+        : "tooltip-bounce";
+    }, 2000);
+  }
+});
+
+watch(mostrarTooltipTecnicoEvaluador, (nuevoValor) => {
+  if (intervaloTooltipTecnicoEvaluador) {
+    clearInterval(intervaloTooltipTecnicoEvaluador);
+    intervaloTooltipTecnicoEvaluador = null;
+  }
+  
+  if (nuevoValor) {
+    intervaloTooltipTecnicoEvaluador = setInterval(() => {
+      animacionTooltipTecnicoEvaluador.value = 
+        animacionTooltipTecnicoEvaluador.value === "tooltip-bounce" 
         ? "tooltip-pulse" 
         : "tooltip-bounce";
     }, 2000);
@@ -776,7 +853,7 @@ watch(mostrarTooltipEnfermera, (nuevoValor) => {
             </a>
 
             <!-- Médico Firmante -->
-            <a v-if="user.user?.role === 'Principal' || user.user?.role === 'Secundario' || user.user?.role === 'Médico' || user.user?.role === 'Administrador'" @click="router.push({ name: 'medico-firmante' })" 
+            <a v-if="user.user?.role === 'Principal' || user.user?.role === 'Médico' || user.user?.role === 'Administrador'" @click="router.push({ name: 'medico-firmante' })" 
                :class="[
                  'block py-3 px-4 rounded-xl mt-2 transition-all duration-300 ease-in-out cursor-pointer border group',
                  mostrarTooltipMedico 
@@ -838,6 +915,41 @@ watch(mostrarTooltipEnfermera, (nuevoValor) => {
                 ]">Enfermero/a Firmante</span>
               </div>
             </a>
+
+            <!-- Técnico Evaluador Firmante -->
+            <a v-if="user.user?.role === 'Técnico Evaluador'" @click="router.push({ name: 'tecnico-evaluador-firmante' })" 
+               :class="[
+                 'block py-3 px-4 rounded-xl mt-2 transition-all duration-300 ease-in-out cursor-pointer border group',
+                 mostrarTooltipTecnicoEvaluador 
+                   ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 border-yellow-300 hover:border-yellow-400'
+                   : 'bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 border-gray-200 hover:border-blue-300'
+               ]">
+              <div class="flex items-center gap-3">
+                <!-- Icono con animación para campos pendientes del técnico evaluador -->
+                <div v-if="mostrarTooltipTecnicoEvaluador" class="relative group" @mouseenter="showTooltipTecnicoEvaluador = true" @mouseleave="showTooltipTecnicoEvaluador = false">
+                  <i :class="['fa-solid fa-exclamation-circle text-yellow-500 text-lg cursor-pointer', animacionTooltipTecnicoEvaluador]"></i>
+                  <div v-if="showTooltipTecnicoEvaluador" class="absolute right-full -mr-4 top-1/2 transform -translate-y-1/2 z-50 bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64">
+                    <p class="font-semibold mb-1 text-base">Para un mejor pie de página, se recomienda guardar:</p>
+                    <ul class="list-disc pl-4 mt-2 text-gray-300">
+                      <li v-for="item in camposPendientesTecnicoEvaluador" :key="item">{{ item }}</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <i v-if="!mostrarTooltipTecnicoEvaluador" :class="[
+                  'fa-solid fa-user-gear transition-colors duration-200 text-purple-500 group-hover:text-purple-600'
+                ]"></i>
+                <span :class="[
+                  'font-medium transition-colors duration-200',
+                  mostrarTooltipTecnicoEvaluador 
+                    ? 'text-yellow-700 group-hover:text-yellow-800'
+                    : 'text-gray-700 group-hover:text-gray-900'
+                ]">Técnico Firmante</span>
+              </div>
+            </a>
+
+            <!-- Administrativo -->
+            <p v-if="user.user?.role === 'Administrativo'" class="text-sm font-medium text-gray-700 text-justify">Tienes el rol de Administrativo. No hay nada que configurar para este rol.</p>
           </div>
 
           <!-- Gestión de Usuarios -->

@@ -1,8 +1,12 @@
 import { generateClasses } from "@formkit/themes";
 
 const rfcValidation = ({ value }) => {
-  const rfcRegex = /^[A-ZÑ&]{3,4}\d{2}\d{2}\d{2}[A-Z\d]{3}$/;
-  return rfcRegex.test(value.trim());
+  // Validación flexible para identificadores de empresa (RFC, Registro Patronal, etc.)
+  // Acepta formatos con y sin separadores, alfanuméricos
+  // Al menos 3 caracteres al inicio (alfabéticos), seguido de números y letras
+  // Ejemplos: RFC12345XYZ, REG-123456, PATRONAL123, ABC-123456-DEF, etc.
+  const rfcRegex = /^[A-ZÑÁÉÍÓÚ&]{2,8}[\s\-\._]?[A-Z0-9ÑÁÉÍÓÚ\s\-\._]{4,20}$/;
+  return rfcRegex.test(value.trim().toUpperCase());
 };
 const postalCodeValidation = ({ value }) => {
   // Validación flexible para códigos postales de 4 a 10 dígitos

@@ -385,11 +385,11 @@ const cancelarTransferencia = () => {
                 }"
                 maxlength="7" :value="trabajadores.currentTrabajador?.numeroEmpleado || ''" />
               <FormKit type="text" label="NSS" name="nss" placeholder="Número de Seguro Social"
-                validation="optional|matches:/^[0-9]{11}$/" 
+                validation="optional|matches:/^[A-Za-z0-9\s\-_.\/]{4,30}$/" 
                 :validation-messages="{ 
-                  matches: 'El NSS debe contener exactamente 11 números' 
+                  matches: 'Debe tener 4-30 caracteres alfanuméricos y puede incluir - _ . / y espacios' 
                 }"
-                maxlength="11" :value="trabajadores.currentTrabajador?.nss || ''" />
+                maxlength="30" :value="trabajadores.currentTrabajador?.nss || ''" />
             </div>
 
             <!-- Campos ocultos y botón de enviar -->

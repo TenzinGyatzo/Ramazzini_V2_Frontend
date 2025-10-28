@@ -91,6 +91,11 @@ const router = createRouter({
           component: () => import("../views/EnfermeraFirmanteView.vue"),
         },
         {
+          path: "tecnico-evaluador-firmante",
+          name: "tecnico-evaluador-firmante",
+          component: () => import("../views/TecnicoFirmanteView.vue"),
+        },
+        {
           path: "dashboard/:idEmpresa",
           name: "dashboard-empresa",
           component: () => import("../views/DashboardView.vue"),
