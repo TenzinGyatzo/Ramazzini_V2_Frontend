@@ -43,6 +43,13 @@ const passwordValidation = ({ value }) => {
   return passwordRegex.test(value.trim());
 };
 
+const nssValidation = ({ value }) => {
+  // Validación flexible para NSS que acepta formatos de diferentes países
+  // Acepta: números, letras, espacios, guiones, puntos, guiones bajos y barras
+  // Longitud: 4 a 30 caracteres
+  const nssRegex = /^[A-Za-z0-9\s\-_.\/]{4,30}$/;
+  return nssRegex.test(value);
+};
 
 const config = {
   config: {
@@ -81,6 +88,7 @@ const config = {
       passwordValidation,
       cedulaProfesionalValidation,
       cedulaEspecialistaValidation,
+      nssValidation,
     },
   },
 };
