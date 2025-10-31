@@ -302,11 +302,9 @@ const transferirTrabajador = async () => {
   // Cargar empresas en segundo plano
   loadingEmpresas.value = true;
   try {
-    console.time('transferencias:cargaEmpresas');
     const cacheKey = `${empresas.currentEmpresaId}|${centrosTrabajo.currentCentroTrabajoId}|${proveedorSaludStore.proveedorSalud?._id}`;
     if (cacheEmpresas.has(cacheKey)) {
       empresasDisponibles.value = cacheEmpresas.get(cacheKey);
-      console.timeEnd('transferencias:cargaEmpresas');
       return;
     }
     const { data } = await TrabajadoresAPI.getCentrosDisponiblesTransferencia(
@@ -318,7 +316,6 @@ const transferirTrabajador = async () => {
 
     empresasDisponibles.value = data.empresas || [];
     cacheEmpresas.set(cacheKey, empresasDisponibles.value);
-    console.timeEnd('transferencias:cargaEmpresas');
 
     if (!empresasDisponibles.value.length) {
       toast.open({
