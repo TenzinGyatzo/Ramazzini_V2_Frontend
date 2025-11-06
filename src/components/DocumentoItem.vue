@@ -374,13 +374,19 @@ const localization = {
     }
 };
 
-const abrirPdf = async (ruta, nombrePDF) => {
+const abrirPdf = async (ruta, nombrePDF, updatedAt = null) => {
     // Sanear la ruta y el nombre del archivo para eliminar dobles diagonales
     const sanitizedRuta = ruta.replace(/\/+/g, '/'); // Reemplaza múltiples '/' por una sola
     const sanitizedNombrePDF = nombrePDF.replace(/\/+/g, '/'); // Reemplaza múltiples '/' por una sola
 
     // Generar la URL de forma explícita usando `new URL`
-    const fullPath = new URL(`${sanitizedRuta}/${sanitizedNombrePDF}`, import.meta.env.VITE_API_URL);
+    let fullPath = new URL(`${sanitizedRuta}/${sanitizedNombrePDF}`, import.meta.env.VITE_API_URL);
+    
+    // Agregar parámetro de cache-busting para evitar que se muestre versión cacheada del PDF
+    // Si updatedAt está disponible, usarlo; si no, usar timestamp actual
+    const cacheBuster = updatedAt || Date.now();
+    fullPath.searchParams.set('t', cacheBuster.toString());
+    
     // console.log('Ruta completa del PDF:', fullPath.href);
 
     try {
@@ -422,7 +428,8 @@ const abrirDocumentoExterno = async (documento) => {
     if (isImage) {
         abrirImagen(rutaCompleta);
     } else {
-        abrirPdf(documento.rutaDocumento, `${documento.nombreDocumento} ${convertirFechaISOaDDMMYYYY(documento.fechaDocumento)}.pdf`);
+        const updatedAt = documento.updatedAt ? new Date(documento.updatedAt).getTime() : null;
+        abrirPdf(documento.rutaDocumento, `${documento.nombreDocumento} ${convertirFechaISOaDDMMYYYY(documento.fechaDocumento)}.pdf`, updatedAt);
     }
 };
 
@@ -1026,15 +1033,19 @@ const construirRutaYNombrePDF = () => {
   const fechaFormateada = fecha ? convertirFechaISOaDDMMYYYY(fecha).replace(/\//g, '-') : '';
   const nombreArchivo = fecha ? `${tipoDocumentoFormateado} ${fechaFormateada}.pdf` : `${tipoDocumentoFormateado}.pdf`;
 
+  // Obtener updatedAt para cache-busting (evitar que se muestre versión cacheada del PDF)
+  const updatedAt = doc?.updatedAt ? new Date(doc.updatedAt).getTime() : Date.now();
+
   return {
       ruta: doc.rutaPDF,        // solo la carpeta
-      nombre: nombreArchivo     // solo el nombre del archivo
+      nombre: nombreArchivo,    // solo el nombre del archivo
+      updatedAt: updatedAt      // timestamp para cache-busting
   };
 };
 
 const abrirDocumentoCorrespondiente = () => {
-  const { ruta, nombre } = construirRutaYNombrePDF();
-  abrirPdf(ruta, nombre); 
+  const { ruta, nombre, updatedAt } = construirRutaYNombrePDF();
+  abrirPdf(ruta, nombre, updatedAt); 
 };
 
 const manejarRegeneracionDesdePadre = async () => {
@@ -1183,7 +1194,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     <!-- Contenido principal -->
                     <div class="flex items-center flex-1 h-full" @click="abrirPdf(
                         `${antidoping.rutaPDF}`,
-                        `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`)">
+                        `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`,
+                        antidoping.updatedAt ? new Date(antidoping.updatedAt).getTime() : null)">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-red-100 rounded-lg mr-4 group-hover:bg-red-200 transition-colors duration-200 flex-shrink-0">
@@ -1238,7 +1250,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     <!-- Contenido principal -->
                     <div class="flex items-center flex-1 h-full" @click="abrirPdf(
                         `${aptitud.rutaPDF}`,
-                        `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`)">
+                        `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`,
+                        aptitud.updatedAt ? new Date(aptitud.updatedAt).getTime() : null)">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mr-4 group-hover:bg-green-200 transition-colors duration-200 flex-shrink-0">
@@ -1298,7 +1311,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     <!-- Contenido principal -->
                     <div class="flex items-center flex-1 h-full" @click="abrirPdf(
                         `${audiometria.rutaPDF}`,
-                        `Audiometria ${convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria)}.pdf`)">
+                        `Audiometria ${convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria)}.pdf`,
+                        audiometria.updatedAt ? new Date(audiometria.updatedAt).getTime() : null)">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mr-4 group-hover:bg-purple-200 transition-colors duration-200 flex-shrink-0">
@@ -1359,7 +1373,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     <!-- Contenido principal -->
                     <div class="flex items-center flex-1 h-full" @click="abrirPdf(
                         `${certificado.rutaPDF}`,
-                        `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`)">
+                        `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`,
+                        certificado.updatedAt ? new Date(certificado.updatedAt).getTime() : null)">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mr-4 group-hover:bg-blue-200 transition-colors duration-200 flex-shrink-0">
@@ -1412,7 +1427,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     <!-- Contenido principal -->
                     <div class="flex items-center flex-1 h-full" @click="abrirPdf(
                         `${certificadoExpedito.rutaPDF}`,
-                        `Certificado Expedito ${convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito)}.pdf`)">
+                        `Certificado Expedito ${convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito)}.pdf`,
+                        certificadoExpedito.updatedAt ? new Date(certificadoExpedito.updatedAt).getTime() : null)">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mr-4 group-hover:bg-blue-200 transition-colors duration-200 flex-shrink-0">
@@ -1540,7 +1556,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     <!-- Contenido principal -->
                     <div class="flex items-center flex-1 h-full" @click="abrirPdf(
                         `${examenVista.rutaPDF}`,
-                        `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`)">
+                        `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`,
+                        examenVista.updatedAt ? new Date(examenVista.updatedAt).getTime() : null)">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-lg mr-4 group-hover:bg-yellow-200 transition-colors duration-200 flex-shrink-0">
@@ -1619,7 +1636,10 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(`${exploracionFisica.rutaPDF}`, `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`)">
+                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                        `${exploracionFisica.rutaPDF}`, 
+                        `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`,
+                        exploracionFisica.updatedAt ? new Date(exploracionFisica.updatedAt).getTime() : null)">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg mr-4 group-hover:bg-indigo-200 transition-colors duration-200 flex-shrink-0">
@@ -1705,7 +1725,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     <!-- Contenido principal -->
                     <div class="flex items-center flex-1 h-full" @click="abrirPdf(
                         `${historiaClinica.rutaPDF}`,
-                        `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`)">
+                        `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`,
+                        historiaClinica.updatedAt ? new Date(historiaClinica.updatedAt).getTime() : null)">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-teal-100 rounded-lg mr-4 group-hover:bg-teal-200 transition-colors duration-200 flex-shrink-0">
@@ -1773,7 +1794,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     <!-- Contenido principal -->
                     <div class="flex items-center flex-1 h-full" @click="abrirPdf(
                         `${notaMedica.rutaPDF}`,
-                        `Nota Medica ${convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica)}.pdf`)">
+                        `Nota Medica ${convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica)}.pdf`,
+                        notaMedica.updatedAt ? new Date(notaMedica.updatedAt).getTime() : null)">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-orange-100 rounded-lg mr-4 group-hover:bg-orange-200 transition-colors duration-200 flex-shrink-0">
@@ -1822,7 +1844,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     <!-- Contenido principal -->
                     <div class="flex items-center flex-1 h-full" @click="abrirPdf(
                         `${controlPrenatal.rutaPDF}`,
-                        `Control Prenatal ${convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal)}.pdf`)">
+                        `Control Prenatal ${convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal)}.pdf`,
+                        controlPrenatal.updatedAt ? new Date(controlPrenatal.updatedAt).getTime() : null)">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-pink-100 rounded-lg mr-4 group-hover:bg-pink-200 transition-colors duration-200 flex-shrink-0">
@@ -1959,7 +1982,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     <!-- Contenido principal -->
                     <div class="flex items-center flex-1 h-full" @click="abrirPdf(
                         `${historiaOtologica.rutaPDF}`,
-                        `Historia Otologica ${convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica)}.pdf`)">
+                        `Historia Otologica ${convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica)}.pdf`,
+                        historiaOtologica.updatedAt ? new Date(historiaOtologica.updatedAt).getTime() : null)">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mr-4 group-hover:bg-purple-200 transition-colors duration-200 flex-shrink-0">
@@ -2023,7 +2047,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     <!-- Contenido principal -->
                     <div class="flex items-center flex-1 h-full" @click="abrirPdf(
                         `${previoEspirometria.rutaPDF}`,
-                        `Previo Espirometria ${convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria)}.pdf`)">
+                        `Previo Espirometria ${convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria)}.pdf`,
+                        previoEspirometria.updatedAt ? new Date(previoEspirometria.updatedAt).getTime() : null)">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-sky-100 rounded-lg mr-4 group-hover:bg-sky-200 transition-colors duration-200 flex-shrink-0">
