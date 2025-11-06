@@ -89,6 +89,10 @@ function getGradoSaludFormateado(gradoSalud) {
           ? medicoFirmanteStore.medicoFirmante.tituloProfesional === 'Dra.'
             ? 'La suscrita Médica Cirujano, con cédula profesional número '
             : 'El suscrito Médico Cirujano, con cédula profesional número '
+          : proveedorSalud.pais === 'GT'
+          ? medicoFirmanteStore.medicoFirmante.tituloProfesional === 'Dra.'
+            ? 'La suscrita Médica Cirujano, con colegiado activo número '
+            : 'El suscrito Médico Cirujano, con colegiado activo número '
           : medicoFirmanteStore.medicoFirmante.tituloProfesional === 'Dra.'
             ? 'La suscrita Médica Cirujano, con registro profesional número '
             : 'El suscrito Médico Cirujano, con registro profesional número ' }}
@@ -124,7 +128,9 @@ function getGradoSaludFormateado(gradoSalud) {
 
      <div v-if="formData.formDataCertificadoExpedito.fechaCertificadoExpedito" class="w-full">
         <p class="text-justify font-light">
-          Que, habiendo practicado reconocimiento médico en esta fecha, al C. 
+          Que, habiendo practicado reconocimiento médico en esta fecha, {{ proveedorSalud.pais === 'GT' 
+            ? ' '
+            : (trabajadores.currentTrabajador.sexo === 'Femenino' ? 'a la' : 'al') + ' C. ' }}
           <span class="font-medium">{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</span> 
           de <span class="font-medium">{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</span> años de edad. Concluyo que:
         </p>
@@ -132,7 +138,9 @@ function getGradoSaludFormateado(gradoSalud) {
 
      <div v-else class="w-full">
         <p class="text-justify font-light">
-          Que, habiendo practicado reconocimiento médico en esta fecha, al C. 
+          Que, habiendo practicado reconocimiento médico en esta fecha, {{ proveedorSalud.pais === 'GT' 
+            ? ' '
+            : (trabajadores.currentTrabajador.sexo === 'Femenino' ? 'a la' : 'al') + ' C. ' }}
           <span class="font-medium">{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</span> 
           de <span class="font-medium">{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</span> años de edad. Concluyo que:
         </p>
@@ -188,7 +196,7 @@ function getGradoSaludFormateado(gradoSalud) {
 
      <div class="w-full">
         <p class="text-justify">
-            Por lo anterior, se establece que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el' : 'la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong> <span class="cursor-pointer" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 5 }" @click="goToStep(5)">{{ formData.formDataCertificadoExpedito.impedimentosFisicos ? formData.formDataCertificadoExpedito.impedimentosFisicos : '[DESCRIPCIÓN DE IMPEDIMENTOS FÍSICOS]' }}</span> <span class="cursor-pointer" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }" @click="goToStep(6)">{{ formData.formDataCertificadoExpedito.gradoSalud ? `y se encuentra actualmente en ${getGradoSaludFormateado(formData.formDataCertificadoExpedito.gradoSalud)} estado de salud.` : '[GRADO DE SALUD]' }}</span> Este certificado de salud no implica ningún tipo de garantía de que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el trabajador' : 'la trabajadora' }}</span> no se lesionará o enfermará en el futuro.
+            Por lo anterior, se establece que <span v-if="proveedorSalud.pais !== 'GT'">{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el' : 'la' }} C. </span><strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido + ' ' }}</strong><span v-if="proveedorSalud.pais === 'GT' && trabajadores.currentTrabajador.sexo === 'Femenino'"> </span><span class="cursor-pointer" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 5 }" @click="goToStep(5)">{{ formData.formDataCertificadoExpedito.impedimentosFisicos ? formData.formDataCertificadoExpedito.impedimentosFisicos : '[DESCRIPCIÓN DE IMPEDIMENTOS FÍSICOS]' }}</span> <span class="cursor-pointer" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }" @click="goToStep(6)">{{ formData.formDataCertificadoExpedito.gradoSalud ? `y se encuentra actualmente en ${getGradoSaludFormateado(formData.formDataCertificadoExpedito.gradoSalud)} estado de salud.` : '[GRADO DE SALUD]' }}</span> Este certificado de salud no implica ningún tipo de garantía de que <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el trabajador' : 'la trabajadora' }}</span> no se lesionará o enfermará en el futuro.
         </p>
      </div>
 
@@ -217,7 +225,7 @@ function getGradoSaludFormateado(gradoSalud) {
      <!-- Salida -->
      <div class="w-full mb-4">
         <p class="text-justify">
-            Expido el presente certificado médico a petición <span>{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'del' : 'de la' }}</span> C. <strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong> para los usos legales a que haya lugar, en el municipio de {{ proveedorSalud.municipio }}, {{ proveedorSalud.estado }}, en la fecha mencionada al inicio de este certificado.
+            Expido el presente certificado médico a petición de <span v-if="proveedorSalud.pais !== 'GT'">{{ trabajadores.currentTrabajador.sexo === 'Masculino' ? 'el' : 'la' }} C. </span><strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong> para los usos legales a que haya lugar, en el municipio de {{ proveedorSalud.municipio }}, {{ proveedorSalud.estado }}, <span v-if="proveedorSalud.pais === 'GT'">el {{ formatDateDDMMYYYY(formData.formDataCertificadoExpedito.fechaCertificadoExpedito) }}.</span><span v-else>en la fecha mencionada al inicio de este certificado.</span>
         </p>
      </div>
 
