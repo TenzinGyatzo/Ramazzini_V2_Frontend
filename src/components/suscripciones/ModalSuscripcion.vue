@@ -37,9 +37,6 @@ const proveedorSalud = ref(
   JSON.parse(localStorage.getItem('proveedorSalud') || 'null') // Recuperar usuario guardado o establecer null si no existe
 );
 
-// const maxUsuariosPermitidos = proveedorSalud.value?.maxUsuariosPermitidos;
-// const maxEmpresasPermitidas = proveedorSalud.value?.maxEmpresasPermitidas;
-// const maxTrabajadoresPermitidos = proveedorSalud.value?.maxTrabajadoresPermitidos;
 const maxHistoriasPermitidasAlMes = proveedorSalud.value?.maxHistoriasPermitidasAlMes;
 const periodoDePruebaFinalizado = proveedorSalud.value?.periodoDePruebaFinalizado; // true or false
 const estadoSuscripcion = proveedorSalud.value?.estadoSuscripcion; // authorized, inactive, cancelled
@@ -131,22 +128,6 @@ const modalContent = computed(() => {
       show: true
     };
   }
-  
-  // if (vistaActual.value === 'trabajadores' && trabajadoresCreados.value >= maxTrabajadoresPermitidos) {
-  //   return {
-  //     title: 'Has alcanzado el límite de trabajadores en esta empresa',
-  //     message: `Tu plan actual permite hasta ${maxTrabajadoresPermitidos} trabajadores por empresa.`,
-  //     price: 'Actualiza tu plan para extender este límite y seguir creciendo.',
-  //     benefits: [
-  //       'Gestiona más trabajadores por empresa',
-  //       'Mejora el seguimiento de salud ocupacional',
-  //       'Obtén reportes más completos del personal'
-  //     ],
-  //     buttonText: 'Actualizar plan',
-  //     action: () => router.push({ name: 'subscription' }),
-  //     show: true
-  //   };
-  // }
 
   return { show: false };
 });
