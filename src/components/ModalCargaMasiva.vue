@@ -26,7 +26,6 @@ const isDragOver = ref(false);
 const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDePruebaFinalizado;
 const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
 const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
-const maxTrabajadoresPermitidos = proveedorSaludStore.proveedorSalud?.maxTrabajadoresPermitidos;
 let empresaConMasTrabajadores = ""; // Nombre de la empresa con más trabajadores
 let trabajadoresCreados = 0;
 
@@ -140,11 +139,6 @@ const handleSubmit = async () => {
       emit('openSubscriptionModal');
       return;
     }
-  }
-
-  if(trabajadoresCreados >= maxTrabajadoresPermitidos) {
-    emit('openSubscriptionModal');
-    return;
   }
 
   try {

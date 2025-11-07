@@ -236,9 +236,6 @@ const updateSubscription = async () => {
 
     // Actualiza manualmente los campos en el frontend
     proveedorSalud.value.maxHistoriasPermitidasAlMes = selectedPlan.value.histories + extraHistories.value;
-    // proveedorSalud.value.maxUsuariosPermitidos = selectedPlan.value.users + extraUsers.value;
-    // proveedorSalud.value.maxEmpresasPermitidas = selectedPlan.value.companies + extraCompanies.value;
-    // proveedorSalud.value.maxTrabajadoresPermitidos = selectedPlan.value.workers + extraWorkers.value;
 
     toast.open({
       message: 'Suscripción actualizada exitosamente.',
@@ -259,9 +256,6 @@ const requestSubscription = () =>
 // Cálculo de diferencias entre la suscripción actual y la nueva
 const priceDifference = computed(() => totalPrice.value - (suscripcionActual.value.auto_recurring?.transaction_amount || 0));
 const historiasDifference = computed(() => (selectedPlan.value.histories + extraHistories.value) - proveedorSalud.value.maxHistoriasPermitidasAlMes);
-// const userDifference = computed(() => (selectedPlan.value.users + extraUsers.value) - proveedorSalud.value.maxUsuariosPermitidos);
-// const companyDifference = computed(() => (selectedPlan.value.companies + extraCompanies.value) - proveedorSalud.value.maxEmpresasPermitidas);
-// const workerDifference = computed(() => (selectedPlan.value.workers + extraWorkers.value) - proveedorSalud.value.maxTrabajadoresPermitidos);
 
 const calcularPorcentaje = (valorActual, valorTotal) => {
   if (!valorTotal || !valorActual) {
@@ -368,36 +362,6 @@ const porcentajeHistorias = computed(() => {
                 </span>
               </td>
             </tr>
-            <!-- <tr class="border-t">
-              <td class="text-sm md:text-base p-2">Usuarios</td>
-              <td class="text-sm md:text-base p-2 text-center">{{ proveedorSalud?.maxUsuariosPermitidos }}</td>
-              <td class="text-sm md:text-base p-2 text-center">{{ selectedPlan?.users + extraUsers }}</td>
-              <td class="text-sm md:text-base p-2 text-center">
-                <span :class="userDifference >= 0 ? 'text-green-600' : 'text-red-600'">
-                  {{ userDifference >= 0 ? '↑' : '↓' }} {{ Math.abs(userDifference) }}
-                </span>
-              </td>
-            </tr>
-            <tr class="border-t">
-              <td class="text-sm md:text-base p-2">Empresas</td>
-              <td class="text-sm md:text-base p-2 text-center">{{ proveedorSalud?.maxEmpresasPermitidas }}</td>
-              <td class="text-sm md:text-base p-2 text-center">{{ selectedPlan?.companies + extraCompanies }}</td>
-              <td class="text-sm md:text-base p-2 text-center">
-                <span :class="companyDifference >= 0 ? 'text-green-600' : 'text-red-600'">
-                  {{ companyDifference >= 0 ? '↑' : '↓' }} {{ Math.abs(companyDifference) }}
-                </span>
-              </td>
-            </tr>
-            <tr class="border-t">
-              <td class="text-sm md:text-base p-2">Máximo de trabajadores por empresa</td>
-              <td class="text-sm md:text-base p-2 text-center">{{ proveedorSalud?.maxTrabajadoresPermitidos }}</td>
-              <td class="text-sm md:text-base p-2 text-center">{{ selectedPlan?.workers + extraWorkers }}</td>
-              <td class="text-sm md:text-base p-2 text-center">
-                <span :class="workerDifference >= 0 ? 'text-green-600' : 'text-red-600'">
-                  {{ workerDifference >= 0 ? '↑' : '↓' }} {{ Math.abs(workerDifference) }}
-                </span>
-              </td>
-            </tr> -->
           </tbody>
         </table>
       </div>

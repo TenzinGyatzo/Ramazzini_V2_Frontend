@@ -161,18 +161,6 @@ const porcentajeHistorias = computed(() => {
   return calcularPorcentaje(historiasDelMes.value, proveedorSalud.value.maxHistoriasPermitidasAlMes);
 });
 
-// const porcentajeUsuarios = computed(() => {
-//   return calcularPorcentaje(usuariosCreados.value, proveedorSalud.value.maxUsuariosPermitidos);
-// });
-
-// const porcentajeEmpresas = computed(() => {
-//   return calcularPorcentaje(empresasCreadas.value, proveedorSalud.value.maxEmpresasPermitidas);
-// });
-
-// const porcentajeTrabajadores = computed(() => {
-//   return calcularPorcentaje(trabajadoresCreados.value, proveedorSalud.value.maxTrabajadoresPermitidos);
-// });
-
 const cancelSubscription = async () => {
   isCancelling.value = true; // Activar el estado de carga
   try {
@@ -182,11 +170,6 @@ const cancelSubscription = async () => {
     proveedorSalud.value.estadoSuscripcion = 'cancelled';
     proveedorSalud.value.finDeSuscripcion = suscripcionActual.value.next_payment_date;
     proveedorSalud.value.suscripcionActiva = ''; // Vaciar suscripción activa
-    
-    // Estos 3 se reestableceranm auntomaticamente en el onUnmounted de empresasView cuando finalice el ciclo ya pagado
-    // proveedorSalud.value.maxUsuariosPermitidos = 1;
-    // proveedorSalud.value.maxEmpresasPermitidas = 0;
-    // proveedorSalud.value.addOns = [];
 
     // Limpiar suscripción actual
     suscripcionActual.value = {
@@ -333,71 +316,6 @@ const formatearPais = (codigoPais) => {
             </p>
           </div>
 
-          <!-- Uso de Usuarios -->
-          <!-- <div>
-            <p class="text-gray-600"><strong>👥 Usuarios registrados:</strong> {{ usuariosCreados }} de {{ proveedorSalud.maxUsuariosPermitidos }} permitidos</p>
-            <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
-              <div 
-                :style="{ width: porcentajeUsuarios + '%' }" 
-                class="h-4 rounded-full absolute top-0 left-0 transition-all duration-500" 
-                :class="{
-                  'bg-gradient-to-r from-cyan-500 to-cyan-400': usuariosCreados < proveedorSalud.maxUsuariosPermitidos,
-                  'bg-gradient-to-r from-red-500 to-red-400': usuariosCreados >= proveedorSalud.maxUsuariosPermitidos
-                }">
-              </div>
-                <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs font-semibold" :class="porcentajeUsuarios <= 55 ? 'text-gray-600' : 'text-white'">
-                {{ porcentajeUsuarios }}%
-                </span>
-            </div>
-            <p v-if="porcentajeUsuarios >= 80 && porcentajeUsuarios < 100" class="text-yellow-600 text-sm mt-2">
-              ⚠️ Estás cerca del límite de usuarios. Considera actualizar tu plan.
-            </p>
-            <p v-if="usuariosCreados >= proveedorSalud.maxUsuariosPermitidos" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de usuarios.
-              <a @click="router.push('/suscripcion')" class="text-sky-600 underline cursor-pointer">Mejora tu plan</a>.
-            </p>
-          </div> -->
-  
-          <!-- Uso de Empresas -->
-          <!-- <div class="mt-4">
-            <p class="text-gray-600"><strong>🏢 Empresas registradas:</strong> {{ empresasCreadas }} de {{ proveedorSalud.maxEmpresasPermitidas }} permitidas</p>
-            <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
-              <div 
-                :style="{ width: porcentajeEmpresas + '%' }" 
-                class="h-4 rounded-full absolute top-0 left-0 transition-all duration-500"
-                :class="{
-                  'bg-gradient-to-r from-cyan-500 to-cyan-400': empresasCreadas < proveedorSalud.maxEmpresasPermitidas,
-                  'bg-gradient-to-r from-red-500 to-red-400': empresasCreadas >= proveedorSalud.maxEmpresasPermitidas
-                }"></div>
-                <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs font-semibold" :class="porcentajeEmpresas <= 55 ? 'text-gray-600' : 'text-white'">
-                {{ porcentajeEmpresas }}%
-                </span>
-            </div>
-            <p v-if="porcentajeEmpresas >= 80 && porcentajeEmpresas < 100" class="text-yellow-600 text-sm mt-2">⚠️ Estás cerca del límite de empresas. Considera actualizar tu plan.</p>
-            <p v-if="empresasCreadas >= proveedorSalud.maxEmpresasPermitidas" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de empresas.
-              <a @click="router.push('/suscripcion')" class="text-sky-600 underline cursor-pointer">Mejora tu plan</a>.
-            </p>
-          </div> -->
-
-          <!-- Uso de Trabajadores -->
-          <!-- <div class="mt-4">
-            <p class="text-gray-600"><strong>🏭 Empresa con más trabajadores:</strong> <br> {{ empresaConMasTrabajadores }} → {{ trabajadoresCreados }} de <strong>{{ proveedorSalud.maxTrabajadoresPermitidos }}</strong> permitidos</p>
-            <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
-              <div 
-                :style="{ width: porcentajeTrabajadores + '%' }" 
-                class="h-4 rounded-full absolute top-0 left-0 transition-all duration-500"
-                :class="{
-                  'bg-gradient-to-r from-cyan-500 to-cyan-400': trabajadoresCreados < proveedorSalud.maxTrabajadoresPermitidos,
-                  'bg-gradient-to-r from-red-500 to-red-400': trabajadoresCreados >= proveedorSalud.maxTrabajadoresPermitidos
-                }"></div>
-                <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs font-semibold" :class="porcentajeTrabajadores <= 55 ? 'text-gray-600' : 'text-white'">
-                {{ porcentajeTrabajadores }}%
-                </span>
-            </div>
-            <p v-if="porcentajeTrabajadores >= 80 && porcentajeTrabajadores < 100" class="text-yellow-600 text-sm mt-2">⚠️ Estás cerca del límite de empresas. Considera actualizar tu plan.</p>
-            <p v-if="trabajadoresCreados >= proveedorSalud.maxTrabajadoresPermitidos" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de trabajadores.
-              <a @click="router.push('/suscripcion')" class="text-sky-600 underline cursor-pointer">Mejora tu plan</a>.
-            </p>
-          </div> -->
         </div>
       </div>
       <!-- Información de Cuenta -->
@@ -407,9 +325,6 @@ const formatearPais = (codigoPais) => {
         <p class="text-gray-600"><strong>🌍 País:</strong> {{ formatearPais(proveedorSalud.pais) }}</p>
         <p class="text-gray-600"><strong>📧 Correo:</strong> {{ proveedorSalud.correoElectronico || 'No disponible' }}</p>
         <p class="text-gray-600"><strong>👥 Historias Clínicas {{ mesActual }}:</strong> {{ `${proveedorSalud.maxHistoriasPermitidasAlMes - historiasDelMes} disponibles` || 'No disponible' }}</p>
-        <!-- <p class="text-gray-600"><strong>👥 Usuarios:</strong> {{ `${proveedorSalud.maxUsuariosPermitidos} disponibles` || 'No disponible' }}</p>
-        <p class="text-gray-600"><strong>🏢 Empresas:</strong> {{ `${proveedorSalud.maxEmpresasPermitidas} disponibles` || 'No disponible' }}</p>
-        <p class="text-gray-600"><strong>🏭 Trabajadores por Empresa:</strong> {{ `${proveedorSalud.maxTrabajadoresPermitidos} disponibles` || 'No disponible' }}</p> -->
         <p class="text-gray-600"><strong>⏳ Periodo Gratuito:</strong> {{ periodoGratuito }}</p>
       </div>
 
