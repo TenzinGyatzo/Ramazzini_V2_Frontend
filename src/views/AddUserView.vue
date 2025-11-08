@@ -102,9 +102,9 @@ const volver = () => {
   <Transition appear mode="out-in" name="slide-up">
     <div
       v-if="registroExitoso == false"
-      class="relative bg-white text-gray-800 w-full max-w-lg p-10 mt-2 rounded-lg max-h-[82vh] shadow-lg overflow-y-auto mx-auto"
+      class="relative bg-white text-gray-800 w-full max-w-lg p-8 sm:p-10 mt-2 rounded-lg max-h-[82vh] shadow-lg overflow-y-auto mx-auto"
     >
-      <h1 class="text-3xl text-gray-800">Agregar usuario adicional</h1>
+      <h1 class="text-2xl sm:text-3xl text-gray-800">Agregar usuario adicional</h1>
       <hr class="mt-2 mb-3" />
 
       <FormKit
@@ -188,7 +188,7 @@ const volver = () => {
           <!-- Botón de Volver -->
           <button
             type="button"
-            class="text-lg w-full sm:w-1/2 rounded-lg bg-white font-medium text-gray-800 shadow-sm ring-2 ring-inset ring-gray-300 hover:bg-gray-100 p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg mb-1"
+            class="text-base sm:text-lg w-full sm:w-1/2 rounded-lg bg-white font-medium text-gray-800 shadow-sm ring-2 ring-inset ring-gray-300 hover:bg-gray-100 p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg mb-1"
             @click="volver"
           >
             Volver
@@ -206,10 +206,10 @@ const volver = () => {
     >
       <!-- Mensaje de éxito -->
       <div class="text-center mb-2">
-        <h2 class="text-2xl font-bold text-emerald-600 mb-4">
+        <h2 class="text-xl sm:text-2xl font-bold text-emerald-600 mb-4">
           Registro de usuario exitoso
         </h2>
-        <p class="text-gray-600 mb-3">
+        <p class="text-sm sm:text-base text-gray-600 mb-3">
           Has registrado el usuario correctamente.
           <strong
             >Es necesario activar la cuenta para poder iniciar sesión.</strong
@@ -222,7 +222,7 @@ const volver = () => {
       <div class="mt-2">
         <button
           @click="router.push({ name: 'inicio' })"
-          class="bg-emerald-600 text-white py-2 px-6 rounded-lg hover:bg-emerald-700 transition duration-300"
+          class="text-sm sm:text-base bg-emerald-600 text-white py-2 px-6 rounded-lg hover:bg-emerald-700 transition duration-300"
         >
           Regresar al inicio
         </button>

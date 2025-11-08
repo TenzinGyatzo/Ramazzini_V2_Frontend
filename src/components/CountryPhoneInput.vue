@@ -5,13 +5,13 @@
       <span v-if="validation === 'required'" class="text-red-500">*</span>
     </label>
     
-    <div class="flex gap-2">
+    <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
       <!-- Selector de país -->
-      <div class="relative">
+      <div class="relative w-full sm:w-auto">
         <select
           v-model="selectedCountry"
           @change="onCountryChange"
-          class="w-36 h-12 p-2.5 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+          class="w-full sm:w-36 h-12 p-2.5 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
         >
           <option value="">País</option>
           <option
@@ -25,7 +25,7 @@
       </div>
       
       <!-- Input de teléfono -->
-      <div class="flex-1 relative">
+      <div class="flex-1 relative w-full">
         <input
           :type="inputType"
           :value="phoneNumber"

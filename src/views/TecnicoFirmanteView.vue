@@ -118,7 +118,7 @@ const firmaSrc = computed(() => `${baseURL}/assets/signatories/${tecnicoFirmante
 
 <template>
   <Transition appear mode="out-in" name="slide-up">
-    <div class="relative bg-white text-gray-800 w-full max-w-5xl p-10 mt-2 rounded-lg max-h-[82vh] shadow-lg overflow-y-auto mx-auto">
+    <div class="relative bg-white text-gray-800 w-full max-w-5xl p-5 sm:p-8 lg:p-10 mt-2 sm:mt-4 rounded-lg shadow-lg mx-auto max-h-none overflow-visible lg:max-h-[82vh] lg:overflow-y-auto">
       <Transition appear name="fade-slow">
         <div v-if="tecnicoFirmante.loading"></div>
         <div v-else>
@@ -126,14 +126,14 @@ const firmaSrc = computed(() => `${baseURL}/assets/signatories/${tecnicoFirmante
           <hr class="mt-2 mb-3">
 
           <FormKit type="form" :actions="false" incomplete-message="Por favor, valide que los datos sean correctos*" @submit="handleSubmit">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <FormKit type="text" label="Nombre Completo" name="nombre" placeholder="Ej. Juan Pérez" validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }" v-model="formularioTecnicoFirmante.nombre" />
               <FormKit type="select" label="Sexo" name="sexo" placeholder='Selecciona "Masculino" o "Femenino"' :options="['Masculino', 'Femenino']" validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }" v-model="formularioTecnicoFirmante.sexo" />
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <FormKit type="text" label="Título Profesional" name="tituloProfesional" placeholder="Tec., Lic., Ing., etc." v-model="formularioTecnicoFirmante.tituloProfesional" />
-              <FormKit type="text" label="Número de Registro/Cédula Profesional" name="numeroCedulaProfesional" placeholder="Ej. 142988, REG-123456, CRM 123456" validation="cedulaProfesionalValidation" v-model="formularioTecnicoFirmante.numeroCedulaProfesional" :validation-messages="{ cedulaProfesionalValidation: 'El registro debe tener entre 3 y 20 caracteres (letras, números, guiones o espacios).' }" />
+              <FormKit type="text" :label="proveedorSaludStore.proveedorSalud?.pais === 'MX' ? 'Cédula Profesional' : 'Registro Profesional'" name="numeroCedulaProfesional" placeholder="Ej. 142988, REG-123456, CRM 123456" validation="cedulaProfesionalValidation" v-model="formularioTecnicoFirmante.numeroCedulaProfesional" :validation-messages="{ cedulaProfesionalValidation: 'El registro debe tener entre 3 y 20 caracteres (letras, números, guiones o espacios).' }" />
               <FormKit type="text" label="Credencial/Certificación Adicional" name="nombreCredencialAdicional" placeholder="Ej. Certificado ante el CNMMT" v-model="formularioTecnicoFirmante.nombreCredencialAdicional" />
               <FormKit type="text" label="Número de Credencial Adicional" name="numeroCredencialAdicional" placeholder="Ej. 924" v-model="formularioTecnicoFirmante.numeroCredencialAdicional" />
             </div>
@@ -142,7 +142,7 @@ const firmaSrc = computed(() => `${baseURL}/assets/signatories/${tecnicoFirmante
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700 mt-4 mb-2">Firma (Asegura que sea .png sin fondo, cuadrada, de al menos 500 x 500px)</label>
               <div 
-                class="border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 cursor-pointer"
+                class="border-2 border-dashed rounded-lg p-4 sm:p-6 text-center transition-all duration-200 cursor-pointer"
                 :class="[
                   isDragOver 
                     ? 'border-emerald-500 bg-emerald-50 scale-105' 
@@ -197,11 +197,11 @@ const firmaSrc = computed(() => `${baseURL}/assets/signatories/${tecnicoFirmante
               </div>
             </div>
 
-            <div class="flex flex-row justify-center items-center gap-4 mt-4">
-              <div v-if="piePaginaFirmante.nombre" class="w-1/2 flex flex-col items-start">
-                <p class="font-medium text-lg text-gray-700">Pie de Página del Técnico Firmante:</p>
-                <div class="mt-6 p-4 border rounded-lg bg-gray-50 text-left w-11/12">
-                  <p class="text-sm text-gray-800 mt-2">
+            <div class="flex flex-col xl:flex-row justify-center items-stretch xl:items-center gap-6 mt-4">
+              <div v-if="piePaginaFirmante.nombre" class="w-full xl:w-1/2 flex flex-col items-center xl:items-start">
+                <p class="font-medium text-lg text-gray-700 text-center xl:text-left">Pie de Página del Técnico Firmante:</p>
+                <div class="w-full max-w-md mt-4 p-4 border rounded-lg bg-gray-50 text-center xl:text-left">
+                  <p class="text-sm text-gray-800 space-y-1">
                     <span class="font-medium" v-if="piePaginaFirmante.nombre">{{ piePaginaFirmante.tituloProfesional }} {{ piePaginaFirmante.nombre }}</span><br v-if="piePaginaFirmante.nombre">
                     <span v-if="piePaginaFirmante.numeroCedulaProfesional" class="font-light">{{ proveedorSaludStore.proveedorSalud.pais === 'MX' ? 'Cédula Profesional No.' : 'Registro Profesional No.' }} {{ piePaginaFirmante.numeroCedulaProfesional }}</span><br v-if="piePaginaFirmante.numeroCedulaProfesional">
                     <span v-if="piePaginaFirmante.nombreCredencialAdicional" class="font-light block truncate overflow-hidden text-ellipsis whitespace-nowrap max-w-[390px]">{{ piePaginaFirmante.nombreCredencialAdicional }} No. {{ piePaginaFirmante.numeroCredencialAdicional }}</span>
@@ -210,15 +210,15 @@ const firmaSrc = computed(() => `${baseURL}/assets/signatories/${tecnicoFirmante
                 </div>
               </div>
 
-              <div class="flex flex-row justify-center items-center gap-4">
-                <div v-if="tecnicoFirmante.tecnicoFirmante?.firma?.data" class="w-full flex flex-col items-center">
+              <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                <div v-if="tecnicoFirmante.tecnicoFirmante?.firma?.data" class="w-full sm:w-1/2 flex flex-col items-center">
                   <p class="font-medium text-lg text-gray-700">Firma actual:</p>
-                  <img :src="firmaSrc" :alt="'Firma de ' + tecnicoFirmante.tecnicoFirmante.nombre" class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"/>
+                  <img :src="firmaSrc" :alt="'Firma de ' + tecnicoFirmante.tecnicoFirmante.nombre" class="w-40 h-40 sm:w-48 sm:h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"/>
                 </div>
                 <Transition appear name="fade-slow">
-                  <div v-if="firmaPreview" class="w-full flex flex-col items-center">
+                  <div v-if="firmaPreview" class="w-full sm:w-1/2 flex flex-col items-center">
                     <p class="font-medium text-lg text-gray-700">Firma Nueva:</p>
-                    <img :src="firmaPreview" alt="Vista previa de la firma" class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />
+                    <img :src="firmaPreview" alt="Vista previa de la firma" class="w-40 h-40 sm:w-48 sm:h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />
                   </div>
                 </Transition>
               </div>

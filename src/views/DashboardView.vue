@@ -2340,36 +2340,40 @@ const tablaCintura = computed(() => {
 
         <div v-else>
           <!-- Header con logo a la izquierda y datos a la derecha -->
-          <div class="flex items-center gap-6 mb-2">
+          <div class="flex flex-col xl:flex-row xl:items-start gap-4 xl:gap-6 mb-4">
             <img
               v-if="empresasStore.currentEmpresa.logotipoEmpresa?.data"
               :src="'/uploads/logos/' + empresasStore.currentEmpresa.logotipoEmpresa.data + '?t=' + empresasStore.currentEmpresa.updatedAt"
               :alt="'Logo de ' + empresasStore.currentEmpresa.nombreComercial"
-              class="w-24 h-24 object-contain rounded"
+              class="w-20 h-20 sm:w-24 sm:h-24 object-contain rounded mx-auto xl:mx-0"
             />
-            <div v-else class="w-1/4 h-32 flex flex-col items-center justify-center bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 rounded mb-4 text-center px-4 border-2 border-dashed border-gray-400">
-                <i class="fas fa-camera text-4xl mb-2"></i> <!-- Icono de FontAwesome -->
-                <span class="text-xs text-center">Identifica más rápido a tu cliente agregando un logotipo</span>
+            <div v-else class="w-full sm:w-48 h-28 sm:h-32 flex flex-col items-center justify-center bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 rounded text-center px-4 border-2 border-dashed border-gray-400 mx-auto xl:mx-0">
+                <i class="fas fa-camera text-3xl sm:text-4xl mb-2"></i> <!-- Icono de FontAwesome -->
+                <span class="text-xs sm:text-sm text-center">Identifica más rápido a tu cliente agregando un logotipo</span>
             </div>
 
-            <div class="hidden sm:block">
-                <h1 class="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-800">{{ empresasStore.currentEmpresa.nombreComercial }}</h1>
-                <h2 class="text-sm md:text-base lg:text-lg xl:text-xl text-gray-600 mt-1">{{ empresasStore.currentEmpresa.razonSocial }}</h2>
+            <div class="text-center sm:text-left">
+                <h1 class="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-800">{{ empresasStore.currentEmpresa.nombreComercial }}</h1>
+                <h2 class="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-600 mt-1">{{ empresasStore.currentEmpresa.razonSocial }}</h2>
             </div>
 
-            <div class="mb-4 ml-auto flex items-center gap-6">
+            <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 w-full xl:w-auto xl:ml-auto">
               <!-- Indicador de total de trabajadores -->
-              <div class="bg-white border border-gray-200 shadow-md rounded-xl px-6 py-2 text-center self-center">
-                <div class="text-xs text-gray-500"><i class="fas fa-users mr-1 text-gray-400"></i><span class="hidden md:block">Trabajadores evaluados</span></div>
-                <div class="text-2xl font-bold text-emerald-600 leading-tight">{{ totalTrabajadores }}</div>
+              <div class="bg-white border border-gray-200 shadow-md rounded-xl px-4 sm:px-6 py-3 text-center w-full md:w-auto">
+                <div class="text-xs text-gray-500 flex items-center justify-center gap-1 sm:gap-2">
+                  <i class="fas fa-users text-gray-400"></i>
+                  <span class="hidden md:inline">Trabajadores evaluados</span>
+                  <span class="md:hidden font-medium">Trabajadores</span>
+                </div>
+                <div class="text-xl sm:text-2xl font-bold text-emerald-600 leading-tight">{{ totalTrabajadores }}</div>
               </div>
               
               <!-- Selector de centro de trabajo -->
-              <div class="self-end">
+              <div class="w-full md:w-auto">
                 <label class="block text-xs md:text-sm font-medium text-gray-700">Centro de trabajo</label>
                 <select
                 v-model="centroSeleccionado"
-                class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs md:text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out mt-1"
+                class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-2 sm:py-1 rounded-md shadow-sm text-xs md:text-sm font-medium text-gray-700 bg-white transition duration-150 ease-in-out mt-1 w-full"
                 >
                   <option v-for="nombre in centrosTrabajoOptions" :key="nombre" :value="nombre">{{ nombre }}</option>
                 </select>
@@ -2378,19 +2382,20 @@ const tablaCintura = computed(() => {
           </div>
         
         <!-- Ajustado a nivel del encabezado -->
-        <div class="mb-2 flex items-end gap-6">
-          <div class="flex items-center gap-4 self-center">
+        <div class="mb-4 flex flex-col xl:flex-row xl:items-end gap-4 xl:gap-6">
+          <div class="flex flex-col sm:flex-row sm:flex-wrap items-stretch gap-3 sm:gap-4 w-full">
             <!-- Botón para personalizar informe -->
             <button
               @click="abrirModalPersonalizacion"
-              class="gap-2 px-4 py-2 rounded-lg shadow transition duration-300 flex items-center bg-blue-600 hover:bg-blue-700 text-white"
+              class="w-full sm:w-auto justify-center gap-2 px-4 py-2 rounded-lg shadow transition duration-300 flex items-center bg-blue-600 hover:bg-blue-700 text-white"
               title="Personalizar secciones del informe"
             >
               <i class="fas fa-edit mr-1"></i>
               Conclusiones y recomendaciones
             </button>
             
-            <DescargarInformeDashboard
+            <div class="w-full sm:w-auto">
+              <DescargarInformeDashboard
               v-if="dashboardData.length > 0"
               :refs-graficas="{
                 imc: { ref: refIMC, config: { type: 'bar', data: graficaIMCData, options: graficaIMCOptionsPDF } },
@@ -2436,10 +2441,11 @@ const tablaCintura = computed(() => {
               :recomendaciones-texto="informePersonalizacionStore.currentPersonalizacion?.recomendacionesTexto"
               :recomendaciones-tabla="informePersonalizacionStore.currentPersonalizacion?.recomendacionesTabla"
             />
+            </div>
           </div>
           
           <!-- Filtro de periodo -->
-          <div class="flex flex-col justify-end text-xs ml-auto">
+          <div class="flex flex-col justify-end text-xs w-full xl:w-auto">
             <div class="flex items-center gap-2">
               <label class="block text-xs font-medium text-gray-700 mb-1">Periodo</label>
               <transition name="fade">
@@ -2455,14 +2461,14 @@ const tablaCintura = computed(() => {
               </transition>
             </div>
 
-            <div class="flex items-end gap-2">
+            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-end gap-3 sm:gap-2">
               <!-- Select de periodos predefinidos -->
-              <div class="flex flex-col">
+              <div class="flex flex-col w-full sm:w-auto">
                 <label class="text-[11px] text-gray-500 mb-0.5">Periodo rápido</label>
                 <select
                   v-model="periodoPredefinido"
                   @change="manejarCambioPeriodo(periodoPredefinido)"
-                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition duration-150 ease-in-out min-w-[120px]"
+                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-2 sm:py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition duration-150 ease-in-out w-full sm:min-w-[140px]"
                 >
                   <option value="">Seleccionar periodo</option>
                   <option v-for="opcion in opcionesPeriodo" :key="opcion" :value="opcion">{{ opcion }}</option>
@@ -2470,23 +2476,23 @@ const tablaCintura = computed(() => {
               </div>
 
               <!-- Fecha inicio -->
-              <div class="flex flex-col">
+              <div class="flex flex-col w-full sm:w-auto">
                 <label for="fechaInicio" class="text-[11px] text-gray-500 mb-0.5">Inicio</label>
                 <input
                   id="fechaInicio"
                   type="date"
                   v-model="fechaInicio"
-                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition"
+                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-2 sm:py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition w-full"
                 />
               </div>
               <!-- Fecha fin -->
-              <div class="flex flex-col">
+              <div class="flex flex-col w-full sm:w-auto">
                 <label for="fechaFin" class="text-[11px] text-gray-500 mb-0.5">Final</label>
                 <input
                   id="fechaFin"
                   type="date"
                   v-model="fechaFin"
-                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition"
+                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-2 sm:py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition w-full"
                 />
               </div>
             </div>
@@ -2525,18 +2531,18 @@ const tablaCintura = computed(() => {
           </div>
         </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-8 auto-rows-[370px] sm:auto-rows-[400px] md:auto-rows-[425px] lg:auto-rows-[450px]">
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5 mb-8 auto-rows-[360px] sm:auto-rows-[400px] md:auto-rows-[430px] lg:auto-rows-[460px]">
 
             <!-- Distribución por Sexo -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+            <div class="bg-gray-50 p-4 sm:p-6 rounded-lg shadow flex flex-col">
               <!-- Header con tooltip -->
-              <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4">
-                <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4 gap-2">
+                <h3 class="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
                   Distribución sexos
                   <span class="relative cursor-help">
                     <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
                     <span
-                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-60 sm:w-64 text-xs sm:text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
                     >
                       Proporción de trabajadores según su sexo <span class="font-semibold text-rose-600">masculino o femenino</span>, con el objetivo de analizar la distribución y características de la población evaluada.
                     </span>
@@ -2585,8 +2591,8 @@ const tablaCintura = computed(() => {
                     <table class="min-w-full text-sm border border-gray-300 rounded h-full">
                       <thead class="bg-gray-100 text-gray-700">
                         <tr>
-                          <th class="py-2 px-4 text-left text-lg lg:text-xl">Sexo</th>
-                          <th class="py-2 px-4 text-center text-lg lg:text-xl">Trabajadores</th>
+                          <th class="py-2 px-4 text-left text-base sm:text-lg lg:text-xl">Sexo</th>
+                          <th class="py-2 px-4 text-center text-base sm:text-lg lg:text-xl">Trabajadores</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2596,8 +2602,8 @@ const tablaCintura = computed(() => {
                           class="border-t hover:bg-gray-200 transition cursor-pointer"
                           @click="handleClickTablaSexo(sexo)"
                         >
-                          <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ sexo }}</td>
-                          <td class="py-1 px-4 text-center text-lg lg:text-xl">
+                          <td class="py-1 px-4 font-medium text-gray-700 text-base sm:text-lg lg:text-xl">{{ sexo }}</td>
+                          <td class="py-1 px-4 text-center text-base sm:text-lg lg:text-xl">
                             <span
                               :class="[
                                 sexo === 'Masculino' ? 'text-blue-700' : (sexo === 'Femenino' ? 'text-pink-700' : 'text-gray-700')
@@ -2616,14 +2622,14 @@ const tablaCintura = computed(() => {
             </div>
 
             <!-- Grupos Etarios: 2 columnas -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <div class="bg-gray-50 p-4 sm:p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4 gap-2">
+                <h3 class="text-base sm:text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Distribución por Grupos Etarios
                   <span class="relative cursor-help">
                     <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
                     <span
-                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-xs sm:text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
                     >
                       Muestra la cantidad de trabajadores activos agrupados por rangos de edad y sexo, permitiendo identificar la <span class="font-semibold text-emerald-600">composición demográfica</span> de la plantilla laboral.
                     </span>
@@ -2665,9 +2671,9 @@ const tablaCintura = computed(() => {
                     <table class="min-w-full text-sm border border-gray-300 rounded h-full">
                       <thead class="bg-gray-100 text-gray-700">
                         <tr>
-                          <th class="py-2 px-4 text-left text-lg lg:text-xl">Grupo Etario</th>
-                          <th class="py-2 px-4 text-center text-lg lg:text-xl">Hombres</th>
-                          <th class="py-2 px-4 text-center text-lg lg:text-xl">Mujeres</th>
+                          <th class="py-2 px-4 text-left text-base sm:text-lg lg:text-xl">Grupo Etario</th>
+                          <th class="py-2 px-4 text-center text-base sm:text-lg lg:text-xl">Hombres</th>
+                          <th class="py-2 px-4 text-center text-base sm:text-lg lg:text-xl">Mujeres</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2676,9 +2682,9 @@ const tablaCintura = computed(() => {
                           :key="grupo"
                           class="border-t hover:bg-gray-50 transition"
                         >
-                          <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ grupo }}</td>
-                          <td class="py-1 px-4 text-center text-blue-700 text-lg lg:text-xl">{{ datos.Masculino }}</td>
-                          <td class="py-1 px-4 text-center text-pink-700 text-lg lg:text-xl">{{ datos.Femenino }}</td>
+                          <td class="py-1 px-4 font-medium text-gray-700 text-base sm:text-lg lg:text-xl">{{ grupo }}</td>
+                          <td class="py-1 px-4 text-center text-blue-700 text-base sm:text-lg lg:text-xl">{{ datos.Masculino }}</td>
+                          <td class="py-1 px-4 text-center text-pink-700 text-base sm:text-lg lg:text-xl">{{ datos.Femenino }}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -2688,16 +2694,16 @@ const tablaCintura = computed(() => {
             </div>
 
             <!-- Cintura -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-              <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4">
+            <div class="bg-gray-50 p-4 sm:p-6 rounded-lg shadow flex flex-col">
+              <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4 gap-2">
                 <!-- Título + descripción -->
                 <div class="flex flex-col gap-0.5">
-                  <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                  <h3 class="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2">
                     Riesgo por Cintura
                     <span class="relative cursor-help">
                       <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
                       <span
-                        class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                        class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-60 sm:w-64 text-xs sm:text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
                       >
                         La circunferencia de cintura elevada se asocia con <span class="font-semibold text-rose-600">mayor riesgo de enfermedades</span> como diabetes, hipertensión y trastornos metabólicos.
                       </span>
@@ -2746,8 +2752,8 @@ const tablaCintura = computed(() => {
                     <table class="min-w-full text-sm border border-gray-300 rounded h-full">
                       <thead class="bg-gray-100 text-gray-700">
                         <tr>
-                          <th class="py-2 px-4 text-left text-lg lg:text-xl">Categoría</th>
-                          <th class="py-2 px-4 text-center text-lg lg:text-xl">Trabajadores</th>
+                          <th class="py-2 px-4 text-left text-base sm:text-lg lg:text-xl">Categoría</th>
+                          <th class="py-2 px-4 text-center text-base sm:text-lg lg:text-xl">Trabajadores</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2757,10 +2763,10 @@ const tablaCintura = computed(() => {
                           class="border-t hover:bg-gray-200 transition cursor-pointer"
                           @click="handleClickTablaCintura(categoria)"
                         >
-                          <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ categoria }}</td>
+                          <td class="py-1 px-4 font-medium text-gray-700 text-base sm:text-lg lg:text-xl">{{ categoria }}</td>
                           <td
                             :class="[
-                              'py-1 px-4 text-center text-lg lg:text-xl',
+                              'py-1 px-4 text-center text-base sm:text-lg lg:text-xl',
                               categoria === 'Bajo Riesgo'
                                 ? 'text-emerald-700'
                                 : categoria === 'Alto Riesgo'
@@ -2779,14 +2785,14 @@ const tablaCintura = computed(() => {
             </div>
 
             <!-- Alteraciones en la presión arterial -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <div class="bg-gray-50 p-4 sm:p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4 gap-2">
+                <h3 class="text-base sm:text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Alteraciones en la presión arterial
                   <span class="relative cursor-help">
                     <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
                     <span
-                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-72 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 sm:w-72 text-xs sm:text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
                     >
                       Distribución de trabajadores según las <span class="font-semibold text-rose-600">categorías de presión arterial</span>, con el propósito de identificar posibles alteraciones y niveles de riesgo cardiovascular en la población evaluada.
                     </span>
@@ -2831,8 +2837,8 @@ const tablaCintura = computed(() => {
                     <table class="min-w-full text-sm border border-gray-300 rounded h-full">
                       <thead class="bg-gray-100 text-gray-700">
                         <tr>
-                          <th class="py-2 px-4 text-left text-lg lg:text-xl">Categoría</th>
-                          <th class="py-2 px-4 text-center text-lg lg:text-xl">Trabajadores</th>
+                          <th class="py-2 px-4 text-left text-base sm:text-lg lg:text-xl">Categoría</th>
+                          <th class="py-2 px-4 text-center text-base sm:text-lg lg:text-xl">Trabajadores</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2842,10 +2848,10 @@ const tablaCintura = computed(() => {
                           class="border-t hover:bg-gray-200 transition cursor-pointer"
                           @click="handleClickTablaTensionArterial(categoria)"
                         >
-                          <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ categoria }}</td>
+                          <td class="py-1 px-4 font-medium text-gray-700 text-base sm:text-lg lg:text-xl">{{ categoria }}</td>
                           <td
                             :class="[
-                              'py-1 px-4 text-center text-lg lg:text-xl',
+                              'py-1 px-4 text-center text-base sm:text-lg lg:text-xl',
                               categoria === 'Óptima'
                                 ? 'text-emerald-700'
                                 : categoria === 'Normal'
@@ -2868,14 +2874,14 @@ const tablaCintura = computed(() => {
             </div>
 
             <!-- IMC: 2 columnas -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <div class="bg-gray-50 p-4 sm:p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4 gap-2">
+                <h3 class="text-base sm:text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Distribución por categoría de IMC
                   <span class="relative cursor-help">
                     <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
                     <span
-                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-72 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 sm:w-72 text-xs sm:text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
                     >
                       El IMC ayuda a evaluar si el peso de una persona es apropiado para su estatura y puede indicar <span class="font-semibold text-rose-600">riesgos de salud</span> asociados al sobrepeso o bajo peso.
                     </span>
@@ -2920,8 +2926,8 @@ const tablaCintura = computed(() => {
                     <table class="min-w-full text-sm border border-gray-300 rounded h-full">
                       <thead class="bg-gray-100 text-gray-700">
                         <tr>
-                          <th class="py-2 px-4 text-left text-lg lg:text-xl">Categoría IMC</th>
-                          <th class="py-2 px-4 text-center text-lg lg:text-xl">Trabajadores</th>
+                          <th class="py-2 px-4 text-left text-base sm:text-lg lg:text-xl">Categoría IMC</th>
+                          <th class="py-2 px-4 text-center text-base sm:text-lg lg:text-xl">Trabajadores</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -2931,10 +2937,10 @@ const tablaCintura = computed(() => {
                           class="border-t hover:bg-gray-200 transition cursor-pointer"
                           @click="handleClickTablaIMC(categoria)"
                         >
-                          <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ categoria }}</td>
+                          <td class="py-1 px-4 font-medium text-gray-700 text-base sm:text-lg lg:text-xl">{{ categoria }}</td>
                           <td
                             :class="[
-                              'py-1 px-4 text-center text-lg lg:text-xl',
+                              'py-1 px-4 text-center text-base sm:text-lg lg:text-xl',
                               categoria === 'Normal'
                                 ? 'text-emerald-700'
                                 : ['Bajo peso', 'Sobrepeso'].includes(categoria)
@@ -2953,14 +2959,14 @@ const tablaCintura = computed(() => {
             </div>
 
             <!-- Riesgos: 2 columnas --> 
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
-              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
-                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <div class="bg-gray-50 p-4 sm:p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4 gap-2">
+                <h3 class="text-base sm:text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Exposición a factores de riesgo
                   <span class="relative cursor-help">
                     <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
                     <span
-                      class="absolute top-1/2 right-full mr-2 -translate-y-1/2 md:left-full md:right-auto md:ml-2 md:mr-0 md:translate-y-0 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                      class="absolute top-1/2 right-full mr-2 -translate-y-1/2 md:left-full md:right-auto md:ml-2 md:mr-0 md:translate-y-0 w-60 sm:w-64 text-xs sm:text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
                     >
                       Muestra cuántos trabajadores <span class="font-semibold text-amber-600">están expuestos</span> a elementos del entorno laboral que podrían afectar su salud, ayudando a detectar áreas con mayor riesgo ocupacional.
                     </span>
@@ -3008,8 +3014,8 @@ const tablaCintura = computed(() => {
                     <table class="min-w-full text-sm border border-gray-300 rounded h-full">
                       <thead class="bg-gray-100 text-gray-700">
                         <tr>
-                          <th class="py-2 px-4 text-left text-lg lg:text-xl">Agente de Riesgo</th>
-                          <th class="py-2 px-4 text-center text-lg lg:text-xl">Expuestos</th>
+                          <th class="py-2 px-4 text-left text-base sm:text-lg lg:text-xl">Agente de Riesgo</th>
+                          <th class="py-2 px-4 text-center text-base sm:text-lg lg:text-xl">Expuestos</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -3018,10 +3024,10 @@ const tablaCintura = computed(() => {
                           :key="agente"
                           class="border-t hover:bg-gray-50 transition"
                         >
-                          <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">
+                          <td class="py-1 px-4 font-medium text-gray-700 text-base sm:text-lg lg:text-xl">
                             {{ etiquetasAgentesRiesgo[agente] || agente }}
                           </td>
-                          <td class="py-1 px-4 text-center text-lg lg:text-xl"
+                          <td class="py-1 px-4 text-center text-base sm:text-lg lg:text-xl"
                               :class="cantidad === 0 ? 'text-emerald-700' : 'text-rose-600'"
                           >
                             {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>

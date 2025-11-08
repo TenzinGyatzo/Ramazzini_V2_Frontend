@@ -252,8 +252,8 @@ const toggleSelectAll = () => {
                 <div class="absolute inset-0" style="background-image: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 20px 20px;"></div>
             </div>
             
-            <div class="relative px-6 py-3 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
+            <div class="relative px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                     <!-- Icono de calendario -->
                     <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,17 +262,17 @@ const toggleSelectAll = () => {
                     </div>
                     
                     <div>
-                        <h1 class="text-2xl font-semibold text-white tracking-normal">
+                        <h1 class="text-xl sm:text-2xl font-semibold text-white tracking-normal">
                             Expediente {{ year }}
                         </h1>
-                        <p class="text-emerald-100 text-sm font-medium tracking-wide">
+                        <p class="text-emerald-100 text-xs sm:text-sm font-medium tracking-wide">
                             {{ totalDocumentos }} documento{{ totalDocumentos !== 1 ? 's' : '' }} en total
                         </p>
                     </div>
                 </div>
                 
                 <!-- Indicador de modo eliminación centrado -->
-                <div v-if="isDeletionMode" class="absolute inset-0 flex items-center justify-center md:justify-end md:mr-4 lg:justify-center pointer-events-none">
+                <div v-if="isDeletionMode" class="pointer-events-none flex justify-center md:justify-end lg:justify-center w-full md:w-auto md:absolute md:inset-0 md:mr-4">
                     <div class="flex items-center space-x-3 bg-red-600 bg-opacity-90 rounded-xl px-6 py-3 shadow-lg animate-fade-pulse">
                         <i class="fas fa-exclamation-triangle text-red-100 text-lg"></i>
                         <span class="text-white text-lg font-semibold">Modo eliminación activado</span>
@@ -293,8 +293,8 @@ const toggleSelectAll = () => {
         </div>
 
         <!-- Barra de selección mejorada -->
-        <div class="flex items-center justify-between px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200">
-            <div class="flex items-center space-x-3">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100 hover:to-gray-200">
+            <div class="flex flex-wrap items-start sm:items-center gap-3 sm:gap-4">
                 <!-- Checkbox personalizado -->
                 <div class="relative">
                     <input
@@ -334,16 +334,16 @@ const toggleSelectAll = () => {
             </div>
 
             <!-- Botón de modo eliminación (solo visible si tiene todos los permisos) -->
-            <div v-if="canDeleteAnyDocument" class="flex items-center space-x-2">
+            <div v-if="canDeleteAnyDocument" class="flex items-center w-full sm:w-auto justify-center sm:justify-end gap-2">
                 <button
                     @click="toggleDeletionMode"
-                    class="flex items-center space-x-2 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm font-medium"
+                    class="flex items-center justify-center space-x-2 px-3 py-1.5 rounded-lg transition-all duration-200 text-sm font-medium w-full sm:w-auto"
                     :class="isDeletionMode 
                         ? 'bg-red-100 hover:bg-red-200 text-red-700 border border-red-300 hover:border-red-400 shadow-sm' 
                         : 'bg-gray-50 hover:bg-gray-100 text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700'"
                 >
                     <i class="fas fa-trash-alt text-xs" :class="isDeletionMode ? 'text-red-600' : 'text-gray-400'"></i>
-                    <span class="md:hidden">{{ isDeletionMode ? 'Desactivar' : 'Eliminación' }}</span>
+                    <span class="md:hidden">{{ isDeletionMode ? 'Desactivar' : 'Modo Eliminación' }}</span>
                     <span class="hidden md:inline">{{ isDeletionMode ? 'Desactivar Modo Eliminación' : 'Activar Modo Eliminación' }}</span>
                 </button>
             </div>

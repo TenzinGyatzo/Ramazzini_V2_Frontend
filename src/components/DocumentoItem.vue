@@ -1177,11 +1177,11 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
         <!-- Indicador de disponibilidad del PDF -->
         <div :class="indicadorLateral.class" :title="indicadorLateral.title"></div>
         
-        <div class="flex items-center justify-between p-4 pl-6 min-h-[80px]">
-            <div class="flex items-center flex-1">
+        <div class="flex items-center justify-between p-4 pl-6 min-h-[80px] max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3 max-[390px]:p-3 max-[390px]:pl-3">
+            <div class="flex items-center flex-1 max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3 w-full">
 
                 <!-- Antidoping -->
-                <div v-if="typeof antidoping === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof antidoping === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -1192,7 +1192,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
                         `${antidoping.rutaPDF}`,
                         `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`,
                         antidoping.updatedAt ? new Date(antidoping.updatedAt).getTime() : null)">
@@ -1203,12 +1203,10 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-72 min-w-0 max-w-xs">
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center max-[390px]:text-base">
                                     Antidoping
-                                    <!-- <i v-if="verificandoPDF" class="fas fa-spinner fa-spin ml-2 text-yellow-500 text-sm"></i>
-                                    <i v-else-if="pdfDisponible" class="fas fa-check-circle ml-2 text-emerald-500 text-sm" title="PDF disponible"></i> -->
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="positivos ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'">
@@ -1237,7 +1235,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </div>
 
                 <!-- Aptitud al Puesto -->
-                <div v-if="typeof aptitud === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof aptitud === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -1248,7 +1246,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
                         `${aptitud.rutaPDF}`,
                         `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`,
                         aptitud.updatedAt ? new Date(aptitud.updatedAt).getTime() : null)">
@@ -1259,9 +1257,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-80 min-w-0 max-w-xs">
+                        <div class="sm:w-80 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Aptitud al Puesto
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
@@ -1298,7 +1296,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </div>
 
                 <!-- Audiometría -->
-                <div v-if="typeof audiometria === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof audiometria === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -1309,7 +1307,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
                         `${audiometria.rutaPDF}`,
                         `Audiometria ${convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria)}.pdf`,
                         audiometria.updatedAt ? new Date(audiometria.updatedAt).getTime() : null)">
@@ -1320,9 +1318,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-72 min-w-0 max-w-xs">
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Audiometría
                                 </h3>
                                 <!-- Mostrar resultado según método de audiometría -->
@@ -1360,7 +1358,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </div>
 
                 <!-- Certificado -->
-                <div v-if="typeof certificado === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof certificado === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -1371,7 +1369,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
                         `${certificado.rutaPDF}`,
                         `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`,
                         certificado.updatedAt ? new Date(certificado.updatedAt).getTime() : null)">
@@ -1382,9 +1380,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-72 min-w-0 max-w-xs">
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Certificado
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
@@ -1414,7 +1412,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </div>
 
                 <!-- Certificado Expedito -->
-                <div v-if="typeof certificadoExpedito === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof certificadoExpedito === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -1425,7 +1423,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
                         `${certificadoExpedito.rutaPDF}`,
                         `Certificado Expedito ${convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito)}.pdf`,
                         certificadoExpedito.updatedAt ? new Date(certificadoExpedito.updatedAt).getTime() : null)">
@@ -1436,9 +1434,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-72 min-w-0 max-w-xs">
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Certificado Ex.
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
@@ -1475,7 +1473,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </div>
 
                 <!-- Documento Externo -->
-                <div v-if="typeof documentoExterno === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof documentoExterno === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -1486,7 +1484,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirDocumentoExterno(documentoExterno)">
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirDocumentoExterno(documentoExterno)">
                         
                         <!-- Icono del documento dinámico -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 rounded-lg mr-4 transition-colors duration-200 flex-shrink-0"
@@ -1502,9 +1500,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-72 min-w-0 max-w-xs">
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     <span class="max-w-56">
                                         <i v-if="verificandoPDF" class="fas fa-spinner fa-spin mr-0.5 text-yellow-500 text-sm"></i>
                                         <i v-else-if="!pdfDisponible" class="fas fa-exclamation-triangle mr-0.5 text-rose-500 text-sm" title="Documento externo no disponible"></i>
@@ -1543,7 +1541,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </div>
 
                 <!-- Examen de la Vista -->
-                <div v-if="typeof examenVista === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof examenVista === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -1554,7 +1552,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
                         `${examenVista.rutaPDF}`,
                         `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`,
                         examenVista.updatedAt ? new Date(examenVista.updatedAt).getTime() : null)">
@@ -1565,9 +1563,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-72 min-w-0 max-w-xs">
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Examen de la Vista
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
@@ -1625,7 +1623,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </div>
 
                 <!-- Exploracion Fisica -->
-                <div v-if="typeof exploracionFisica === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof exploracionFisica === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -1636,7 +1634,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
                         `${exploracionFisica.rutaPDF}`, 
                         `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`,
                         exploracionFisica.updatedAt ? new Date(exploracionFisica.updatedAt).getTime() : null)">
@@ -1647,9 +1645,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-72 min-w-0 max-w-xs">
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Exploración Física
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
@@ -1712,7 +1710,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </div>
 
                 <!-- Historia Clínica -->
-                <div v-if="typeof historiaClinica === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof historiaClinica === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -1723,7 +1721,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
                         `${historiaClinica.rutaPDF}`,
                         `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`,
                         historiaClinica.updatedAt ? new Date(historiaClinica.updatedAt).getTime() : null)">
@@ -1734,9 +1732,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-72 min-w-0 max-w-xs">
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Historia Clínica
                                 </h3>
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
@@ -1781,7 +1779,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </div>
 
                 <!-- Nota Medica -->
-                <div v-if="typeof notaMedica === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof notaMedica === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -1792,7 +1790,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
                         `${notaMedica.rutaPDF}`,
                         `Nota Medica ${convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica)}.pdf`,
                         notaMedica.updatedAt ? new Date(notaMedica.updatedAt).getTime() : null)">
@@ -1803,9 +1801,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-72 min-w-0 max-w-xs">
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Nota Médica
                                 </h3>
                                 <span v-if="notaMedica.diagnostico" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
@@ -1831,7 +1829,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </div>
 
                 <!-- Control Prenatal -->   
-                <div v-if="typeof controlPrenatal === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof controlPrenatal === 'object'" class="flex itemsats-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -1842,7 +1840,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
                         `${controlPrenatal.rutaPDF}`,
                         `Control Prenatal ${convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal)}.pdf`,
                         controlPrenatal.updatedAt ? new Date(controlPrenatal.updatedAt).getTime() : null)">
@@ -1853,9 +1851,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-72 min-w-0 max-w-xs">
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Control Prenatal
                                 </h3>
                                 <span v-if="controlPrenatal.fpp" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
@@ -1969,7 +1967,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </div>
 
                 <!-- Historia Otologica -->
-                <div v-if="typeof historiaOtologica === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof historiaOtologica === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -1980,7 +1978,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
                         `${historiaOtologica.rutaPDF}`,
                         `Historia Otologica ${convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica)}.pdf`,
                         historiaOtologica.updatedAt ? new Date(historiaOtologica.updatedAt).getTime() : null)">
@@ -1991,9 +1989,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-72 min-w-0 max-w-xs">
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Historia Otologica
                                 </h3>
                                 <span v-if="historiaOtologica.resultadoCuestionario || historiaOtologica.resultadoCuestionarioPersonalizado" 
@@ -2034,7 +2032,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                 </div>
 
                 <!-- Previo Espirometria -->
-                <div v-if="typeof previoEspirometria === 'object'" class="flex items-center w-full h-full">
+                <div v-if="typeof previoEspirometria === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
                     <div class="mr-4 flex-shrink-0">
                         <input
@@ -2045,7 +2043,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full" @click="abrirPdf(
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
                         `${previoEspirometria.rutaPDF}`,
                         `Previo Espirometria ${convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria)}.pdf`,
                         previoEspirometria.updatedAt ? new Date(previoEspirometria.updatedAt).getTime() : null)">
@@ -2056,9 +2054,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                         </div>
                         
                         <!-- Información del documento -->
-                        <div class="sm:w-72 min-w-0 max-w-xs">
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
                             <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Previo Espirometria
                                 </h3>
                                 <span v-if="previoEspirometria.resultadoCuestionario || previoEspirometria.resultadoCuestionarioPersonalizado" 
@@ -2101,7 +2099,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
             </div>
 
             <!-- Botones de acción -->
-            <div class="flex gap-0.5 sm:gap-0.5 md:gap-1 lg:gap-2 mx-1.5">
+            <div class="flex flex-wrap justify-end gap-1 sm:gap-1.5 md:gap-2 mx-1.5 w-full lg:w-auto">
                 <!-- Botón de descarga dinámico -->
                 <template v-for="(documento, key) in {
                     'Antidoping': antidoping,

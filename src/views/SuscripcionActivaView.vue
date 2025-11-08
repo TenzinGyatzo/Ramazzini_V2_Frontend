@@ -242,36 +242,36 @@ const formatearPais = (codigoPais) => {
   </Transition>
 
   <Transition appear mode="out-in" name="slide-up">
-    <div class="max-w-4xl mx-auto p-6 space-y-6 min-h-screen">
-      <h2 class="text-gray-800 text-3xl md:text-4xl mb-4 font-semibold">Detalles de Mi Suscripción</h2>
+    <div class="max-w-4xl mx-auto p-4 sm:p-6 space-y-6 min-h-screen">
+      <h2 class="text-gray-800 text-2xl sm:text-3xl md:text-4xl mb-4 font-semibold text-center sm:text-left">Detalles de Mi Suscripción</h2>
   
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <!-- Sección de Suscripción -->
-        <div class="bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out space-y-4">
-          <h3 class="text-2xl font-semibold text-gray-800 mb-4">{{ suscripcionActual?.reason || 'Sin plan activo' }}</h3>
+        <div class="bg-white border p-4 sm:p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out space-y-4">
+          <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">{{ suscripcionActual?.reason || 'Sin plan activo' }}</h3>
           <!-- Mensaje de suscripción cancelada pero activa -->
           <div v-if="suscripcionCanceladaYActiva" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded">
             <p class="text-sm">
               Has cancelado tu suscripción, pero tendrás acceso a los beneficios hasta el <strong>{{ formatDate(proveedorSalud.finDeSuscripcion) }}</strong>.
             </p>
           </div>
-          <p v-if="totalHistoriasAdicionales" class="text-gray-600">
+          <p v-if="totalHistoriasAdicionales" class="text-gray-600 text-sm sm:text-base">
             <strong>➕ Adicionales: </strong> 
             <span>
               {{ totalHistoriasAdicionales ? `${totalHistoriasAdicionales} ${totalHistoriasAdicionales === 1 ? 'Historia' : 'Historias'}` : '' }} al mes
             </span>
           </p>
 
-          <p v-else class="text-gray-600"><strong>➕ Adicionales:</strong> Sin adicionales contratados</p>
+          <p v-else class="text-gray-600 text-sm sm:text-base"><strong>➕ Adicionales:</strong> Sin adicionales contratados</p>
           <!-- <p class="text-gray-600"><strong>📅 Inicio de suscripción:</strong> {{ suscripcionActual ? formatDate(suscripcionActual.date_created) : 'No disponible' }}</p> -->
-          <p class="text-gray-600"><strong>💰 Pago mensual:</strong> {{ suscripcionActual?.auto_recurring?.transaction_amount ? `$${formatCurrency(suscripcionActual.auto_recurring.transaction_amount)} MXN` : 'Sin plan activo' }}</p>
-            <p class="text-gray-600"><strong>📅 Próximo cobro:</strong> 
+          <p class="text-gray-600 text-sm sm:text-base"><strong>💰 Pago mensual:</strong> {{ suscripcionActual?.auto_recurring?.transaction_amount ? `$${formatCurrency(suscripcionActual.auto_recurring.transaction_amount)} MXN` : 'Sin plan activo' }}</p>
+            <p class="text-gray-600 text-sm sm:text-base"><strong>📅 Próximo cobro:</strong> 
             {{ suscripcionActual?.status === 'cancelled' ? 
                'No se realizarán más cobros' : 
                (suscripcionActual?.next_payment_date ? formatDate(suscripcionActual.next_payment_date) : 'Sin plan activo') 
             }}
             </p>
-          <p class="text-gray-600"><strong>📍 Estado: </strong>
+          <p class="text-gray-600 text-sm sm:text-base"><strong>📍 Estado: </strong>
             <span :class="{
               'text-green-600 bg-green-100 px-2 py-0.5 rounded-full': proveedorSalud.estadoSuscripcion === 'authorized', 
               'text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded-full': proveedorSalud.estadoSuscripcion === 'pending',
@@ -283,35 +283,35 @@ const formatearPais = (codigoPais) => {
           </p>
           <button 
             @click="router.push('/suscripcion')"
-            class="mt-2 w-full bg-gradient-to-r from-sky-600 to-sky-500 text-white px-4 py-2 rounded-lg hover:scale-105 transition-all duration-300 ease-in-out active:scale-95">
+            class="mt-2 w-full bg-gradient-to-r from-sky-600 to-sky-500 text-white px-4 py-2 rounded-lg hover:scale-105 transition-all duration-300 ease-in-out active:scale-95 text-sm sm:text-base">
             {{ suscripcionActual ? 'Mejorar mi Plan ✨' : 'Comenzar con un Plan 🚀' }}
           </button>
         </div>
   
         <!-- Sección de Uso -->
-        <div class="bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
-          <h3 class="text-2xl font-semibold text-gray-800 mb-4">Uso de Recursos</h3>
+        <div class="bg-white border p-4 sm:p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
+          <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Uso de Recursos</h3>
           
           <!-- Uso de Historias Clínicas -->
           <div>
-            <p class="text-gray-600"><strong>👥 Historias Clínicas creadas en {{ mesActual }}:</strong> <br> {{ historiasDelMes }} de {{ proveedorSalud.maxHistoriasPermitidasAlMes }} permitidas</p>
-            <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
+            <p class="text-gray-600 text-sm sm:text-base"><strong>👥 Historias Clínicas creadas en {{ mesActual }}:</strong> <br> {{ historiasDelMes }} de {{ proveedorSalud.maxHistoriasPermitidasAlMes }} permitidas</p>
+            <div class="w-full bg-gray-200 rounded-full h-3 sm:h-4 mt-2 relative">
               <div 
                 :style="{ width: porcentajeHistorias + '%' }" 
-                class="h-4 rounded-full absolute top-0 left-0 transition-all duration-500" 
+                class="h-3 sm:h-4 rounded-full absolute top-0 left-0 transition-all duration-500" 
                 :class="{
                   'bg-gradient-to-r from-cyan-500 to-cyan-400': historiasDelMes < proveedorSalud.maxHistoriasPermitidasAlMes,
                   'bg-gradient-to-r from-red-500 to-red-400': historiasDelMes >= proveedorSalud.maxHistoriasPermitidasAlMes
                 }">
               </div>
-                <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs font-semibold" :class="porcentajeHistorias <= 55 ? 'text-gray-600' : 'text-white'">
+                <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-[10px] sm:text-xs font-semibold" :class="porcentajeHistorias <= 55 ? 'text-gray-600' : 'text-white'">
                 {{ porcentajeHistorias }}%
                 </span>
             </div>
-            <p v-if="porcentajeHistorias >= 80 && porcentajeHistorias < 100" class="text-yellow-600 text-sm mt-2">
+            <p v-if="porcentajeHistorias >= 80 && porcentajeHistorias < 100" class="text-yellow-600 text-xs sm:text-sm mt-2">
               ⚠️ Estás cerca del límite de historias clínicas. Considera actualizar tu plan.
             </p>
-            <p v-if="historiasDelMes >= proveedorSalud.maxHistoriasPermitidasAlMes" class="text-red-600 text-sm mt-2">⚠️ Has alcanzado el límite de historias clínicas.
+            <p v-if="historiasDelMes >= proveedorSalud.maxHistoriasPermitidasAlMes" class="text-red-600 text-xs sm:text-sm mt-2">⚠️ Has alcanzado el límite de historias clínicas.
               <a @click="router.push('/suscripcion')" class="text-sky-600 underline cursor-pointer">Mejora tu plan</a>.
             </p>
           </div>
@@ -319,20 +319,20 @@ const formatearPais = (codigoPais) => {
         </div>
       </div>
       <!-- Información de Cuenta -->
-      <div class="bg-white border p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
-        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Mi Cuenta</h3>
-        <p class="text-gray-600"><strong>👤 Nombre:</strong> {{ proveedorSalud.nombre || 'No disponible' }}</p>
-        <p class="text-gray-600"><strong>🌍 País:</strong> {{ formatearPais(proveedorSalud.pais) }}</p>
-        <p class="text-gray-600"><strong>📧 Correo:</strong> {{ proveedorSalud.correoElectronico || 'No disponible' }}</p>
-        <p class="text-gray-600"><strong>👥 Historias Clínicas {{ mesActual }}:</strong> {{ `${proveedorSalud.maxHistoriasPermitidasAlMes - historiasDelMes} disponibles` || 'No disponible' }}</p>
-        <p class="text-gray-600"><strong>⏳ Periodo Gratuito:</strong> {{ periodoGratuito }}</p>
+      <div class="bg-white border p-4 sm:p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out">
+        <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Mi Cuenta</h3>
+        <p class="text-gray-600 text-sm sm:text-base"><strong>👤 Nombre:</strong> {{ proveedorSalud.nombre || 'No disponible' }}</p>
+        <p class="text-gray-600 text-sm sm:text-base"><strong>🌍 País:</strong> {{ formatearPais(proveedorSalud.pais) }}</p>
+        <p class="text-gray-600 text-sm sm:text-base"><strong>📧 Correo:</strong> {{ proveedorSalud.correoElectronico || 'No disponible' }}</p>
+        <p class="text-gray-600 text-sm sm:text-base"><strong>👥 Historias Clínicas {{ mesActual }}:</strong> {{ `${proveedorSalud.maxHistoriasPermitidasAlMes - historiasDelMes} disponibles` || 'No disponible' }}</p>
+        <p class="text-gray-600 text-sm sm:text-base"><strong>⏳ Periodo Gratuito:</strong> {{ periodoGratuito }}</p>
       </div>
 
       <button 
         v-if="suscripcionActual && suscripcionActual.status === 'authorized'"
         @click="toggleCancelModal"
         :disabled="isCancelling"
-        class="mt-2 ml-auto block text-white px-4 py-2 rounded-lg transition-all duration-300 ease-in-out"
+        class="mt-2 ml-auto block text-white px-4 py-2 rounded-lg transition-all duration-300 ease-in-out text-sm sm:text-base"
         :class="[
           isCancelling ? 
           'bg-red-400 cursor-not-allowed' : 

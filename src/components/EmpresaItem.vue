@@ -48,7 +48,10 @@ const handleEliminarEmpresa = (id: string, nombreComercial: string) => {
             <!-- Placeholder si no hay logotipo -->
             <div v-else class="w-4/6 mx-auto h-32 flex flex-col items-center justify-center bg-gradient-to-r from-gray-200 to-gray-300 text-gray-500 rounded mb-4 text-center px-4 border-2 border-dashed border-gray-400">
                 <i class="fas fa-camera text-4xl mb-2"></i> <!-- Icono de FontAwesome -->
-                <span class="text-xs text-center">Identifica más rápido a tu cliente agregando un logotipo</span>
+                <span class="text-xs text-center">
+                    <span class="hidden sm:inline">Identifica más rápido a tu cliente agregando un logotipo</span>
+                    <span class="inline sm:hidden">Agrega un logotipo para identificarlo</span>
+                </span>
             </div>
 
             <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 leading-tight truncate" :title="empresa.nombreComercial">{{ empresa.nombreComercial }}</h2>

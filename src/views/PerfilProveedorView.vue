@@ -345,7 +345,7 @@ const logoSrc = computed(() => {
     <!-- <Transition appear name="fade-slow"> -->
     <Transition appear mode="out-in" name="slide-up">
     <div
-      class="relative bg-white text-gray-800 w-full max-w-5xl p-10 mt-2 rounded-lg max-h-[82vh] shadow-lg overflow-y-auto mx-auto">
+      class="relative bg-white text-gray-800 w-full max-w-5xl p-5 sm:p-8 lg:p-10 mt-2 sm:mt-4 rounded-lg shadow-lg mx-auto max-h-none overflow-visible lg:max-h-[82vh] lg:overflow-y-auto">
       <Transition appear name="fade-slow">
         <div v-if="proveedorSalud.loading">
           <!-- <h1 class="text-3xl text-center">Cargando proveedor...</h1> -->
@@ -366,7 +366,7 @@ const logoSrc = computed(() => {
           <FormKit type="form" :actions="false" incomplete-message="Por favor, valide que los datos sean correctos*"
             @submit="handleSubmit">
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 mb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4">
               <FormKit type="text" name="nombre"
                 placeholder="¿Cual es tu nombre, denominación o razón social?" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
@@ -392,10 +392,10 @@ const logoSrc = computed(() => {
                 </template>
               </FormKit>
 
-              <FormKit type="text" label="Región/Provincia/Estado" name="estado" placeholder="Ej. Estado de México, Buenos Aires, São Paulo"
+              <FormKit type="text" :label="proveedorSalud.proveedorSalud?.pais === 'MX' ? 'Estado' : 'Región/Provincia/Estado'" name="estado" placeholder="Ej. Estado de México, Buenos Aires, São Paulo"
                 v-model="formulario.estado" />
 
-              <FormKit type="text" label="Ciudad/Municipio" name="municipio" placeholder="Ej. Ciudad de México, Bogotá, Lima"
+              <FormKit type="text" :label="proveedorSalud.proveedorSalud?.pais === 'PA' ? 'Ciudad/Corregimiento' : 'Ciudad/Municipio'" name="municipio" placeholder="Ej. Ciudad de México, Bogotá, Lima"
                 v-model="formulario.municipio" />
 
               <FormKit type="text" label="Código Postal" name="codigoPostal" placeholder="Ej. 44100, 1000, 01000"
@@ -472,7 +472,7 @@ const logoSrc = computed(() => {
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700 mb-2">Logotipo (Asegura que sea .png sin fondo, cuadrada, de al menos 500 x 500px, con el menor espacio posible entre el logo y el borde de la imagen)</label>
               <div 
-                class="border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 cursor-pointer"
+                class="border-2 border-dashed rounded-lg p-4 sm:p-6 text-center transition-all duration-200 cursor-pointer"
                 :class="[
                   isDragOver 
                     ? 'border-emerald-500 bg-emerald-50 scale-105' 
@@ -528,38 +528,38 @@ const logoSrc = computed(() => {
             </div>
 
             <!-- Mostrar la vista previa del logotipo -->
-            <div class="flex flex-row justify-center items-center gap-4">
-              <div v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data" class="w-1/3 flex flex-col items-center">
-                <p class="font-medium text-lg text-gray-700">
+            <div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-center gap-6">
+              <div v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data" class="w-full sm:w-2/3 xl:w-1/3 flex flex-col items-center text-center xl:text-left mx-auto">
+                <p class="font-medium text-lg text-gray-700 mb-2">
                   Logotipo actual:
                 </p>
                 <img
                   :src="logoSrc"
                   :alt="'Logo de ' + proveedorSalud.proveedorSalud.nombre"
-                  class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"
+                  class="w-40 h-40 sm:w-48 sm:h-48 object-contain border-2 border-gray-300 rounded-lg"
                 />
               </div>
 
               <Transition appear name="fade-slow">
-                <div v-if="logotipoPreview" class="w-1/3 flex flex-col items-center">
-                  <p v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data" class="font-medium text-lg text-gray-700">
+                <div v-if="logotipoPreview" class="w-full sm:w-2/3 xl:w-1/3 flex flex-col items-center text-center xl:text-left mx-auto">
+                  <p v-if="proveedorSalud.proveedorSalud?.logotipoEmpresa?.data" class="font-medium text-lg text-gray-700 mb-2">
                     Logotipo nuevo:
                   </p>
-                  <p v-else class="font-medium text-lg text-gray-700">
+                  <p v-else class="font-medium text-lg text-gray-700 mb-2">
                     Logotipo:
                   </p>
                   <img :src="logotipoPreview" alt="Vista previa del logotipo"
-                    class="w-48 h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />
+                    class="w-40 h-40 sm:w-48 sm:h-48 object-contain border-2 border-gray-300 rounded-lg" />
                 </div>
               </Transition>
               
               <!-- Vista previa del Pie de Página del Informe -->
-              <div v-if="piePaginaInforme.nombre" class="w-1/2 flex flex-col items-center">
-                <p class="font-medium text-lg text-gray-700">
+              <div v-if="piePaginaInforme.nombre" class="w-full xl:w-1/2 flex flex-col items-center xl:items-end">
+                <p class="font-medium text-lg text-gray-700 text-center xl:text-right">
                   Pie de Página en Informes:
                 </p>
-                <div class="mt-6 p-4 border rounded-lg bg-gray-50 text-right">                  
-                  <p class="text-sm text-gray-800 mt-2 italic">
+                <div class="w-full max-w-md mt-4 p-4 border rounded-lg bg-gray-50 text-center xl:text-right">                  
+                  <p class="text-sm text-gray-800 italic space-y-1">
                     <span v-if="piePaginaInforme.nombre" class="font-medium">{{ piePaginaInforme.nombre }}</span><br v-if="piePaginaInforme.nombre">
                     
                     <span v-if="piePaginaInforme.direccion" class="font-light">{{ piePaginaInforme.direccion }}</span><br v-if="piePaginaInforme.direccion">

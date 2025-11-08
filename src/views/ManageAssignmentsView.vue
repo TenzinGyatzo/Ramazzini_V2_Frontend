@@ -252,29 +252,29 @@ onBeforeRouteLeave((to, from, next) => {
 </script>
 
 <template>
-  <div class="p-6 max-w-7xl mx-auto">
+  <div class="p-4 sm:p-6 max-w-7xl mx-auto">
     <div class="mb-6">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 gap-4">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 mb-2">Gestionar Asignaciones de Usuarios</h1>
-          <p class="text-gray-600">Asigna empresas y centros de trabajo específicos a cada usuario médico y enfermero/a</p>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Gestionar Asignaciones de Usuarios</h1>
+          <p class="text-sm sm:text-base text-gray-600">Asigna empresas y centros de trabajo específicos a cada usuario médico y enfermero/a</p>
         </div>
         
         <!-- Indicador de cambios y botones de acción -->
-        <div class="flex items-center gap-3 mt-4 sm:mt-0">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-end w-full lg:w-auto mt-4 sm:mt-0">
           <!-- Indicador de cambios sin guardar -->
-          <div v-if="hasUnsavedChanges" class="flex items-center text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+          <div v-if="hasUnsavedChanges" class="flex items-center justify-between sm:justify-center text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200 text-xs sm:text-sm">
             <i class="fas fa-exclamation-triangle mr-2"></i>
-            <span class="text-sm font-medium">Cambios sin guardar</span>
+            <span class="font-medium">Cambios sin guardar</span>
           </div>
           
           <!-- Botones de acción -->
-          <div class="flex gap-2">
+          <div class="flex flex-col sm:flex-row gap-2">
             <button
               v-if="hasUnsavedChanges"
               @click="descartarCambios"
               :disabled="saving"
-              class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base w-full sm:w-auto"
             >
               <i class="fas fa-times mr-2"></i>
               Descartar
@@ -283,7 +283,7 @@ onBeforeRouteLeave((to, from, next) => {
             <button
               @click="guardarTodosLosCambios"
               :disabled="saving || !hasChanges"
-              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duración-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base w-full sm:w-auto"
             >
               <i v-if="saving" class="fas fa-spinner fa-spin mr-2"></i>
               <i v-else class="fas fa-save mr-2"></i>
@@ -315,12 +315,12 @@ onBeforeRouteLeave((to, from, next) => {
       <AssignmentsSummary :usuarios="usuariosFiltrados" />
       
       <!-- Información adicional -->
-      <div class="mt-1 p-3 bg-white rounded-lg shadow-lg border border-gray-200 mb-6">
+      <div class="mt-1 p-4 bg-white rounded-lg shadow-lg border border-gray-200 mb-6">
         <div class="flex items-start gap-3">
           <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
           <div>
-            <p class="text-base text-blue-800 font-medium mb-1">Información de Asignaciones</p>
-            <p class="text-sm text-blue-700">
+            <p class="text-sm sm:text-base text-blue-800 font-medium mb-1">Información de Asignaciones</p>
+            <p class="text-xs sm:text-sm text-blue-700">
               Los usuarios solo podrán ver y trabajar con las empresas y centros de trabajo asignados específicamente a ellos. 
               Los centros de trabajo solo se pueden asignar de empresas que ya están asignadas al usuario.
             </p>
@@ -329,55 +329,55 @@ onBeforeRouteLeave((to, from, next) => {
       </div>
       
       <!-- Grid de usuarios -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         <div 
           v-for="usuario in usuariosFiltrados" 
           :key="usuario._id"
           :class="[
-            'bg-white rounded-xl shadow-lg border p-6 hover:shadow-xl transition-all duration-300',
+            'bg-white rounded-xl shadow-lg border p-4 sm:p-6 hover:shadow-xl transition-all duration-300',
             hasChangesForUser(usuario) ? 'border-amber-300 shadow-amber-100' : 'border-gray-200'
           ]"
         >
-          <!-- Header del usuario -->
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center space-x-3">
+        <!-- Header del usuario -->
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3">
+          <div class="flex items-center space-x-3">
               <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                 <i class="fas fa-user text-white text-lg"></i>
               </div>
               <div>
-                <div class="flex items-center gap-2">
-                  <h3 class="font-semibold text-gray-900">{{ usuario.username }}</h3>
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="font-semibold text-gray-900 text-base sm:text-lg">{{ usuario.username }}</h3>
                   <!-- Indicador de cambios para este usuario -->
                   <span v-if="hasChangesForUser(usuario)" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                     <i class="fas fa-pencil-alt mr-1"></i>
                     Modificado
                   </span>
                 </div>
-                <p class="text-sm text-gray-500">{{ usuario.role }}</p>
+              <p class="text-xs sm:text-sm text-gray-500">{{ usuario.role }}</p>
               </div>
             </div>
             
             <!-- Resumen de asignaciones -->
-            <div class="flex gap-4">
+          <div class="flex gap-4 flex-wrap">
               <!-- Indicador de acceso completo -->
               <div v-if="usuario.permisos?.accesoCompletoEmpresasCentros" class="text-center">
-                <div class="text-lg font-bold text-emerald-600">
+              <div class="text-base sm:text-lg font-bold text-emerald-600">
                   <i class="fas fa-globe"></i>
                 </div>
-                <div class="text-xs text-gray-500">Acceso Total</div>
+              <div class="text-[11px] sm:text-xs text-gray-500">Acceso Total</div>
               </div>
               <div v-else class="flex gap-4">
                 <div class="text-center">
-                  <div class="text-lg font-bold text-blue-600">
+                <div class="text-base sm:text-lg font-bold text-blue-600">
                     {{ usuario.permisos?.accesoCompletoEmpresasCentros ? '∞' : (usuario.empresasAsignadas || []).length }}
                   </div>
-                  <div class="text-xs text-gray-500">Empresas</div>
+                <div class="text-[11px] sm:text-xs text-gray-500">Empresas</div>
                 </div>
                 <div class="text-center">
-                  <div class="text-lg font-bold text-green-600">
+                <div class="text-base sm:text-lg font-bold text-green-600">
                     {{ usuario.permisos?.accesoCompletoEmpresasCentros ? '∞' : (usuario.centrosTrabajoAsignados || []).length }}
                   </div>
-                  <div class="text-xs text-gray-500">Centros</div>
+                <div class="text-[11px] sm:text-xs text-gray-500">Centros</div>
                 </div>
               </div>
             </div>
@@ -415,16 +415,16 @@ onBeforeRouteLeave((to, from, next) => {
             </div>
 
             <!-- Acceso completo habilitado -->
-            <div v-else class="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-lg p-4">
+            <div v-else class="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-lg p-3 sm:p-4">
               <div class="flex items-start">
                 <div class="flex-shrink-0">
-                  <i class="fas fa-globe text-emerald-600 text-lg"></i>
+                  <i class="fas fa-globe text-emerald-600 text-base sm:text-lg"></i>
                 </div>
                 <div class="ml-3 flex-1">
-                  <h4 class="text-sm font-semibold text-emerald-800 mb-2">
+                  <h4 class="text-xs sm:text-sm font-semibold text-emerald-800 mb-2">
                     Acceso Completo Habilitado
                   </h4>
-                  <p class="text-sm text-emerald-700 mb-3">
+                  <p class="text-xs sm:text-sm text-emerald-700 mb-3">
                     Este usuario tiene acceso completo a todas las empresas y centros de trabajo. 
                     No es necesario realizar asignaciones granulares.
                   </p>
@@ -432,9 +432,9 @@ onBeforeRouteLeave((to, from, next) => {
                   <div class="bg-amber-50 border border-amber-200 rounded-md p-3">
                     <div class="flex items-center mb-2">
                       <i class="fas fa-exclamation-triangle text-amber-600 mr-2"></i>
-                      <span class="text-sm font-medium text-amber-800">Para asignación granular</span>
+                      <span class="text-xs sm:text-sm font-medium text-amber-800">Para asignación granular</span>
                     </div>
-                    <p class="text-xs text-amber-700">
+                    <p class="text-[11px] sm:text-xs text-amber-700 leading-snug">
                       Si deseas asignar empresas y centros específicos, primero debes deshabilitar el permiso 
                       <strong>"Acceso Completo a Empresas y Centros"</strong> en la gestión de permisos.
                     </p>

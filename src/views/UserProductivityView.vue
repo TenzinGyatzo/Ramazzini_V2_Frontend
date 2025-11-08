@@ -448,7 +448,7 @@ const getInputClasses = (colorClass) => {
         </div>
 
         <!-- Filtro de periodo -->
-        <div class="flex flex-col justify-end text-xs ml-auto">
+        <div class="flex flex-col justify-end text-xs ml-auto w-full sm:w-auto">
           <div class="flex items-center gap-2">
             <label class="block text-xs font-medium text-gray-700 mb-1">Periodo</label>
             <transition name="fade">
@@ -464,39 +464,41 @@ const getInputClasses = (colorClass) => {
             </transition>
           </div>
 
-          <div class="flex items-end gap-2">
+          <div class="grid grid-cols-1 sm:flex sm:items-end gap-2">
             <!-- Select de periodos predefinidos -->
             <div class="flex flex-col">
               <label class="text-[11px] text-gray-500 mb-0.5">Periodo rápido</label>
               <select
                 v-model="periodoPredefinido"
                 @change="manejarCambioPeriodo(periodoPredefinido)"
-                class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition duration-150 ease-in-out min-w-[120px]"
+                class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition duration-150 ease-in-out min-w-full sm:min-w-[120px]"
               >
                 <option value="">Seleccionar periodo</option>
                 <option v-for="opcion in opcionesPeriodo" :key="opcion" :value="opcion">{{ opcion }}</option>
               </select>
             </div>
 
-            <!-- Fecha inicio -->
-            <div class="flex flex-col">
-              <label for="fechaInicio" class="text-[11px] text-gray-500 mb-0.5">Inicio</label>
-              <input
-                id="fechaInicio"
-                type="date"
-                v-model="fechaInicio"
-                class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition"
-              />
-            </div>
-            <!-- Fecha fin -->
-            <div class="flex flex-col">
-              <label for="fechaFin" class="text-[11px] text-gray-500 mb-0.5">Final</label>
-              <input
-                id="fechaFin"
-                type="date"
-                v-model="fechaFin"
-                class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition"
-              />
+            <div class="grid grid-cols-1 xs:grid-cols-2 sm:flex sm:flex-row gap-2">
+              <!-- Fecha inicio -->
+              <div class="flex flex-col">
+                <label for="fechaInicio" class="text-[11px] text-gray-500 mb-0.5">Inicio</label>
+                <input
+                  id="fechaInicio"
+                  type="date"
+                  v-model="fechaInicio"
+                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition"
+                />
+              </div>
+              <!-- Fecha fin -->
+              <div class="flex flex-col">
+                <label for="fechaFin" class="text-[11px] text-gray-500 mb-0.5">Final</label>
+                <input
+                  id="fechaFin"
+                  type="date"
+                  v-model="fechaFin"
+                  class="border border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 focus:outline-none px-2 py-1 rounded-md shadow-sm text-xs text-gray-700 bg-white transition"
+                />
+              </div>
             </div>
           </div>
 
@@ -530,7 +532,6 @@ const getInputClasses = (colorClass) => {
               </div>
             </transition>
           </div>
-
         </div>
       </div>
 

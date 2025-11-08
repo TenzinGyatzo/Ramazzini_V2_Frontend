@@ -284,12 +284,12 @@ const porcentajeHistorias = computed(() => {
 
 <template>
   <Transition appear mode="out-in" name="slide-up">
-  <div class="max-w-6xl mx-auto p-6 space-y-6 bg-gray-100 min-h-screen">
-    <div class="flex justify-between items-center">
-      <h1 class="text-gray-800 text-3xl md:text-4xl font-semibold">Elige tu Plan</h1>
+  <div class="max-w-6xl mx-auto p-4 sm:p-6 space-y-6 bg-gray-100 min-h-screen">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <h1 class="text-gray-800 text-2xl sm:text-3xl md:text-4xl font-semibold text-center sm:text-left">Elige tu Plan</h1>
       <button 
         @click="router.push('/suscripcion-activa')"
-        class="mt-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2 rounded-lg hover:scale-105 transition-all duration-300 ease-in-out active:scale-95 flex items-center gap-2">
+        class="w-full sm:w-auto mt-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2 rounded-lg hover:scale-105 transition-all duration-300 ease-in-out active:scale-95 flex items-center justify-center gap-2 text-sm sm:text-base">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
@@ -298,19 +298,19 @@ const porcentajeHistorias = computed(() => {
     </div>
 
     <!-- Lista de Planes -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-4">
       <div 
         v-for="plan in plans" 
         :key="plan.id" 
-        class="bg-white border-2 p-6 rounded-xl shadow-lg hover:shadow-xl cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105"
+        class="bg-white border-2 p-5 sm:p-6 rounded-xl shadow-lg hover:shadow-xl cursor-pointer transition-all duration-300 ease-in-out transform hover:scale-105"
         :class="{
           'border-sky-500 bg-sky-50': selectedPlan?.id === plan.id,
           'border-green-500 bg-green-50': suscripcionActual?.reason?.includes(plan.name)
         }"
         @click="selectedPlan = plan; extraHistories = 0;">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-700">{{ plan.name }}</h2>
-        <p class="text-3xl mb-4 font-light text-sky-600">${{ formatCurrency(plan.price) }}/mes</p>
-        <ul class="text-gray-600 divide-y divide-gray-200 text-base">
+        <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">{{ plan.name }}</h2>
+        <p class="text-2xl sm:text-3xl mb-4 font-light text-sky-600">${{ formatCurrency(plan.price) }}/mes</p>
+        <ul class="text-gray-600 divide-y divide-gray-200 text-sm sm:text-base">
           <li class="py-1">{{ plan.histories }} Historias Clínicas</li>
           <!-- <li class="py-1">{{ plan.users }} usuarios</li>
           <li class="py-1">{{ plan.companies }} empresas</li>
@@ -320,43 +320,44 @@ const porcentajeHistorias = computed(() => {
       </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
       <!-- Comparación entre Plan Actual y Nuevo -->
-      <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 ease-in-out">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Compara Planes</h2>
-        <table class="w-full text-gray-700 border-collapse">
+      <div class="bg-white p-5 sm:p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 ease-in-out">
+        <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">Compara Planes</h2>
+        <div class="overflow-x-auto -mx-2 sm:mx-0">
+        <table class="w-full min-w-[420px] text-gray-700 border-collapse">
           <thead>
             <tr class="bg-gray-200 text-gray-800">
-                <th class="text-sm md:text-base p-2 text-left">Características</th>
-                <th class="text-sm md:text-base p-2 text-center">
+                <th class="text-xs sm:text-sm md:text-base px-2 py-1 text-left whitespace-nowrap">Características</th>
+                <th class="text-xs sm:text-sm md:text-base px-2 py-1 text-center whitespace-nowrap">
                   <span class="hidden xl:inline">Tu Plan Actual</span>
                   <span class="hidden lg:inline xl:hidden">Actual</span>
                   <span class="hidden md:inline lg:hidden">Plan Actual</span>
                   <span class="md:hidden">Actual</span>
                 </th>
-              <th class="text-sm md:text-base p-2 text-center">
+              <th class="text-xs sm:text-sm md:text-base px-2 py-1 text-center whitespace-nowrap">
                 <span class="hidden sm:inline">Seleccionado</span>
                 <span class="sm:hidden">Selec.</span>
               </th>
-              <th class="text-sm md:text-base p-2 text-center">&nbsp;Cambio&nbsp;</th>
+              <th class="text-xs sm:text-sm md:text-base px-2 py-1 text-center whitespace-nowrap">Cambio</th>
             </tr>
           </thead>
           <tbody>
             <tr class="border-t">
-              <td class="text-sm md:text-base p-2">Precio Mensual</td>
-              <td class="text-sm md:text-base p-2 text-center">${{ formatCurrency(suscripcionActual?.auto_recurring?.transaction_amount || 0) }}</td>
-              <td class="text-sm md:text-base p-2 text-center">${{ formatCurrency(totalPrice) }}</td>
-              <td class="text-sm md:text-base p-2 text-center">
+              <td class="text-xs sm:text-sm md:text-base px-2 py-1 whitespace-nowrap">Precio Mensual</td>
+              <td class="text-xs sm:text-sm md:text-base px-2 py-1 text-center whitespace-nowrap">${{ formatCurrency(suscripcionActual?.auto_recurring?.transaction_amount || 0) }}</td>
+              <td class="text-xs sm:text-sm md:text-base px-2 py-1 text-center whitespace-nowrap">${{ formatCurrency(totalPrice) }}</td>
+              <td class="text-xs sm:text-sm md:text-base px-2 py-1 text-center whitespace-nowrap">
                 <span :class="priceDifference >= 0 ? 'text-green-600' : 'text-red-600'">
                   {{ priceDifference >= 0 ? '↑' : '↓' }} ${{ formatCurrency(Math.abs(priceDifference)) }}
                 </span>
               </td>
             </tr>
             <tr class="border-t">
-              <td class="text-sm md:text-base p-2">Historias Clínicas</td>
-              <td class="text-sm md:text-base p-2 text-center">{{ proveedorSalud?.maxHistoriasPermitidasAlMes }}</td>
-              <td class="text-sm md:text-base p-2 text-center">{{ selectedPlan?.histories + extraHistories }}</td>
-              <td class="text-sm md:text-base p-2 text-center">
+              <td class="text-xs sm:text-sm md:text-base px-2 py-1 whitespace-nowrap">Historias Clínicas</td>
+              <td class="text-xs sm:text-sm md:text-base px-2 py-1 text-center whitespace-nowrap">{{ proveedorSalud?.maxHistoriasPermitidasAlMes }}</td>
+              <td class="text-xs sm:text-sm md:text-base px-2 py-1 text-center whitespace-nowrap">{{ selectedPlan?.histories + extraHistories }}</td>
+              <td class="text-xs sm:text-sm md:text-base px-2 py-1 text-center whitespace-nowrap">
                 <span :class="historiasDifference >= 0 ? 'text-green-600' : 'text-red-600'">
                   {{ historiasDifference >= 0 ? '↑' : '↓' }} {{ Math.abs(historiasDifference) }}
                 </span>
@@ -364,34 +365,35 @@ const porcentajeHistorias = computed(() => {
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
       <!-- Visualización de uso actual -->
-      <div class="bg-white p-6 rounded-xl shadow-md">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Uso de Recursos</h2>
+      <div class="bg-white p-5 sm:p-6 rounded-xl shadow-md">
+        <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">Uso de Recursos</h2>
 
         <!-- Uso de Historias Clínicas -->
         <div>
-          <p class="text-gray-700 mb-2">
+          <p class="text-gray-700 text-sm sm:text-base mb-2">
             <strong>Historias clínicas registradas:</strong> {{ historiasDelMes }} 
             <span class="text-gray-600">(límite: <strong>{{ selectedPlan?.histories + extraHistories }}</strong>)</span>
           </p>
-          <div class="w-full bg-gray-200 rounded-full h-4 mt-2 relative">
+          <div class="w-full bg-gray-200 rounded-full h-3 sm:h-4 mt-2 relative">
             <div 
-              class="h-4 rounded-full absolute top-0 left-0 transition-all duration-500" 
+              class="h-3 sm:h-4 rounded-full absolute top-0 left-0 transition-all duration-500" 
               :class="{
                 'bg-gradient-to-r from-cyan-500 to-cyan-400': historiasDelMes <= (selectedPlan?.histories + extraHistories),
                 'bg-gradient-to-r from-red-500 to-red-400': historiasDelMes > (selectedPlan?.histories + extraHistories)
               }"
               :style="{ width: `${porcentajeHistorias}%` }"
             ></div>
-            <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-xs font-semibold" :class="porcentajeHistorias <= 55 ? 'text-gray-600' : 'text-white'">
+            <span class="absolute top-0 left-1/2 transform -translate-x-1/2 text-[10px] sm:text-xs font-semibold" :class="porcentajeHistorias <= 55 ? 'text-gray-600' : 'text-white'">
               {{ porcentajeHistorias }}%
             </span>
           </div>
-          <p v-if="porcentajeHistorias >= 80 && porcentajeHistorias < 100" class="text-yellow-600 text-sm mt-2">
+          <p v-if="porcentajeHistorias >= 80 && porcentajeHistorias < 100" class="text-yellow-600 text-xs sm:text-sm mt-2">
             ⚠️ Estás cerca del límite de historias clínicas. Considera actualizar tu plan.
           </p>
-          <p v-if="historiasDelMes > (selectedPlan?.histories + extraHistories)" class="text-red-600 text-sm mt-2">
+          <p v-if="historiasDelMes > (selectedPlan?.histories + extraHistories)" class="text-red-600 text-xs sm:text-sm mt-2">
             ⚠️ Excede el límite de historias clínicas permitidas en este plan.
           </p>
         </div>
@@ -478,20 +480,20 @@ const porcentajeHistorias = computed(() => {
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Sección de Add-ons -->
-      <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 ease-in-out">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Extras para tu Plan</h2>
-        <div class="flex flex-col gap-6 text-base">
+      <div class="bg-white p-5 sm:p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 ease-in-out">
+        <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">Extras para tu Plan</h2>
+        <div class="flex flex-col gap-6 text-sm sm:text-base">
           <div>
-            <label class="text-sm md:text-base block mb-2 text-gray-600">Aumenta tus recursos ($360 por cada 25 historias clínicas)</label>
+            <label class="text-xs sm:text-sm md:text-base block mb-2 text-gray-600">Aumenta tus recursos ($360 por cada 25 historias clínicas)</label>
             <div class="flex items-center gap-2">
-              <button @click="extraHistories > 0 ? extraHistories -= 25 : null" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 flex items-center justify-center rounded transition-all duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button @click="extraHistories > 0 ? extraHistories -= 25 : null" class="w-9 h-9 sm:w-10 sm:h-10 bg-gray-200 hover:bg-gray-300 flex items-center justify-center rounded transition-all duration-200">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
                 </svg>
               </button>
-              <input type="number" v-model="extraHistories" @input="validateLimits" min="0" class="border rounded p-2 w-24 text-center focus:ring-2 focus:ring-sky-500">
-              <button @click="extraHistories < selectedPlan?.maxHistories ? extraHistories += 25 : null" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 flex items-center justify-center rounded transition-all duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <input type="number" v-model="extraHistories" @input="validateLimits" min="0" class="border rounded p-2 w-20 sm:w-24 text-center focus:ring-2 focus:ring-sky-500 text-sm">
+              <button @click="extraHistories < selectedPlan?.maxHistories ? extraHistories += 25 : null" class="w-9 h-9 sm:w-10 sm:h-10 bg-gray-200 hover:bg-gray-300 flex items-center justify-center rounded transition-all duration-200">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
               </button>
@@ -549,11 +551,11 @@ const porcentajeHistorias = computed(() => {
       </div>
 
       <!-- Resumen y botón de acción -->
-      <div class="bg-gradient-to-r from-sky-50 to-cyan-50 border-2 border-sky-400 p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 ease-in-out">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-700">Resumen del Plan</h2>
-        <div v-if="selectedPlan" class="mb-4 space-y-2 text-base text-gray-700">
+      <div class="bg-gradient-to-r from-sky-50 to-cyan-50 border-2 border-sky-400 p-5 sm:p-6 rounded-xl shadow-md hover:shadow-lg transition duration-300 ease-in-out">
+        <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">Resumen del Plan</h2>
+        <div v-if="selectedPlan" class="mb-4 space-y-2 text-sm sm:text-base text-gray-700">
           <p class="flex items-center gap-2">
-            <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
             Plan elegido: <span class="font-semibold">{{ selectedPlan.name }}</span>
@@ -570,13 +572,13 @@ const porcentajeHistorias = computed(() => {
           <p>Límite de trabajadores por empresa: <span class="font-semibold">{{ selectedPlan.workers + extraWorkers }}</span> 
             <span class="text-gray-500"> (Base: {{ selectedPlan.workers }} + Extras: {{ extraWorkers }})</span>
           </p> -->
-          <p class="text-xl font-semibold mt-4 text-sky-600">Total mensual: ${{ formatCurrency(totalPrice) }} MXN</p>
-          <p v-if="suggestion" class="text-yellow-600 mt-2">{{ suggestion }}</p>
+          <p class="text-lg sm:text-xl font-semibold mt-4 text-sky-600">Total mensual: ${{ formatCurrency(totalPrice) }} MXN</p>
+          <p v-if="suggestion" class="text-yellow-600 mt-2 text-sm">{{ suggestion }}</p>
         </div>
         <button 
           @click="proveedorSalud?.suscripcionActiva ? requestSubscription() : mostrarModalPago = true"
           :disabled="loading" 
-          class="bg-gradient-to-r from-sky-500 to-sky-700 text-white px-6 py-2 rounded-lg disabled:opacity-50 hover:scale-105 transition-all duration-300 ease-in-out active:scale-95">
+          class="bg-gradient-to-r from-sky-500 to-sky-700 text-white px-6 py-2 rounded-lg disabled:opacity-50 hover:scale-105 transition-all duration-300 ease-in-out active:scale-95 text-sm sm:text-base">
           {{ loading ? 'Procesando...' : subscriptionButtonText }}
         </button>
       </div>
