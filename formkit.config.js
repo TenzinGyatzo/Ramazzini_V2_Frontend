@@ -51,6 +51,14 @@ const nssValidation = ({ value }) => {
   return nssRegex.test(value);
 };
 
+const curpValidation = ({ value }) => {
+  // Validación flexible para CURP que acepta formatos de diferentes países
+  // Acepta: números, letras, espacios, guiones, puntos, guiones bajos y barras
+  // Longitud: 4 a 30 caracteres
+  const curpRegex = /^[A-Za-z0-9\s\-_.\/]{4,30}$/;
+  return curpRegex.test(value);
+};
+
 const config = {
   config: {
     classes: generateClasses({

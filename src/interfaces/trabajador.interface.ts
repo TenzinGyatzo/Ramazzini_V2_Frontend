@@ -12,6 +12,7 @@ export interface Trabajador {
   estadoCivil: string;
   numeroEmpleado: string;
   nss: string;
+  curp?: string;
   estadoLaboral: string;
   idCentroTrabajo: string;
   createdBy: string;

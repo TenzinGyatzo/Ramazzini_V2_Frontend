@@ -117,6 +117,38 @@ const getEmpresaIniciales = (e) => {
   return parts.map((p) => p.charAt(0).toUpperCase()).join('');
 };
 
+const paisProveedor = computed(() => proveedorSaludStore.proveedorSalud?.pais || '');
+
+const identificadorPersonalLabel = computed(() => {
+  switch (paisProveedor.value) {
+    case 'PA':
+      return 'Cédula de Identidad';
+    case 'GT':
+      return 'DPI';
+    case 'MX':
+      return 'CURP';
+    default:
+      return 'No. Identificación Personal';
+  }
+});
+
+const identificadorPersonalPlaceholder = computed(() => {
+  switch (paisProveedor.value) {
+    case 'PA':
+      return 'Ejemplo: E-8-123-456';
+    case 'GT':
+      return 'Ejemplo: 1234567890123';
+    case 'MX':
+      return 'Ejemplo: ROAJ850102HNLRRN08';
+    default:
+      return 'Ejemplo: 01234567-8';
+  }
+});
+
+const identificadorPersonalValidationMessage = computed(() => {
+  return 'Debe tener entre 4 y 30 caracteres alfanuméricos y puede incluir separadores comunes.';
+});
+
 // Variables para contar trabajadores por centro
 const trabajadoresPorCentro = ref({});
 const loadingTrabajadores = ref(false);
@@ -239,6 +271,7 @@ const handleSubmit = async (data) => {
     estadoCivil: data.estadoCivil,
     numeroEmpleado: data.numeroEmpleado,
     nss: data.nss,
+    curp: data.curp,
     idCentroTrabajo: data.idCentroTrabajo,
     createdBy: currentUserId,
     updatedBy: currentUserId
@@ -523,18 +556,30 @@ const cancelarTransferencia = () => {
                   <span class="font-medium text-lg text-gray-700">Fecha de Ingreso</span>
                 </template>
               </FormKit>
-              <FormKit type="text" label="Número de Empleado" name="numeroEmpleado" placeholder="Sólo números"
-                validation="optional|matches:/^[0-9]*$/" 
-                :validation-messages="{ 
-                  matches: 'El número de empleado debe estar vacío o contener solo números entre 1 y 7 dígitos' 
-                }"
-                maxlength="7" :value="trabajadores.currentTrabajador?.numeroEmpleado || ''" />
-              <FormKit type="text" label="NSS" name="nss" placeholder="Número de Seguro Social"
-                validation="optional|nssValidation" 
-                :validation-messages="{ 
-                  nssValidation: 'Debe tener 4-30 caracteres alfanuméricos' 
-                }"
-                maxlength="30" :value="trabajadores.currentTrabajador?.nss || ''" />
+              <div class="lg:col-span-2 grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+                <FormKit type="text" label="Número de Empleado" name="numeroEmpleado" placeholder="Sólo números"
+                  validation="optional|matches:/^[0-9]*$/"
+                  :validation-messages="{
+                    matches: 'El número de empleado debe estar vacío o contener solo números entre 1 y 7 dígitos'
+                  }"
+                  maxlength="7" :value="trabajadores.currentTrabajador?.numeroEmpleado || ''" />
+                <FormKit type="text" label="NSS" name="nss" placeholder="Número de Seguro Social"
+                  validation="optional|nssValidation"
+                  :validation-messages="{
+                    nssValidation: 'Debe tener 4-30 caracteres alfanuméricos'
+                  }"
+                  maxlength="30" :value="trabajadores.currentTrabajador?.nss || ''" />
+                 <FormKit
+                   type="text"
+                   :label="identificadorPersonalLabel"
+                   name="curp"
+                   :placeholder="identificadorPersonalPlaceholder"
+                   validation="optional|curpValidation"
+                   :validation-messages="{ curpValidation: identificadorPersonalValidationMessage }"
+                   maxlength="30"
+                   :value="trabajadores.currentTrabajador?.curp || ''"
+                 />
+              </div>
             </div>
 
             <!-- Campos ocultos y botón de enviar -->

@@ -18,6 +18,7 @@ interface Trabajador {
   estadoCivil: string;
   numeroEmpleado: string;
   nss: string;
+  curp?: string;
   agentesRiesgoActuales: string[];
   estadoLaboral: string;
   idCentroTrabajo: string;
@@ -82,6 +83,7 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
       estadoCivil: "",
       numeroEmpleado: "",
       nss: "",
+      curp: "",
       agentesRiesgoActuales: [],
       estadoLaboral: "",
       idCentroTrabajo: "",
