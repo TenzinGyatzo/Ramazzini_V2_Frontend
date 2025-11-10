@@ -39,7 +39,7 @@ const antecedentesPersonalesPatologicos = ref([
   { name: 'EPILÉPTICOS', step: 18, key: 'epilepticosPP', specifyKey: 'epilepticosPPEspecificar' },
   { name: 'ACCIDENTES', step: 19, key: 'accidentes', specifyKey: 'accidentesEspecificar' },
   { name: 'QUIRÚRGICOS', step: 20, key: 'quirurgicos', specifyKey: 'quirurgicosEspecificar' },
-  { name: 'TRAUMÁTICOS', step: 21, key: 'traumaticos', specifyKey: 'traumaticosEspecificar' },
+  { name: 'OTROS', step: 21, key: 'otros', specifyKey: 'otrosEspecificar' },
 ]);
 
 const antecedentesPersonalesNoPatologicos = ref([

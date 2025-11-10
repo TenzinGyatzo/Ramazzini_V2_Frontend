@@ -141,19 +141,19 @@ export const etiquetasAntecedentesReferidos: Record<string, string> = {
   lumbalgias: 'Lumbalgias',
   accidentes: 'Accidentes',
   quirurgicos: 'Cirugías',
-  traumaticos: 'Traumatismos'
+  otros: 'Otros'
 };
 
 export const camposAntecedentesReferidos = [
   'lumbalgias',
   'accidentes',
   'quirurgicos',
-  'traumaticos'
+  'otros'
 ];
 
 export function contarAntecedentesReferidos(data: any[]): [string, number, number][] {
   const total = data.length;
-  const campos = ['lumbalgias', 'accidentes', 'quirurgicos', 'traumaticos'];
+  const campos = ['lumbalgias', 'accidentes', 'quirurgicos', 'otros'];
   const conteo: Record<string, number> = {};
 
   for (const campo of campos) {

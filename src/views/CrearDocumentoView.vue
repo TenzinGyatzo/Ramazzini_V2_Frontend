@@ -195,8 +195,8 @@ const personalesPatologicosNegados = () => {
   formData.formDataHistoriaClinica.accidentesEspecificar = 'Negado';
   formData.formDataHistoriaClinica.quirurgicos = 'No';
   formData.formDataHistoriaClinica.quirurgicosEspecificar = 'Negado';
-  formData.formDataHistoriaClinica.traumaticos = 'No';
-  formData.formDataHistoriaClinica.traumaticosEspecificar = 'Negado';
+  formData.formDataHistoriaClinica.otros = 'No';
+  formData.formDataHistoriaClinica.otrosEspecificar = 'Negado';
 };
 
 const personalesNoPatologicosNegados = () => {

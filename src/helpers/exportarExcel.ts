@@ -43,7 +43,7 @@ export function exportarTrabajadoresDesdeFrontend(trabajadoresFiltrados: any[], 
     baseData['Respiratorio'] = trabajador.respiratorios;
     baseData['Epilepsia'] = trabajador.epilepsia;
     baseData['Quirúrgico'] = trabajador.quirurgico;
-    baseData['Traumático'] = trabajador.traumatico;
+    baseData['Otros'] = trabajador.otro;
     baseData['Alcoholismo'] = trabajador.alcoholismo;
     baseData['Tabaquismo'] = trabajador.tabaquismo;
     baseData['Accidente Laboral'] = trabajador.accidente;

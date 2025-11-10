@@ -1058,7 +1058,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
             lumbalgias: 'Lumbalgias',
             accidentes: 'Accidentes',
             quirurgicos: 'Quirúrgicos',
-            traumaticos: 'Traumáticos'
+            otros: 'Otros'
         };
         const datosAntecedentes = props.tablasDatos.antecedentes
             .filter(item => item && Array.isArray(item) && item.length >= 3)

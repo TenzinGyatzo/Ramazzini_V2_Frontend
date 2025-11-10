@@ -110,7 +110,7 @@ const filtrosConfig = [
   { id: 'epilepsia', label: 'Epilepsias', opciones: ['Si', 'No', '-'] },
   { id: 'alergia', label: 'Alergias', opciones: ['Si', 'No', '-'] },
   { id: 'accidente', label: 'Accidentes', opciones: ['Si', 'No', '-'] },
-  { id: 'traumatico', label: 'Traumatismos', opciones: ['Si', 'No', '-'] },
+  { id: 'otro', label: 'Otros', opciones: ['Si', 'No', '-'] },
   { id: 'quirurgico', label: 'Cirugias', opciones: ['Si', 'No', '-'] },
   { id: 'exposicion', label: 'Exposición a riesgos', opciones: [
     'Ergonómicos', 'Ruido', 'Polvos', 'Químicos', 'Psicosociales',
@@ -149,7 +149,7 @@ const filtros = reactive<Record<string, string>>({
   lumbalgia: '',
   accidente: '',
   quirurgico: '',
-  traumatico: '',
+  otro: '',
   exposicion: '',
   consultas: '',
   audiometria: '',
@@ -486,7 +486,7 @@ const exportarFiltrados = () => {
     lumbalgia: row.historiaClinicaResumen?.lumbalgias || '-',
     accidente: row.historiaClinicaResumen?.accidentes || '-',
     quirurgico: row.historiaClinicaResumen?.quirurgicos || '-',
-    traumatico: row.historiaClinicaResumen?.traumaticos || '-',
+    otro: row.historiaClinicaResumen?.otros || '-',
     respiratorios: row.historiaClinicaResumen?.respiratorios || '-',
     alcoholismo: row.historiaClinicaResumen?.alcoholismo || '',
     tabaquismo: row.historiaClinicaResumen?.tabaquismo || '',
@@ -584,7 +584,7 @@ const filtrosValidos = {
   lumbalgia: ['Si', 'No', '-'],
   accidente: ['Si', 'No', '-'],
   quirurgico: ['Si', 'No', '-'],
-  traumatico: ['Si', 'No', '-'],
+  otro: ['Si', 'No', '-'],
   exposicion: [
     'Ergonómicos', 'Ruido', 'Polvos', 'Químicos', 'Psicosociales', 'Temperaturas elevadas', 'Temperaturas abatidas', 
     'Vibraciones', 'Biológicos Infecciosos', '-'

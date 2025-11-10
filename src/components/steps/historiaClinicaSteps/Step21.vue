@@ -7,7 +7,7 @@ const { formDataHistoriaClinica } = useFormDataStore();
 const documentos = useDocumentosStore();
 
 // Valor local para la pregunta principal
-const traumaticos = ref('No');
+const otros = ref('No');
 
 // Referencia al input de texto
 const inputEspecificar = ref(null);
@@ -15,35 +15,35 @@ const inputEspecificar = ref(null);
 onMounted(() => {
     if (documentos.currentDocument) {
         // Si se está editando un documento, usa los valores existentes
-        traumaticos.value = documentos.currentDocument.traumaticos || 'No';
+        otros.value = documentos.currentDocument.otros || 'No';
 
     } else {
         // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
-        traumaticos.value = formDataHistoriaClinica.traumaticos || 'No';
+        otros.value = formDataHistoriaClinica.otros || 'No';
     }
 });
 
 onUnmounted(() => {
-    // Asegurar que formData tenga un valor inicial para traumaticos
-    if (!formDataHistoriaClinica.traumaticos) {
-        formDataHistoriaClinica.traumaticos = traumaticos.value;
+    // Asegurar que formData tenga un valor inicial para otros
+    if (!formDataHistoriaClinica.otros) {
+        formDataHistoriaClinica.otros = otros.value;
     }
 
-    if (!formDataHistoriaClinica.traumaticosEspecificar) {
-        formDataHistoriaClinica.traumaticosEspecificar = 'Negado';
+    if (!formDataHistoriaClinica.otrosEspecificar) {
+        formDataHistoriaClinica.otrosEspecificar = 'Negado';
     }
 });
 
 
-// Sincronizar traumaticos con formData
-watch(traumaticos, (newValue) => {
-    formDataHistoriaClinica.traumaticos = newValue;
+// Sincronizar otros con formData
+watch(otros, (newValue) => {
+    formDataHistoriaClinica.otros = newValue;
 });
 
-// Watch para establecer 'Negado' cuando traumaticos sea 'No' y enfocar input cuando sea 'Si'
-watch(traumaticos, async (newValue) => {
+// Watch para establecer 'Negado' cuando otros sea 'No' y enfocar input cuando sea 'Si'
+watch(otros, async (newValue) => {
     if (newValue === 'No') {
-        formDataHistoriaClinica.traumaticosEspecificar = 'Negado';
+        formDataHistoriaClinica.otrosEspecificar = 'Negado';
     }
     if (newValue === 'Si') {
         // Esperar a que el DOM se actualice y luego enfocar el input
@@ -59,11 +59,11 @@ watch(traumaticos, async (newValue) => {
     <div>
         <!-- Jerarquía Visual Mejorada -->
         <h1 class="text-2xl font-bold mb-4 text-gray-900">Antecedentes Patológicos</h1>
-        <h2 class="text-lg font-semibold mb-4 text-gray-700">TRAUMÁTICOS</h2>
+        <h2 class="text-lg font-semibold mb-4 text-gray-700">OTROS</h2>
         
         <!-- Pregunta principal con mejor jerarquía -->
         <div class="mb-8">
-            <p class="text-lg font-medium mb-4 text-gray-800">¿Existen antecedentes de traumas músculoesqueléticos en la historia del trabajador?</p>
+            <p class="text-lg font-medium mb-4 text-gray-800">¿Existen otros antecedentes relevantes en la historia del trabajador?</p>
             
             <!-- Diseño de Radio Buttons más Visual tipo Card -->
             <div class="grid grid-cols-2 gap-3">
@@ -71,7 +71,7 @@ watch(traumaticos, async (newValue) => {
                 <label 
                     :class="[
                         'relative flex flex-col items-center justify-center py-3 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
-                        traumaticos === 'No' 
+                        otros === 'No' 
                             ? 'border-emerald-600 bg-emerald-50 shadow-md' 
                             : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
                     ]"
@@ -79,14 +79,14 @@ watch(traumaticos, async (newValue) => {
                     <input 
                         type="radio" 
                         value="No" 
-                        v-model="traumaticos" 
+                        v-model="otros" 
                         class="sr-only" 
                     />
                     <!-- Icono -->
                     <div 
                         :class="[
                             'w-8 h-8 rounded-full flex items-center justify-center mb-1.5 transition-colors duration-200',
-                            traumaticos === 'No' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
+                            otros === 'No' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
                         ]"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -96,14 +96,14 @@ watch(traumaticos, async (newValue) => {
                     <span 
                         :class="[
                             'text-base font-semibold transition-colors duration-200',
-                            traumaticos === 'No' ? 'text-emerald-700' : 'text-gray-700'
+                            otros === 'No' ? 'text-emerald-700' : 'text-gray-700'
                         ]"
                     >
                         No
                     </span>
                     <!-- Indicador de selección -->
                     <div 
-                        v-if="traumaticos === 'No'"
+                        v-if="otros === 'No'"
                         class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
@@ -116,7 +116,7 @@ watch(traumaticos, async (newValue) => {
                 <label 
                     :class="[
                         'relative flex flex-col items-center justify-center py-3 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
-                        traumaticos === 'Si' 
+                        otros === 'Si' 
                             ? 'border-emerald-600 bg-emerald-50 shadow-md' 
                             : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
                     ]"
@@ -124,14 +124,14 @@ watch(traumaticos, async (newValue) => {
                     <input 
                         type="radio" 
                         value="Si" 
-                        v-model="traumaticos" 
+                        v-model="otros" 
                         class="sr-only" 
                     />
                     <!-- Icono -->
                     <div 
                         :class="[
                             'w-8 h-8 rounded-full flex items-center justify-center mb-1.5 transition-colors duration-200',
-                            traumaticos === 'Si' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
+                            otros === 'Si' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-600'
                         ]"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -141,14 +141,14 @@ watch(traumaticos, async (newValue) => {
                     <span 
                         :class="[
                             'text-base font-semibold transition-colors duration-200',
-                            traumaticos === 'Si' ? 'text-emerald-700' : 'text-gray-700'
+                            otros === 'Si' ? 'text-emerald-700' : 'text-gray-700'
                         ]"
                     >
                         Sí
                     </span>
                     <!-- Indicador de selección -->
                     <div 
-                        v-if="traumaticos === 'Si'"
+                        v-if="otros === 'Si'"
                         class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
@@ -168,14 +168,14 @@ watch(traumaticos, async (newValue) => {
             leave-from-class="opacity-100 transform translate-y-0"
             leave-to-class="opacity-0 transform -translate-y-2"
         >
-            <div v-if="traumaticos === 'Si'" class="mt-6">
+            <div v-if="otros === 'Si'" class="mt-6">
                 <p class="text-lg font-medium mb-3 text-gray-800">Especifique:</p>
                 <div>
                     <input 
                         ref="inputEspecificar"
                         type="text"
                         class="w-full p-3 border-2 border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
-                        v-model="formDataHistoriaClinica.traumaticosEspecificar"
+                        v-model="formDataHistoriaClinica.otrosEspecificar"
                         placeholder="Ej: Frecuencia, tratamiento, evolución, etc."
                         required
                     >

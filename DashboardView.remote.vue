@@ -1059,7 +1059,7 @@ function handleClickTablaAntecedentes(condicion) {
     lumbalgias: 'lumbalgia',
     accidentes: 'accidente',
     quirurgicos: 'quirurgico',
-    traumaticos: 'traumatico'
+    otros: 'otro'
   }[condicion];
 
   if (!campoFiltro) return;

@@ -26,7 +26,7 @@ const camposHallazgos = [
     'epilepticosPPEspecificar',        // Step 18
     'accidentesEspecificar',           // Step 19
     'quirurgicosEspecificar',          // Step 20
-    'traumaticosEspecificar',          // Step 21
+    'otrosEspecificar',                // Step 21
     'secuelas'                         // Step 45
 ];
 

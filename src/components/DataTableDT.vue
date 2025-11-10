@@ -203,7 +203,7 @@ function inicializarDataTable() {
         { data: 'historiaClinicaResumen.epilepticosPP', title: 'Epilépticos', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 27 (antes era 25)
         { data: 'historiaClinicaResumen.accidentes', title: 'Accidentes', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 28 (antes era 26)
         { data: 'historiaClinicaResumen.quirurgicos', title: 'Cirugias', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 29 (antes era 27)
-        { data: 'historiaClinicaResumen.traumaticos', title: 'Traumas', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 30 (antes era 28)
+        { data: 'historiaClinicaResumen.otros', title: 'Otros', render: d => d === 'Si' ? 'Si' : 'No', defaultContent: '-' }, // 30 (antes era 28)
         { data: 'historiaClinicaResumen.alcoholismo', title: 'Alcohol', defaultContent: '-' }, // 31 (antes era 29)
         { data: 'historiaClinicaResumen.tabaquismo', title: 'Tabaco', defaultContent: '-' }, // 32 (antes era 30)
         { data: 'historiaClinicaResumen.accidenteLaboral', title: 'Acc. Laboral', defaultContent: '-' }, // 33 (antes era 31)
@@ -577,7 +577,7 @@ function aplicarTodosLosFiltrosDesdeLocalStorage() {
     { id: 'epilepsia', columna: 27 },
     { id: 'accidente', columna: 28 },
     { id: 'quirurgico', columna: 29 },
-    { id: 'traumatico', columna: 30 },
+    { id: 'otro', columna: 30 },
     { id: 'aptitud', columna: 4 },
     { id: 'vigencia', columna: 5 }, // <-- Ahora funciona con filtro estándar
     { id: 'exposicion', columna: 36 }, // <-- este tiene lógica especial

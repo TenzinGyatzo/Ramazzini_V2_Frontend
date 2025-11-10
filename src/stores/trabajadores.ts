@@ -36,7 +36,7 @@ interface Trabajador {
     lumbalgias?: string | null;
     accidentes?: string | null;
     quirurgicos?: string | null;
-    traumaticos?: string | null;
+    otros?: string | null;
   };  
   aptitudResumen?: {
     aptitudPuesto?: string | null;
