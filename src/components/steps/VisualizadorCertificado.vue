@@ -268,58 +268,72 @@ function formatearCampo(campo) {
         <h1 class="text-center text-4xl tracking-[.25em]">CERTIFICA</h1>
      </div>
 
-     <div v-if="formData.formDataCertificado.fechaCertificado" class="w-full mb-4">
-        <p class="text-justify">
-          Que, habiendo practicado reconocimiento médico en esta fecha, {{ proveedorSalud.pais === 'GT' 
-            ? ' '
-            : (trabajadores.currentTrabajador.sexo === 'Femenino' ? 'a la' : 'al') + ' C. ' }}
-          <strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong> 
-          de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad.
+    <div v-if="formData.formDataCertificado.fechaCertificado" class="w-full mb-4">
+       <p class="text-justify">
+         <template v-if="proveedorSalud.pais === 'PA'">
+           Que, habiendo practicado reconocimiento médico en esta fecha, {{ trabajadores.currentTrabajador.sexo === 'Femenino' ? 'a la' : 'al' }} C. 
+           <strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong>, 
+           de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad, se hace constar la práctica del examen médico conforme a los procedimientos establecidos.
+         </template>
+         <template v-else>
+           Que, habiendo practicado reconocimiento médico en esta fecha, {{ proveedorSalud.pais === 'GT' 
+             ? ' '
+             : (trabajadores.currentTrabajador.sexo === 'Femenino' ? 'a la' : 'al') + ' C. ' }}
+           <strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong> 
+           de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad.
 
-          <template v-if="nearestExploracionFisica">
-            Presenta IMC: {{ nearestExploracionFisica.indiceMasaCorporal }} ({{ nearestExploracionFisica.categoriaIMC }}). 
-            Frecuencia cardiaca de {{ nearestExploracionFisica.frecuenciaCardiaca }} lpm ({{ nearestExploracionFisica.categoriaFrecuenciaCardiaca }}). 
-            Saturación de oxígeno del {{ nearestExploracionFisica.saturacionOxigeno }}% ({{ nearestExploracionFisica.categoriaSaturacionOxigeno }}).
-            Tensión arterial {{ nearestExploracionFisica.tensionArterialSistolica }}/{{ nearestExploracionFisica.tensionArterialDiastolica }} mmHg ({{ nearestExploracionFisica.categoriaTensionArterial || 'no especificada' }}).
-          </template>
+           <template v-if="nearestExploracionFisica">
+             Presenta IMC: {{ nearestExploracionFisica.indiceMasaCorporal }} ({{ nearestExploracionFisica.categoriaIMC }}). 
+             Frecuencia cardiaca de {{ nearestExploracionFisica.frecuenciaCardiaca }} lpm ({{ nearestExploracionFisica.categoriaFrecuenciaCardiaca }}). 
+             Saturación de oxígeno del {{ nearestExploracionFisica.saturacionOxigeno }}% ({{ nearestExploracionFisica.categoriaSaturacionOxigeno }}).
+             Tensión arterial {{ nearestExploracionFisica.tensionArterialSistolica }}/{{ nearestExploracionFisica.tensionArterialDiastolica }} mmHg ({{ nearestExploracionFisica.categoriaTensionArterial || 'no especificada' }}).
+           </template>
 
-          <template v-if="nearestExamenVista">
-            Examen visual con agudeza lejana sin corrección: 
-            OI 20/{{ nearestExamenVista.ojoIzquierdoLejanaSinCorreccion || 'N/D' }} y 
-            OD 20/{{ nearestExamenVista.ojoDerechoLejanaSinCorreccion || 'N/D' }} 
-            ({{ nearestExamenVista.sinCorreccionLejanaInterpretacion || 'categoría no disponible' }}). 
-            <template v-if="nearestExamenVista.interpretacionIshihara === 'Daltonismo'">
-              Se detecta alteración en la percepción cromática (Daltonismo).
-            </template>
-            <template v-else-if="nearestExamenVista.interpretacionIshihara === 'Normal'">
-              No se detectan alteraciones en la percepción cromática.
-            </template>
-            <template v-else>
-              No se cuenta con resultado de prueba de percepción cromática.
-            </template>
-          </template>
+           <template v-if="nearestExamenVista">
+             Examen visual con agudeza lejana sin corrección: 
+             OI 20/{{ nearestExamenVista.ojoIzquierdoLejanaSinCorreccion || 'N/D' }} y 
+             OD 20/{{ nearestExamenVista.ojoDerechoLejanaSinCorreccion || 'N/D' }} 
+             ({{ nearestExamenVista.sinCorreccionLejanaInterpretacion || 'categoría no disponible' }}). 
+             <template v-if="nearestExamenVista.interpretacionIshihara === 'Daltonismo'">
+               Se detecta alteración en la percepción cromática (Daltonismo).
+             </template>
+             <template v-else-if="nearestExamenVista.interpretacionIshihara === 'Normal'">
+               No se detectan alteraciones en la percepción cromática.
+             </template>
+             <template v-else>
+               No se cuenta con resultado de prueba de percepción cromática.
+             </template>
+           </template>
 
-          {{ textoExploracion }}
+           {{ textoExploracion }}
 
-          <template v-if="nearestExploracionFisica?.resumenExploracionFisica === 'Se encuentra clínicamente sano' || nearestExploracionFisica?.resumenExploracionFisica === 'Se encuentra clínicamente sana'">
-            {{ nearestExploracionFisica.resumenExploracionFisica }}.
-          </template>
-        </p>
+           <template v-if="nearestExploracionFisica?.resumenExploracionFisica === 'Se encuentra clínicamente sano' || nearestExploracionFisica?.resumenExploracionFisica === 'Se encuentra clínicamente sana'">
+             {{ nearestExploracionFisica.resumenExploracionFisica }}.
+           </template>
+         </template>
+       </p>
 
-     </div>
+    </div>
 
-     <div v-else class="w-full mb-4">
-        <p class="text-justify">
-          Que, habiendo practicado reconocimiento médico en esta fecha, {{ proveedorSalud.pais === 'GT' 
-            ? 'a '
-            : (trabajadores.currentTrabajador.sexo === 'Femenino' ? 'a la' : 'al') + ' C. ' }}
-          <strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong> 
-          de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad.
+    <div v-else class="w-full mb-4">
+       <p class="text-justify">
+         <template v-if="proveedorSalud.pais === 'PA'">
+           Que, habiendo practicado reconocimiento médico en esta fecha, {{ trabajadores.currentTrabajador.sexo === 'Femenino' ? 'a la' : 'al' }} C. 
+           <strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong>, 
+           de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad, se hace constar la práctica del examen médico conforme a los procedimientos establecidos.
+         </template>
+         <template v-else>
+           Que, habiendo practicado reconocimiento médico en esta fecha, {{ proveedorSalud.pais === 'GT' 
+             ? 'a '
+             : (trabajadores.currentTrabajador.sexo === 'Femenino' ? 'a la' : 'al') + ' C. ' }}
+           <strong>{{ trabajadores.currentTrabajador.nombre + ' ' + trabajadores.currentTrabajador.primerApellido + ' ' + trabajadores.currentTrabajador.segundoApellido }}</strong> 
+           de <strong>{{ calcularEdad(trabajadores.currentTrabajador.fechaNacimiento) }}</strong> años de edad.
 
-          &nbsp; <span :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }">[DESCRIPCIÓN DE LA EXPLORACIÓN DE LA FECHA MÁS CERCANA]</span>
-        </p>
+           &nbsp; <span :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }">[DESCRIPCIÓN DE LA EXPLORACIÓN DE LA FECHA MÁS CERCANA]</span>
+         </template>
+       </p>
 
-     </div>
+    </div>
 
      <div class="w-full mb-4">
         <p class="text-justify">

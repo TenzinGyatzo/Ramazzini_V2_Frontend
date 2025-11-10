@@ -338,7 +338,7 @@ onMounted(() => {
           validation="required"
         />
 
-        <div class="relative" ref="passwordContainer">
+        <div class="relative mt-4" ref="passwordContainer">
           <FormKit
             :type="showPassword ? 'text' : 'password'"
             label="¿Qué contraseña deseas usar?"
