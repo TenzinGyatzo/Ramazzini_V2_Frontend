@@ -22,6 +22,7 @@ import VisualizadorNotaMedica from '@/components/steps/VisualizadorNotaMedica.vu
 import VisualizadorControlPrenatal from '@/components/steps/VisualizadorControlPrenatal.vue';
 import VisualizadorHistoriaOtologica from '@/components/steps/VisualizadorHistoriaOtologica.vue';
 import VisualizadorPrevioEspirometria from '@/components/steps/VisualizadorPrevioEspirometria.vue';
+import VisualizadorReceta from '@/components/steps/VisualizadorReceta.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -130,6 +131,7 @@ watchEffect(async () => {
       controlPrenatal: formData.formDataControlPrenatal,
       historiaOtologica: formData.formDataHistoriaOtologica,
       previoEspirometria: formData.formDataPrevioEspirometria,
+      receta: formData.formDataReceta,
     };
 
     const documentoForm = documentoMap[tipoDocumento.value];
@@ -779,6 +781,18 @@ const contraindicacionesAbsolutasNegadas = () => {
           </div>
         </div>
       </Transition>
+
+      <Transition appear mode="out-in" name="slide-up">  
+        <div v-if="documentos.currentTypeOfDocument === 'receta'"
+          class="max-w-6xl mx-auto flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/3">
+            <FormStepper />
+          </div>
+          <div class="w-full xl:w-2/3 max-w-3xl mx-auto">
+            <VisualizadorReceta />
+          </div>
+        </div>
+      </Transition> 
 
     </div>
   </Transition>

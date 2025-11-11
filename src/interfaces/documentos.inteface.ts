@@ -486,3 +486,11 @@ export interface PrevioEspirometria {
     desprendimientoAgudoRetina: string;
     resultadoCuestionario: string;
 }
+
+export interface Receta {
+    _id: string;
+    fechaReceta: string;
+    tratamiento: string[];
+    recomendaciones: string[] | string;
+    indicaciones: string;
+}

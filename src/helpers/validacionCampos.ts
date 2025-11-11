@@ -43,6 +43,12 @@ function validarTexto(texto: any): boolean {
   return typeof texto === 'string' && texto.trim().length > 0;
 }
 
+// Función para validar listas de texto (mínimo un elemento no vacío)
+function validarListaTexto(lista: any): boolean {
+  if (!Array.isArray(lista) || lista.length === 0) return false;
+  return lista.every(item => typeof item === 'string' && item.trim().length > 0);
+}
+
 // Función para validar campos de selección
 function validarSeleccion(seleccion: any): boolean {
   if (esValorVacio(seleccion)) return false;
@@ -132,7 +138,12 @@ const camposRequeridosPorTipo: Record<string, Array<{campo: string, nombre: stri
   
   previoEspirometria: [
     { campo: 'fechaPrevioEspirometria', nombre: 'Fecha del cuestionario', tipo: 'fecha', paso: 1, validacion: validarFecha },
-  ]
+  ],
+
+  receta: [
+    { campo: 'fechaReceta', nombre: 'Fecha de la receta', tipo: 'fecha', paso: 1, validacion: validarFecha },
+    { campo: 'tratamiento', nombre: 'Tratamiento', tipo: 'lista', paso: 2, validacion: validarListaTexto },
+  ],
 };
 
 // Función principal para validar campos requeridos

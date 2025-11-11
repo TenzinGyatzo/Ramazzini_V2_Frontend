@@ -53,6 +53,10 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/previoEspirometria`);
     },
 
+    getRecetas(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/receta`);
+    },
+
     getAlturaDisponible(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/altura-disponible`);
     },

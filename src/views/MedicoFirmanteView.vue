@@ -16,6 +16,7 @@ const isDragOver = ref(false);  // Para el estado de drag and drop
 const formularioMedicoFirmante = ref({
   nombre: "",
   tituloProfesional: "",
+  universidad: "",
   numeroCedulaProfesional: "",
   especialistaSaludTrabajo: "No",
   numeroCedulaEspecialista: "",
@@ -29,6 +30,7 @@ watchEffect(() => {
     Object.assign(formularioMedicoFirmante.value, {
       nombre: medicoFirmante.medicoFirmante.nombre || "",
       tituloProfesional: medicoFirmante.medicoFirmante.tituloProfesional || "",
+      universidad: medicoFirmante.medicoFirmante.universidad || "",
       numeroCedulaProfesional: medicoFirmante.medicoFirmante.numeroCedulaProfesional || "",
       especialistaSaludTrabajo: medicoFirmante.medicoFirmante.especialistaSaludTrabajo || "No",
       numeroCedulaEspecialista: medicoFirmante.medicoFirmante.numeroCedulaEspecialista || "",
@@ -57,6 +59,7 @@ const validateFile = (file) => {
 const piePaginaFirmante = computed(() => ({
   nombre: formularioMedicoFirmante.value.nombre || "",
   tituloProfesional: formularioMedicoFirmante.value.tituloProfesional || "",
+  universidad: formularioMedicoFirmante.value.universidad || "",
   numeroCedulaProfesional: formularioMedicoFirmante.value.numeroCedulaProfesional || "",
   especialistaSaludTrabajo: formularioMedicoFirmante.value.especialistaSaludTrabajo === "Si" ? "Especialista en Medicina del Trabajo" : "",
   numeroCedulaEspecialista: formularioMedicoFirmante.value.numeroCedulaEspecialista || "",
@@ -224,16 +227,36 @@ const firmaSrc = computed(() => {
                     <FormKit type="form" :actions="false"
                         incomplete-message="Por favor, valide que los datos sean correctos*" @submit="handleSubmit">
 
-                        <FormKit type="text" label="Nombre Completo" name="nombre"
-                            placeholder="Ej. Juan Alfonso Perez Galeana" validation="required"
-                            :validation-messages="{ required: 'Este campo es obligatorio' }"
-                            v-model="formularioMedicoFirmante.nombre" />
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                            <FormKit
+                                type="text"
+                                label="Nombre Completo"
+                                name="nombre"
+                                placeholder="Ej. Juan Alfonso Perez Galeana"
+                                validation="required"
+                                :validation-messages="{ required: 'Este campo es obligatorio' }"
+                                v-model="formularioMedicoFirmante.nombre"
+                            />
+
+                            <FormKit
+                                type="select"
+                                label="Título Profesional"
+                                name="tituloProfesional"
+                                placeholder='Selecciona "Dr." o "Dra."'
+                                :options="titulos"
+                                v-model="formularioMedicoFirmante.tituloProfesional"
+                            />
+                        </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
 
-                            <FormKit type="select" label="Título Profesional" name="tituloProfesional"
-                                placeholder='Selecciona "Dr." o "Dra."' :options="titulos"
-                                v-model="formularioMedicoFirmante.tituloProfesional" />
+                            <FormKit
+                                type="text"
+                                label="Institución que otorgó el título"
+                                name="universidad"
+                                placeholder="Ej. Universidad Nacional Autónoma de México"
+                                v-model="formularioMedicoFirmante.universidad"
+                            />
 
                             <FormKit type="text" :label="proveedorSaludStore.proveedorSalud?.pais === 'MX' ? 'Cédula Profesional' : (proveedorSaludStore.proveedorSalud?.pais === 'GT' ? 'Colegiado Activo' : 'Registro Profesional')" name="numeroCedulaProfesional"
                                 placeholder="Ej. 142988, REG-123456, CRM 123456" validation="cedulaProfesionalValidation" v-model="formularioMedicoFirmante.numeroCedulaProfesional"
@@ -341,7 +364,7 @@ const firmaSrc = computed(() => {
                                         </span><br v-if="piePaginaFirmante.especialistaSaludTrabajo">
                                         
                                         <span v-if="piePaginaFirmante.nombreCredencialAdicional" 
-                                            class="font-light block truncate overflow-hidden text-ellipsis whitespace-nowrap max-w-[390px]">
+                                            class="font-light truncate overflow-hidden text-ellipsis whitespace-nowrap max-w-[390px]">
                                             {{ piePaginaFirmante.nombreCredencialAdicional }} No. {{ piePaginaFirmante.numeroCredencialAdicional }}
                                         </span>
                                     </p>
@@ -350,7 +373,7 @@ const firmaSrc = computed(() => {
 
                             <!-- Vista previa de las Firmas (Derecha) -->
                             <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                                <div v-if="medicoFirmante.medicoFirmante?.firma?.data" class="w-full sm:w-1/2 flex flex-col items-center">
+                                <div v-if="medicoFirmante.medicoFirmante?.firma?.data" class="w-full flex flex-col items-center">
                                     <p class="font-medium text-lg text-gray-700">Firma actual:</p>
                                     <img :src="firmaSrc" alt="'Firma de ' + medicoFirmante.medicoFirmante.nombre"
                                         class="w-40 h-40 sm:w-48 sm:h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg"/>
@@ -358,7 +381,7 @@ const firmaSrc = computed(() => {
 
                                 <!-- Firma Nueva -->
                                 <Transition appear name="fade-slow">
-                                    <div v-if="firmaPreview" class="w-full sm:w-1/2 flex flex-col items-center">
+                                    <div v-if="firmaPreview" class="w-full flex flex-col items-center">
                                         <p class="font-medium text-lg text-gray-700">Firma Nueva:</p>
                                         <img :src="firmaPreview" alt="Vista previa de la firma"
                                             class="w-40 h-40 sm:w-48 sm:h-48 object-contain mt-2 border-2 border-gray-300 rounded-lg" />

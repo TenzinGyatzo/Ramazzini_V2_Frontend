@@ -801,6 +801,7 @@ const props = defineProps({
     audiometria: [Object, String],
     certificado: [Object, String],
     certificadoExpedito: [Object, String],
+    receta: [Object, String],
     documentoExterno: [Object, String],
     examenVista: [Object, String],
     exploracionFisica: [Object, String],
@@ -1003,6 +1004,7 @@ const construirRutaYNombrePDF = () => {
     'audiometria': props.audiometria,
     'certificado': props.certificado,
     'certificadoexpedito': props.certificadoExpedito,
+    'receta': props.receta,
     'examenvista': props.examenVista,
     'exploracionfisica': props.exploracionFisica,
     'historiaclinica': props.historiaClinica,
@@ -1012,7 +1014,7 @@ const construirRutaYNombrePDF = () => {
     'previoespirometria': props.previoEspirometria,
   }[tipoSinEspacios];
 
-  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria;
+  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaReceta || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria;
 
   const tiposDocumentos = {
     'antidoping': 'Antidoping',
@@ -1020,6 +1022,7 @@ const construirRutaYNombrePDF = () => {
     'audiometria': 'Audiometria',
     'certificado': 'Certificado',
     'certificadoexpedito': 'Certificado Expedito',
+    'receta': 'Receta',
     'examenvista': 'Examen Vista', 
     'exploracionfisica': 'Exploracion Fisica',
     'historiaclinica': 'Historia Clinica',
@@ -1138,7 +1141,7 @@ onMounted(() => {
 });
 
 // Watcher para verificar disponibilidad cuando cambien las props
-watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certificado, props.certificadoExpedito, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal, props.historiaOtologica, props.previoEspirometria], () => {
+watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certificado, props.certificadoExpedito, props.receta, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal, props.historiaOtologica, props.previoEspirometria], () => {
   verificarDisponibilidadPDF();
 }, { deep: true });
 
@@ -1828,6 +1831,58 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     </div>
                 </div>
 
+                <!-- Receta Médica -->
+                <div v-if="typeof receta === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, receta, 'Receta')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
+                        `${receta.rutaPDF}`,
+                        `Receta ${convertirFechaISOaDDMMYYYY(receta.fechaReceta)}.pdf`,
+                        receta.updatedAt ? new Date(receta.updatedAt).getTime() : null)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-lg mr-4 group-hover:bg-emerald-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-prescription-bottle-medical text-emerald-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
+                                    Receta Médica
+                                </h3>
+                                <span v-if="Array.isArray(receta.tratamiento) && receta.tratamiento.length" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">
+                                    {{ receta.tratamiento.length }} indicac{{ receta.tratamiento.length === 1 ? 'ión' : 'iones' }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(receta.fechaReceta) }}
+                            </p>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div v-if="receta.indicaciones" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Indicaciones</p>
+                                    <p class="font-medium text-sm truncate max-w-full text-gray-800">
+                                        {{ receta.indicaciones }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Control Prenatal -->   
                 <div v-if="typeof controlPrenatal === 'object'" class="flex itemsats-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
@@ -2107,6 +2162,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.certifica
                     'Audiometria': audiometria,
                     'Certificado': certificado,
                     'Certificado Expedito': certificadoExpedito,
+                    'Receta': receta,
                     'Documento Externo': documentoExterno,
                     'Examen Vista': examenVista,
                     'Exploracion Fisica': exploracionFisica,

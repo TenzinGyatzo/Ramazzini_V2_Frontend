@@ -25,6 +25,7 @@ const documentOrder = {
   "Nota Medica": 11,
   "Control Prenatal": 12,
   "Certificado Expedito": 13,
+  "Receta": 14,
 };
 
 const getDocumentType = (route) => {
@@ -40,6 +41,7 @@ const getDocumentType = (route) => {
   if (route.includes("Nota Medica")) return "Nota Medica";
   if (route.includes("Control Prenatal")) return "Control Prenatal";
   if (route.includes("Certificado Expedito")) return "Certificado Expedito";
+  if (route.includes("Receta")) return "Receta";
   return "Documento Externo"; // Para cualquier otro caso
 };
 

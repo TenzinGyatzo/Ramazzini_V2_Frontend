@@ -15,6 +15,7 @@ import type {
   ControlPrenatal,
   HistoriaOtologica,
   PrevioEspirometria,
+  Receta,
 } from "@/interfaces/documentos.inteface";
 
 export type DocumentsByYear = {
@@ -32,6 +33,7 @@ export type DocumentsByYear = {
     controlPrenatal?: ControlPrenatal[];
     historiaOtologica?: HistoriaOtologica[];
     previoEspirometria?: PrevioEspirometria[];
+    recetas?: Receta[];
   };
 };
 
@@ -72,7 +74,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
         notasMedicas,
         controlPrenatal,
         historiaOtologica,
-        previoEspirometria
+        previoEspirometria,
+        recetas
       ] = await Promise.all([
         DocumentosAPI.getAntidopings(trabajadorId).catch(error => {
           console.error("Error al obtener antidopings", error);
@@ -125,6 +128,10 @@ export const useDocumentosStore = defineStore("documentos", () => {
         DocumentosAPI.getPrevioEspirometria(trabajadorId).catch(error => {
           console.error("Error al obtener previoEspirometria", error);
           return { data: [] };
+        }),
+        DocumentosAPI.getRecetas(trabajadorId).catch(error => {
+          console.error("Error al obtener recetas", error);
+          return { data: [] };
         })
       ]);
 
@@ -142,7 +149,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
         notasMedicas: Array.isArray(notasMedicas.data) ? notasMedicas.data : [],
         controlPrenatal: Array.isArray(controlPrenatal.data) ? controlPrenatal.data : [],
         historiaOtologica: Array.isArray(historiaOtologica.data) ? historiaOtologica.data : [],
-        previoEspirometria: Array.isArray(previoEspirometria.data) ? previoEspirometria.data : []
+        previoEspirometria: Array.isArray(previoEspirometria.data) ? previoEspirometria.data : [],
+        recetas: Array.isArray(recetas.data) ? recetas.data : [],
       };
 
       // Procesar documentos y agrupar por año
@@ -187,7 +195,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
       notasMedicas: "fechaNotaMedica",
       controlPrenatal: "fechaInicioControlPrenatal",
       historiaOtologica: "fechaHistoriaOtologica",
-      previoEspirometria: "fechaPrevioEspirometria"
+      previoEspirometria: "fechaPrevioEspirometria",
+      recetas: "fechaReceta"
     };
 
     return documento?.[fechaCampos[tipoDocumento]] || "";
