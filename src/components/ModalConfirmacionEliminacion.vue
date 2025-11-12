@@ -62,6 +62,9 @@ const documentTypes = computed(() => {
     else if (route.includes('Certificado')) {
       types.certificados = (types.certificados || 0) + 1;
     }
+    else if (route.includes('Receta')) {
+      types.recetas = (types.recetas || 0) + 1;
+    }
     else if (route.includes('Previo Espirometria')) {
       types.previoEspirometria = (types.previoEspirometria || 0) + 1;
     }
@@ -71,7 +74,7 @@ const documentTypes = computed(() => {
     // Si la ruta no contiene ninguno de los tipos específicos pero tiene extensión, es un documento externo
     else if (!route.includes('Aptitud') && !route.includes('Historia Clinica') && !route.includes('Exploracion Fisica') && 
              !route.includes('Examen Vista') && !route.includes('Audiometria') && !route.includes('Antidoping') && !route.includes('Certificado') && 
-             !route.includes('Nota Medica') && (route.includes('.pdf') || route.includes('.png') || route.includes('.jpg') || 
+             !route.includes('Nota Medica') && !route.includes('Receta') && (route.includes('.pdf') || route.includes('.png') || route.includes('.jpg') || 
              route.includes('.jpeg') || route.includes('.doc') || route.includes('.docx'))) {
       types.documentosExternos = (types.documentosExternos || 0) + 1;
     }
@@ -164,6 +167,10 @@ const documentTypes = computed(() => {
                       <div v-if="documentTypes.certificados" class="flex items-center space-x-2">
                         <i class="fas fa-certificate text-blue-600"></i>
                         <span>{{ documentTypes.certificados }} Certificado{{ documentTypes.certificados !== 1 ? 's' : '' }}</span>
+                      </div>
+                      <div v-if="documentTypes.recetas" class="flex items-center space-x-2">
+                        <i class="fas fa-prescription-bottle-medical text-rose-600"></i>
+                        <span>{{ documentTypes.recetas }} Receta{{ documentTypes.recetas !== 1 ? 's' : '' }} Médica{{ documentTypes.recetas !== 1 ? 's' : '' }}</span>
                       </div>
                       <div v-if="documentTypes.documentosExternos" class="flex items-center space-x-2">
                         <i class="fas fa-file-alt text-purple-600"></i>

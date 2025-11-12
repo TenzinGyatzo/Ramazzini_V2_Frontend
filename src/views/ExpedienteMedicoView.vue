@@ -385,6 +385,17 @@ const handleDeleteSelected = async () => {
                 }
             });
 
+            // Recetas Médicas
+            yearData.recetas?.forEach(receta => {
+                const rutaBase = obtenerRutaDocumento(receta, 'Receta');
+                const fecha = obtenerFechaDocumento(receta) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(receta, 'Receta', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: receta._id, tipo: 'receta' });
+                }
+            });
+
             // Control Prenatal
             yearData.controlPrenatal?.forEach(controlPrenatal => {
                 const rutaBase = obtenerRutaDocumento(controlPrenatal, 'Control Prenatal');
