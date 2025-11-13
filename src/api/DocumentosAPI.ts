@@ -61,6 +61,10 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/altura-disponible`);
     },
 
+    getMotivoExamenReciente(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/historiaClinica/motivo-examen-reciente`);
+    },
+
     createDocument(documentType: string, trabajadorId: string, data: any) {
         return api.post(`/expedientes/${trabajadorId}/documentos/${documentType}/crear`, data);
     },
