@@ -1,11 +1,6 @@
 <script lang="ts" setup>
 import { onMounted, onUnmounted } from 'vue';
-
-interface CampoFaltante {
-  nombre: string;
-  tipo: string;
-  paso?: number;
-}
+import type { CampoFaltante } from '@/helpers/validacionCampos';
 
 const props = defineProps<{
   camposFaltantes: CampoFaltante[];

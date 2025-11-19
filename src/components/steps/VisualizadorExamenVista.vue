@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
@@ -14,6 +15,18 @@ const steps = useStepsStore();
 const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
 };
+
+// Obtener el país del proveedor de salud
+const proveedorSalud = computed(() => {
+  try {
+    return JSON.parse(localStorage.getItem('proveedorSalud')) || null;
+  } catch {
+    return null;
+  }
+});
+
+const paisProveedor = computed(() => proveedorSalud.value?.pais || '');
+const esGuatemala = computed(() => paisProveedor.value === 'GT');
 
 // console.log('Datos del store en VisualizadorExamenVista:', formData.formDataExamenVista);
 
@@ -49,7 +62,7 @@ const goToStep = (stepNumber) => {
               NOMBRE
             </td>
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
-                              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
+              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               EDAD
@@ -229,6 +242,93 @@ const goToStep = (stepNumber) => {
         </tbody>
       </table>
     </div>
+
+    <!-- Secciones adicionales solo para Guatemala -->
+    <template v-if="esGuatemala">
+      <!-- Pruebas de función ocular -->
+      <div class="w-full"
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 7 }">
+        <h2 class="text-lg font-medium mb-1 text-center">Pruebas de Función Ocular</h2>
+        <table class="table-auto w-full border-collapse border border-gray-200" @click="goToStep(7)">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">TEST DE ESTEREOPSIS</th>
+              <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">CAMPOS VISUALES</th>
+              <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">COVER TEST</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="odd:bg-white even:bg-gray-50">
+              <td class="w-1/3 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 cursor-pointer">
+                {{ formData.formDataExamenVista.testEstereopsis || ' ' }}
+              </td>
+              <td class="w-1/3 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 cursor-pointer">
+                {{ formData.formDataExamenVista.testCampoVisual || ' ' }}
+              </td>
+              <td class="w-1/3 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 cursor-pointer">
+                {{ formData.formDataExamenVista.coverTest || ' ' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Receta Final -->
+      <div class="w-full">
+        <h2 class="text-lg font-medium mb-1 text-center">Receta Final</h2>
+        <table class="table-auto w-full border-collapse border border-gray-200"
+        @click="goToStep(8)"
+        :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 8 }">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">-</th>
+              <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">OJO IZQUIERDO</th>
+              <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">OJO DERECHO</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(8)">
+              <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">ESFERA</td>
+              <td class="w-1/3 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+                {{ formData.formDataExamenVista.esferaOjoIzquierdo || ' ' }}
+              </td>
+              <td class="w-1/3 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+                {{ formData.formDataExamenVista.esferaOjoDerecho || ' ' }}
+              </td>
+            </tr>
+            <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(8)">
+              <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">CILINDRO</td>
+              <td class="w-1/3 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+                {{ formData.formDataExamenVista.cilindroOjoIzquierdo || ' ' }}
+              </td>
+              <td class="w-1/3 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+                {{ formData.formDataExamenVista.cilindroOjoDerecho || ' ' }}
+              </td>
+            </tr>
+            <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(8)">
+              <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">ADICIÓN</td>
+              <td class="w-1/3 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+                {{ formData.formDataExamenVista.adicionOjoIzquierdo || ' ' }}
+              </td>
+              <td class="w-1/3 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
+                {{ formData.formDataExamenVista.adicionOjoDerecho || ' ' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Diagnóstico y Recomendaciones -->
+      <div class="w-full">
+        <h2 class="text-lg font-medium mb-1 text-center">Diagnóstico y Recomendaciones</h2>
+        <div class="border border-gray-200 rounded-md p-3 cursor-pointer" @click="goToStep(9)"
+          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 9 }">
+          <p class="text-xs sm:text-sm text-center text-gray-700 whitespace-pre-wrap">
+            {{ formData.formDataExamenVista.diagnosticoRecomendaciones || ' ' }}
+          </p>
+        </div>
+      </div>
+    </template>
   </div>
   <div class="w-full flex justify-end gap-4 mt-4">
     <a 
