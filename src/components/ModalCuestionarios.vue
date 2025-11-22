@@ -47,6 +47,16 @@ const handleQuestionnaireSelect = (questionnaireType) => {
       
       // Cerrar el modal después de navegar
       closeModal();
+    } else if (questionnaireType === 'constancia-aptitud') {
+      router.push({
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'constanciaAptitud'
+        }
+      });
+      closeModal();
     } else if (questionnaireType === 'receta') {
       router.push({
         name: 'crear-documento',
@@ -118,6 +128,13 @@ const handleQuestionnaireSelect = (questionnaireType) => {
               Otros informes
             </div>
             <div class="space-y-2">
+              <button 
+                @click="handleQuestionnaireSelect('constancia-aptitud')"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+              >
+                <i class="fas fa-file-alt text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
+                Constancia de Aptitud
+              </button>
               <button 
                 @click="handleQuestionnaireSelect('receta')"
                 class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"

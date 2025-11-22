@@ -83,6 +83,7 @@ watch(() => trabajadores.currentTrabajador, (newTrabajador, oldTrabajador) => {
 });
 
 const documentTypeLabels = {
+  constanciaAptitud: "Constancia de Aptitud",
   aptitud: "Aptitud al Puesto",
   historiaClinica: "Historia Clínica",
   exploracionFisica: "Exploración Física",

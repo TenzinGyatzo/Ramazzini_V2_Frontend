@@ -57,6 +57,10 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/receta`);
     },
 
+    getConstanciasAptitud(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/constanciaAptitud`);
+    },
+
     getAlturaDisponible(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/altura-disponible`);
     },

@@ -275,6 +275,17 @@ const handleDeleteSelected = async () => {
         
         // Recorrer todos los documentos por año para encontrar los que coinciden con las rutas seleccionadas
         Object.values(documentos.documentsByYear).forEach(yearData => {
+            // Constancias de Aptitud
+            yearData.constanciasAptitud?.forEach(constanciaAptitud => {
+                const rutaBase = obtenerRutaDocumento(constanciaAptitud, 'Constancia Aptitud');
+                const fecha = obtenerFechaDocumento(constanciaAptitud) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(constanciaAptitud, 'Constancia Aptitud', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: constanciaAptitud._id, tipo: 'constanciaAptitud' });
+                }
+            });
+
             // Aptitudes
             yearData.aptitudes?.forEach(aptitud => {
                 const rutaBase = obtenerRutaDocumento(aptitud, 'Aptitud');
@@ -483,6 +494,7 @@ const totalDocumentosCreados = computed(() => {
   if (!documentos.documentsByYear) return 0;
   return Object.values(documentos.documentsByYear).reduce((total, yearData) => {
     return total + (
+      (yearData.constanciasAptitud?.length || 0) +
       (yearData.aptitudes?.length || 0) +
       (yearData.historiasClinicas?.length || 0) +
       (yearData.exploracionesFisicas?.length || 0) +

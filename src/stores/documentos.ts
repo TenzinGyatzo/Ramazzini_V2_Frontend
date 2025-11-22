@@ -16,6 +16,7 @@ import type {
   HistoriaOtologica,
   PrevioEspirometria,
   Receta,
+  ConstanciaAptitud,
 } from "@/interfaces/documentos.inteface";
 
 export type DocumentsByYear = {
@@ -34,6 +35,7 @@ export type DocumentsByYear = {
     historiaOtologica?: HistoriaOtologica[];
     previoEspirometria?: PrevioEspirometria[];
     recetas?: Receta[];
+    constanciasAptitud?: ConstanciaAptitud[];
   };
 };
 
@@ -75,7 +77,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
         controlPrenatal,
         historiaOtologica,
         previoEspirometria,
-        recetas
+        recetas,
+        constanciasAptitud
       ] = await Promise.all([
         DocumentosAPI.getAntidopings(trabajadorId).catch(error => {
           console.error("Error al obtener antidopings", error);
@@ -132,6 +135,10 @@ export const useDocumentosStore = defineStore("documentos", () => {
         DocumentosAPI.getRecetas(trabajadorId).catch(error => {
           console.error("Error al obtener recetas", error);
           return { data: [] };
+        }),
+        DocumentosAPI.getConstanciasAptitud(trabajadorId).catch(error => {
+          console.error("Error al obtener constanciasAptitud", error);
+          return { data: [] };
         })
       ]);
 
@@ -151,6 +158,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
         historiaOtologica: Array.isArray(historiaOtologica.data) ? historiaOtologica.data : [],
         previoEspirometria: Array.isArray(previoEspirometria.data) ? previoEspirometria.data : [],
         recetas: Array.isArray(recetas.data) ? recetas.data : [],
+        constanciasAptitud: Array.isArray(constanciasAptitud.data) ? constanciasAptitud.data : [],
       };
 
       // Procesar documentos y agrupar por año
@@ -196,7 +204,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
       controlPrenatal: "fechaInicioControlPrenatal",
       historiaOtologica: "fechaHistoriaOtologica",
       previoEspirometria: "fechaPrevioEspirometria",
-      recetas: "fechaReceta"
+      recetas: "fechaReceta",
+      constanciasAptitud: "fechaConstanciaAptitud"
     };
 
     return documento?.[fechaCampos[tipoDocumento]] || "";

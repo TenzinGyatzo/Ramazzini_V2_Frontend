@@ -67,7 +67,8 @@ const canDeleteAnyDocument = computed(() => {
 
 // Calcular el total de documentos para mostrar en el header
 const totalDocumentos = computed(() => {
-    return (props.documents.aptitudes?.length || 0) +
+    return (props.documents.constanciasAptitud?.length || 0) +
+           (props.documents.aptitudes?.length || 0) +
            (props.documents.historiasClinicas?.length || 0) +
            (props.documents.exploracionesFisicas?.length || 0) +
            (props.documents.examenesVista?.length || 0) +
@@ -87,6 +88,15 @@ const totalDocumentos = computed(() => {
 const rutasDelGrupo = computed(() => {
     const rutas: string[] = [];
     
+    if (props.documents.constanciasAptitud) {
+        props.documents.constanciasAptitud.forEach(constanciaAptitud => {
+            const rutaBase = obtenerRutaDocumento(constanciaAptitud, 'Constancia de Aptitud');
+            const fecha = obtenerFechaDocumento(constanciaAptitud) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(constanciaAptitud, 'Constancia de Aptitud', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            rutas.push(ruta);
+        });
+    }
     if (props.documents.aptitudes) {
         props.documents.aptitudes.forEach(aptitud => {
             const rutaBase = obtenerRutaDocumento(aptitud, 'Aptitud');
@@ -362,6 +372,30 @@ const toggleSelectAll = () => {
 
         <!-- Contenido de documentos con espaciado mejorado -->
         <div class="divide-gray-100">
+
+            <!-- Constancias de Aptitud -->
+            <div v-if="documents.constanciasAptitud && documents.constanciasAptitud.length > 0">
+                <div v-for="(constanciaAptitud, index) in documents.constanciasAptitud" :key="constanciaAptitud._id" 
+                     class="transition-all duration-200 hover:bg-gray-50"
+                     :style="{ animationDelay: `${index * 50}ms` }">
+                    <DocumentoItem 
+                        :constanciaAptitud="constanciaAptitud" 
+                        :documentoId="constanciaAptitud._id" 
+                        :documentoTipo="'constanciaAptitud'" 
+                        :toggleRouteSelection="toggleRouteSelection" 
+                        :isDeletionMode="isDeletionMode"
+                        :isSelected="(() => {
+                            const rutaBase = obtenerRutaDocumento(constanciaAptitud, 'Constancia de Aptitud');
+                            const fecha = obtenerFechaDocumento(constanciaAptitud) || 'SinFecha';
+                            const nombreArchivo = obtenerNombreArchivo(constanciaAptitud, 'Constancia de Aptitud', fecha);
+                            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                            return props.selectedRoutes.includes(ruta);
+                        })()"
+                        @eliminarDocumento="$emit('eliminarDocumento', constanciaAptitud._id, convertirFechaISOaDDMMYYYY(constanciaAptitud.fechaConstanciaAptitud), 'constanciaAptitud')" 
+                        @openSubscriptionModal="emit('openSubscriptionModal')"
+                    />
+                </div>
+            </div>
 
             <!-- Aptitudes -->
             <div v-if="documents.aptitudes && documents.aptitudes.length > 0">

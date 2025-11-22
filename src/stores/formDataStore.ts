@@ -17,6 +17,7 @@ export const useFormDataStore = defineStore('formData', () => {
   const formDataHistoriaOtologica = ref({}); // Estado compartido
   const formDataPrevioEspirometria = ref({}); // Estado compartido
   const formDataReceta = ref({}); // Estado compartido
+  const formDataConstanciaAptitud = ref({}); // Estado compartido
 
   const setFormDataFromDocument = (documento, tipoDocumento) => {
     if (!documento) {
@@ -67,6 +68,9 @@ export const useFormDataStore = defineStore('formData', () => {
       case 'receta':
         formDataReceta.value = { ...documento };
         break;
+      case 'constanciaAptitud':
+        formDataConstanciaAptitud.value = { ...documento };
+        break;
       default:
         console.error('Tipo de documento no reconocido:', tipoDocumento);
         break;
@@ -89,6 +93,7 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataHistoriaOtologica.value = {};
     formDataPrevioEspirometria.value = {};
     formDataReceta.value = {};
+    formDataConstanciaAptitud.value = {};
   };
 
   const consultarAlturaDisponible = async (trabajadorId: string) => {
@@ -126,6 +131,7 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataHistoriaOtologica,
     formDataPrevioEspirometria,
     formDataReceta,
+    formDataConstanciaAptitud,
     setFormDataFromDocument,
     resetFormData,
     consultarAlturaDisponible

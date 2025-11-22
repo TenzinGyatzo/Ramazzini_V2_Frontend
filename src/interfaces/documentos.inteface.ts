@@ -494,3 +494,8 @@ export interface Receta {
     recomendaciones: string[] | string;
     indicaciones: string;
 }
+
+export interface ConstanciaAptitud {
+    _id: string;
+    fechaConstanciaAptitud: string;
+}

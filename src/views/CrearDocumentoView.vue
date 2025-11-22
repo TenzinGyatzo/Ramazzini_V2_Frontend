@@ -23,6 +23,7 @@ import VisualizadorControlPrenatal from '@/components/steps/VisualizadorControlP
 import VisualizadorHistoriaOtologica from '@/components/steps/VisualizadorHistoriaOtologica.vue';
 import VisualizadorPrevioEspirometria from '@/components/steps/VisualizadorPrevioEspirometria.vue';
 import VisualizadorReceta from '@/components/steps/VisualizadorReceta.vue';
+import VisualizadorConstanciaAptitud from '@/components/steps/VisualizadorConstanciaAptitud.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -132,6 +133,7 @@ watchEffect(async () => {
       historiaOtologica: formData.formDataHistoriaOtologica,
       previoEspirometria: formData.formDataPrevioEspirometria,
       receta: formData.formDataReceta,
+      constanciaAptitud: formData.formDataConstanciaAptitud,
     };
 
     const documentoForm = documentoMap[tipoDocumento.value];
@@ -793,6 +795,18 @@ const contraindicacionesAbsolutasNegadas = () => {
           </div>
         </div>
       </Transition> 
+
+      <Transition appear mode="out-in" name="slide-up">
+        <div v-if="documentos.currentTypeOfDocument === 'constanciaAptitud'"
+          class="max-w-6xl mx-auto flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/3">
+            <FormStepper />
+          </div>
+          <div class="w-full xl:w-2/3 max-w-3xl mx-auto">
+            <VisualizadorConstanciaAptitud />
+          </div>
+        </div>
+      </Transition>
 
     </div>
   </Transition>
