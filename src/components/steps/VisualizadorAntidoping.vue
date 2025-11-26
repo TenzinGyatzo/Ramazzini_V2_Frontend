@@ -68,49 +68,59 @@ const showOpiaceos = computed(() => {
           <td class="px-2 py-1 border border-gray-300">{{ formatDateDDMMYYYY(formData.formDataAntidoping.fechaAntidoping) }}</td>
         </tr>
         <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
-          <td class="px-2 py-1 border border-gray-300 font-medium">Marihuana</td>
+          <td class="px-2 py-1 border border-gray-300 font-medium">Marihuana (THC)</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.marihuana }}</td>
         </tr>
         <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
-          <td class="px-2 py-1 border border-gray-300 font-medium">Cocaína</td>
+          <td class="px-2 py-1 border border-gray-300 font-medium">Cocaína (COC)</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.cocaina }}</td>
         </tr>
         <tr v-if="showAnfetaminas" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
-          <td class="px-2 py-1 border border-gray-300 font-medium">Anfetaminas</td>
+          <td class="px-2 py-1 border border-gray-300 font-medium">Anfetaminas (AMP)</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.anfetaminas || '' }}</td>
         </tr>
         <tr v-if="showMetanfetaminas" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
-          <td class="px-2 py-1 border border-gray-300 font-medium">Metanfetaminas</td>
+          <td class="px-2 py-1 border border-gray-300 font-medium">Metanfetaminas (MET)</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.metanfetaminas || '' }}</td>
         </tr>
         <tr v-if="showOpiaceos" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
-          <td class="px-2 py-1 border border-gray-300 font-medium">Opiáceos</td>
+          <td class="px-2 py-1 border border-gray-300 font-medium">Opiáceos (OPI)</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.opiaceos || '' }}</td>
         </tr>
         <tr v-if="formData.formDataAntidoping.benzodiacepinas" 
           class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
-          <td class="px-2 py-1 border border-gray-300 font-medium">Benzodiacepinas</td>
+          <td class="px-2 py-1 border border-gray-300 font-medium">Benzodiacepinas (BZO)</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.benzodiacepinas }}</td>
         </tr>
         <tr v-if="formData.formDataAntidoping.fenciclidina" 
           class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
-          <td class="px-2 py-1 border border-gray-300 font-medium">Fenciclidina</td>
+          <td class="px-2 py-1 border border-gray-300 font-medium">Fenciclidina (PCP)</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.fenciclidina }}</td>
         </tr>
         <tr v-if="formData.formDataAntidoping.metadona" 
           class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
-          <td class="px-2 py-1 border border-gray-300 font-medium">Metadona</td>
+          <td class="px-2 py-1 border border-gray-300 font-medium">Metadona (MTD)</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.metadona }}</td>
         </tr>
         <tr v-if="formData.formDataAntidoping.barbituricos" 
           class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
-          <td class="px-2 py-1 border border-gray-300 font-medium">Barbituricos</td>
+          <td class="px-2 py-1 border border-gray-300 font-medium">Barbituricos (BAR)</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.barbituricos }}</td>
         </tr>
         <tr v-if="formData.formDataAntidoping.antidepresivosTriciclicos" 
           class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
-          <td class="px-2 py-1 border border-gray-300 font-medium">Antidepresivos T.</td>
+          <td class="px-2 py-1 border border-gray-300 font-medium">Antidepresivos T. (TCA)</td>
           <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.antidepresivosTriciclicos }}</td>
+        </tr>
+        <tr v-if="formData.formDataAntidoping.metilendioximetanfetamina" 
+          class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
+          <td class="px-2 py-1 border border-gray-300 font-medium">Metilendioximetanfetamina</td>
+          <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.metilendioximetanfetamina }}</td>
+        </tr>
+        <tr v-if="formData.formDataAntidoping.ketamina" 
+          class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)">
+          <td class="px-2 py-1 border border-gray-300 font-medium">Ketamina (KET)</td>
+          <td class="px-2 py-1 border border-gray-300">{{ formData.formDataAntidoping.ketamina }}</td>
         </tr>
       </tbody>
 

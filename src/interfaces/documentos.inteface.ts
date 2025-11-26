@@ -10,6 +10,8 @@ export interface Antidoping {
     rutaPDF: string;
     createdBy: string;
     updatedBy: string;
+    metilendioximetanfetamina?: string;
+    ketamina?: string;
 }
 
 export interface Aptitud {

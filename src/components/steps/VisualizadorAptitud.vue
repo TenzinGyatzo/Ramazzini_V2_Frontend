@@ -151,7 +151,9 @@ const antidopingResumen = computed(() => {
     'fenciclidina',
     'metadona',
     'barbituricos',
-    'antidepresivosTriciclicos'
+    'antidepresivosTriciclicos',
+    'metilendioximetanfetamina',
+    'ketamina'
   ].filter(param => nearestAntidoping.value[param] !== undefined);
 
   // Evaluar si todos los evaluados son 'Negativo'
@@ -161,7 +163,8 @@ const antidopingResumen = computed(() => {
     const cantidadEnLetras = {
       5: 'cinco',
       6: 'seis',
-      10: 'diez'
+      10: 'diez',
+      12: 'doce'
     }[evaluados.length] || evaluados.length;
 
     return `Negativo a ${cantidadEnLetras} parámetros`;
@@ -178,7 +181,9 @@ const antidopingResumen = computed(() => {
     nearestAntidoping.value.fenciclidina && nearestAntidoping.value.fenciclidina !== 'Negativo' ? 'Fenciclidina' : null,
     nearestAntidoping.value.metadona && nearestAntidoping.value.metadona !== 'Negativo' ? 'Metadona' : null,
     nearestAntidoping.value.barbituricos && nearestAntidoping.value.barbituricos !== 'Negativo' ? 'Barbitúricos' : null,
-    nearestAntidoping.value.antidepresivosTriciclicos && nearestAntidoping.value.antidepresivosTriciclicos !== 'Negativo' ? 'Antidepresivos Tricíclicos' : null
+    nearestAntidoping.value.antidepresivosTriciclicos && nearestAntidoping.value.antidepresivosTriciclicos !== 'Negativo' ? 'Antidepresivos Tricíclicos' : null,
+    nearestAntidoping.value.metilendioximetanfetamina && nearestAntidoping.value.metilendioximetanfetamina !== 'Negativo' ? 'Metilendioximetanfetamina' : null,
+    nearestAntidoping.value.ketamina && nearestAntidoping.value.ketamina !== 'Negativo' ? 'Ketamina' : null
   ].filter(Boolean).join(', '); // Filtrar valores nulos o `undefined` y unirlos en una cadena separada por comas
 
   return `Positivo a: ${sustanciasPositivas}`;

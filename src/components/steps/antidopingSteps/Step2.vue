@@ -23,6 +23,8 @@ const todosLosParametros = {
   metadona: "Negativo",
   barbituricos: "Negativo",
   antidepresivosTriciclicos: "Negativo",
+  metilendioximetanfetamina: "Negativo",
+  ketamina: "Negativo",
 };
 
 // Objeto reactivo para los resultados de las sustancias
@@ -37,8 +39,10 @@ const camposVisibles = computed(() => {
     return ['marihuana', 'cocaina', 'anfetaminas', 'metanfetaminas', 'opiaceos'];
   } else if (tipoPrueba.value === '6') {
     return ['marihuana', 'cocaina', 'anfetaminas', 'metanfetaminas', 'opiaceos', 'benzodiacepinas'];
-  } else {
+  } else if (tipoPrueba.value === '12') {
     return Object.keys(todosLosParametros);
+  } else {
+    return ['marihuana', 'cocaina', 'anfetaminas', 'metanfetaminas', 'opiaceos', 'benzodiacepinas', 'fenciclidina', 'metadona', 'barbituricos', 'antidepresivosTriciclicos'];
   }
 });
 
@@ -61,7 +65,9 @@ onMounted(() => {
       );
 
       // Lógica mejorada para detectar el tipo de prueba
-      if (camposPresentes.length >= 10) {
+      if (camposPresentes.length >= 12) {
+        tipoPrueba.value = '12';
+      } else if (camposPresentes.length >= 10) {
         tipoPrueba.value = '10';
       } else if (camposPresentes.includes('benzodiacepinas')) {
         tipoPrueba.value = '6';
@@ -149,6 +155,7 @@ function formatoNombre(campo) {
         <option value="5">5 parámetros</option>
         <option value="6">6 parámetros</option>
         <option value="10">10 parámetros</option>
+        <option value="12">12 parámetros</option>
       </select>
     </div>
 
@@ -184,16 +191,16 @@ function formatoNombre(campo) {
         <label
           v-for="parametro in camposVisibles"
           :key="parametro"
-          class="flex items-center space-x-2"
+          class="flex items-center space-x-2 cursor-pointer hover:bg-emerald-100 rounded-md p-1"
         >
           <input
             type="checkbox"
             v-model="drugResults[parametro]"
             :true-value="'Positivo'"
             :false-value="'Negativo'"
-            class="form-checkbox accent-emerald-600"
+            class="form-checkbox accent-emerald-600 cursor-pointer"
           />
-          <span>{{ formatoNombre(parametro) }}</span>
+          <span :class="parametro === 'metilendioximetanfetamina' ? 'text-xs lg:text-[0.625rem]' : ''">{{ formatoNombre(parametro) }}</span>
         </label>
       </div>
 

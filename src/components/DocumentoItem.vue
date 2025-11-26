@@ -934,7 +934,9 @@ const parametros = [
   'fenciclidina',
   'metadona',
   'barbituricos',
-  'antidepresivosTriciclicos'
+  'antidepresivosTriciclicos',
+  'metilendioximetanfetamina',
+  'ketamina'
 ]
 
 // Obtenemos solo los parámetros que existen en el objeto actual
@@ -959,6 +961,7 @@ const mensajeNegativo = computed(() => {
     if (cantidad === 5) return 'Negativo a cinco parámetros'
     if (cantidad === 6) return 'Negativo a seis parámetros'
     if (cantidad === 10) return 'Negativo a diez parámetros'
+    if (cantidad === 12) return 'Negativo a doce parámetros'
   }
   return null
 })
@@ -977,7 +980,8 @@ const mensajeDetalladoAntidoping = computed(() => {
     const cantidadEnLetras = {
       5: 'cinco',
       6: 'seis',
-      10: 'diez'
+      10: 'diez',
+      12: 'doce'
     }[evaluados.length] || evaluados.length;
 
     return `Negativo a ${cantidadEnLetras} parámetros`;
@@ -994,7 +998,9 @@ const mensajeDetalladoAntidoping = computed(() => {
     antidoping.fenciclidina && antidoping.fenciclidina !== 'Negativo' ? 'Fenciclidina' : null,
     antidoping.metadona && antidoping.metadona !== 'Negativo' ? 'Metadona' : null,
     antidoping.barbituricos && antidoping.barbituricos !== 'Negativo' ? 'Barbitúricos' : null,
-    antidoping.antidepresivosTriciclicos && antidoping.antidepresivosTriciclicos !== 'Negativo' ? 'Antidepresivos Tricíclicos' : null
+    antidoping.antidepresivosTriciclicos && antidoping.antidepresivosTriciclicos !== 'Negativo' ? 'Antidepresivos Tricíclicos' : null,
+    antidoping.metilendioximetanfetamina && antidoping.metilendioximetanfetamina !== 'Negativo' ? 'Metilendioximetanfetamina' : null,
+    antidoping.ketamina && antidoping.ketamina !== 'Negativo' ? 'Ketamina' : null
   ].filter(Boolean).join(', '); // Filtrar valores nulos o `undefined` y unirlos en una cadena separada por comas
 
   return `Positivo a: ${sustanciasPositivas}`;
