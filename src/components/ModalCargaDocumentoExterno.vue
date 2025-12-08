@@ -170,7 +170,7 @@ const handleSubmit = async () => {
         fechaDocumento: convertirYYYYMMDDaISO(format(new Date(), 'yyyy-MM-dd')),
         notasDocumento: '', // Vacío por defecto
         extension: extension,
-        rutaDocumento: `expedientes-medicos/${currentEmpresa.nombreComercial}/${currentCentroTrabajo.nombreCentro}/${currentTrabajador.nombre}`,
+        rutaDocumento: `expedientes-medicos/${currentEmpresa.nombreComercial}/${currentCentroTrabajo.nombreCentro}/${currentTrabajador.nombre}_${currentTrabajador._id}`,
         idTrabajador: currentTrabajador._id,
         createdBy: currentUserId,
         updatedBy: currentUserId

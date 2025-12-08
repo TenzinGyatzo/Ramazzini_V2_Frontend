@@ -30,8 +30,9 @@ onMounted(() => {
   // Establece rutaPDF en formData cuando aun no se ha seleccionado la fecha
   const empresa = empresas.currentEmpresa.nombreComercial;
   const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
-  const trabajador = trabajadores.currentTrabajador.nombre;
-  formDataPrevioEspirometria.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}`;
+  const trabajadorNombre = trabajadores.currentTrabajador.nombre;
+  const trabajadorId = trabajadores.currentTrabajadorId;
+  formDataPrevioEspirometria.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajadorNombre}_${trabajadorId}`;
 });
 
 onUnmounted(() => {

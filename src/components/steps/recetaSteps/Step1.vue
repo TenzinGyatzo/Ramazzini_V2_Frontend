@@ -38,8 +38,9 @@ onMounted(() => {
   // Establece rutaPDF en formData
   const empresa = empresas.currentEmpresa.nombreComercial;
   const centroTrabajo = centrosTrabajo.currentCentroTrabajo.nombreCentro;
-  const trabajador = trabajadores.currentTrabajador.nombre;
-  formDataReceta.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}`;
+  const trabajadorNombre = trabajadores.currentTrabajador.nombre;
+  const trabajadorId = trabajadores.currentTrabajadorId;
+  formDataReceta.rutaPDF = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajadorNombre}_${trabajadorId}`;
 });
 
 onUnmounted(() => {

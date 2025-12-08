@@ -105,9 +105,10 @@ onMounted(() => {
 watchEffect(async () => {
   const empresa = empresas.currentEmpresa?.nombreComercial;
   const centroTrabajo = centrosTrabajo.currentCentroTrabajo?.nombreCentro;
-  const trabajador = trabajadores.currentTrabajador?.nombre;
+  const trabajadorNombre = trabajadores.currentTrabajador?.nombre;
+  const trabajadorId = trabajadores.currentTrabajadorId;
 
-  if (empresa && centroTrabajo && trabajador && tipoDocumento.value) {
+  if (empresa && centroTrabajo && trabajadorNombre && trabajadorId && tipoDocumento.value) {
     // Obtener el ID del usuario actual
     const currentUserId = await ensureUserLoaded();
     
@@ -116,7 +117,7 @@ watchEffect(async () => {
       return;
     }
 
-    const rutaBase = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajador}/`;
+    const rutaBase = `expedientes-medicos/${empresa}/${centroTrabajo}/${trabajadorNombre}_${trabajadorId}/`;
 
     const documentoMap = {
       antidoping: formData.formDataAntidoping,
