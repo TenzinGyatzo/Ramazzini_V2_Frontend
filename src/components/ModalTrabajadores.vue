@@ -35,11 +35,29 @@ const periodoDePruebaFinalizado = proveedorSaludStore.proveedorSalud?.periodoDeP
 const estadoSuscripcion = proveedorSaludStore.proveedorSalud?.estadoSuscripcion;
 const finDeSuscripcion = proveedorSaludStore.proveedorSalud?.finDeSuscripcion ? new Date(proveedorSaludStore.proveedorSalud.finDeSuscripcion) : null;
 
-const nivelesEscolaridad = [
+const nivelesEscolaridadBase = [
   "Primaria", "Secundaria", "Preparatoria",
   "Licenciatura", "Maestría", "Doctorado",
   "Nula",
 ];
+
+const nivelesEscolaridad = computed(() => {
+  if (paisProveedor.value === "GT") {
+    return nivelesEscolaridadBase.map((nivel) =>
+      nivel === "Preparatoria" ? "Diversificado" : nivel
+    );
+  }
+
+  return nivelesEscolaridadBase;
+});
+
+const escolaridadDefaultValue = computed(() => {
+  const actual = trabajadores.currentTrabajador?.escolaridad || "";
+  if (paisProveedor.value === "GT" && actual === "Preparatoria") {
+    return "Diversificado";
+  }
+  return actual;
+});
 
 const estadosCiviles = [
   "Soltero/a", "Casado/a", "Unión libre",
@@ -526,7 +544,7 @@ const cancelarTransferencia = () => {
               <FormKit type="select" name="escolaridad"
                 placeholder="-Seleccione último concluido-" :options="nivelesEscolaridad" validation="required"
                 :validation-messages="{ required: 'Este campo es obligatorio' }"
-                :value="trabajadores.currentTrabajador?.escolaridad || ''">
+                :value="escolaridadDefaultValue">
                 <template #label>
                   <span class="font-medium text-lg text-gray-700">Escolaridad<span class="text-red-500">*</span></span>
                 </template>
