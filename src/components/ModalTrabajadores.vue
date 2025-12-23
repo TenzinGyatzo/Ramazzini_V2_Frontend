@@ -1,5 +1,5 @@
 <script setup>
-import { inject, ref, watch, computed } from 'vue';
+import { inject, ref, watch, computed, provide } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
@@ -10,6 +10,9 @@ import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 import TrabajadoresAPI from '@/api/TrabajadoresAPI';
 import api from '@/lib/axios';
 import EmpresasSelector from './EmpresasSelector.vue';
+import EstadoAutocomplete from './selectors/EstadoAutocomplete.vue';
+import NacionalidadAutocomplete from './selectors/NacionalidadAutocomplete.vue';
+import ResidenciaGeoAutocomplete from './selectors/ResidenciaGeoAutocomplete.vue';
 
 // Método para formatear la dirección (igual que en CentroTrabajoItem.vue)
 const formatDireccion = (centro) => {
@@ -167,6 +170,64 @@ const identificadorPersonalValidationMessage = computed(() => {
   return 'Debe tener entre 4 y 30 caracteres alfanuméricos y puede incluir separadores comunes.';
 });
 
+// Validación condicional de CURP: requerido para MX, opcional para no-MX
+const curpValidation = computed(() => {
+  if (paisProveedor.value === 'MX') {
+    return 'required|curpValidation';
+  }
+  return 'optional|curpValidation';
+});
+
+// Validación condicional para campos NOM-024: requeridos solo para MX
+const nom024FieldValidation = computed(() => {
+  return paisProveedor.value === 'MX' ? 'required' : 'optional';
+});
+
+// Valores reactivos para campos NOM-024 (fuera de FormKit)
+// Nacionalidad por defecto: MEX (MEXICANA) para proveedores MX
+const getDefaultNacionalidad = () => {
+  if (trabajadores.currentTrabajador?.nacionalidad) {
+    return trabajadores.currentTrabajador.nacionalidad;
+  }
+  // Si es MX y es requerido, establecer MEX como default
+  return paisProveedor.value === 'MX' ? 'MEX' : '';
+};
+
+const entidadNacimientoValue = ref(trabajadores.currentTrabajador?.entidadNacimiento || '');
+const nacionalidadValue = ref(getDefaultNacionalidad());
+const entidadResidenciaValue = ref(trabajadores.currentTrabajador?.entidadResidencia || '');
+const municipioResidenciaValue = ref(trabajadores.currentTrabajador?.municipioResidencia || '');
+const localidadResidenciaValue = ref(trabajadores.currentTrabajador?.localidadResidencia || '');
+
+// Ref para el valor del CURP (para poder actualizarlo programáticamente)
+const curpValue = ref(trabajadores.currentTrabajador?.curp || '');
+
+// Watch para sincronizar curpValue con el trabajador actual
+watch(() => trabajadores.currentTrabajador?.curp, (newCurp) => {
+  curpValue.value = newCurp || '';
+}, { immediate: true });
+
+// Función para insertar CURP genérico (para paciente desconocido o extranjero)
+const insertGenericCURP = () => {
+  curpValue.value = 'XXXX999999XXXXXX99';
+};
+
+// Watch para sincronizar valores cuando cambia el trabajador actual
+watch(() => trabajadores.currentTrabajador, (trabajador) => {
+  entidadNacimientoValue.value = trabajador?.entidadNacimiento || '';
+  // Solo actualizar nacionalidad si el trabajador tiene un valor, de lo contrario mantener el default
+  if (trabajador?.nacionalidad) {
+    nacionalidadValue.value = trabajador.nacionalidad;
+  } else if (paisProveedor.value === 'MX') {
+    nacionalidadValue.value = 'MEX'; // Default MEXICANA para MX
+  } else {
+    nacionalidadValue.value = '';
+  }
+  entidadResidenciaValue.value = trabajador?.entidadResidencia || '';
+  municipioResidenciaValue.value = trabajador?.municipioResidencia || '';
+  localidadResidenciaValue.value = trabajador?.localidadResidencia || '';
+}, { immediate: true });
+
 // Variables para contar trabajadores por centro
 const trabajadoresPorCentro = ref({});
 const loadingTrabajadores = ref(false);
@@ -252,7 +313,23 @@ const cargarTrabajadoresPorCentro = async () => {
 };
 
 // Función para manejar el envío del formulario
+// Ref para rastrear si el formulario ha intentado enviarse (para activar validaciones visuales)
+const formSubmitAttempted = ref(false);
+
+// Proveer el estado de validación a los componentes hijos
+provide('formSubmitAttempted', formSubmitAttempted);
+
+// Handler para cuando el formulario tiene errores de validación
+const onFormSubmitInvalid = () => {
+  formSubmitAttempted.value = true;
+  // Resetear después de un tiempo para permitir que se vuelva a intentar
+  setTimeout(() => {
+    formSubmitAttempted.value = false;
+  }, 5000);
+};
+
 const handleSubmit = async (data) => {
+  formSubmitAttempted.value = false; // Resetear cuando el submit es exitoso
   if (!proveedorSaludStore.proveedorSalud) return;
 
   // Obtener el ID del usuario actual
@@ -289,7 +366,13 @@ const handleSubmit = async (data) => {
     estadoCivil: data.estadoCivil,
     numeroEmpleado: data.numeroEmpleado,
     nss: data.nss,
-    curp: data.curp,
+    curp: data.curp || curpValue.value,
+    // NOM-024 Fields (usar valores reactivos si no están en data)
+    entidadNacimiento: data.entidadNacimiento || entidadNacimientoValue.value,
+    nacionalidad: data.nacionalidad || nacionalidadValue.value,
+    entidadResidencia: data.entidadResidencia || entidadResidenciaValue.value,
+    municipioResidencia: data.municipioResidencia || municipioResidenciaValue.value,
+    localidadResidencia: data.localidadResidencia || localidadResidenciaValue.value,
     idCentroTrabajo: data.idCentroTrabajo,
     createdBy: currentUserId,
     updatedBy: currentUserId
@@ -324,8 +407,14 @@ const handleSubmit = async (data) => {
     // Extraer el mensaje de error específico del backend
     let errorMessage = 'Hubo un error al crear o actualizar al trabajador, por favor intente nuevamente.';
     
-    if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
+    if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+      // Manejar formato de errores NOM-024 (array de objetos {field, reason})
+      errorMessage = error.response.data.errors.map(e => `${e.field}: ${e.reason}`).join('. ');
+    } else if (error.response?.data?.message) {
+      // Manejar formato estándar de NestJS (string o array de strings)
+      errorMessage = Array.isArray(error.response.data.message) 
+        ? error.response.data.message.join('. ') 
+        : error.response.data.message;
     } else if (error.message) {
       errorMessage = error.message;
     }
@@ -477,7 +566,8 @@ const cancelarTransferencia = () => {
     <Transition appear name="fade">
       <!-- Modal centrado con desplazamiento interno -->
       <div
-        class="modal-inner relative bg-white text-gray-900 w-full sm:w-4/5 md:w-3/5 xl:w-2/5 2xl:w-1/3 p-6 sm:p-8 md:p-10 rounded-lg shadow-md shadow-slate-900 max-h-[90vh] overflow-y-auto">
+        class="modal-inner relative bg-white text-gray-900 w-full sm:w-4/5 md:w-3/5 xl:w-2/5 2xl:w-1/3 p-6 sm:p-8 md:p-10 rounded-lg shadow-md shadow-slate-900 max-h-[90vh] overflow-y-auto"
+        style="overflow-x: visible;">
         <!-- Botón para cerrar el modal -->
         <div
           class="modal-close absolute h-16 w-16 flex justify-center items-center top-0 right-0 text-5xl text-gray-400 hover:text-gray-500 cursor-pointer"
@@ -508,8 +598,42 @@ const cancelarTransferencia = () => {
           <hr class="mt-2 mb-3">
 
           <FormKit type="form" :actions="false" incomplete-message="Por favor complete todos los campos"
-            @submit="handleSubmit">
+            @submit="handleSubmit" @submit-invalid="onFormSubmitInvalid">
             <div class="lg:grid gap-3 lg:grid-cols-2">
+              <div>
+                <FormKit
+                  type="text"
+                  :label="identificadorPersonalLabel"
+                  name="curp"
+                  :placeholder="identificadorPersonalPlaceholder"
+                  :validation="curpValidation"
+                  :validation-messages="{ 
+                    required: 'Este campo es obligatorio',
+                    curpValidation: identificadorPersonalValidationMessage 
+                  }"
+                  maxlength="30"
+                  v-model="curpValue"
+                >
+                  <template #label>
+                    <span class="font-medium text-lg text-gray-700">
+                      {{ identificadorPersonalLabel }}<span v-if="paisProveedor === 'MX'" class="text-red-500">*</span>
+                    </span>
+                  </template>
+                </FormKit>
+              </div>
+              <div class="flex items-center">
+                <!-- Botón sutil para insertar CURP genérico (solo para MX) -->
+                <button
+                  v-if="paisProveedor === 'MX'"
+                  type="button"
+                  @click.prevent="insertGenericCURP"
+                  class="mt-0 mb-4 md:mt-4 md:mb-0 text-xs text-gray-400 hover:text-gray-600 focus:outline-none transition-colors duration-200"
+                  title="Usar CURP genérico para paciente desconocido o extranjero (XXXX999999XXXXXX99)"
+                >
+                  <i class="fas fa-info-circle mr-1"></i>
+                  Usar CURP genérico <br class="hidden md:block">(desconocido/extranjero)
+                </button>
+              </div>
               <FormKit type="text" name="primerApellido" placeholder="Apellido paterno"
                   validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }"
                   :value="trabajadores.currentTrabajador?.primerApellido || ''">
@@ -574,7 +698,7 @@ const cancelarTransferencia = () => {
                   <span class="font-medium text-lg text-gray-700">Fecha de Ingreso</span>
                 </template>
               </FormKit>
-              <div class="lg:col-span-2 grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+              <div class="lg:col-span-2 grid gap-3 sm:grid-cols-2">
                 <FormKit type="text" label="Número de Empleado" name="numeroEmpleado" placeholder="Sólo números"
                   validation="optional|matches:/^[0-9]*$/"
                   :validation-messages="{
@@ -587,18 +711,86 @@ const cancelarTransferencia = () => {
                     nssValidation: 'Debe tener 4-30 caracteres alfanuméricos'
                   }"
                   maxlength="30" :value="trabajadores.currentTrabajador?.nss || ''" />
-                 <FormKit
-                   type="text"
-                   :label="identificadorPersonalLabel"
-                   name="curp"
-                   :placeholder="identificadorPersonalPlaceholder"
-                   validation="optional|curpValidation"
-                   :validation-messages="{ curpValidation: identificadorPersonalValidationMessage }"
-                   maxlength="30"
-                   :value="trabajadores.currentTrabajador?.curp || ''"
-                 />
+              </div>
+
+              <!-- NOM-024 Identification Fields -->
+              <div class="lg:col-span-2 mt-4">
+                <h3 class="text-lg font-semibold text-emerald-800 mb-3 border-b border-emerald-100 pb-2">
+                  Identificación NOM-024 (Estandarización)
+                </h3>
+                
+                <!-- Campos de Nacimiento -->
+                <div class="mb-4">
+                  <h4 class="text-sm font-semibold text-gray-700 mb-3">Datos de Nacimiento</h4>
+                  <div class="grid gap-3 sm:grid-cols-2">
+                    <EstadoAutocomplete
+                      v-model="entidadNacimientoValue"
+                      label="Entidad de Nacimiento"
+                      placeholder="Buscar por nombre del estado"
+                      :required="paisProveedor === 'MX'"
+                    />
+                    
+                    <NacionalidadAutocomplete
+                      v-model="nacionalidadValue"
+                      label="Nacionalidad"
+                      placeholder="Buscar por nombre de nacionalidad"
+                      :required="paisProveedor === 'MX'"
+                    />
+                  </div>
+                </div>
+
+                <!-- Campos de Residencia -->
+                <div>
+                  <h4 class="text-sm font-semibold text-gray-700 mb-3">Datos de Residencia</h4>
+                  <ResidenciaGeoAutocomplete
+                    :estadoResidencia="entidadResidenciaValue"
+                    :municipioResidencia="municipioResidenciaValue"
+                    :localidadResidencia="localidadResidenciaValue"
+                    @update:estadoResidencia="entidadResidenciaValue = $event"
+                    @update:municipioResidencia="municipioResidenciaValue = $event"
+                    @update:localidadResidencia="localidadResidenciaValue = $event"
+                    :required="paisProveedor === 'MX'"
+                  />
+                </div>
               </div>
             </div>
+
+            <!-- Campos ocultos para NOM-024 (para que FormKit los capture en el submit) -->
+            <FormKit 
+              type="hidden" 
+              name="entidadNacimiento" 
+              v-model="entidadNacimientoValue"
+              :validation="nom024FieldValidation"
+              :validation-messages="{ required: 'Este campo es obligatorio' }"
+            />
+            <FormKit 
+              type="hidden" 
+              name="nacionalidad" 
+              v-model="nacionalidadValue"
+              :validation="nom024FieldValidation"
+              :validation-messages="{ required: 'Este campo es obligatorio' }"
+            />
+            <FormKit 
+              type="hidden" 
+              name="entidadResidencia" 
+              v-model="entidadResidenciaValue"
+              :validation="nom024FieldValidation"
+              :validation-messages="{ required: 'Este campo es obligatorio' }"
+            />
+            <FormKit 
+              type="hidden" 
+              name="municipioResidencia" 
+              v-model="municipioResidenciaValue"
+              :validation="nom024FieldValidation"
+              :validation-messages="{ required: 'Este campo es obligatorio' }"
+            />
+            <FormKit 
+              type="hidden" 
+              name="localidadResidencia" 
+              v-model="localidadResidenciaValue"
+              :validation="nom024FieldValidation"
+              :validation-messages="{ required: 'Este campo es obligatorio' }"
+            />
 
             <!-- Campos ocultos y botón de enviar -->
             <FormKit type="hidden" name="idCentroTrabajo" :value="centrosTrabajo.currentCentroTrabajoId" />

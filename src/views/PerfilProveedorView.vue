@@ -1,9 +1,12 @@
 <script setup>
-import { ref, inject, computed, watchEffect } from "vue";
+import { ref, inject, computed, watch, watchEffect } from "vue";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
 import { useRouter } from "vue-router";
 import CountryPhoneInput from "@/components/CountryPhoneInput.vue";
 import CountrySelect from "@/components/CountrySelect.vue";
+import CLUESAutocomplete from "@/components/selectors/CLUESAutocomplete.vue";
+import MexicoGeoSelect from "@/components/selectors/MexicoGeoSelect.vue";
+import CPAutocomplete from "@/components/selectors/CPAutocomplete.vue";
 
 const proveedorSalud = useProveedorSaludStore();
 const router = useRouter();
@@ -16,6 +19,8 @@ const toast = inject("toast");
 const colorInforme = ref("#343A40");
 const semaforizacionActivada = ref(false);
 
+const isMX = computed(() => formulario.value.pais === 'MX');
+
 // Objeto reactivo para el formulario
 const formulario = ref({
   nombre: "",
@@ -27,29 +32,62 @@ const formulario = ref({
   pais: "",
   correoElectronico: "",
   perfilProveedorSalud: "", 
-  codigoPostal: ""          
+  codigoPostal: "",
+  clues: ""
 });
 
 // Cargar los valores iniciales del proveedor en el formulario
 watchEffect(() => {
   if (proveedorSalud.proveedorSalud) {
+    // Asegurar que los valores geográficos siempre sean strings
+    const estadoValue = proveedorSalud.proveedorSalud.estado;
+    const municipioValue = proveedorSalud.proveedorSalud.municipio;
+    const codigoPostalValue = proveedorSalud.proveedorSalud.codigoPostal;
+    
     Object.assign(formulario.value, {
       nombre: proveedorSalud.proveedorSalud.nombre ?? "",
       direccion: proveedorSalud.proveedorSalud.direccion ?? "",
-      municipio: proveedorSalud.proveedorSalud.municipio ?? "",
-      estado: proveedorSalud.proveedorSalud.estado ?? "",
+      municipio: typeof municipioValue === 'string' ? (municipioValue || "") : (municipioValue ? String(municipioValue) : ""),
+      estado: typeof estadoValue === 'string' ? (estadoValue || "") : (estadoValue ? String(estadoValue) : ""),
       telefono: proveedorSalud.proveedorSalud.telefono ?? "",
       sitioWeb: proveedorSalud.proveedorSalud.sitioWeb ?? "",
       pais: proveedorSalud.proveedorSalud.pais ?? "",
       correoElectronico: proveedorSalud.proveedorSalud.correoElectronico ?? "",
       perfilProveedorSalud: proveedorSalud.proveedorSalud.perfilProveedorSalud ?? "", 
-      codigoPostal: proveedorSalud.proveedorSalud.codigoPostal ?? ""                 
+      codigoPostal: typeof codigoPostalValue === 'string' ? (codigoPostalValue || "") : (codigoPostalValue ? String(codigoPostalValue) : ""),
+      clues: proveedorSalud.proveedorSalud.clues ?? ""
     });
 
     colorInforme.value = proveedorSalud.proveedorSalud.colorInforme || "#343A40";
     semaforizacionActivada.value = proveedorSalud.proveedorSalud.semaforizacionActivada ?? false;
   }
 });
+
+// Limpiar campos geográficos si se cambia de país
+watch(() => formulario.value.pais, (newPais, oldPais) => {
+  if (oldPais && newPais !== oldPais) {
+    // Limpiar campos geográficos cuando cambia el país
+    formulario.value.estado = "";
+    formulario.value.municipio = "";
+    formulario.value.codigoPostal = "";
+    // Si cambia de MX a otro país, también limpiar CLUES
+    if (oldPais === 'MX' && newPais !== 'MX') {
+      formulario.value.clues = "";
+    }
+  }
+});
+
+const handleCPSelect = (data) => {
+  if (data) {
+    formulario.value.estado = data.estado;
+    formulario.value.municipio = data.municipio;
+    
+    // Opcional: Si no hay dirección, sugerir la colonia
+    if (data.asentamiento && !formulario.value.direccion) {
+      formulario.value.direccion = `Colonia ${data.asentamiento}`;
+    }
+  }
+};
 
 // Función para validar archivo
 const validateFile = (file) => {
@@ -215,13 +253,35 @@ const handleDrop = (event) => {
   }
 };
 
+// Función auxiliar para normalizar valores geográficos a strings
+const normalizeGeoValue = (value) => {
+  if (!value) return '';
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'object' && value !== null) {
+    // Si es un objeto, intentar extraer el valor útil
+    if (value.code) return String(value.code).trim();
+    if (value.value) return String(value.value).trim();
+    if (value.description) return String(value.description).trim();
+    return '';
+  }
+  return String(value).trim();
+};
+
 const handleSubmit = async (data) => {
   const formData = new FormData();
 
-  // Agregar solo los campos con valores definidos
+  // Agregar solo los campos con valores definidos, pero asegurar que campos geográficos sean strings
   Object.entries(data).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
-      formData.append(key, value);
+      // Campos geográficos deben ser siempre strings
+      if (key === 'estado' || key === 'municipio' || key === 'codigoPostal') {
+        const stringValue = typeof value === 'string' ? value : String(value || '');
+        if (stringValue) {
+          formData.append(key, stringValue);
+        }
+      } else {
+        formData.append(key, value);
+      }
     }
   });
 
@@ -237,6 +297,30 @@ const handleSubmit = async (data) => {
   // Agregar país del formulario (CountrySelect no es FormKit)
   if (formulario.value.pais) {
     formData.append("pais", formulario.value.pais);
+  }
+
+  // Sobrescribir campos geográficos desde formulario.value para asegurar que siempre sean strings válidos
+  // Esto es importante porque pueden venir como objetos desde componentes de autocomplete
+  const cpValue = normalizeGeoValue(formulario.value.codigoPostal);
+  formData.delete("codigoPostal");
+  if (cpValue) {
+    formData.append("codigoPostal", cpValue);
+  }
+  
+  const estadoValue = normalizeGeoValue(formulario.value.estado);
+  formData.delete("estado");
+  if (estadoValue) {
+    formData.append("estado", estadoValue);
+  }
+  
+  const municipioValue = normalizeGeoValue(formulario.value.municipio);
+  formData.delete("municipio");
+  if (municipioValue) {
+    formData.append("municipio", municipioValue);
+  }
+  
+  if (formulario.value.clues) {
+    formData.append("clues", formulario.value.clues);
   }
 
   // Asegurar que solo se agrega un archivo válido
@@ -392,18 +476,41 @@ const logoSrc = computed(() => {
                 </template>
               </FormKit>
 
-              <FormKit type="text" :label="proveedorSalud.proveedorSalud?.pais === 'MX' ? 'Estado' : 'Región/Provincia/Estado'" name="estado" placeholder="Ej. Estado de México, Buenos Aires, São Paulo"
-                v-model="formulario.estado" />
+              <!-- Campo Código Postal -->
+              <template v-if="isMX">
+                <CPAutocomplete
+                  v-model="formulario.codigoPostal"
+                  @select="handleCPSelect"
+                  label="Código Postal"
+                  placeholder="Ej. 44100, Colinas del Río..."
+                />
+              </template>
+              <template v-else>
+                <FormKit type="text" label="Código Postal" name="codigoPostal" placeholder="Ej. 44100, 1000, 01000"
+                  validation="postalCodeValidation" v-model="formulario.codigoPostal"
+                  :validation-messages="{
+                    postalCodeValidation:
+                      'El código postal debe tener entre 4 y 10 dígitos.',
+                  }" />
+              </template>
 
-              <FormKit type="text" :label="proveedorSalud.proveedorSalud?.pais === 'PA' ? 'Ciudad/Corregimiento' : 'Ciudad/Municipio'" name="municipio" placeholder="Ej. Ciudad de México, Bogotá, Lima"
-                v-model="formulario.municipio" />
+              <!-- Ubicación Geográfica (NOM-024 para México) -->
+              <template v-if="isMX">
+                <div class="sm:col-span-2">
+                  <MexicoGeoSelect
+                    v-model:estado="formulario.estado"
+                    v-model:municipio="formulario.municipio"
+                  />
+                </div>
+              </template>
 
-              <FormKit type="text" label="Código Postal" name="codigoPostal" placeholder="Ej. 44100, 1000, 01000"
-                validation="postalCodeValidation" v-model="formulario.codigoPostal"
-                :validation-messages="{
-                  postalCodeValidation:
-                    'El código postal debe tener entre 4 y 10 dígitos.',
-                }" />
+              <template v-else>
+                <FormKit type="text" :label="proveedorSalud.proveedorSalud?.pais === 'MX' ? 'Estado' : 'Región/Provincia/Estado'" name="estado" placeholder="Ej. Estado de México, Buenos Aires, São Paulo"
+                  v-model="formulario.estado" />
+
+                <FormKit type="text" :label="proveedorSalud.proveedorSalud?.pais === 'PA' ? 'Ciudad/Corregimiento' : 'Ciudad/Municipio'" name="municipio" placeholder="Ej. Ciudad de México, Bogotá, Lima"
+                  v-model="formulario.municipio" />
+              </template>
 
               <FormKit type="text" label="Dirección (Calle, número y colonia)" name="direccion"
                 placeholder="Ej. Calle Madero #123, Colonia Centro" v-model="formulario.direccion" />
@@ -465,6 +572,14 @@ const logoSrc = computed(() => {
                 </button>
                 <p class="mt-2 text-sm text-gray-600 hidden sm:block">La semaforización permite el uso de colores en los resultados de los informes (<span class="text-emerald-700">Apto sin restricciones</span>, <span class="text-amber-700">Apto con restricciones</span>, <span class="text-red-700">No apto</span>) haciéndolo más claro y fácil de entender.</p>
               </div>
+
+              <!-- Campo CLUES (NOM-024) -->
+              <CLUESAutocomplete
+                v-if="isMX"
+                class="sm:col-span-2 mb-4"
+                v-model="formulario.clues"
+                :required="false"
+              />
 
             </div>
 

@@ -7,6 +7,7 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
 import { useStepsStore } from '@/stores/steps';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import DocumentosAPI from '@/api/DocumentosAPI';
 
 import Step1Antidoping from '../steps/antidopingSteps/Step1.vue';
@@ -293,10 +294,15 @@ export default {
     const formData = useFormDataStore();
     const documentos = useDocumentosStore();
     const stepsStore = useStepsStore();
+    const proveedorSaludStore = useProveedorSaludStore();
     const router = useRouter();
     const route = useRoute();
 
     const toast = inject('toast');
+
+    const isMX = computed(() => proveedorSaludStore.isMX);
+    const isFinalized = computed(() => documentos.isFinalized);
+    const disableEdit = computed(() => isMX.value && isFinalized.value);
 
     // Computed properties para mejor UX
     const progressPercentage = computed(() => {
@@ -773,6 +779,17 @@ export default {
         return; // No continuar con el envío
       }
 
+      // VALIDACIÓN NOM-024: Verificar CIE-10 principal para proveedores MX en NotaMedica e HistoriaClinica
+      if (isMX.value && (documentos.currentTypeOfDocument === 'notaMedica' || documentos.currentTypeOfDocument === 'historiaClinica')) {
+        if (!datosLimpios.codigoCIE10Principal || datosLimpios.codigoCIE10Principal.trim() === '') {
+          toast.open({ 
+            message: 'El código CIE-10 principal es obligatorio para proveedores en México (NOM-024)', 
+            type: 'error' 
+          });
+          return; // No continuar con el envío
+        }
+      }
+
       // VALIDACIÓN ESPECÍFICA PARA CONSTANCIA DE APTITUD: Verificar que exista una Aptitud al Puesto con una de las 3 opciones de "si aptitud"
       if (documentos.currentTypeOfDocument === 'constanciaAptitud') {
         try {
@@ -910,6 +927,7 @@ export default {
       showCamposFaltantesModal,
       camposFaltantes,
       documentos,
+      disableEdit,
     };
   },
 };
@@ -949,7 +967,9 @@ export default {
     <!-- Formulario dinámico -->
     <transition name="fade-slide" mode="out-in">
       <div v-if="stepsStore.currentStep <= stepsStore.steps.length && stepsStore.steps.length > 0"
-        :key="stepsStore.currentStep">
+        :key="stepsStore.currentStep"
+        :class="{ 'pointer-events-none opacity-80 select-none': disableEdit }"
+      >
         <component :is="stepsStore.steps[stepsStore.currentStep - 1].component" />
       </div>
     </transition>
@@ -969,11 +989,15 @@ export default {
         </button>
       </div>
 
-      <button @click="handleSubmit"
-        class="text-xs md:text-sm mt-6 text-gray-500"
+      <button v-if="!disableEdit" @click="handleSubmit"
+        class="text-xs md:text-sm mt-6 text-gray-500 hover:text-emerald-600 transition-colors"
       >
         Guardar cambios
       </button>
+      <div v-else class="text-xs md:text-sm mt-6 text-amber-600 font-medium flex items-center justify-center gap-2">
+        <i class="fas fa-lock"></i>
+        Documento finalizado - Edición bloqueada
+      </div>
     </div>
 
     <!-- Mensaje final -->
@@ -982,17 +1006,24 @@ export default {
         <div>
           <p class="text-center text-2xl font-bold mb-2 text-emerald-600">¡Completado!</p>
           <p class="text-center text-sm font-medium text-gray-500 mb-6">
-            Todos los pasos se han completado correctamente. Puedes guardar el PDF o revisar nuevamente.
+            {{ disableEdit 
+              ? 'Este documento está finalizado y no se pueden guardar nuevos cambios.' 
+              : 'Todos los pasos se han completado correctamente. Puedes guardar el PDF o revisar nuevamente.' 
+            }}
           </p>
           <div class="flex justify-between">
             <button @click="stepsStore.previousStep"
               class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-gray-500 hover:bg-gray-600 transition-all duration-300 shadow-md">
               &lt; Anterior
             </button>
-            <button @click="handleSubmit"
+            <button v-if="!disableEdit" @click="handleSubmit"
               class="px-4 py-2 text-xs md:text-base rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-transform duration-200 ease-in-out hover:scale-110 glow-animation focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
               Crear PDF
             </button>
+            <div v-else class="px-4 py-2 text-xs md:text-base rounded-lg bg-gray-100 text-gray-400 font-semibold flex items-center gap-2">
+              <i class="fas fa-lock"></i>
+              Solo Lectura
+            </div>
           </div>
         </div>
       </transition>

@@ -19,6 +19,8 @@ import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento } from '@/helpers/rutas';
 import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
 import ModalCuestionarios from '@/components/ModalCuestionarios.vue';
+import ModalFinalizarDocumento from '@/components/modals/ModalFinalizarDocumento.vue';
+import ModalAnularDocumento from '@/components/modals/ModalAnularDocumento.vue';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 import { useUserPermissions } from '@/composables/useUserPermissions';
@@ -42,6 +44,8 @@ const showDocumentoExternoModal = ref(false);
 const showDocumentoExternoUpdateModal = ref(false);
 const showSubscriptionModal = ref(false);
 const showDeleteModal = ref(false);
+const showFinalizeModal = ref(false);
+const showAnularModal = ref(false);
 const showCuestionariosModal = ref(false);
 const selectedDocumentId = ref<string | null>(null);
 const selectedDocumentName = ref<string>('');
@@ -145,6 +149,64 @@ const toggleDeleteModal = (
   }
 };
 
+const toggleFinalizeModal = (
+  documentId: string | null = null,
+  documentName: string = 'Sin nombre',
+  documentType: string | null = null
+) => {
+  showFinalizeModal.value = !showFinalizeModal.value;
+
+  if (!showFinalizeModal.value) {
+    selectedDocumentId.value = null;
+    selectedDocumentName.value = '';
+    selectedDocumentType.value = null;
+  } else {
+    selectedDocumentId.value = documentId;
+    selectedDocumentName.value = documentName;
+    selectedDocumentType.value = documentType;
+  }
+};
+
+const toggleAnularModal = (
+  documentId: string | null = null,
+  documentName: string = 'Sin nombre',
+  documentType: string | null = null
+) => {
+  showAnularModal.value = !showAnularModal.value;
+
+  if (!showAnularModal.value) {
+    selectedDocumentId.value = null;
+    selectedDocumentName.value = '';
+    selectedDocumentType.value = null;
+  } else {
+    selectedDocumentId.value = documentId;
+    selectedDocumentName.value = documentName;
+    selectedDocumentType.value = documentType;
+  }
+};
+
+const handleAnularDocument = async (razonAnulacion: string) => {
+  if (!selectedDocumentId.value || !selectedDocumentType.value || !razonAnulacion) return;
+
+  try {
+    await documentos.deleteDocumentById(
+      selectedDocumentType.value,
+      trabajadores.currentTrabajadorId!,
+      selectedDocumentId.value,
+      razonAnulacion
+    );
+
+    toast.open({ message: "Documento anulado exitosamente." });
+
+    toggleAnularModal();
+    await documentos.fetchAllDocuments(trabajadores.currentTrabajadorId!);
+  } catch (error: any) {
+    console.error("Error al anular el documento:", error);
+    const message = error.response?.data?.message || "Error al anular el documento, por favor intente nuevamente.";
+    toast.open({ message, type: "error" });
+  }
+};
+
 const handleDeleteDocument = async () => {
   if (!selectedDocumentId.value || !selectedDocumentType.value) return;
 
@@ -162,6 +224,27 @@ const handleDeleteDocument = async () => {
   } catch (error) {
     console.log("Error al eliminar el documento:", error);
     toast.open({ message: "Error al eliminar, por favor intente nuevamente.", type: "error" });
+  }
+};
+
+const handleFinalizeDocument = async () => {
+  if (!selectedDocumentId.value || !selectedDocumentType.value) return;
+
+  try {
+    await documentos.finalizarDocumento(
+      selectedDocumentType.value,
+      trabajadores.currentTrabajadorId!,
+      selectedDocumentId.value
+    );
+
+    toast.open({ message: "Documento finalizado exitosamente." });
+
+    showFinalizeModal.value = false;
+    await documentos.fetchAllDocuments(trabajadores.currentTrabajadorId!);
+  } catch (error: any) {
+    console.error("Error al finalizar el documento:", error);
+    const message = error.response?.data?.message || "Error al finalizar el documento, por favor intente nuevamente.";
+    toast.open({ message, type: "error" });
   }
 };
 
@@ -553,6 +636,27 @@ const añoMasReciente = computed(() => {
       </Transition>
 
       <Transition appear name="fade">
+        <ModalFinalizarDocumento v-if="showFinalizeModal && selectedDocumentId && selectedDocumentType" 
+          :documentId="selectedDocumentId"
+          :documentType="selectedDocumentType"
+          :trabajadorId="trabajadores.currentTrabajadorId!"
+          :documentLabel="selectedDocumentName"
+          @closeModal="toggleFinalizeModal" 
+          @confirmFinalize="handleFinalizeDocument" 
+        />
+      </Transition>
+
+      <Transition appear name="fade">
+        <ModalAnularDocumento v-if="showAnularModal && selectedDocumentId && selectedDocumentType"
+          :documentId="selectedDocumentId"
+          :documentType="selectedDocumentType"
+          :documentLabel="selectedDocumentName"
+          @closeModal="toggleAnularModal"
+          @confirmAnular="handleAnularDocument"
+        />
+      </Transition>
+
+      <Transition appear name="fade">
         <ModalCuestionarios v-if="showCuestionariosModal" @closeModal="toggleCuestionariosModal" />
       </Transition>
 
@@ -869,6 +973,8 @@ const añoMasReciente = computed(() => {
                   :year="year"
                   :trabajador="trabajadores.currentTrabajador || {}"
                   @eliminarDocumento="toggleDeleteModal" 
+                  @abrirModalAnular="toggleAnularModal"
+                  @abrirModalFinalizar="toggleFinalizeModal"
                   @abrirModalUpdate="toggleDocumentoExternoUpdateModal" 
                   @openSubscriptionModal="showSubscriptionModal = true"
                   :toggleRouteSelection="toggleRouteSelection" 

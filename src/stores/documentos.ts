@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import DocumentosAPI from "@/api/DocumentosAPI";
 import type {
   Antidoping,
@@ -264,16 +264,35 @@ export const useDocumentosStore = defineStore("documentos", () => {
     }
   }
   
-  async function deleteDocumentById(documentType: string, trabajadorId: string, documentId: string) {
+  async function deleteDocumentById(documentType: string, trabajadorId: string, documentId: string, razonAnulacion?: string) {
     try {
       loading.value = true;
-      await DocumentosAPI.deleteDocumentById(documentType, trabajadorId, documentId);
+      await DocumentosAPI.deleteDocumentById(documentType, trabajadorId, documentId, razonAnulacion);
     } catch (error) {
       console.log(error);
+      throw error;
     } finally {
       loading.value = false;
     }
   }
+
+  async function finalizarDocumento(documentType: string, trabajadorId: string, documentId: string) {
+    try {
+      loading.value = true;
+      await DocumentosAPI.finalizarDocumento(documentType, trabajadorId, documentId);
+    } catch (error) {
+      console.error('Error al finalizar el documento en el store:', error);
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  const isFinalized = computed(() => {
+    if (!currentDocument.value) return false;
+    const estado = currentDocument.value.estado?.toLowerCase();
+    return estado === 'finalizado' || estado === 'anulado';
+  });
 
   return {
     loading,
@@ -281,6 +300,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
     currentTypeOfDocument,
     currentDocumentId,
     currentDocument,
+    isFinalized,
     fetchDocumentById,
     fetchAllDocuments,
     setCurrentDocument,
@@ -289,6 +309,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
     createDocument,
     updateDocument,
     uploadExternalDocument,
-    deleteDocumentById
+    deleteDocumentById,
+    finalizarDocumento
   };
 });

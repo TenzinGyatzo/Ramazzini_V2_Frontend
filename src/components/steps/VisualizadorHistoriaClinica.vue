@@ -1,16 +1,20 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { calcularEdad, calcularAntiguedad, convertirFechaISOaDDMMYYYY, formatDateDDMMYYYY } from '@/helpers/dates';
 import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
+import EstadoDocumentoBadgeAlt from '../badges/EstadoDocumentoBadgeAlt.vue';
 
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
 const formData = useFormDataStore();
 const steps = useStepsStore();
+const proveedorSaludStore = useProveedorSaludStore();
+const isMX = computed(() => proveedorSaludStore.isMX);
 
 const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
@@ -67,9 +71,19 @@ const antecedentesLaborales = ref([
     class="flex flex-wrap justify-start gap-4 border-shadow w-full text-left rounded-lg p-5 transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-6xl mx-auto max-h-[66vh] sm:max-h-[68vh] md:max-h-[67vh] lg:max-h-[67vh] xl:max-h-[81vh] overflow-y-auto">
 
     <!-- Empresa, Fecha y Motivo del Examen -->
-    <div class="flex flex-wrap w-full gap-4">
+    <div class="flex flex-wrap md:flex-nowrap w-full gap-4 items-center">
+      <EstadoDocumentoBadgeAlt 
+        v-if="isMX"
+        :estado="formData.formDataHistoriaClinica.estado" 
+        :fechaFinalizacion="formData.formDataHistoriaClinica.fechaFinalizacion" 
+        :finalizadoPor="formData.formDataHistoriaClinica.finalizadoPor"
+        :fechaAnulacion="formData.formDataHistoriaClinica.fechaAnulacion"
+        :anuladoPor="formData.formDataHistoriaClinica.anuladoPor"
+        :razonAnulacion="formData.formDataHistoriaClinica.razonAnulacion"
+        class="mt-1 flex-shrink-0"
+      />
       <!-- Empresa -->
-      <div class="w-full md:w-2/5">
+      <div class="w-full md:w-auto md:flex-1 text-center">
         <p class="text-center text-base sm:text-lg">
           {{ empresas.currentEmpresa.nombreComercial }}
         </p>
@@ -77,7 +91,7 @@ const antecedentesLaborales = ref([
 
       <!-- Fecha y Motivo del Examen -->
       <div
-        class="w-full md:w-[calc(60%-1rem)] flex flex-wrap gap-2 justify-start md:justify-end text-sm sm:text-base cursor-pointer"
+        class="w-full md:w-auto md:flex-1 flex flex-wrap gap-2 justify-start md:justify-end text-sm sm:text-base cursor-pointer"
         :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }"
         @click="goToStep(1)">
         <p class="flex-1 md:flex-none">Ingreso ( {{ formData.formDataHistoriaClinica.motivoExamen === 'Ingreso' ? 'X' :
@@ -86,7 +100,7 @@ const antecedentesLaborales = ref([
           '&nbsp;' }} )</p>
         <p class="flex-1 md:flex-none">Periódico ( {{ formData.formDataHistoriaClinica.motivoExamen === 'Periódico' ?
           'X' : '&nbsp;' }} )</p>
-        <p class="w-full md:w-auto">Fecha: <span class="font-medium">{{
+        <p class="w-full md:w-auto text-right">Fecha: <span class="font-medium">{{
           formatDateDDMMYYYY(formData.formDataHistoriaClinica.fechaHistoriaClinica) }}</span></p>
       </div>
     </div>

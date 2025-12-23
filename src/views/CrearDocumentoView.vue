@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watchEffect } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
@@ -9,6 +9,7 @@ import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
 import { useCurrentUser } from '@/composables/useCurrentUser';
 import { useUserPermissions } from '@/composables/useUserPermissions';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import FormStepper from '@/components/steps/FormStepper.vue';
 import VisualizadorAntidoping from '@/components/steps/VisualizadorAntidoping.vue';
 import VisualizadorAptitud from '@/components/steps/VisualizadorAptitud.vue';
@@ -33,8 +34,12 @@ const trabajadores = useTrabajadoresStore();
 const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 const steps = useStepsStore();
+const proveedorSaludStore = useProveedorSaludStore();
 const { ensureUserLoaded } = useCurrentUser();
 const { canCreateDocument, getRestrictionMessage } = useUserPermissions();
+const isMX = computed(() => proveedorSaludStore.isMX);
+const isFinalized = computed(() => documentos.isFinalized);
+const disableEdit = computed(() => isMX.value && isFinalized.value);
 
 const empresaId = ref('');
 const centroTrabajoId = ref('');
@@ -71,7 +76,16 @@ onMounted(() => {
           console.error('No se encontraron datos para el documento especificado.');
         }
       })
-      .catch(error => console.error('Error al cargar los datos del documento:', error));
+      .catch(error => {
+        console.error('Error al cargar los datos del documento:', error);
+        if (error.response?.status === 403) {
+          toast.open({ 
+            message: 'No tienes permiso para editar este documento o ya ha sido finalizado.', 
+            type: 'error' 
+          });
+          router.back();
+        }
+      });
   }
 
   // Consultar altura disponible para control prenatal (una sola vez al iniciar)
@@ -381,7 +395,7 @@ const contraindicacionesAbsolutasNegadas = () => {
           class=" flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
           <div class="w-full xl:w-1/4">
             <FormStepper />
-            <div class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
+            <div v-if="!disableEdit" class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
               <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -443,7 +457,7 @@ const contraindicacionesAbsolutasNegadas = () => {
           class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
           <div class="w-full xl:w-1/4">
             <FormStepper />
-            <div class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
+            <div v-if="!disableEdit" class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
               <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -484,7 +498,7 @@ const contraindicacionesAbsolutasNegadas = () => {
           class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
           <div class="w-full xl:w-1/4">
             <FormStepper />
-            <div class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
+            <div v-if="!disableEdit" class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
               <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -660,7 +674,7 @@ const contraindicacionesAbsolutasNegadas = () => {
           class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
           <div class="w-full xl:w-1/4">
             <FormStepper />
-            <div v-if="steps.currentStep !== 25" class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
+            <div v-if="!disableEdit && steps.currentStep !== 25" class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
               <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -725,7 +739,7 @@ const contraindicacionesAbsolutasNegadas = () => {
           class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
           <div class="w-full xl:w-1/4">
             <FormStepper />
-            <div v-if="steps.currentStep !== 28" class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
+            <div v-if="!disableEdit && steps.currentStep !== 28" class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
               <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>

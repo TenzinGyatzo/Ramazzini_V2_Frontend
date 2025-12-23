@@ -85,7 +85,13 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/${documentType}/${documentoId}`);
     },
 
-    deleteDocumentById(documentType: string, trabajadorId: string, documentoId: string) {
-        return api.delete(`/expedientes/${trabajadorId}/documentos/${documentType}/eliminar/${documentoId}`);
+    deleteDocumentById(documentType: string, trabajadorId: string, documentoId: string, razonAnulacion?: string) {
+        return api.delete(`/expedientes/${trabajadorId}/documentos/${documentType}/eliminar/${documentoId}`, {
+            data: { razonAnulacion }
+        });
+    },
+
+    finalizarDocumento(documentType: string, trabajadorId: string, documentId: string) {
+        return api.post(`/expedientes/${trabajadorId}/documentos/${documentType}/${documentId}/finalizar`);
     },
 }

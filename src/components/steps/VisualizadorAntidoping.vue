@@ -2,10 +2,14 @@
 import { formatDateDDMMYYYY } from '@/helpers/dates';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { computed } from 'vue';
+import EstadoDocumentoBadgeAlt from '../badges/EstadoDocumentoBadgeAlt.vue';
 
 const formData = useFormDataStore();
 const steps = useStepsStore();
+const proveedorSaludStore = useProveedorSaludStore();
+const isMX = computed(() => proveedorSaludStore.isMX);
 
 const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
@@ -54,7 +58,18 @@ const showOpiaceos = computed(() => {
 <template>
   <div
     class="border-shadow w-full col-span-1 2xl:col-span-9 text-left rounded-lg p-7 2xl:p-7 transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-lg mx-auto">
-    <h2 class="text-lg font-medium mb-4">Información del Documento</h2>
+    <div class="flex justify-between items-start mb-4">
+      <h2 class="text-lg font-medium">Información del Documento</h2>
+      <EstadoDocumentoBadgeAlt 
+        v-if="isMX"
+        :estado="formData.formDataAntidoping.estado" 
+        :fechaFinalizacion="formData.formDataAntidoping.fechaFinalizacion" 
+        :finalizadoPor="formData.formDataAntidoping.finalizadoPor"
+        :fechaAnulacion="formData.formDataAntidoping.fechaAnulacion"
+        :anuladoPor="formData.formDataAntidoping.anuladoPor"
+        :razonAnulacion="formData.formDataAntidoping.razonAnulacion"
+      />
+    </div>
     <table class="table-auto w-full border-collapse border border-gray-200">
       <thead>
         <tr class="bg-gray-200">

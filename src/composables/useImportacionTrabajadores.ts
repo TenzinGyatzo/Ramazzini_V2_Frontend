@@ -9,6 +9,19 @@ export const useImportacionTrabajadores = () => {
   const importProgress = ref(0)
 
   // Importar trabajadores desde Excel
+  // NOTA: El frontend solo envía el archivo Excel al backend.
+  // El backend se encarga de:
+  // - Parsear el Excel y mapear columnas a campos del modelo Trabajador
+  // - Validar datos (NSS, CURP, códigos INEG para NOM-024, etc.)
+  // - Aplicar reglas de negocio condicionales (MX vs no-MX)
+  // - Retornar resumen de importación con éxitos/errores
+  // 
+  // Columnas esperadas en Excel (NOM-024):
+  // - Entidad Nacimiento -> entidadNacimiento
+  // - Nacionalidad -> nacionalidad
+  // - Entidad Residencia -> entidadResidencia
+  // - Municipio Residencia -> municipioResidencia
+  // - Localidad Residencia -> localidadResidencia
   const importarTrabajadores = async (
     file: File,
     idCentroTrabajo: string,

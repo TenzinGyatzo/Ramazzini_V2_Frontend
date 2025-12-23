@@ -3,14 +3,24 @@ import { watch, ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
+import CIE10Autocomplete from '@/components/selectors/CIE10Autocomplete.vue';
+import CIE10SecondaryDiagnoses from '@/components/selectors/CIE10SecondaryDiagnoses.vue';
 
 const trabajadores = useTrabajadoresStore();
 const { formDataHistoriaClinica } = useFormDataStore();
 const documentos = useDocumentosStore();
+const proveedorSaludStore = useProveedorSaludStore();
+
+const isMX = computed(() => proveedorSaludStore.isMX);
 
 // Valor local para la pregunta principal
 const resumenHistoriaClinicaPregunta = ref('No');
 const resumenHistoriaClinica = ref('');
+
+// Campos CIE-10 (NOM-024)
+const codigoCIE10Principal = ref('');
+const codigosCIE10Secundarios = ref([]);
 
 // Referencia al textarea
 const textareaEspecificar = ref(null);
@@ -57,8 +67,12 @@ onMounted(() => {
     
     if (documentos.currentDocument) {
         // Si se está editando un documento
-        const resumenDoc = documentos.currentDocument.resumenHistoriaClinica || '';
+        const resumenDoc = documentos.currentDocument.resumenHistoriaClinica || documentos.currentDocument.diagnosticoTexto || '';
         resumenHistoriaClinica.value = resumenDoc;
+        
+        // Cargar campos CIE-10
+        codigoCIE10Principal.value = documentos.currentDocument.codigoCIE10Principal || '';
+        codigosCIE10Secundarios.value = documentos.currentDocument.codigosCIE10Secundarios || [];
         
         // Detectar automáticamente si debe estar en "Si" o "No"
         // Si hay hallazgos automáticos o el resumen no es el texto por defecto, debe estar en "Si"
@@ -77,7 +91,7 @@ onMounted(() => {
             formDataHistoriaClinica.resumenHistoriaClinica = resumenAutomatico.value;
         } else {
             // No hay hallazgos - verificar si tiene un valor previo
-            const valorPrevio = formDataHistoriaClinica.resumenHistoriaClinica;
+            const valorPrevio = formDataHistoriaClinica.resumenHistoriaClinica || formDataHistoriaClinica.diagnosticoTexto;
             
             // Si el valor previo es el texto por defecto o está vacío, mantener en "No"
             if (!valorPrevio || valorPrevio === textoDefecto) {
@@ -87,6 +101,14 @@ onMounted(() => {
                 resumenHistoriaClinicaPregunta.value = formDataHistoriaClinica.resumenHistoriaClinicaPregunta || 'Si';
                 resumenHistoriaClinica.value = valorPrevio;
             }
+        }
+        
+        // Cargar campos CIE-10 desde formData
+        if (formDataHistoriaClinica.codigoCIE10Principal) {
+            codigoCIE10Principal.value = formDataHistoriaClinica.codigoCIE10Principal;
+        }
+        if (formDataHistoriaClinica.codigosCIE10Secundarios) {
+            codigosCIE10Secundarios.value = formDataHistoriaClinica.codigosCIE10Secundarios;
         }
     }
 });
@@ -100,10 +122,17 @@ onUnmounted(() => {
         formDataHistoriaClinica.resumenHistoriaClinica = trabajadores.currentTrabajador.sexo === 'Femenino'
             ? 'Se refiere actualmente asintomática'
             : 'Se refiere actualmente asintomático';
+        formDataHistoriaClinica.diagnosticoTexto = formDataHistoriaClinica.resumenHistoriaClinica;
     } else {
         // Si es "Si", guardar el resumen actual (ya sea automático o editado por el usuario)
-        formDataHistoriaClinica.resumenHistoriaClinica = resumenHistoriaClinica.value || resumenAutomatico.value || '';
+        const resumenFinal = resumenHistoriaClinica.value || resumenAutomatico.value || '';
+        formDataHistoriaClinica.resumenHistoriaClinica = resumenFinal;
+        formDataHistoriaClinica.diagnosticoTexto = resumenFinal;
     }
+    
+    // Guardar campos CIE-10
+    formDataHistoriaClinica.codigoCIE10Principal = codigoCIE10Principal.value || '';
+    formDataHistoriaClinica.codigosCIE10Secundarios = codigosCIE10Secundarios.value || [];
 });
 
 // Sincronizar resumenHistoriaClinicaPregunta con formData
@@ -114,7 +143,16 @@ watch(resumenHistoriaClinicaPregunta, (newValue) => {
 // Sincronizar valores con formData
 watch(resumenHistoriaClinica, (newValue) => {
     formDataHistoriaClinica.resumenHistoriaClinica = newValue;
+    formDataHistoriaClinica.diagnosticoTexto = newValue;
 });
+
+watch(codigoCIE10Principal, (newValue) => {
+    formDataHistoriaClinica.codigoCIE10Principal = newValue;
+});
+
+watch(codigosCIE10Secundarios, (newValue) => {
+    formDataHistoriaClinica.codigosCIE10Secundarios = newValue;
+}, { deep: true });
 
 // Watch para establecer 'Default' cuando resumenHistoriaClinica sea 'No' y enfocar textarea cuando sea 'Si'
 watch(resumenHistoriaClinicaPregunta, async (newValue) => {
@@ -153,8 +191,32 @@ watch(resumenHistoriaClinicaPregunta, async (newValue) => {
 <template>
     <div>
         <!-- Jerarquía Visual Mejorada -->
-        <h1 class="text-2xl font-bold mb-4 text-gray-900">Resumen Historia Clínica</h1>
+        <h1 class="text-2xl font-bold mb-6 text-gray-900">Resumen Historia Clínica y Diagnóstico</h1>
         
+        <!-- Campos CIE-10 (NOM-024) -->
+        <div class="mb-8 space-y-5">
+            <!-- CIE-10 Principal -->
+            <div>
+                <CIE10Autocomplete
+                    v-model="codigoCIE10Principal"
+                    :label="isMX ? 'Código CIE-10 Principal *' : 'Código CIE-10 Principal'"
+                    :required="isMX"
+                    placeholder="Buscar código diagnóstico principal..."
+                />
+                <p v-if="isMX" class="mt-1 text-xs text-amber-600 flex items-center gap-1">
+                    <i class="fas fa-info-circle"></i>
+                    Campo obligatorio para proveedores en México (NOM-024)
+                </p>
+            </div>
+
+            <!-- CIE-10 Secundarios -->
+            <div>
+                <CIE10SecondaryDiagnoses
+                    v-model="codigosCIE10Secundarios"
+                />
+            </div>
+        </div>
+
         <!-- Pregunta principal con mejor jerarquía -->
         <div class="mb-8">
             <p class="text-lg font-medium mb-4 text-gray-800">¿Hay hallazgos significativos por resumir?</p>

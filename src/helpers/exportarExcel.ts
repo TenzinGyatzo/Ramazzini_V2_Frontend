@@ -24,6 +24,14 @@ export function exportarTrabajadoresDesdeFrontend(trabajadoresFiltrados: any[], 
     baseData.Edad = trabajador.edad;
     baseData.Sexo = trabajador.sexo;
     baseData.Escolaridad = trabajador.escolaridad;
+    
+    // Campos de identificación NOM-024
+    baseData['Entidad Nacimiento'] = trabajador.entidadNacimiento || '';
+    baseData['Nacionalidad'] = trabajador.nacionalidad || '';
+    baseData['Entidad Residencia'] = trabajador.entidadResidencia || '';
+    baseData['Municipio Residencia'] = trabajador.municipioResidencia || '';
+    baseData['Localidad Residencia'] = trabajador.localidadResidencia || '';
+    
     baseData.Puesto = trabajador.puesto;
     baseData.Antigüedad = trabajador.antiguedad;
     baseData.Teléfono = trabajador.telefono;

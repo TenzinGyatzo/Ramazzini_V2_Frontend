@@ -13,6 +13,12 @@ export interface Trabajador {
   numeroEmpleado: string;
   nss: string;
   curp?: string;
+  // NOM-024 Person Identification Fields
+  entidadNacimiento?: string;
+  nacionalidad?: string;
+  entidadResidencia?: string;
+  municipioResidencia?: string;
+  localidadResidencia?: string;
   estadoLaboral: string;
   idCentroTrabajo: string;
   createdBy: string;

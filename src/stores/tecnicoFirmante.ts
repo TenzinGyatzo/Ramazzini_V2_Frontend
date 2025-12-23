@@ -6,6 +6,7 @@ import axios from "axios";
 interface TecnicoFirmante {
   _id: string;
   nombre: string;
+  curp?: string; // NOM-024: CURP del profesional de salud
   sexo?: string;
   tituloProfesional?: string;
   numeroCedulaProfesional?: string;

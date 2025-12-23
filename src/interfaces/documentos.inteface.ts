@@ -1,3 +1,5 @@
+import { DocumentoEstado } from './nom024.interface';
+
 export interface Antidoping {
     _id: string;
     fechaAntidoping: string;
@@ -12,6 +14,10 @@ export interface Antidoping {
     updatedBy: string;
     metilendioximetanfetamina?: string;
     ketamina?: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface Aptitud {
@@ -43,6 +49,10 @@ export interface Aptitud {
     rutaPDF: string;
     createdBy: string;
     updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface Audiometria {
@@ -77,6 +87,10 @@ export interface Audiometria {
     rutaPDF: string;
     createdBy: string;
     updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface Certificado {
@@ -86,6 +100,10 @@ export interface Certificado {
     rutaPDF: string;
     createdBy: string;
     updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface CertificadoExpedito {
@@ -109,6 +127,10 @@ export interface CertificadoExpedito {
     rutaPDF: string;
     createdBy: string;
     updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface DocumentoExterno {
@@ -121,6 +143,10 @@ export interface DocumentoExterno {
     rutaDocumento: string;
     createdBy: string;
     updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface ExamenVista {
@@ -147,6 +173,10 @@ export interface ExamenVista {
     rutaPDF: string;
     createdBy: string;
     updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface ExploracionFisica {
@@ -199,6 +229,10 @@ export interface ExploracionFisica {
     rutaPDF: string;
     createdBy: string;
     updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface HistoriaClinica {
@@ -287,10 +321,18 @@ export interface HistoriaClinica {
     descripcionDelDano?: string;
     secuelas?: string;
     resumenHistoriaClinica?: string;
+    diagnosticoTexto?: string;
+    // NOM-024 Fields
+    codigoCIE10Principal?: string;
+    codigosCIE10Secundarios?: string[];
     idTrabajador: string;
     rutaPDF: string;
     createdBy: string;
     updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface NotaMedica {
@@ -305,14 +347,21 @@ export interface NotaMedica {
     frecuenciaRespiratoria?: number;
     temperatura?: number;
     saturacionOxigeno?: number;
-    diagnostico?: string;
+    diagnosticoTexto?: string;
     tratamiento?: string;
     recomendaciones?: string;
     observaciones?: string;
+    // NOM-024 Fields
+    codigoCIE10Principal?: string;
+    codigosCIE10Secundarios?: string[];
     idTrabajador: string;
     rutaPDF: string;
     createdBy: string;
     updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface ControlPrenatal {
@@ -423,6 +472,10 @@ export interface ControlPrenatal {
     rutaPDF: string;
     createdBy: string;
     updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface HistoriaOtologica {
@@ -453,6 +506,14 @@ export interface HistoriaOtologica {
     otoscopiaOidoDerecho: string;
     otoscopiaOidoIzquierdo: string;
     resultadoCuestionario: string;
+    idTrabajador: string;
+    rutaPDF: string;
+    createdBy: string;
+    updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface PrevioEspirometria {
@@ -487,6 +548,14 @@ export interface PrevioEspirometria {
     hipertensionIntracraneal: string;
     desprendimientoAgudoRetina: string;
     resultadoCuestionario: string;
+    idTrabajador: string;
+    rutaPDF: string;
+    createdBy: string;
+    updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface Receta {
@@ -495,9 +564,57 @@ export interface Receta {
     tratamiento: string[];
     recomendaciones: string[] | string;
     indicaciones: string;
+    idTrabajador: string;
+    rutaPDF: string;
+    createdBy: string;
+    updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }
 
 export interface ConstanciaAptitud {
     _id: string;
     fechaConstanciaAptitud: string;
+    idTrabajador: string;
+    rutaPDF: string;
+    createdBy: string;
+    updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
+}
+
+export interface Lesion {
+    _id: string;
+    clues: string;
+    folio: string;
+    curpPaciente: string;
+    fechaNacimiento: string;
+    sexo: number;
+    fechaEvento: string;
+    horaEvento?: string;
+    sitioOcurrencia: number;
+    intencionalidad: number;
+    agenteLesion?: number;
+    tipoViolencia?: number[];
+    fechaAtencion: string;
+    horaAtencion?: string;
+    tipoAtencion: number[];
+    areaAnatomica: number;
+    consecuenciaGravedad: number;
+    codigoCIEAfeccionPrincipal: string;
+    codigoCIECausaExterna: string;
+    afeccionesTratadas?: string[];
+    responsableAtencion: number;
+    curpResponsable: string;
+    idTrabajador: string;
+    createdBy: string;
+    updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
 }

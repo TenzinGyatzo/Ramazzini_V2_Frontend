@@ -125,7 +125,7 @@ const camposRequeridosPorTipo: Record<string, Array<{campo: string, nombre: stri
   notaMedica: [
     { campo: 'fechaNotaMedica', nombre: 'Fecha de la nota médica', tipo: 'fecha', paso: 1, validacion: validarFecha },
     { campo: 'motivoConsulta', nombre: 'Motivo de consulta', tipo: 'texto', paso: 2, validacion: validarTexto },
-    { campo: 'diagnostico', nombre: 'Diagnóstico', tipo: 'texto', paso: 6, validacion: validarTexto }
+    // Nota: diagnosticoTexto ya no es requerido porque ahora el diagnóstico se hace con CIE-10
   ],
   
   controlPrenatal: [

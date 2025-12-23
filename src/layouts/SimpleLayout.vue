@@ -36,7 +36,7 @@ const contents = [
 </script>
 
 <template>
-  <div class="h-screen grid grid-cols-1 lg:grid-cols-2">
+  <div class="min-h-screen grid grid-cols-1 lg:grid-cols-2">
     <!-- Mitad izquierda (blanca) -->
     <div class="bg-white p-8 flex items-center justify-center">
       <RouterView />

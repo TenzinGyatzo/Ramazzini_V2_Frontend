@@ -12,9 +12,10 @@ const firmaPreview = ref(null);
 const firmaArchivo = ref(null);
 const isDragOver = ref(false);  // Para el estado de drag and drop
 
-// Objeto reactivo para el formulario del médico firmante
+// Objeto reactivo para el formulario del enfermera firmante
 const formularioEnfermeraFirmante = ref({
   nombre: "",
+  curp: "",
   sexo: "",
   tituloProfesional: "",
   numeroCedulaProfesional: "",
@@ -22,11 +23,14 @@ const formularioEnfermeraFirmante = ref({
   numeroCredencialAdicional: ""
 });
 
+const isMX = computed(() => proveedorSaludStore.proveedorSalud?.pais === 'MX');
+
 // Cargar los valores iniciales del enfermera firmante en el formulario
 watchEffect(() => {
   if (enfermeraFirmante.enfermeraFirmante) {
     Object.assign(formularioEnfermeraFirmante.value, {
       nombre: enfermeraFirmante.enfermeraFirmante.nombre || "",
+      curp: enfermeraFirmante.enfermeraFirmante.curp || "",
       sexo: enfermeraFirmante.enfermeraFirmante.sexo || "",
       tituloProfesional: enfermeraFirmante.enfermeraFirmante.tituloProfesional || "",
       numeroCedulaProfesional: enfermeraFirmante.enfermeraFirmante.numeroCedulaProfesional || "",
@@ -133,6 +137,14 @@ const user = ref(
 );
 
 const handleSubmit = async (data) => {
+    // Validación NOM-024: CURP obligatorio para proveedores MX
+    if (isMX.value && (!data.curp || data.curp.trim() === '')) {
+        toast.open({
+            type: "error",
+            message: "El CURP es obligatorio para proveedores en México (NOM-024)",
+        });
+        return;
+    }
 
     const formData = new FormData();
 
@@ -214,6 +226,33 @@ const firmaSrc = computed(() => {
 
                     <FormKit type="form" :actions="false"
                         incomplete-message="Por favor, valide que los datos sean correctos*" @submit="handleSubmit">
+
+                        <!-- Campo CURP (NOM-024) - Solo visible para MX -->
+                        <div v-if="isMX" class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                            <FormKit
+                                type="text"
+                                name="curp"
+                                placeholder="Ej. PEGF900215MDFRTN07"
+                                maxlength="18"
+                                v-model="formularioEnfermeraFirmante.curp"
+                            >
+                                <template #label>
+                                    <span class="text-base text-gray-700">
+                                        CURP (Clave Única de Registro de Población)
+                                        <span class="text-red-500">*</span>
+                                    </span>
+                                </template>
+                            </FormKit>
+
+                            <p class="flex items-center -mt-5 md:mt-0">
+                                <span class="text-xs text-gray-600 mt-0 md:mt-3 mb-5 md:mb-0">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    CURP de 18 caracteres (ej. PEGF900215MDFRTN07)
+                                    <br>
+                                    <span class="text-amber-700 font-medium">Obligatorio para proveedores en México (NOM-024)</span>
+                                </span>
+                            </p>
+                        </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                           <FormKit type="text" label="Nombre Completo" name="nombre"

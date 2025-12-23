@@ -6,6 +6,7 @@ import axios from "axios";
 interface MedicoFirmante {
     _id: string;
     nombre: string;
+    curp?: string; // NOM-024: CURP del profesional de salud
     tituloProfesional?: string;
     numeroCedulaProfesional?: string;
     especialistaSaludTrabajo?: boolean;

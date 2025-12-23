@@ -1,4 +1,4 @@
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { defineStore } from "pinia";
 import ProveedorSaludAPI from "@/api/ProveedorSaludAPI";
 
@@ -12,6 +12,7 @@ interface ProveedorSalud {
     nombre: string;
     razonSocial: string;
     pais: string;
+    clues?: string; // NOM-024: Clave Única de Establecimientos de Salud
     logotipoEmpresa: {
         data: string;
         contentType: string;
@@ -227,9 +228,12 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         }
     }
 
+    const isMX = computed(() => proveedorSalud.value?.pais === 'MX');
+
     return {
         proveedorSalud,
         loading,
+        isMX,
         loadProveedorSalud,
         getProveedorById,
         createProveedor,

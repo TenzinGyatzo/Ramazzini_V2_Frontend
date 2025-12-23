@@ -1,16 +1,68 @@
 <script setup>
-import { inject } from 'vue';
+import { inject, ref, computed, watchEffect } from 'vue';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useCurrentUser } from '@/composables/useCurrentUser';
+import MexicoGeoSelect from '@/components/selectors/MexicoGeoSelect.vue';
+import CPAutocomplete from '@/components/selectors/CPAutocomplete.vue';
 
 const toast = inject('toast');
 
 const empresas = useEmpresasStore();
 const centrosTrabajo = useCentrosTrabajoStore();
+const proveedorSalud = useProveedorSaludStore();
 const { getCurrentUserId, ensureUserLoaded } = useCurrentUser();
 const emit = defineEmits(['closeModal']);
 
+const isMX = computed(() => proveedorSalud.isMX);
+
+// Helper para Title Case (Nombre Propio)
+const toTitleCase = (str) => {
+  if (!str) return '';
+  return str.toLowerCase().replace(/(?:^|\s|-)\S/g, (l) => l.toUpperCase());
+};
+
+// Objeto reactivo para campos geográficos (usado principalmente para México con catálogos)
+const formulario = ref({
+  codigoPostal: '',
+  estado: '',
+  municipio: ''
+});
+
+// Sincronizar valores iniciales cuando se edita un centro
+watchEffect(() => {
+  if (centrosTrabajo.currentCentroTrabajo) {
+    formulario.value.codigoPostal = centrosTrabajo.currentCentroTrabajo.codigoPostal || '';
+    // Mostramos y guardamos como nombre propio
+    formulario.value.estado = toTitleCase(centrosTrabajo.currentCentroTrabajo.estado || '');
+    formulario.value.municipio = toTitleCase(centrosTrabajo.currentCentroTrabajo.municipio || '');
+  }
+});
+
+const handleCPSelect = (data) => {
+  if (data) {
+    // Para México guardamos el estado y municipio como nombre propio
+    formulario.value.estado = toTitleCase(data.estado);
+    formulario.value.municipio = toTitleCase(data.municipio);
+    // Para centros de trabajo, guardamos el CP como "codigo - Colonia"
+    formulario.value.codigoPostal = `${data.cp} - ${toTitleCase(data.asentamiento)}`;
+  }
+};
+
+// Función auxiliar para normalizar valores geográficos a strings
+const normalizeGeoValue = (value) => {
+  if (!value) return '';
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'object' && value !== null) {
+    // Si es un objeto, intentar extraer el valor útil
+    if (value.code) return String(value.code).trim();
+    if (value.value) return String(value.value).trim();
+    if (value.description) return String(value.description).trim();
+    return '';
+  }
+  return String(value).trim();
+};
 
 // Función para manejar el envío del formulario
 const handleSubmit = async (data) => {
@@ -22,12 +74,21 @@ const handleSubmit = async (data) => {
     return;
   }
 
+  // Normalizar valores geográficos dependiendo de si es México o no
+  let cpValue = isMX.value ? normalizeGeoValue(formulario.value.codigoPostal) : normalizeGeoValue(data.codigoPostal);
+  let estadoValue = isMX.value ? normalizeGeoValue(formulario.value.estado) : normalizeGeoValue(data.estado);
+  let municipioValue = isMX.value ? normalizeGeoValue(formulario.value.municipio) : normalizeGeoValue(data.municipio);
+
+  // Asegurar formato de nombre propio (Title Case) para estado y municipio
+  estadoValue = toTitleCase(estadoValue);
+  municipioValue = toTitleCase(municipioValue);
+
   const centroTrabajoData = {
     nombreCentro: data.nombreCentro,
     direccionCentro: data.direccionCentro,
-    codigoPostal: data.codigoPostal,
-    estado: data.estado,
-    municipio: data.municipio,
+    codigoPostal: cpValue,
+    estado: estadoValue,
+    municipio: municipioValue,
     idEmpresa: data.idEmpresa,
     createdBy: currentUserId,
     updatedBy: currentUserId
@@ -97,16 +158,36 @@ const closeModal = () => {
             </FormKit>
             <FormKit type="text" label="Dirección" name="direccionCentro" placeholder="Calle, número y colonia"
               :value="centrosTrabajo.currentCentroTrabajo?.direccionCentro || ''" />
-            <FormKit type="text" label="Código Postal" name="codigoPostal" placeholder="Ej. 81200, 44100, 01500"
-            validation="postalCodeValidation" :validation-messages="{
-                  postalCodeValidation: 'El código postal debe tener entre 4 y 10 dígitos.',
-                }"
-              :value="centrosTrabajo.currentCentroTrabajo?.codigoPostal || ''" />
-            <FormKit type="text" label="Región/Provincia/Estado" name="estado" placeholder="Ej. Estado de México, Morelos, Chihuahua"
-              :value="centrosTrabajo.currentCentroTrabajo?.estado || ''" />
+            
+            <template v-if="isMX">
+              <CPAutocomplete
+                v-model="formulario.codigoPostal"
+                @select="handleCPSelect"
+                label="Código Postal"
+                placeholder="Ej. 81200, Colinas del Río..."
+                class="mb-4"
+              />
 
-            <FormKit type="text" label="Ciudad/Municipio/Corregimiento" name="municipio" placeholder="Ej. Juárez, Léon, Cuernavaca"
-              :value="centrosTrabajo.currentCentroTrabajo?.municipio || ''" />
+              <div class="mb-4">
+                <MexicoGeoSelect
+                  v-model:estado="formulario.estado"
+                  v-model:municipio="formulario.municipio"
+                />
+              </div>
+            </template>
+
+            <template v-else>
+              <FormKit type="text" label="Código Postal" name="codigoPostal" placeholder="Ej. 81200, 44100, 01500"
+              validation="postalCodeValidation" :validation-messages="{
+                    postalCodeValidation: 'El código postal debe tener entre 4 y 10 dígitos.',
+                  }"
+                :value="centrosTrabajo.currentCentroTrabajo?.codigoPostal || ''" />
+              <FormKit type="text" label="Región/Provincia/Estado" name="estado" placeholder="Ej. Estado de México, Morelos, Chihuahua"
+                :value="centrosTrabajo.currentCentroTrabajo?.estado || ''" />
+
+              <FormKit type="text" label="Ciudad/Municipio/Corregimiento" name="municipio" placeholder="Ej. Juárez, Léon, Cuernavaca"
+                :value="centrosTrabajo.currentCentroTrabajo?.municipio || ''" />
+            </template>
 
             <FormKit type="hidden" name="idEmpresa" :value="empresas.currentEmpresaId" />
 

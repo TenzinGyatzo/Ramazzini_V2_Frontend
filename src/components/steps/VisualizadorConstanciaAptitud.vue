@@ -5,13 +5,17 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useStepsStore } from '@/stores/steps';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
+import EstadoDocumentoBadgeAlt from '../badges/EstadoDocumentoBadgeAlt.vue';
 
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
 const formData = useFormDataStore();
 const steps = useStepsStore();
 const medicoFirmanteStore = useMedicoFirmanteStore();
+const proveedorSaludStore = useProveedorSaludStore();
+const isMX = computed(() => proveedorSaludStore.isMX);
 
 const user = ref(
   JSON.parse(localStorage.getItem('user')) || null
@@ -202,6 +206,18 @@ const footerInfo = computed(() => {
     class="flex flex-col w-full text-center border-shadow rounded-lg transition-all duration-300 ease-in-out transform shadow-md bg-white max-w-6xl mx-auto max-h-[66vh] sm:max-h-[68vh] md:max-h-[67vh] lg:max-h-[67vh] xl:max-h-[81vh] overflow-y-auto"
     style="padding: 70px 40px 80px 40px;">
     
+    <div class="absolute top-4 right-4">
+      <EstadoDocumentoBadgeAlt 
+        v-if="isMX"
+        :estado="formData.formDataConstanciaAptitud.estado" 
+        :fechaFinalizacion="formData.formDataConstanciaAptitud.fechaFinalizacion" 
+        :finalizadoPor="formData.formDataConstanciaAptitud.finalizadoPor"
+        :fechaAnulacion="formData.formDataConstanciaAptitud.fechaAnulacion"
+        :anuladoPor="formData.formDataConstanciaAptitud.anuladoPor"
+        :razonAnulacion="formData.formDataConstanciaAptitud.razonAnulacion"
+      />
+    </div>
+
     <!-- Contenido principal -->
     <div class="flex flex-col items-center justify-start">
       <!-- Título de la constancia -->

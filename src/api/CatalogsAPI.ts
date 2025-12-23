@@ -1,0 +1,143 @@
+import api from '@/lib/axios'
+
+export default {
+    /**
+     * Search CIE-10 codes by query string
+     * @param query Search term (code or description)
+     */
+    searchCIE10(query: string) {
+        return api.get(`/catalogs/cie10/search`, {
+            params: { q: query }
+        });
+    },
+
+    /**
+     * Get a single CIE-10 entry by its code
+     * @param code The CIE-10 code (e.g., 'J00')
+     */
+    getCIE10ByCode(code: string) {
+        return api.get(`/catalogs/cie10/${code}`);
+    },
+
+    /**
+     * Search CLUES establishments by query string
+     * @param query Search term (code or name)
+     */
+    searchCLUES(query: string) {
+        return api.get(`/catalogs/clues/search`, {
+            params: { q: query }
+        });
+    },
+
+    /**
+     * Get a single CLUES entry by its code
+     * @param code The CLUES code (e.g., 'ASCIJ000012')
+     */
+    getCLUESByCode(code: string) {
+        return api.get(`/catalogs/clues/${code}`);
+    },
+
+    /**
+     * Validate if CLUES is in operation
+     * @param code The CLUES code
+     */
+    validateCLUES(code: string) {
+        return api.get(`/catalogs/clues/validate/${code}`);
+    },
+
+    /**
+     * Search Postal Codes by query string
+     * @param query Search term (CP or settlement name)
+     */
+    searchCP(query: string) {
+        return api.get(`/catalogs/cp/search`, {
+            params: { q: query }
+        });
+    },
+
+    /**
+     * Get a single Postal Code entry by its internal code (CP-ID)
+     * @param code The internal code
+     */
+    getCPByCode(code: string) {
+        return api.get(`/catalogs/cp/${code}`);
+    },
+
+    /**
+     * Get all Mexican states (Entidades Federativas)
+     */
+    getEstados() {
+        return api.get(`/catalogs/geo/estados`);
+    },
+
+    /**
+     * Get municipalities for a specific state
+     * @param estadoCode 2-digit state code
+     */
+    getMunicipios(estadoCode: string) {
+        return api.get(`/catalogs/geo/municipios/${estadoCode}`);
+    },
+
+    /**
+     * Get localities for a specific municipality
+     * @param estadoCode 2-digit state code
+     * @param municipioCode 3-digit municipality code
+     * @param query Optional search term
+     */
+    getLocalidades(estadoCode: string, municipioCode: string, query?: string) {
+        return api.get(`/catalogs/geo/localidades/${estadoCode}/${municipioCode}`, {
+            params: { q: query }
+        });
+    },
+
+    /**
+     * Search estados by query string (code or description)
+     * @param query Search term
+     * @param limit Optional result limit (default 50, max 100)
+     */
+    searchEstados(query: string, limit?: number) {
+        return api.get(`/catalogs/geo/estados/search`, {
+            params: { q: query, limit }
+        });
+    },
+
+    /**
+     * Get a single estado entry by its code
+     * @param code The estado code (e.g., '09')
+     */
+    getEstadoByCode(code: string) {
+        return api.get(`/catalogs/geo/estados/${code}`);
+    },
+
+    /**
+     * Search municipios by query string within a specific estado
+     * @param estadoCode 2-digit state code
+     * @param query Search term
+     * @param limit Optional result limit (default 50, max 100)
+     */
+    searchMunicipios(estadoCode: string, query: string, limit?: number) {
+        return api.get(`/catalogs/geo/municipios/${estadoCode}/search`, {
+            params: { q: query, limit }
+        });
+    },
+
+    /**
+     * Search nacionalidades by query string (code or description)
+     * @param query Search term
+     * @param limit Optional result limit (default 50, max 100)
+     */
+    searchNacionalidades(query: string, limit?: number) {
+        return api.get(`/catalogs/nacionalidades/search`, {
+            params: { q: query, limit }
+        });
+    },
+
+    /**
+     * Get a single nacionalidad entry by its code
+     * @param code The nacionalidad code (e.g., 'MEX')
+     */
+    getNacionalidadByCode(code: string) {
+        return api.get(`/catalogs/nacionalidades/${code}`);
+    }
+}
+

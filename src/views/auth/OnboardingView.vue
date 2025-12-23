@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, inject, nextTick, watch, onMounted, onUnmounted } from "vue";
+import { ref, reactive, inject, nextTick, watch, onMounted, onUnmounted, computed } from "vue";
 import { useProveedorSaludStore } from "@/stores/proveedorSalud";
 import { useUserStore } from "@/stores/user";
 import { useRouter } from "vue-router";
@@ -7,6 +7,8 @@ import CountryPhoneInput from "@/components/CountryPhoneInput.vue";
 import CountrySelect from "@/components/CountrySelect.vue";
 
 const toast = inject("toast");
+
+const isMX = computed(() => formDataProveedorSalud.pais === 'MX');
 
 const currentStep = ref(1);
 const showStep2 = ref(false);
@@ -24,6 +26,7 @@ const formDataUser = reactive({
 const formDataProveedorSalud = reactive({
   nombre: "",
   pais: "",
+  clues: "",
   perfilProveedorSalud: "",
   semaforizacionActivada: true,
   referenciaPlan: "BÁSICO",
@@ -52,6 +55,16 @@ const handleSubmitStep1 = async (data) => {
 const handleSubmitStep2 = async (data) => {
   Object.assign(formDataProveedorSalud, data); // Guardar datos del Proveedor de Salud
   let idProveedorSalud = null; // Variable para almacenar el ID del proveedor de salud
+
+  // Validación NOM-024: CLUES obligatorio para proveedores MX
+  if (isMX.value && (!formDataProveedorSalud.clues || formDataProveedorSalud.clues.trim() === '')) {
+    toast.open({
+      type: "error",
+      message: "El código CLUES es obligatorio para proveedores en México (NOM-024)",
+      position: "bottom-left",
+    });
+    return;
+  }
 
   try {
     // 1. Crear Proveedor Salud y obtener idProveedorSalud
@@ -409,6 +422,28 @@ onMounted(() => {
           :validation-messages="{ required: 'Este campo es obligatorio' }"
           v-model="formDataProveedorSalud.perfilProveedorSalud"
         />
+
+        <!-- Campo CLUES (NOM-024) -->
+        <FormKit
+          type="text"
+          name="clues"
+          placeholder="Ej. DFSSA012345"
+          v-model="formDataProveedorSalud.clues"
+        >
+          <template #label>
+            <span class="text-base text-gray-700">
+              CLUES (Clave Única de Establecimientos de Salud)
+              <span v-if="isMX" class="text-red-500">*</span>
+            </span>
+          </template>
+          <template #help>
+            <span class="text-xs text-gray-600">
+              <i class="fas fa-info-circle mr-1"></i>
+              Código de 11 caracteres (ej. DFSSA012345)
+              <span v-if="isMX" class="text-amber-700 font-medium"> - Obligatorio para proveedores en México (NOM-024)</span>
+            </span>
+          </template>
+        </FormKit>
         
         <FormKit
           type="hidden"

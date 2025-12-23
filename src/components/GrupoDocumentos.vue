@@ -47,7 +47,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(['abrirModalUpdate', 'eliminarDocumento', 'openSubscriptionModal']);
+const emit = defineEmits(['abrirModalUpdate', 'eliminarDocumento', 'abrirModalAnular', 'openSubscriptionModal', 'abrirModalFinalizar']);
 
 // Composables de permisos
 const { 
@@ -392,7 +392,9 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', constanciaAptitud._id, convertirFechaISOaDDMMYYYY(constanciaAptitud.fechaConstanciaAptitud), 'constanciaAptitud')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -416,7 +418,9 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', aptitud._id, convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto), 'aptitud')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -440,7 +444,9 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', historiaClinica._id, convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica), 'historiaClinica')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -464,7 +470,9 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', exploracionFisica._id, convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica), 'exploracionFisica')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -488,7 +496,9 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', examenVista._id, convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista), 'examenVista')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -512,7 +522,9 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', historiaOtologica._id, convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica), 'historiaOtologica')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -536,7 +548,9 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', audiometria._id, convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria), 'audiometria')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -560,7 +574,9 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', antidoping._id, convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping), 'antidoping')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -584,7 +600,9 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', certificado._id, convertirFechaISOaDDMMYYYY(certificado.fechaCertificado), 'certificado')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -608,7 +626,9 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', previoEspirometria._id, convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria), 'previoEspirometria')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -632,8 +652,10 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', documentoExterno._id, convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento), 'documentoExterno')"
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)"
                         @abrirModalUpdate="$emit('abrirModalUpdate')" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -657,7 +679,9 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', notaMedica._id, convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica), 'notaMedica')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -681,7 +705,9 @@ const toggleSelectAll = () => {
                             return props.selectedRoutes.includes(ruta);
                         })()"
                         @eliminarDocumento="$emit('eliminarDocumento', controlPrenatal._id, convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal), 'controlPrenatal')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
                         @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                     />
                 </div>
             </div>
@@ -707,7 +733,9 @@ const toggleSelectAll = () => {
                         return props.selectedRoutes.includes(ruta);
                     })()"
                     @eliminarDocumento="$emit('eliminarDocumento', certificadoExpedito._id, convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito), 'certificadoExpedito')" 
+                    @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)"
                     @openSubscriptionModal="emit('openSubscriptionModal')"
+                    @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                 />
             </div>
         </div>
@@ -730,8 +758,10 @@ const toggleSelectAll = () => {
                         const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
                         return props.selectedRoutes.includes(ruta);
                     })()"
-                    @eliminarDocumento="$emit('eliminarDocumento', receta._id, convertirFechaISOaDDMMYYYY(receta.fechaReceta), 'receta')" 
+                    @eliminarDocumento="$emit('eliminarDocumento', receta._id, convertirFechaISOaDDMMYYYY(receta.fechaReceta), 'receta')"
+                    @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)"
                     @openSubscriptionModal="emit('openSubscriptionModal')"
+                    @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
                 />
             </div>
         </div>

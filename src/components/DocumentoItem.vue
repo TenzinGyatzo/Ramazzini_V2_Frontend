@@ -11,6 +11,7 @@ import { useDocumentosStore } from '@/stores/documentos';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento, obtenerNombreDescargaCertificadoExpedito } from '@/helpers/rutas.ts';
 import ModalPdfEliminado from './ModalPdfEliminado.vue';
+import EstadoDocumentoBadge from './badges/EstadoDocumentoBadge.vue';
 import { useUserPermissions } from '@/composables/useUserPermissions';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 
@@ -111,7 +112,27 @@ const mostrarModalPdfEliminado = ref(false);
 const pdfDisponible = ref(true);
 const verificandoPDF = ref(false);
 
-const emit = defineEmits(['eliminarDocumento', 'abrirModalUpdate', 'closeModalUpdate', 'openSubscriptionModal']);
+// Estados para tooltips
+const showTooltip = ref(false);
+const tooltipPosition = ref({ top: 0, left: 0 });
+const tooltipText = ref('');
+
+const updateTooltipPosition = (event, text) => {
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    tooltipPosition.value = {
+        top: rect.top - 8,
+        left: rect.left + rect.width / 2
+    };
+    tooltipText.value = text;
+    showTooltip.value = true;
+};
+
+const hideTooltip = () => {
+    showTooltip.value = false;
+};
+
+const emit = defineEmits(['eliminarDocumento', 'abrirModalAnular', 'abrirModalUpdate', 'closeModalUpdate', 'openSubscriptionModal', 'abrirModalFinalizar']);
 
 // Función para determinar si se puede editar un documento según su tipo
 const canEditDocument = (documentType) => {
@@ -192,6 +213,25 @@ const handleDeleteDocument = (documentoId, documentoNombre, documentoTipo) => {
     executeIfCanManageDocumentosEvaluacion(() => {
       emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo);
     }, 'eliminar documentos de evaluación');
+  }
+};
+
+const handleAnularDocument = (documentoId, documentoNombre, documentoTipo) => {
+  const tipoSinEspacios = documentoTipo.toLowerCase().replace(/\s+/g, '');
+  
+  const logic = () => {
+    // Emitir evento para abrir el modal de anulación
+    emit('abrirModalAnular', documentoId, documentoNombre, documentoTipo);
+  };
+
+  if (['aptitud', 'certificado'].includes(tipoSinEspacios)) {
+    executeIfCanManageDocumentosDiagnostico(logic, 'anular documentos de diagnóstico y certificación');
+  } else if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito'].includes(tipoSinEspacios)) {
+    executeIfCanManageCuestionariosAdicionales(logic, 'anular cuestionarios adicionales');
+  } else if (tipoSinEspacios === 'documentoexterno') {
+    executeIfCanManageDocumentosExternos(logic, 'anular documentos externos');
+  } else {
+    executeIfCanManageDocumentosEvaluacion(logic, 'anular documentos de evaluación');
   }
 };
 
@@ -817,6 +857,70 @@ const props = defineProps({
     previoEspirometria: [Object, String],
 });
 
+const currentDocumentData = computed(() => {
+    return props.antidoping || props.aptitud || props.audiometria || props.constanciaAptitud || 
+           props.certificado || props.certificadoExpedito || props.receta || props.documentoExterno || 
+           props.examenVista || props.exploracionFisica || props.historiaClinica || props.notaMedica || 
+           props.controlPrenatal || props.historiaOtologica || props.previoEspirometria;
+});
+
+const puedeFinalizar = computed(() => {
+    // Solo permitir finalizar si el estado es BORRADOR o no tiene estado (legacy)
+    // Además, no permitir finalizar documentos externos por ahora
+    if (props.documentoTipo === 'documentoExterno') return false;
+    
+    if (!currentDocumentData.value || typeof currentDocumentData.value !== 'object') return false;
+    const estado = currentDocumentData.value.estado;
+    return !estado || estado.toLowerCase() === 'borrador';
+});
+
+const isFinalized = computed(() => {
+    if (!currentDocumentData.value || typeof currentDocumentData.value !== 'object') return false;
+    return currentDocumentData.value.estado?.toLowerCase() === 'finalizado';
+});
+
+const isAnulado = computed(() => {
+    if (!currentDocumentData.value || typeof currentDocumentData.value !== 'object') return false;
+    return currentDocumentData.value.estado?.toLowerCase() === 'anulado';
+});
+
+// Un documento es de solo lectura si está finalizado O anulado
+const isReadOnly = computed(() => {
+    return isFinalized.value || isAnulado.value;
+});
+
+const isMX = computed(() => {
+    return useProveedorSaludStore().isMX;
+});
+
+// Solo mostrar botón de anular si está FINALIZADO (no si ya está anulado)
+const isAnulacion = computed(() => {
+    return isMX.value && isFinalized.value && !isAnulado.value;
+});
+
+const canEditFinalized = computed(() => {
+    return canEditDocument(props.documentoTipo);
+});
+
+const documentoNombre = computed(() => {
+    if (props.antidoping) return 'Antidoping';
+    if (props.aptitud) return 'Aptitud al Puesto';
+    if (props.audiometria) return 'Audiometría';
+    if (props.constanciaAptitud) return 'Constancia de Aptitud';
+    if (props.certificado) return 'Certificado';
+    if (props.certificadoExpedito) return 'Certificado Expedito';
+    if (props.receta) return 'Receta';
+    if (props.documentoExterno) return props.documentoExterno.nombreDocumento;
+    if (props.examenVista) return 'Examen de la Vista';
+    if (props.exploracionFisica) return 'Exploración Física';
+    if (props.historiaClinica) return 'Historia Clínica';
+    if (props.notaMedica) return 'Nota Médica';
+    if (props.controlPrenatal) return 'Control Prenatal';
+    if (props.historiaOtologica) return 'Historia Otológica';
+    if (props.previoEspirometria) return 'Previo Espirometria';
+    return 'Documento';
+});
+
 const { antidoping } = props; // Desestructuración para acceder a antidoping
 
 // Computed para el indicador lateral
@@ -1229,10 +1333,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ positivos ? 'Positivo' : 'Negativo' }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping) }}
-                            </p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="antidoping.estado" 
+                                    :fechaFinalizacion="antidoping.fechaFinalizacion" 
+                                    :finalizadoPor="antidoping.finalizadoPor"
+                                    :fechaAnulacion="antidoping.fechaAnulacion"
+                                    :anuladoPor="antidoping.anuladoPor"
+                                    :razonAnulacion="antidoping.razonAnulacion"
+                                />
+                            </div>
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
@@ -1279,10 +1394,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     Constancia de Aptitud
                                 </h3>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(constanciaAptitud.fechaConstanciaAptitud) }}
-                            </p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(constanciaAptitud.fechaConstanciaAptitud) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="constanciaAptitud.estado" 
+                                    :fechaFinalizacion="constanciaAptitud.fechaFinalizacion" 
+                                    :finalizadoPor="constanciaAptitud.finalizadoPor"
+                                    :fechaAnulacion="constanciaAptitud.fechaAnulacion"
+                                    :anuladoPor="constanciaAptitud.anuladoPor"
+                                    :razonAnulacion="constanciaAptitud.razonAnulacion"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1327,10 +1453,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                          aptitud.aptitudPuesto.charAt(0).toUpperCase() + aptitud.aptitudPuesto.slice(1).toLowerCase() }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto) }}
-                            </p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="aptitud.estado" 
+                                    :fechaFinalizacion="aptitud.fechaFinalizacion" 
+                                    :finalizadoPor="aptitud.finalizadoPor"
+                                    :fechaAnulacion="aptitud.fechaAnulacion"
+                                    :anuladoPor="aptitud.anuladoPor"
+                                    :razonAnulacion="aptitud.razonAnulacion"
+                                />
+                            </div>
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
@@ -1390,10 +1527,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     Incompleta
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria) }}
-                            </p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="audiometria.estado" 
+                                    :fechaFinalizacion="audiometria.fechaFinalizacion" 
+                                    :finalizadoPor="audiometria.finalizadoPor"
+                                    :fechaAnulacion="audiometria.fechaAnulacion"
+                                    :anuladoPor="audiometria.anuladoPor"
+                                    :razonAnulacion="audiometria.razonAnulacion"
+                                />
+                            </div>
                         </div>
 
                         <!-- Información adicional (pantallas grandes) -->
@@ -1443,10 +1591,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'Sin impedimentos' : 'Con impedimentos' }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(certificado.fechaCertificado) }}
-                            </p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(certificado.fechaCertificado) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="certificado.estado" 
+                                    :fechaFinalizacion="certificado.fechaFinalizacion" 
+                                    :finalizadoPor="certificado.finalizadoPor"
+                                    :fechaAnulacion="certificado.fechaAnulacion"
+                                    :anuladoPor="certificado.anuladoPor"
+                                    :razonAnulacion="certificado.razonAnulacion"
+                                />
+                            </div>
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
@@ -1497,10 +1656,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ certificadoExpedito.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'Sin impedimentos' : 'Con impedimentos' }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito) }}
-                            </p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="certificadoExpedito.estado" 
+                                    :fechaFinalizacion="certificadoExpedito.fechaFinalizacion" 
+                                    :finalizadoPor="certificadoExpedito.finalizadoPor"
+                                    :fechaAnulacion="certificadoExpedito.fechaAnulacion"
+                                    :anuladoPor="certificadoExpedito.anuladoPor"
+                                    :razonAnulacion="certificadoExpedito.razonAnulacion"
+                                />
+                            </div>
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
@@ -1568,7 +1738,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     </span>
                                 </h3>
                             </div>
-                            <div class="flex">
+                            <div class="flex items-center gap-2">
                                 <p class="text-sm text-gray-500 flex items-center">
                                     <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
                                     {{ convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento) }}
@@ -1576,6 +1746,15 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
                                     Documento Externo
                                 </span>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="documentoExterno.estado" 
+                                    :fechaFinalizacion="documentoExterno.fechaFinalizacion" 
+                                    :finalizadoPor="documentoExterno.finalizadoPor"
+                                    :fechaAnulacion="documentoExterno.fechaAnulacion"
+                                    :anuladoPor="documentoExterno.anuladoPor"
+                                    :razonAnulacion="documentoExterno.razonAnulacion"
+                                />
                             </div>
                         </div>
                         
@@ -1626,15 +1805,24 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ examenVista.requiereLentesUsoGeneral === 'Si' ? 'Requiere lentes' : 'Agudeza normal' }}
                                 </span>
                             </div>
-                            <div class="flex">
-                                <p class="text-sm mr-0.5 text-gray-500 flex items-center">
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
                                     <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
                                     {{ convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista) }}
                                 </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="examenVista.estado" 
+                                    :fechaFinalizacion="examenVista.fechaFinalizacion" 
+                                    :finalizadoPor="examenVista.finalizadoPor"
+                                    :fechaAnulacion="examenVista.fechaAnulacion"
+                                    :anuladoPor="examenVista.anuladoPor"
+                                    :razonAnulacion="examenVista.razonAnulacion"
+                                />
                                 <span v-if="examenVista.porcentajeIshihara && examenVista.porcentajeIshihara < 80" 
-                                    class="hidden sm:flex ml-16 px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700">
+                                    class="hidden sm:flex px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700">
                                     Daltonismo
-                                </span>                                
+                                </span>
                             </div>
                         </div>
                         
@@ -1708,13 +1896,22 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' || exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'Sin hallazgos' : 'Hallazgos' }}
                                 </span>
                             </div>
-                            <div class="flex">
-                                <p class="text-sm mr-1.5 text-gray-500 flex items-center">
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
                                     <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
                                     {{ convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica) }}
                                 </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="exploracionFisica.estado" 
+                                    :fechaFinalizacion="exploracionFisica.fechaFinalizacion" 
+                                    :finalizadoPor="exploracionFisica.finalizadoPor"
+                                    :fechaAnulacion="exploracionFisica.fechaAnulacion"
+                                    :anuladoPor="exploracionFisica.anuladoPor"
+                                    :razonAnulacion="exploracionFisica.razonAnulacion"
+                                />
                                 <span v-if="exploracionFisica.indiceMasaCorporal && exploracionFisica.indiceMasaCorporal >= 30" 
-                                    class="hidden sm:flex ml-14 px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700">
+                                    class="hidden sm:flex px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-700">
                                     Obesidad
                                 </span>
                             </div>
@@ -1795,10 +1992,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' ? 'Asintomático' : historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'Asintomática' : 'Hallazgo' }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica) }}
-                            </p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="historiaClinica.estado" 
+                                    :fechaFinalizacion="historiaClinica.fechaFinalizacion" 
+                                    :finalizadoPor="historiaClinica.finalizadoPor"
+                                    :fechaAnulacion="historiaClinica.fechaAnulacion"
+                                    :anuladoPor="historiaClinica.anuladoPor"
+                                    :razonAnulacion="historiaClinica.razonAnulacion"
+                                />
+                            </div>
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
@@ -1863,10 +2071,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ notaMedica.tipoNota }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica) }}
-                            </p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="notaMedica.estado" 
+                                    :fechaFinalizacion="notaMedica.fechaFinalizacion" 
+                                    :finalizadoPor="notaMedica.finalizadoPor"
+                                    :fechaAnulacion="notaMedica.fechaAnulacion"
+                                    :anuladoPor="notaMedica.anuladoPor"
+                                    :razonAnulacion="notaMedica.razonAnulacion"
+                                />
+                            </div>
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
@@ -1913,10 +2132,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ receta.tratamiento.length }} indicac{{ receta.tratamiento.length === 1 ? 'ión' : 'iones' }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(receta.fechaReceta) }}
-                            </p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(receta.fechaReceta) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="receta.estado" 
+                                    :fechaFinalizacion="receta.fechaFinalizacion" 
+                                    :finalizadoPor="receta.finalizadoPor"
+                                    :fechaAnulacion="receta.fechaAnulacion"
+                                    :anuladoPor="receta.anuladoPor"
+                                    :razonAnulacion="receta.razonAnulacion"
+                                />
+                            </div>
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
@@ -1965,10 +2195,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     FPP {{ convertirFechaISOaDDMMYYYY(controlPrenatal.fpp) }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal) }}
-                            </p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="controlPrenatal.estado" 
+                                    :fechaFinalizacion="controlPrenatal.fechaFinalizacion" 
+                                    :finalizadoPor="controlPrenatal.finalizadoPor"
+                                    :fechaAnulacion="controlPrenatal.fechaAnulacion"
+                                    :anuladoPor="controlPrenatal.anuladoPor"
+                                    :razonAnulacion="controlPrenatal.razonAnulacion"
+                                />
+                            </div>
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
@@ -2110,10 +2351,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ getResultadoCuestionarioTextoCorto(historiaOtologica.resultadoCuestionario, historiaOtologica.resultadoCuestionarioPersonalizado) }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica) }}
-                            </p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="historiaOtologica.estado" 
+                                    :fechaFinalizacion="historiaOtologica.fechaFinalizacion" 
+                                    :finalizadoPor="historiaOtologica.finalizadoPor"
+                                    :fechaAnulacion="historiaOtologica.fechaAnulacion"
+                                    :anuladoPor="historiaOtologica.anuladoPor"
+                                    :razonAnulacion="historiaOtologica.razonAnulacion"
+                                />
+                            </div>
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
@@ -2175,10 +2427,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ getResultadoCuestionarioTextoCorto(previoEspirometria.resultadoCuestionario, previoEspirometria.resultadoCuestionarioPersonalizado) }}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-500 flex items-center">
-                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
-                                {{ convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria) }}
-                            </p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="previoEspirometria.estado" 
+                                    :fechaFinalizacion="previoEspirometria.fechaFinalizacion" 
+                                    :finalizadoPor="previoEspirometria.finalizadoPor"
+                                    :fechaAnulacion="previoEspirometria.fechaAnulacion"
+                                    :anuladoPor="previoEspirometria.anuladoPor"
+                                    :razonAnulacion="previoEspirometria.razonAnulacion"
+                                />
+                            </div>
                         </div>
                         
                         <!-- Información adicional (pantallas grandes) -->
@@ -2223,12 +2486,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     'Historia Otologica': historiaOtologica,
                     'Previo Espirometria': previoEspirometria,
                 }" :key="key">
-                    <button v-if="documento && documento.rutaDocumento" @click="descargarArchivo(documento, key)"
+                    <button v-if="documento && documento.rutaDocumento" 
+                        @click="descargarArchivo(documento, key)"
+                        @mouseenter="(e) => updateTooltipPosition(e, 'Descargar documento')"
+                        @mouseleave="hideTooltip"
                         type="button"
                         class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-5">
                         <i class="fa-solid fa-download fa-lg"></i>
                     </button>
-                    <button v-if="documento && documento.rutaPDF" @click="descargarArchivo(documento, key)" type="button"
+                    <button v-if="documento && documento.rutaPDF" 
+                        @click="descargarArchivo(documento, key)" 
+                        @mouseenter="(e) => updateTooltipPosition(e, 'Descargar documento')"
+                        @mouseleave="hideTooltip"
+                        type="button"
                         class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition-transform duration-300 ease-in-out transform hover:scale-110 shadow-sm z-5">
                         <i class="fa-solid fa-download fa-lg"></i>
                     </button>
@@ -2237,36 +2507,48 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                 <button v-if="documentoTipo === 'documentoExterno'" type="button"
                     :class="[
                         'py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full transition-transform duration-200 ease-in-out transform shadow-sm z-5',
-                        canEditDocument(documentoTipo) 
+                        canEditFinalized 
                             ? 'bg-sky-100 hover:bg-sky-200 text-sky-600 hover:scale-110' 
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
                     ]"
-                    :disabled="!canEditDocument(documentoTipo)"
-                    @click="handleEditDocumentoExterno">
-                    <i class="fa-regular fa-pen-to-square fa-lg"></i>
+                    @click="handleEditDocumentoExterno"
+                    @mouseenter="(e) => updateTooltipPosition(e, isMX && isReadOnly ? 'Ver documento' : 'Editar documento')"
+                    @mouseleave="hideTooltip">
+                    <i :class="isMX && isReadOnly ? 'fa-regular fa-eye fa-lg' : 'fa-regular fa-pen-to-square fa-lg'"></i>
                 </button>
                 <button v-else type="button" 
                     :class="[
                         'py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full transition-transform duration-200 ease-in-out transform shadow-sm z-5',
-                        canEditDocument(documentoTipo) 
+                        canEditFinalized 
                             ? 'bg-sky-100 hover:bg-sky-200 text-sky-600 hover:scale-110' 
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
                     ]"
-                    :disabled="!canEditDocument(documentoTipo)"
-                    @click="handleEditDocument(documentoId, documentoTipo)">
-                    <i class="fa-regular fa-pen-to-square fa-lg"></i>
+                    @click="handleEditDocument(documentoId, documentoTipo)"
+                    @mouseenter="(e) => updateTooltipPosition(e, isMX && isReadOnly ? 'Ver documento' : 'Editar documento')"
+                    @mouseleave="hideTooltip">
+                    <i :class="isMX && isReadOnly ? 'fa-regular fa-eye fa-lg' : 'fa-regular fa-pen-to-square fa-lg'"></i>
                 </button>
 
-                <button type="button" 
+                <button v-if="puedeFinalizar && isMX" type="button" 
+                    class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5"
+                    @click="$emit('abrirModalFinalizar', documentoId, documentoNombre, documentoTipo)"
+                    @mouseenter="(e) => updateTooltipPosition(e, 'Finalizar documento')"
+                    @mouseleave="hideTooltip">
+                    <i class="fa-solid fa-file-signature fa-lg"></i>
+                </button>
+
+                <button type="button"
                     :class="[
                         'py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full transition-transform duration-200 ease-in-out transform shadow-sm z-5',
-                        canDeleteDocument(documentoTipo) 
+                        canDeleteDocument(documentoTipo) && !isAnulado
                             ? 'bg-red-100 hover:bg-red-200 text-red-600 hover:scale-110' 
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
                     ]"
-                    :disabled="!canDeleteDocument(documentoTipo)"
-                    @click="handleDeleteDocument(documentoId, documentoNombre, documentoTipo)">
-                    <i class="fa-solid fa-trash-can fa-lg"></i>
+                    :disabled="!canDeleteDocument(documentoTipo) || isAnulado"
+                    @click="isAnulacion ? handleAnularDocument(documentoId, documentoNombre, documentoTipo) : handleDeleteDocument(documentoId, documentoNombre, documentoTipo)"
+                    @mouseenter="(e) => updateTooltipPosition(e, isAnulado ? 'Documento anulado' : (isAnulacion ? 'Anular documento' : 'Eliminar documento'))"
+                    @mouseleave="hideTooltip">
+                    <i :class="isAnulacion ? 'fa-solid fa-file-circle-xmark fa-lg' : 'fa-solid fa-trash-can fa-lg'"></i>
                 </button>
             </div>
         </div>
@@ -2425,6 +2707,26 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
     </Transition>
     </Teleport>
 
+    <!-- Tooltip para botones de acción -->
+    <Teleport to="body">
+        <Transition name="tooltip-fade">
+            <div 
+                v-if="showTooltip"
+                class="fixed z-[9999] pointer-events-none"
+                :style="{
+                    top: `${tooltipPosition.top}px`,
+                    left: `${tooltipPosition.left}px`,
+                    transform: 'translate(-50%, -100%)',
+                    marginBottom: '8px'
+                }">
+                <div class="px-3 py-1 bg-gray-800 text-white text-xs rounded-lg shadow-xl border border-gray-700 whitespace-nowrap">
+                    {{ tooltipText }}
+                    <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
+
 </template>
 
 <style>
@@ -2472,6 +2774,17 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
     .modal-fade-leave-active {
         transition: all 0.2s ease;
     }
+}
+
+/* Animaciones para tooltip */
+.tooltip-fade-enter-active,
+.tooltip-fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.tooltip-fade-enter-from,
+.tooltip-fade-leave-to {
+    opacity: 0;
 }
 
 @media (max-width: 768px) {

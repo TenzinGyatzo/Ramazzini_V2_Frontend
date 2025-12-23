@@ -14,6 +14,7 @@ const isDragOver = ref(false);
 
 const formularioTecnicoFirmante = ref({
   nombre: "",
+  curp: "",
   sexo: "",
   tituloProfesional: "",
   numeroCedulaProfesional: "",
@@ -21,10 +22,13 @@ const formularioTecnicoFirmante = ref({
   numeroCredencialAdicional: ""
 });
 
+const isMX = computed(() => proveedorSaludStore.proveedorSalud?.pais === 'MX');
+
 watchEffect(() => {
   if (tecnicoFirmante.tecnicoFirmante) {
     Object.assign(formularioTecnicoFirmante.value, {
       nombre: tecnicoFirmante.tecnicoFirmante.nombre || "",
+      curp: tecnicoFirmante.tecnicoFirmante.curp || "",
       sexo: tecnicoFirmante.tecnicoFirmante.sexo || "",
       tituloProfesional: tecnicoFirmante.tecnicoFirmante.tituloProfesional || "",
       numeroCedulaProfesional: tecnicoFirmante.tecnicoFirmante.numeroCedulaProfesional || "",
@@ -90,6 +94,15 @@ const handleDrop = (event) => {
 const user = ref(JSON.parse(localStorage.getItem('user')) || null);
 
 const handleSubmit = async (data) => {
+  // Validación NOM-024: CURP obligatorio para proveedores MX
+  if (isMX.value && (!data.curp || data.curp.trim() === '')) {
+    toast.open({
+      type: "error",
+      message: "El CURP es obligatorio para proveedores en México (NOM-024)",
+    });
+    return;
+  }
+
   const formData = new FormData();
   Object.entries(data).forEach(([key, value]) => { if (value !== undefined && value !== null && value !== "") { formData.append(key, value); } });
   formData.append('idUser', user.value._id);
@@ -126,8 +139,36 @@ const firmaSrc = computed(() => `${baseURL}/assets/signatories/${tecnicoFirmante
           <hr class="mt-2 mb-3">
 
           <FormKit type="form" :actions="false" incomplete-message="Por favor, valide que los datos sean correctos*" @submit="handleSubmit">
+            <!-- Campo CURP (NOM-024) - Solo visible para MX -->
+            <div v-if="isMX" class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <FormKit
+                type="text"
+                name="curp"
+                placeholder="Ej. PERJ920315HDFRDN05"
+                maxlength="18"
+                v-model="formularioTecnicoFirmante.curp"
+              >
+                <template #label>
+                  <span class="text-base text-gray-700">
+                    CURP (Clave Única de Registro de Población)
+                    <span class="text-red-500">*</span>
+                  </span>
+                </template>
+              </FormKit>
+
+              <p class="flex items-center -mt-5 md:mt-0">
+                <span class="text-xs text-gray-600 mt-0 md:mt-3 mb-5 md:mb-0">
+                  <i class="fas fa-info-circle mr-1"></i>
+                  CURP de 18 caracteres (ej. PERJ920315HDFRDN05)
+                  <br>
+                  <span class="text-amber-700 font-medium">Obligatorio para proveedores en México (NOM-024)</span>
+                </span>
+              </p>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <FormKit type="text" label="Nombre Completo" name="nombre" placeholder="Ej. Juan Pérez" validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }" v-model="formularioTecnicoFirmante.nombre" />
+              
               <FormKit type="select" label="Sexo" name="sexo" placeholder='Selecciona "Masculino" o "Femenino"' :options="['Masculino', 'Femenino']" validation="required" :validation-messages="{ required: 'Este campo es obligatorio' }" v-model="formularioTecnicoFirmante.sexo" />
             </div>
 

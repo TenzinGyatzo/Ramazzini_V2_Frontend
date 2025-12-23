@@ -19,6 +19,12 @@ interface Trabajador {
   numeroEmpleado: string;
   nss: string;
   curp?: string;
+  // NOM-024 Person Identification Fields
+  entidadNacimiento?: string;
+  nacionalidad?: string;
+  entidadResidencia?: string;
+  municipioResidencia?: string;
+  localidadResidencia?: string;
   agentesRiesgoActuales: string[];
   estadoLaboral: string;
   idCentroTrabajo: string;
@@ -84,6 +90,12 @@ export const useTrabajadoresStore = defineStore("trabajadores", () => {
       numeroEmpleado: "",
       nss: "",
       curp: "",
+      // NOM-024 Fields
+      entidadNacimiento: "",
+      nacionalidad: "",
+      entidadResidencia: "",
+      municipioResidencia: "",
+      localidadResidencia: "",
       agentesRiesgoActuales: [],
       estadoLaboral: "",
       idCentroTrabajo: "",
