@@ -637,6 +637,15 @@ export default {
           { component: Step5NotaAclaratoria, name: 'Paso 5' },
           { component: Step6NotaAclaratoria, name: 'Paso 6' },
         ]);
+      } else if (documentos.currentTypeOfDocument === 'notaAclaratoria') {
+        stepsStore.setSteps([
+          { component: Step1NotaAclaratoria, name: 'Paso 1' },
+          { component: Step2NotaAclaratoria, name: 'Paso 2' },
+          { component: Step3NotaAclaratoria, name: 'Paso 3' },
+          { component: Step4NotaAclaratoria, name: 'Paso 4' },
+          { component: Step5NotaAclaratoria, name: 'Paso 5' },
+          { component: Step6NotaAclaratoria, name: 'Paso 6' },
+        ]);
       } else if (documentos.currentTypeOfDocument === 'controlPrenatal') {
         stepsStore.setSteps([
           { component: Step1ControlPrenatal, name: 'Paso 1' },
