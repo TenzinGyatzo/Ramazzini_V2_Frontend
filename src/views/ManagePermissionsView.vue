@@ -106,6 +106,16 @@ const guardarTodosLosCambios = async () => {
     );
   });
 
+  // Forzar permisos a false para administrativos antes de guardar
+  usuariosConCambios.forEach(usuario => {
+    if (usuario.role === 'Administrativo') {
+      usuario.permisos.gestionarDocumentosDiagnostico = false;
+      usuario.permisos.gestionarDocumentosEvaluacion = false;
+      usuario.permisos.gestionarDocumentosExternos = false;
+      usuario.permisos.gestionarCuestionariosAdicionales = false;
+    }
+  });
+
   try {
     // Guardar todos los cambios en paralelo
     const promises = usuariosConCambios.map(usuario => 
@@ -406,45 +416,76 @@ onBeforeRouteLeave((to, from, next) => {
               <i class="fas fa-file-medical text-green-600 mr-2"></i>
               Gestión de Documentos Médicos
             </h4>
+
+            <!-- Mensaje informativo para administrativos -->
+            <div v-if="usuario.role === 'Administrativo'" class="mb-3 p-2 bg-amber-50 border border-amber-200 rounded text-[10px] sm:text-xs text-amber-700 flex items-start gap-2">
+              <i class="fas fa-info-circle mt-0.5"></i>
+              <span>Los usuarios administrativos no tienen permitido gestionar documentos médicos por políticas de seguridad.</span>
+            </div>
+
             <div class="space-y-3 pl-4 sm:pl-6">
-              <label class="flex items-center space-x-2 sm:space-x-3 cursor-pointer">
+              <label 
+                :class="[
+                  'flex items-center space-x-2 sm:space-x-3',
+                  usuario.role === 'Administrativo' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                ]"
+              >
                 <input 
                   type="checkbox" 
                   v-model="usuario.permisos.gestionarDocumentosDiagnostico"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  :disabled="usuario.role === 'Administrativo'"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 disabled:opacity-50"
                 >
                 <i class="fas fa-stethoscope text-gray-600 text-sm sm:text-base"></i>
                 <span class="text-xs sm:text-sm text-gray-700 leading-snug">Documentos de Diagnóstico y Certificación</span>
               </label>
 
-              <label class="flex items-center space-x-2 sm:space-x-3 cursor-pointer">
+              <label 
+                :class="[
+                  'flex items-center space-x-2 sm:space-x-3',
+                  usuario.role === 'Administrativo' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                ]"
+              >
                 <input 
                   type="checkbox" 
                   v-model="usuario.permisos.gestionarDocumentosEvaluacion"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  :disabled="usuario.role === 'Administrativo'"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 disabled:opacity-50"
                 >
                 <i class="fas fa-clipboard-check text-gray-600 text-sm sm:text-base"></i>
                 <span class="text-xs sm:text-sm text-gray-700 leading-snug">Documentos de Evaluación</span>
               </label>
 
-              <label class="flex items-center space-x-2 sm:space-x-3 cursor-pointer">
+              <label 
+                :class="[
+                  'flex items-center space-x-2 sm:space-x-3',
+                  usuario.role === 'Administrativo' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                ]"
+              >
                 <input 
                   type="checkbox" 
                   v-model="usuario.permisos.gestionarDocumentosExternos"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  :disabled="usuario.role === 'Administrativo'"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 disabled:opacity-50"
                 >
                 <i class="fas fa-file-upload text-gray-600 text-sm sm:text-base"></i>
                 <span class="text-xs sm:text-sm text-gray-700 leading-snug">Documentos Externos</span>
               </label>
 
-              <label class="flex items-center space-x-2 sm:space-x-3 cursor-pointer">
+              <label 
+                :class="[
+                  'flex items-center space-x-2 sm:space-x-3',
+                  usuario.role === 'Administrativo' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                ]"
+              >
                 <input 
                   type="checkbox" 
                   v-model="usuario.permisos.gestionarCuestionariosAdicionales"
-                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  :disabled="usuario.role === 'Administrativo'"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 disabled:opacity-50"
                 >
                 <i class="fas fa-clipboard-list text-gray-600 text-sm sm:text-base"></i>
-                <span class="text-xs sm:text-sm text-gray-700 leading-snug">Cuestionarios Adicionales</span>
+                <span class="text-xs sm:text-sm text-gray-700 leading-snug">Otros Documentos</span>
               </label>
             </div>
           </div>

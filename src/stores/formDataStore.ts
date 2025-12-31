@@ -13,6 +13,7 @@ export const useFormDataStore = defineStore('formData', () => {
   const formDataExploracionFisica = ref({}); // Estado compartido
   const formDataHistoriaClinica = ref({}); // Estado compartido
   const formDataNotaMedica = ref({}); // Estado compartido
+  const formDataNotaAclaratoria = ref({}); // Estado compartido
   const formDataControlPrenatal = ref({}); // Estado compartido
   const formDataHistoriaOtologica = ref({}); // Estado compartido
   const formDataPrevioEspirometria = ref({}); // Estado compartido
@@ -56,6 +57,9 @@ export const useFormDataStore = defineStore('formData', () => {
       case 'notaMedica':
         formDataNotaMedica.value = { ...documento };
         break;
+      case 'notaAclaratoria':
+        formDataNotaAclaratoria.value = { ...documento };
+        break;
       case 'controlPrenatal':
         formDataControlPrenatal.value = { ...documento };
         break;
@@ -89,6 +93,7 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataExploracionFisica.value = {};
     formDataHistoriaClinica.value = {};
     formDataNotaMedica.value = {};
+    formDataNotaAclaratoria.value = {};
     formDataControlPrenatal.value = {};
     formDataHistoriaOtologica.value = {};
     formDataPrevioEspirometria.value = {};
@@ -127,6 +132,7 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataExploracionFisica,
     formDataHistoriaClinica, 
     formDataNotaMedica,
+    formDataNotaAclaratoria,
     formDataControlPrenatal,
     formDataHistoriaOtologica,
     formDataPrevioEspirometria,

@@ -21,10 +21,12 @@ import ModalSuscripcion from '@/components/suscripciones/ModalSuscripcion.vue';
 import ModalCuestionarios from '@/components/ModalCuestionarios.vue';
 import ModalFinalizarDocumento from '@/components/modals/ModalFinalizarDocumento.vue';
 import ModalAnularDocumento from '@/components/modals/ModalAnularDocumento.vue';
+import ModalDatosProfesionales from '@/components/modals/ModalDatosProfesionales.vue';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 import { useUserPermissions } from '@/composables/useUserPermissions';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
+import { useProfessionalDataValidation } from '@/composables/useProfessionalDataValidation';
 
 const toast: any = inject('toast');
 
@@ -39,6 +41,7 @@ const proveedorSaludStore = useProveedorSaludStore();
 const medicoFirmanteStore = useMedicoFirmanteStore();
 const { canCreateDocument, getRestrictionMessage } = useUserPermissions();
 const { executeIfCanManageDocumentosExternos } = usePermissionRestrictions();
+const { validationResult, loadFirmanteData } = useProfessionalDataValidation();
 
 const showDocumentoExternoModal = ref(false);
 const showDocumentoExternoUpdateModal = ref(false);
@@ -47,6 +50,7 @@ const showDeleteModal = ref(false);
 const showFinalizeModal = ref(false);
 const showAnularModal = ref(false);
 const showCuestionariosModal = ref(false);
+const showProfessionalDataModal = ref(false);
 const selectedDocumentId = ref<string | null>(null);
 const selectedDocumentName = ref<string>('');
 const selectedDocumentType = ref<string | null>(null);
@@ -71,6 +75,9 @@ onMounted(async () => {
   } else {
     console.error("No se encontró idProveedorSalud en el usuario.");
   }
+  
+  // Cargar datos del firmante para validación
+  await loadFirmanteData();
 });
 
 const toggleDocumentoExternoModal = () => {
@@ -323,6 +330,12 @@ const navigateTo = (routeName, params) => {
     return;
   }
 
+  // Validar datos profesionales antes de crear cualquier documento
+  if (routeName === 'crear-documento' && !validationResult.value.isValid) {
+    showProfessionalDataModal.value = true;
+    return;
+  }
+
   router.push({ name: routeName, params });
   documentos.setCurrentTypeOfDocument(params.tipoDocumento);
   documentos.currentDocument = null;
@@ -358,6 +371,18 @@ const handleDeleteSelected = async () => {
         
         // Recorrer todos los documentos por año para encontrar los que coinciden con las rutas seleccionadas
         Object.values(documentos.documentsByYear).forEach(yearData => {
+
+            // Notas Aclaratorias
+            yearData.notasAclaratorias?.forEach(notaAclaratoria => {
+                const rutaBase = obtenerRutaDocumento(notaAclaratoria, 'Nota Aclaratoria');
+                const fecha = obtenerFechaDocumento(notaAclaratoria) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(notaAclaratoria, 'Nota Aclaratoria', fecha, documentos);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: notaAclaratoria._id, tipo: 'notaAclaratoria' });
+                }
+            });
+
             // Constancias de Aptitud
             yearData.constanciasAptitud?.forEach(constanciaAptitud => {
                 const rutaBase = obtenerRutaDocumento(constanciaAptitud, 'Constancia Aptitud');
@@ -577,6 +602,7 @@ const totalDocumentosCreados = computed(() => {
   if (!documentos.documentsByYear) return 0;
   return Object.values(documentos.documentsByYear).reduce((total, yearData) => {
     return total + (
+      (yearData.notasAclaratorias?.length || 0) +
       (yearData.constanciasAptitud?.length || 0) +
       (yearData.aptitudes?.length || 0) +
       (yearData.historiasClinicas?.length || 0) +
@@ -658,6 +684,16 @@ const añoMasReciente = computed(() => {
 
       <Transition appear name="fade">
         <ModalCuestionarios v-if="showCuestionariosModal" @closeModal="toggleCuestionariosModal" />
+      </Transition>
+
+      <Transition appear name="fade">
+        <ModalDatosProfesionales 
+          v-if="showProfessionalDataModal" 
+          :missingFields="validationResult.missingFields"
+          :routeName="validationResult.routeName"
+          :firmanteTypeLabel="validationResult.firmanteTypeLabel"
+          @closeModal="showProfessionalDataModal = false" 
+        />
       </Transition>
 
         <!-- Header principal con información del trabajador -->
@@ -926,7 +962,7 @@ const añoMasReciente = computed(() => {
               </button>
             </div>
 
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <div class="flex flex-col md:flex-row justify-center gap-4">
               <!-- Documento Externo -->
               <div class="mt-4 sm:mt-6 flex justify-center">
                 <SliderButton 
@@ -938,13 +974,13 @@ const añoMasReciente = computed(() => {
               </div>
   
               <!-- Botón para Cuestionarios de Vigilancia Médica -->
-              <div class="sm:mt-6 flex justify-center">
+              <div class="md:mt-6 flex justify-center">
                 <button
                   @click="toggleCuestionariosModal"
                   class="relative w-[232px] h-[50px] rounded-lg cursor-pointer flex items-center border-2 border-emerald-600 bg-white overflow-hidden transition-all duration-200 hover:bg-emerald-50 hover:shadow-lg"
                 >
                   <i class="fas fa-file-alt text-emerald-600 text-lg ml-4"></i>
-                  <span class="flex-1 text-center text-emerald-600 text-lg ml-3">Cuestionarios</span>
+                  <span class="flex-1 text-center text-emerald-600 text-lg ml-3">Otros documentos</span>
                   <i class="fas fa-arrow-right text-emerald-600 text-sm mr-4 transition-transform duration-200 hover:translate-x-1"></i>
                 </button>
               </div>

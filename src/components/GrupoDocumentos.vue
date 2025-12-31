@@ -6,6 +6,9 @@ import { convertirFechaISOaDDMMYYYY } from '@/helpers/dates';
 import type { PropType } from 'vue';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento } from '@/helpers/rutas';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
+import { useDocumentosStore } from '@/stores/documentos';
+
+const documentosStore = useDocumentosStore();
 
 const props = defineProps({
     documents: {
@@ -67,7 +70,9 @@ const canDeleteAnyDocument = computed(() => {
 
 // Calcular el total de documentos para mostrar en el header
 const totalDocumentos = computed(() => {
-    return (props.documents.constanciasAptitud?.length || 0) +
+    return (
+           (props.documents.notasAclaratorias?.length || 0) +
+           (props.documents.constanciasAptitud?.length || 0) +
            (props.documents.aptitudes?.length || 0) +
            (props.documents.historiasClinicas?.length || 0) +
            (props.documents.exploracionesFisicas?.length || 0) +
@@ -81,13 +86,24 @@ const totalDocumentos = computed(() => {
            (props.documents.controlPrenatal?.length || 0) +
            (props.documents.historiaOtologica?.length || 0) +
            (props.documents.previoEspirometria?.length || 0) +
-           (props.documents.recetas?.length || 0);
+           (props.documents.recetas?.length || 0)
+    );
 });
 
 // Obtener todas las rutas de documentos de este grupo específico
 const rutasDelGrupo = computed(() => {
     const rutas: string[] = [];
     
+    if (props.documents.notasAclaratorias) {
+        props.documents.notasAclaratorias.forEach(notaAclaratoria => {
+            const rutaBase = obtenerRutaDocumento(notaAclaratoria, 'Nota Aclaratoria');
+            const fecha = obtenerFechaDocumento(notaAclaratoria) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(notaAclaratoria, 'Nota Aclaratoria', fecha, documentosStore);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            rutas.push(ruta);
+        });
+    }
+
     if (props.documents.constanciasAptitud) {
         props.documents.constanciasAptitud.forEach(constanciaAptitud => {
             const rutaBase = obtenerRutaDocumento(constanciaAptitud, 'Constancia de Aptitud');
@@ -97,6 +113,7 @@ const rutasDelGrupo = computed(() => {
             rutas.push(ruta);
         });
     }
+
     if (props.documents.aptitudes) {
         props.documents.aptitudes.forEach(aptitud => {
             const rutaBase = obtenerRutaDocumento(aptitud, 'Aptitud');
@@ -372,6 +389,32 @@ const toggleSelectAll = () => {
 
         <!-- Contenido de documentos con espaciado mejorado -->
         <div class="divide-gray-100">
+
+            <!-- Notas Aclaratorias -->
+            <div v-if="documents.notasAclaratorias && documents.notasAclaratorias.length > 0">
+                <div v-for="(notaAclaratoria, index) in documents.notasAclaratorias" :key="notaAclaratoria._id" 
+                     class="transition-all duration-200 hover:bg-gray-50"
+                     :style="{ animationDelay: `${index * 50}ms` }">
+                    <DocumentoItem 
+                        :notaAclaratoria="notaAclaratoria" 
+                        :documentoId="notaAclaratoria._id" 
+                        :documentoTipo="'notaAclaratoria'" 
+                        :toggleRouteSelection="toggleRouteSelection" 
+                        :isDeletionMode="isDeletionMode"
+                        :isSelected="(() => {
+                            const rutaBase = obtenerRutaDocumento(notaAclaratoria, 'Nota Aclaratoria');
+                            const fecha = obtenerFechaDocumento(notaAclaratoria) || 'SinFecha';
+                            const nombreArchivo = obtenerNombreArchivo(notaAclaratoria, 'Nota Aclaratoria', fecha, documentosStore);
+                            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                            return props.selectedRoutes.includes(ruta);
+                        })()"
+                        @eliminarDocumento="$emit('eliminarDocumento', notaAclaratoria._id, convertirFechaISOaDDMMYYYY(notaAclaratoria.fechaNotaAclaratoria), 'notaAclaratoria')" 
+                        @abrirModalAnular="(id, nombre, tipo) => $emit('abrirModalAnular', id, nombre, tipo)" 
+                        @openSubscriptionModal="emit('openSubscriptionModal')"
+                        @abrirModalFinalizar="(id, name, type) => $emit('abrirModalFinalizar', id, name, type)"
+                    />
+                </div>
+            </div>
 
             <!-- Constancias de Aptitud -->
             <div v-if="documents.constanciasAptitud && documents.constanciasAptitud.length > 0">

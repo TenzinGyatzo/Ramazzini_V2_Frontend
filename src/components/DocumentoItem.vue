@@ -12,6 +12,7 @@ import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento, obtenerNombreDescargaCertificadoExpedito } from '@/helpers/rutas.ts';
 import ModalPdfEliminado from './ModalPdfEliminado.vue';
 import EstadoDocumentoBadge from './badges/EstadoDocumentoBadge.vue';
+import BadgeNotaAclaratoria from './badges/BadgeNotaAclaratoria.vue';
 import { useUserPermissions } from '@/composables/useUserPermissions';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 
@@ -79,6 +80,62 @@ const getResultadoCuestionarioTexto = (resultado, resultadoPersonalizado) => {
   
   // Para otros casos, mostrar el resultado normal
   return resultado.toUpperCase();
+};
+
+// Función para obtener el nombre legible del tipo de documento
+const obtenerNombreTipoDocumento = (tipo) => {
+  if (!tipo) return '';
+  
+  const nombres = {
+    // Singular
+    'antidoping': 'Antidoping',
+    'aptitud': 'Aptitud',
+    'audiometria': 'Audiometría',
+    'certificado': 'Certificado',
+    'certificadoExpedito': 'Certificado Expedito',
+    'examenVista': 'Examen Vista',
+    'exploracionFisica': 'Exploración Física',
+    'historiaClinica': 'Historia Clínica',
+    'notaMedica': 'Nota Médica',
+    'controlPrenatal': 'Control Prenatal',
+    'historiaOtologica': 'Historia Otológica',
+    'previoEspirometria': 'Previo Espirometría',
+    'receta': 'Receta',
+    'constanciaAptitud': 'Constancia de Aptitud',
+    'documentoExterno': 'Documento Externo',
+    'notaAclaratoria': 'Nota Aclaratoria',
+    // Plural
+    'antidopings': 'Antidoping',
+    'aptitudes': 'Aptitud',
+    'audiometrias': 'Audiometría',
+    'certificados': 'Certificado',
+    'certificadosExpedito': 'Certificado Expedito',
+    'examenesVista': 'Examen Vista',
+    'exploracionesFisicas': 'Exploración Física',
+    'historiasClinicas': 'Historia Clínica',
+    'notasMedicas': 'Nota Médica',
+    'controlPrenatal': 'Control Prenatal',
+    'historiasOtologicas': 'Historia Otológica',
+    'previoEspirometria': 'Previo Espirometría',
+    'recetas': 'Receta',
+    'constanciasAptitud': 'Constancia de Aptitud',
+    'documentosExternos': 'Documento Externo',
+    'notasAclaratorias': 'Nota Aclaratoria',
+    // Variantes con espacios
+    'Documento Externo': 'Documento Externo',
+    'Nota Aclaratoria': 'Nota Aclaratoria',
+    'Historia Clinica': 'Historia Clínica',
+    'Exploracion Fisica': 'Exploración Física',
+    'Examen Vista': 'Examen Vista',
+    'Historia Otologica': 'Historia Otológica',
+    'Previo Espirometria': 'Previo Espirometría',
+    'Nota Medica': 'Nota Médica',
+    'Control Prenatal': 'Control Prenatal',
+    'Certificado Expedito': 'Certificado Expedito',
+    'Constancia de Aptitud': 'Constancia de Aptitud'
+  };
+  
+  return nombres[tipo] || tipo;
 };
 
 const empresas = useEmpresasStore();
@@ -289,9 +346,13 @@ const descargarArchivo = async (documento, tipoDocumento) => {
         
         if (tipoDocumento === 'Certificado Expedito') {
             nombreArchivo = obtenerNombreDescargaCertificadoExpedito(fecha, trabajadores.currentTrabajador);
-            nombreArchivoReal = obtenerNombreArchivo(documento, tipoDocumento, fecha);
+            nombreArchivoReal = obtenerNombreArchivo(documento, tipoDocumento, fecha, documentos);
+        } else if (tipoDocumento === 'Nota Aclaratoria') {
+            // Para Nota Aclaratoria, pasar el store de documentos para construir el nombre completo
+            nombreArchivo = obtenerNombreArchivo(documento, tipoDocumento, fecha, documentos);
+            nombreArchivoReal = nombreArchivo;
         } else {
-            nombreArchivo = obtenerNombreArchivo(documento, tipoDocumento, fecha);
+            nombreArchivo = obtenerNombreArchivo(documento, tipoDocumento, fecha, documentos);
             nombreArchivoReal = nombreArchivo;
         }
 
@@ -677,6 +738,10 @@ const descargarPdfActual = async () => {
             
             // Identificar el documento actual basado en el tipo
             switch (tipoSinEspacios) {
+                case 'notaaclaratoria':
+                    documento = props.notaAclaratoria;
+                    tipoDocumento = 'Nota Aclaratoria';
+                    break;
                 case 'antidoping':
                     documento = props.antidoping;
                     tipoDocumento = 'Antidoping';
@@ -809,7 +874,7 @@ const handleCheckboxChange = (event, documento, tipoDocumento) => {
     const rutaBase = obtenerRutaDocumento(documento, tipoDocumento); // Define cómo obtener la ruta del documento
 
     const fecha = obtenerFechaDocumento(documento) || 'SinFecha';
-    const nombreArchivo = obtenerNombreArchivo(documento, tipoDocumento, fecha, trabajadores.currentTrabajador);
+    const nombreArchivo = obtenerNombreArchivo(documento, tipoDocumento, fecha, documentos);
 
     const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
 
@@ -852,6 +917,7 @@ const props = defineProps({
     exploracionFisica: [Object, String],
     historiaClinica: [Object, String],
     notaMedica: [Object, String],
+    notaAclaratoria: [Object, String],
     controlPrenatal: [Object, String],
     historiaOtologica: [Object, String],
     previoEspirometria: [Object, String],
@@ -861,13 +927,173 @@ const currentDocumentData = computed(() => {
     return props.antidoping || props.aptitud || props.audiometria || props.constanciaAptitud || 
            props.certificado || props.certificadoExpedito || props.receta || props.documentoExterno || 
            props.examenVista || props.exploracionFisica || props.historiaClinica || props.notaMedica || 
-           props.controlPrenatal || props.historiaOtologica || props.previoEspirometria;
+           props.notaAclaratoria || props.controlPrenatal || props.historiaOtologica || props.previoEspirometria;
+});
+
+// Mapeo de campos de fecha para buscar documentos origen
+const fechaCamposOrigen = {
+    'antidopings': 'fechaAntidoping',
+    'aptitudes': 'fechaAptitudPuesto',
+    'audiometrias': 'fechaAudiometria',
+    'certificados': 'fechaCertificado',
+    'certificadosExpedito': 'fechaCertificadoExpedito',
+    'documentosExternos': 'fechaDocumento',
+    'examenesVista': 'fechaExamenVista',
+    'exploracionesFisicas': 'fechaExploracionFisica',
+    'historiasClinicas': 'fechaHistoriaClinica',
+    'notasMedicas': 'fechaNotaMedica',
+    'controlPrenatal': 'fechaInicioControlPrenatal',
+    'historiaOtologica': 'fechaHistoriaOtologica',
+    'previoEspirometria': 'fechaPrevioEspirometria',
+    'recetas': 'fechaReceta',
+    'constanciasAptitud': 'fechaConstanciaAptitud'
+};
+
+// Mapeo de tipos singulares a plurales para buscar en el store
+const tipoSingularAPlural = {
+    'antidoping': 'antidopings',
+    'aptitud': 'aptitudes',
+    'audiometria': 'audiometrias',
+    'certificado': 'certificados',
+    'certificadoExpedito': 'certificadosExpedito',
+    'documentoExterno': 'documentosExternos',
+    'examenVista': 'examenesVista',
+    'exploracionFisica': 'exploracionesFisicas',
+    'historiaClinica': 'historiasClinicas',
+    'notaMedica': 'notasMedicas',
+    'controlPrenatal': 'controlPrenatal',
+    'historiaOtologica': 'historiaOtologica',
+    'previoEspirometria': 'previoEspirometria',
+    'receta': 'recetas',
+    'constanciaAptitud': 'constanciasAptitud'
+};
+
+// Función para normalizar tipo de documento a plural
+const normalizarTipoAPlural = (tipo) => {
+    if (!tipo) return tipo;
+    
+    // Normalizar: quitar espacios y convertir a formato consistente
+    const normalizado = tipo.replace(/\s+/g, '');
+    
+    // Primero intentar directamente
+    if (tipoSingularAPlural[tipo]) {
+        return tipoSingularAPlural[tipo];
+    }
+    
+    // Convertir primera letra a minúscula y quitar espacios: "Historia Clinica" -> "historiaClinica"
+    const camelCase = normalizado.charAt(0).toLowerCase() + normalizado.slice(1);
+    if (tipoSingularAPlural[camelCase]) {
+        return tipoSingularAPlural[camelCase];
+    }
+    
+    // Si ya está en camelCase pero con mayúscula inicial, convertirla
+    if (tipoSingularAPlural[normalizado]) {
+        return tipoSingularAPlural[normalizado];
+    }
+    
+    // Buscar en el mapeo si hay alguna key que al normalizar coincida
+    const tipoNormalizadoParaComparar = normalizado.toLowerCase();
+    for (const [key, value] of Object.entries(tipoSingularAPlural)) {
+        const keyNormalizada = key.replace(/\s+/g, '').toLowerCase();
+        if (keyNormalizada === tipoNormalizadoParaComparar) {
+            return value;
+        }
+    }
+    
+    return tipo;
+};
+
+// Computed para verificar si el documento actual tiene notas aclaratorias asociadas
+const tieneNotasAclaratorias = computed(() => {
+  if (!documentos.documentsByYear || !props.documentoId) return false;
+  
+  // Normalizar el tipo del documento actual (puede venir como 'historiaClinica', 'Historia Clinica', etc.)
+  const tipoNormalizado = normalizarTipoAPlural(props.documentoTipo);
+  
+  for (const yearData of Object.values(documentos.documentsByYear)) {
+    if (yearData.notasAclaratorias && Array.isArray(yearData.notasAclaratorias)) {
+      const notaEncontrada = yearData.notasAclaratorias.find(nota => {
+        if (nota.documentoOrigenId !== props.documentoId) return false;
+        
+        // Normalizar el tipo de la nota aclaratoria
+        const notaTipoNormalizado = normalizarTipoAPlural(nota.documentoOrigenTipo);
+        
+        // Comparar ambos tipos normalizados
+        return notaTipoNormalizado === tipoNormalizado;
+      });
+      if (notaEncontrada) return true;
+    }
+  }
+  return false;
+});
+
+// Computed para determinar qué mostrar en "Documento que aclara"
+const documentoQueAclaraTexto = computed(() => {
+    if (!props.notaAclaratoria) return '';
+    
+    const documentoOrigenTipo = props.notaAclaratoria.documentoOrigenTipo;
+    const documentoOrigenId = props.notaAclaratoria.documentoOrigenId;
+    let documentoOrigenNombre = props.notaAclaratoria.documentoOrigenNombre;
+    let documentoOrigenFecha = props.notaAclaratoria.documentoOrigenFecha;
+    
+    // Verificar si es un documento externo
+    const esDocumentoExterno = documentoOrigenTipo === 'documentoExterno' || 
+                               documentoOrigenTipo === 'Documento Externo' ||
+                               documentoOrigenTipo === 'documentosExternos';
+    
+    // Normalizar el tipo a plural para buscar en el store
+    const tipoNormalizado = normalizarTipoAPlural(documentoOrigenTipo);
+    
+    // Si faltan datos, buscar el documento origen en documentsByYear
+    if ((!documentoOrigenNombre && esDocumentoExterno) || !documentoOrigenFecha) {
+        if (documentos.documentsByYear && documentoOrigenId) {
+            Object.values(documentos.documentsByYear).forEach((docsDelAno) => {
+                if (docsDelAno[tipoNormalizado] && Array.isArray(docsDelAno[tipoNormalizado])) {
+                    const docEncontrado = docsDelAno[tipoNormalizado].find(d => d._id === documentoOrigenId);
+                    if (docEncontrado) {
+                        // Obtener nombre para documentos externos
+                        if (esDocumentoExterno && !documentoOrigenNombre && docEncontrado.nombreDocumento) {
+                            documentoOrigenNombre = docEncontrado.nombreDocumento;
+                        }
+                        // Obtener fecha
+                        if (!documentoOrigenFecha) {
+                            const campoFecha = fechaCamposOrigen[tipoNormalizado];
+                            if (campoFecha && docEncontrado[campoFecha]) {
+                                documentoOrigenFecha = docEncontrado[campoFecha];
+                            } else if (docEncontrado.createdAt) {
+                                documentoOrigenFecha = docEncontrado.createdAt;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    let textoBase = '';
+    
+    if (esDocumentoExterno && documentoOrigenNombre) {
+        // Para documentos externos, mostrar el nombre específico
+        textoBase = documentoOrigenNombre;
+    } else if (esDocumentoExterno) {
+        // Si no hay nombre, mostrar el tipo genérico
+        textoBase = 'Documento Externo';
+    } else {
+        // Mostrar el tipo de documento formateado
+        textoBase = obtenerNombreTipoDocumento(documentoOrigenTipo);
+    }
+    
+    // Agregar la fecha si está disponible
+    if (documentoOrigenFecha) {
+        const fecha = convertirFechaISOaDDMMYYYY(documentoOrigenFecha);
+        return `${textoBase} (${fecha})`;
+    }
+    
+    return textoBase;
 });
 
 const puedeFinalizar = computed(() => {
     // Solo permitir finalizar si el estado es BORRADOR o no tiene estado (legacy)
-    // Además, no permitir finalizar documentos externos por ahora
-    if (props.documentoTipo === 'documentoExterno') return false;
     
     if (!currentDocumentData.value || typeof currentDocumentData.value !== 'object') return false;
     const estado = currentDocumentData.value.estado;
@@ -915,6 +1141,7 @@ const documentoNombre = computed(() => {
     if (props.exploracionFisica) return 'Exploración Física';
     if (props.historiaClinica) return 'Historia Clínica';
     if (props.notaMedica) return 'Nota Médica';
+    if (props.notaAclaratoria) return 'Nota Aclaratoria';
     if (props.controlPrenatal) return 'Control Prenatal';
     if (props.historiaOtologica) return 'Historia Otológica';
     if (props.previoEspirometria) return 'Previo Espirometria';
@@ -1125,13 +1352,21 @@ const construirRutaYNombrePDF = () => {
     'exploracionfisica': props.exploracionFisica,
     'historiaclinica': props.historiaClinica,
     'notamedica': props.notaMedica,
+    'notaaclaratoria': props.notaAclaratoria,
     'controlprenatal': props.controlPrenatal,
     'historiaotologica': props.historiaOtologica,
     'previoespirometria': props.previoEspirometria,
   }[tipoSinEspacios];
 
-  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaConstanciaAptitud || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaReceta || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria;
+  // Verificar que el documento exista
+  if (!doc) {
+    console.warn('[construirRutaYNombrePDF] Documento no encontrado para tipo:', tipoSinEspacios);
+    return { ruta: null, nombre: null, updatedAt: null };
+  }
 
+  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaConstanciaAptitud || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaReceta || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaNotaAclaratoria || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria;
+
+  // Nombres de documentos (DEBEN coincidir con los del backend para construir rutas correctas)
   const tiposDocumentos = {
     'constanciaaptitud': 'Constancia de Aptitud',
     'antidoping': 'Antidoping',
@@ -1144,6 +1379,7 @@ const construirRutaYNombrePDF = () => {
     'exploracionfisica': 'Exploracion Fisica',
     'historiaclinica': 'Historia Clinica',
     'notamedica': 'Nota Medica',
+    'notaaclaratoria': 'Nota Aclaratoria',
     'controlprenatal': 'Control Prenatal',
     'historiaotologica': 'Historia Otologica',
     'previoespirometria': 'Previo Espirometria',
@@ -1151,7 +1387,14 @@ const construirRutaYNombrePDF = () => {
 
   const tipoDocumentoFormateado = tiposDocumentos[tipoSinEspacios];
   const fechaFormateada = fecha ? convertirFechaISOaDDMMYYYY(fecha).replace(/\//g, '-') : '';
-  const nombreArchivo = fecha ? `${tipoDocumentoFormateado} ${fechaFormateada}.pdf` : `${tipoDocumentoFormateado}.pdf`;
+  
+  // Para Nota Aclaratoria, usar la función obtenerNombreArchivo que ya tiene la lógica completa
+  let nombreArchivo;
+  if (tipoSinEspacios === 'notaaclaratoria' && doc) {
+    nombreArchivo = obtenerNombreArchivo(doc, 'Nota Aclaratoria', fechaFormateada, documentos);
+  } else {
+    nombreArchivo = fecha ? `${tipoDocumentoFormateado} ${fechaFormateada}.pdf` : `${tipoDocumentoFormateado}.pdf`;
+  }
 
   // Obtener updatedAt para cache-busting (evitar que se muestre versión cacheada del PDF)
   const updatedAt = doc?.updatedAt ? new Date(doc.updatedAt).getTime() : Date.now();
@@ -1165,7 +1408,19 @@ const construirRutaYNombrePDF = () => {
 
 const abrirDocumentoCorrespondiente = () => {
   const { ruta, nombre, updatedAt } = construirRutaYNombrePDF();
+  if (!ruta || !nombre) {
+    console.error('[abrirDocumentoCorrespondiente] No se pudo obtener la ruta o nombre del PDF');
+    mostrarModalPdfEliminado.value = true;
+    return;
+  }
   abrirPdf(ruta, nombre, updatedAt); 
+};
+
+const abrirNotaAclaratoria = (notaAclaratoria) => {
+  const fecha = convertirFechaISOaDDMMYYYY(notaAclaratoria.fechaNotaAclaratoria).replace(/\//g, '-');
+  const nombreArchivo = obtenerNombreArchivo(notaAclaratoria, 'Nota Aclaratoria', fecha, documentos);
+  const updatedAt = notaAclaratoria.updatedAt ? new Date(notaAclaratoria.updatedAt).getTime() : null;
+  abrirPdf(notaAclaratoria.rutaPDF, nombreArchivo, updatedAt);
 };
 
 const manejarRegeneracionDesdePadre = async () => {
@@ -1258,7 +1513,7 @@ onMounted(() => {
 });
 
 // Watcher para verificar disponibilidad cuando cambien las props
-watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanciaAptitud, props.certificado, props.certificadoExpedito, props.receta, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal, props.historiaOtologica, props.previoEspirometria], () => {
+watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanciaAptitud, props.certificado, props.certificadoExpedito, props.receta, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.notaAclaratoria, props.controlPrenatal, props.historiaOtologica, props.previoEspirometria], () => {
   verificarDisponibilidadPDF();
 }, { deep: true });
 
@@ -1300,6 +1555,101 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
         <div class="flex items-center justify-between p-4 pl-6 min-h-[80px] max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3 max-[390px]:p-3 max-[390px]:pl-3">
             <div class="flex items-center flex-1 max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3 w-full">
 
+                <!-- Nota Aclaratoria -->
+                <div v-if="typeof notaAclaratoria === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, notaAclaratoria, 'Nota Aclaratoria')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirNotaAclaratoria(notaAclaratoria)">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-lg mr-4 group-hover:bg-yellow-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
+                                    Nota Aclaratoria
+                                </h3>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(notaAclaratoria.fechaNotaAclaratoria) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX"
+                                    :estado="notaAclaratoria.estado" 
+                                    :fechaFinalizacion="notaAclaratoria.fechaFinalizacion" 
+                                    :finalizadoPor="notaAclaratoria.finalizadoPor"
+                                    :fechaAnulacion="notaAclaratoria.fechaAnulacion"
+                                    :anuladoPor="notaAclaratoria.anuladoPor"
+                                    :razonAnulacion="notaAclaratoria.razonAnulacion"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Documento que aclara</p>
+                                    <p class="font-medium text-sm truncate max-w-full text-blue-600">
+                                        {{ documentoQueAclaraTexto }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Alcance</p>
+                                    <p v-if="notaAclaratoria.alcanceAclaracion === 'ACLARA'" class="font-medium text-sm truncate max-w-full text-blue-600">
+                                        Aclaración
+                                    </p>
+                                    <p v-else-if="notaAclaratoria.alcanceAclaracion === 'CORRIGE'" class="font-medium text-sm truncate max-w-full text-blue-600">
+                                        Corrección
+                                    </p>
+                                    <p v-else-if="notaAclaratoria.alcanceAclaracion === 'COMPLEMENTA'" class="font-medium text-sm truncate max-w-full text-purple-600">
+                                        Complemento
+                                    </p>
+                                    <p v-else-if="notaAclaratoria.alcanceAclaracion === 'INVALIDA'" class="font-medium text-sm truncate max-w-full text-red-600">
+                                        Invalidación
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Impacto</p>
+                                    <p v-if="notaAclaratoria.impactoClinico === 'LEVE'" class="font-medium text-sm truncate max-w-full text-green-600">
+                                        Leve
+                                    </p>
+                                    <p v-else-if="notaAclaratoria.impactoClinico === 'MODERADO'" class="font-medium text-sm truncate max-w-full text-yellow-600">
+                                        Moderado
+                                    </p>
+                                    <p v-else-if="notaAclaratoria.impactoClinico === 'SEVERO'" class="font-medium text-sm truncate max-w-full text-red-600">
+                                        Severo
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
                 <!-- Antidoping -->
                 <div v-if="typeof antidoping === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
@@ -1328,7 +1678,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center max-[390px]:text-base">
                                     Antidoping
                                 </h3>
-                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="positivos ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'">
                                     {{ positivos ? 'Positivo' : 'Negativo' }}
                                 </span>
@@ -1441,7 +1797,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Aptitud al Puesto
                                 </h3>
-                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="aptitud.aptitudPuesto === 'Apto Sin Restricciones' ? 'bg-emerald-100 text-emerald-700' : 
                                            aptitud.aptitudPuesto === 'Apto Con Precaución' ? 'bg-amber-100 text-amber-700' :
                                            aptitud.aptitudPuesto === 'Apto Con Restricciones' ? 'bg-orange-100 text-orange-700' :
@@ -1514,18 +1876,26 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     Audiometría
                                 </h3>
                                 <!-- Mostrar resultado según método de audiometría -->
-                                <span v-if="audiometria.metodoAudiometria === 'AMA' && audiometria.perdidaAuditivaBilateralAMA" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
-                                    PAB: {{ audiometria.perdidaAuditivaBilateralAMA }}%
-                                </span>
-                                <span v-else-if="audiometria.metodoAudiometria === 'LFT' && audiometria.hipoacusiaBilateralCombinada" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
-                                    HBC: {{ audiometria.hipoacusiaBilateralCombinada }}%
-                                </span>
-                                <span v-else-if="!audiometria.metodoAudiometria && audiometria.hipoacusiaBilateralCombinada" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
-                                    HBC: {{ audiometria.hipoacusiaBilateralCombinada }}%
-                                </span>
-                                <span v-else class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
-                                    Incompleta
-                                </span>
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <template v-else>
+                                    <span v-if="audiometria.metodoAudiometria === 'AMA' && audiometria.perdidaAuditivaBilateralAMA" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                        PAB: {{ audiometria.perdidaAuditivaBilateralAMA }}%
+                                    </span>
+                                    <span v-else-if="audiometria.metodoAudiometria === 'LFT' && audiometria.hipoacusiaBilateralCombinada" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                        HBC: {{ audiometria.hipoacusiaBilateralCombinada }}%
+                                    </span>
+                                    <span v-else-if="!audiometria.metodoAudiometria && audiometria.hipoacusiaBilateralCombinada" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                        HBC: {{ audiometria.hipoacusiaBilateralCombinada }}%
+                                    </span>
+                                    <span v-else class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                        Incompleta
+                                    </span>
+                                </template>
                             </div>
                             <div class="flex items-center gap-2">
                                 <p class="text-sm text-gray-500 flex items-center">
@@ -1586,7 +1956,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Certificado
                                 </h3>
-                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
                                     {{ certificado.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'Sin impedimentos' : 'Con impedimentos' }}
                                 </span>
@@ -1651,7 +2027,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Certificado Ex.
                                 </h3>
-                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="certificadoExpedito.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
                                     {{ certificadoExpedito.impedimentosFisicos === 'no presenta impedimento físico para desarrollar el puesto que actualmente solicita' ? 'Sin impedimentos' : 'Con impedimentos' }}
                                 </span>
@@ -1732,20 +2114,27 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                         <!-- <i v-else class="fas fa-check-circle mr-0.5 text-emerald-500 text-sm" title="Documento disponible"></i> -->
                                         {{ documentoExterno.nombreDocumento }}
                                     </span>
-                                    <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
-                                          :class="obtenerExtensionArchivo(documentoExterno) === 'pdf' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'">
-                                        {{ obtenerExtensionArchivo(documentoExterno).toUpperCase() }}
-                                    </span>
                                 </h3>
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                                    Documento Externo
+                                </span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <p class="text-sm text-gray-500 flex items-center">
                                     <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
                                     {{ convertirFechaISOaDDMMYYYY(documentoExterno.fechaDocumento) }}
                                 </p>
-                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
-                                    Documento Externo
+                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                    :class="obtenerExtensionArchivo(documentoExterno) === 'pdf' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'">
+                                    {{ obtenerExtensionArchivo(documentoExterno).toUpperCase() }}
                                 </span>
+                            
                                 <EstadoDocumentoBadge 
                                     v-if="isMX"
                                     :estado="documentoExterno.estado" 
@@ -1754,6 +2143,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     :fechaAnulacion="documentoExterno.fechaAnulacion"
                                     :anuladoPor="documentoExterno.anuladoPor"
                                     :razonAnulacion="documentoExterno.razonAnulacion"
+                                    tipoDocumento="Documento Externo"
                                 />
                             </div>
                         </div>
@@ -1800,7 +2190,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Examen de la Vista
                                 </h3>
-                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="examenVista.requiereLentesUsoGeneral === 'Si' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'">
                                     {{ examenVista.requiereLentesUsoGeneral === 'Si' ? 'Requiere lentes' : 'Agudeza normal' }}
                                 </span>
@@ -1891,7 +2287,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Exploración Física
                                 </h3>
-                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' || exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
                                     {{ exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sano' || exploracionFisica.resumenExploracionFisica === 'Se encuentra clínicamente sana' ? 'Sin hallazgos' : 'Hallazgos' }}
                                 </span>
@@ -1987,7 +2389,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Historia Clínica
                                 </h3>
-                                <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                     :class="historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' || historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
                                     {{ historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomático' ? 'Asintomático' : historiaClinica.resumenHistoriaClinica === 'Se refiere actualmente asintomática' ? 'Asintomática' : 'Hallazgo' }}
                                 </span>
@@ -2067,7 +2475,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Nota Médica
                                 </h3>
-                                <span v-if="notaMedica.diagnostico" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else-if="notaMedica.diagnostico" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
                                     {{ notaMedica.tipoNota }}
                                 </span>
                             </div>
@@ -2128,7 +2542,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Receta Médica
                                 </h3>
-                                <span v-if="Array.isArray(receta.tratamiento) && receta.tratamiento.length" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else-if="Array.isArray(receta.tratamiento) && receta.tratamiento.length" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700">
                                     {{ receta.tratamiento.length }} indicac{{ receta.tratamiento.length === 1 ? 'ión' : 'iones' }}
                                 </span>
                             </div>
@@ -2191,7 +2611,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Control Prenatal
                                 </h3>
-                                <span v-if="controlPrenatal.fpp" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else-if="controlPrenatal.fpp" class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
                                     FPP {{ convertirFechaISOaDDMMYYYY(controlPrenatal.fpp) }}
                                 </span>
                             </div>
@@ -2340,7 +2766,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Historia Otologica
                                 </h3>
-                                <span v-if="historiaOtologica.resultadoCuestionario || historiaOtologica.resultadoCuestionarioPersonalizado" 
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else-if="historiaOtologica.resultadoCuestionario || historiaOtologica.resultadoCuestionarioPersonalizado" 
                                       class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                       :class="{
                                         'bg-green-100 text-green-700': getResultadoCuestionarioColor(historiaOtologica.resultadoCuestionario, historiaOtologica.resultadoCuestionarioPersonalizado) === 'green',
@@ -2416,7 +2848,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
                                     Previo Espirometria
                                 </h3>
-                                <span v-if="previoEspirometria.resultadoCuestionario || previoEspirometria.resultadoCuestionarioPersonalizado" 
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                                <span v-else-if="previoEspirometria.resultadoCuestionario || previoEspirometria.resultadoCuestionarioPersonalizado" 
                                       class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                       :class="{
                                         'bg-green-100 text-green-700': getResultadoCuestionarioColor(previoEspirometria.resultadoCuestionario, previoEspirometria.resultadoCuestionarioPersonalizado) === 'green',
@@ -2467,7 +2905,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
             </div>
 
             <!-- Botones de acción -->
-            <div class="flex flex-wrap justify-end gap-1 sm:gap-1.5 md:gap-2 mx-1.5 w-full lg:w-auto">
+            <div class="flex flex-wrap justify-end gap-1 sm:gap-1.5 md:gap-2 mx-1.5 w-auto">
                 <!-- Botón de descarga dinámico -->
                 <template v-for="(documento, key) in {
                     'Antidoping': antidoping,
@@ -2482,6 +2920,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     'Exploracion Fisica': exploracionFisica,
                     'Historia Clinica': historiaClinica,
                     'Nota Medica': notaMedica,
+                    'Nota Aclaratoria': notaAclaratoria,
                     'Control Prenatal': controlPrenatal,
                     'Historia Otologica': historiaOtologica,
                     'Previo Espirometria': previoEspirometria,

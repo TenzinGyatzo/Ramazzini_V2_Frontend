@@ -38,7 +38,10 @@ const documentTypes = computed(() => {
   const types = {};
   
   props.selectedRoutes.forEach(route => {
-    if (route.includes('Constancia de Aptitud')) {
+    if (route.includes('Nota Aclaratoria')) {
+      types.notasAclaratorias = (types.notasAclaratorias || 0) + 1;
+    } 
+    else if (route.includes('Constancia de Aptitud')) {
       types.constanciasAptitud = (types.constanciasAptitud || 0) + 1;
     }
     else if (route.includes('Aptitud')) {
@@ -75,7 +78,8 @@ const documentTypes = computed(() => {
       types.documentosExternos = (types.documentosExternos || 0) + 1;
     }
     // Si la ruta no contiene ninguno de los tipos específicos pero tiene extensión, es un documento externo
-    else if (!route.includes('Constancia de Aptitud') && !route.includes('Aptitud') && !route.includes('Historia Clinica') && !route.includes('Exploracion Fisica') && 
+    else if (!route.includes('Nota Aclaratoria') && !route.includes('Constancia de Aptitud') && !route.includes('Aptitud') && !route.includes('Historia Clinica') 
+            && !route.includes('Exploracion Fisica') && !route.includes('Nota Aclaratoria') && 
              !route.includes('Examen Vista') && !route.includes('Historia Otologica') && !route.includes('Audiometria') && !route.includes('Antidoping') && !route.includes('Certificado') && !route.includes('Certificado Expedito') && !route.includes('Previo Espirometria') && !route.includes('Nota Medica') && !route.includes('Receta') && !route.includes('Control Prenatal') && (route.includes('.pdf') || route.includes('.png') || route.includes('.jpg') || 
              route.includes('.jpeg') || route.includes('.doc') || route.includes('.docx'))) {
       types.documentosExternos = (types.documentosExternos || 0) + 1;
@@ -138,6 +142,10 @@ const documentTypes = computed(() => {
                   <div v-if="Object.keys(documentTypes).length > 0" class="mt-4 bg-gray-50 rounded-lg p-3">
                     <p class="text-xs font-medium text-gray-700 mb-2">Documentos a eliminar:</p>
                     <div class="grid grid-cols-2 gap-2 text-xs">
+                      <div v-if="documentTypes.notasAclaratorias" class="flex items-center space-x-2">
+                        <i class="fas fa-exclamation-triangle text-orange-600"></i>
+                        <span>{{ documentTypes.notasAclaratorias }} Nota{{ documentTypes.notasAclaratorias !== 1 ? 's' : '' }} Aclaratoria{{ documentTypes.notasAclaratorias !== 1 ? 's' : '' }}</span>
+                      </div>
                       <div v-if="documentTypes.constanciasAptitud" class="flex items-center space-x-2">
                         <i class="fas fa-user-check text-green-600"></i>
                         <span>{{ documentTypes.constanciasAptitud }} Constancia{{ documentTypes.constanciasAptitud !== 1 ? 's' : '' }} de Aptitud{{ documentTypes.constanciasAptitud !== 1 ? 's' : '' }}</span>

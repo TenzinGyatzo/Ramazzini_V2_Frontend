@@ -127,6 +127,15 @@ const camposRequeridosPorTipo: Record<string, Array<{campo: string, nombre: stri
     { campo: 'motivoConsulta', nombre: 'Motivo de consulta', tipo: 'texto', paso: 2, validacion: validarTexto },
     // Nota: diagnosticoTexto ya no es requerido porque ahora el diagnóstico se hace con CIE-10
   ],
+
+  notaAclaratoria: [
+    { campo: 'fechaNotaAclaratoria', nombre: 'Fecha de la nota aclaratoria', tipo: 'fecha', paso: 1, validacion: validarFecha },
+    { campo: 'documentoOrigenId', nombre: 'Documento que aclara', tipo: 'seleccion', paso: 2, validacion: validarSeleccion },
+    { campo: 'alcanceAclaracion', nombre: 'Alcance de la aclaración', tipo: 'seleccion', paso: 3, validacion: validarSeleccion },
+    { campo: 'impactoClinico', nombre: 'Impacto clínico', tipo: 'seleccion', paso: 4, validacion: validarSeleccion },
+    { campo: 'motivoAclaracion', nombre: 'Motivo de la aclaración', tipo: 'texto', paso: 5, validacion: validarTexto },
+    { campo: 'descripcionAclaracion', nombre: 'Descripción de la aclaración', tipo: 'texto', paso: 6, validacion: validarTexto },
+  ],
   
   controlPrenatal: [
     { campo: 'fechaInicioControlPrenatal', nombre: 'Fecha de inicio del control prenatal', tipo: 'fecha', paso: 1, validacion: validarFecha },

@@ -12,24 +12,26 @@ const loading = ref(false);
 const today = new Date();
 
 const documentOrder = {
-  "Constancia de Aptitud": 1,
-  Aptitud: 2,
-  "Historia Clinica": 3,
-  "Exploracion Fisica": 4,
-  "Examen Vista": 5,
-  "Historia Otologica": 6,
-  Audiometria: 7,
-  Antidoping: 8,
-  Certificado: 9,
-  "Previo Espirometria": 10,
-  "Documento Externo": 11,
-  "Nota Medica": 12,
-  "Control Prenatal": 13,
-  "Certificado Expedito": 14,
-  "Receta": 15,
+  "Nota Aclaratoria": 1,
+  "Constancia de Aptitud": 2,
+  Aptitud: 3,
+  "Historia Clinica": 4,
+  "Exploracion Fisica": 5,
+  "Examen Vista": 6,
+  "Historia Otologica": 7,
+  Audiometria: 8,
+  Antidoping: 9,
+  Certificado: 10,
+  "Previo Espirometria": 11,
+  "Documento Externo": 12,
+  "Nota Medica": 13,
+  "Control Prenatal": 14,
+  "Certificado Expedito": 15,
+  "Receta": 16,
 };
 
 const getDocumentType = (route) => {
+  if (route.includes("Nota Aclaratoria")) return "Nota Aclaratoria";
   if (route.includes("Constancia de Aptitud")) return "Constancia de Aptitud";
   if (route.includes("Aptitud")) return "Aptitud";
   if (route.includes("Historia Clinica")) return "Historia Clinica";

@@ -1,10 +1,13 @@
 <script setup>
-import { inject } from 'vue';
+import { inject, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useUserPermissions } from '@/composables/useUserPermissions';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
+import { useProfessionalDataValidation } from '@/composables/useProfessionalDataValidation';
+import ModalDatosProfesionales from '@/components/modals/ModalDatosProfesionales.vue';
 
 const toast = inject('toast');
 
@@ -12,8 +15,20 @@ const emit = defineEmits(['closeModal']);
 const router = useRouter();
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
+const proveedorSaludStore = useProveedorSaludStore();
 const { canCreateDocument, getRestrictionMessage } = useUserPermissions();
 const { executeIfCanManageCuestionariosAdicionales } = usePermissionRestrictions();
+const { validationResult, loadFirmanteData } = useProfessionalDataValidation();
+
+const showProfessionalDataModal = ref(false);
+
+const isMX = computed(() => {
+  return proveedorSaludStore.isMX;
+});
+
+onMounted(async () => {
+  await loadFirmanteData();
+});
 
 const closeModal = () => {
   emit('closeModal');
@@ -21,6 +36,12 @@ const closeModal = () => {
 
 // Función para manejar la selección de cuestionarios
 const handleQuestionnaireSelect = (questionnaireType) => {
+  // Validar datos profesionales antes de navegar
+  if (!validationResult.value.isValid) {
+    showProfessionalDataModal.value = true;
+    return;
+  }
+
   // Validar permisos para cuestionarios adicionales
   executeIfCanManageCuestionariosAdicionales(() => {
     // Solo permitir cuestionarios habilitados
@@ -94,6 +115,15 @@ const handleQuestionnaireSelect = (questionnaireType) => {
           tipoDocumento: 'previoEspirometria'
         }
       });
+    } else if (questionnaireType === 'nota-aclaratoria') {
+      router.push({
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'notaAclaratoria'
+        }
+      });
     }
   }, 'acceder a cuestionarios adicionales');
 };
@@ -115,7 +145,7 @@ const handleQuestionnaireSelect = (questionnaireType) => {
           &times;
         </div>
 
-        <h1 class="text-3xl mb-2">Cuestionarios de Vigilancia Médica</h1>
+        <h1 class="text-3xl mb-2">Otros documentos</h1>
         <p class="text-gray-600 mb-4">Selecciona el cuestionario a aplicar</p>
         <hr class="mt-2 mb-6">
 
@@ -128,6 +158,14 @@ const handleQuestionnaireSelect = (questionnaireType) => {
               Otros informes
             </div>
             <div class="space-y-2">
+              <button 
+                v-if="isMX"
+                @click="handleQuestionnaireSelect('nota-aclaratoria')"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+              >
+                <i class="fas fa-file-alt text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
+                Nota Aclaratoria
+              </button>
               <button 
                 @click="handleQuestionnaireSelect('constancia-aptitud')"
                 class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
@@ -353,6 +391,16 @@ const handleQuestionnaireSelect = (questionnaireType) => {
           </button>
         </div>
       </div>
+    </Transition>
+
+    <Transition appear name="fade">
+      <ModalDatosProfesionales 
+        v-if="showProfessionalDataModal" 
+        :missingFields="validationResult.missingFields"
+        :routeName="validationResult.routeName"
+        :firmanteTypeLabel="validationResult.firmanteTypeLabel"
+        @closeModal="showProfessionalDataModal = false" 
+      />
     </Transition>
   </div>
 </template>

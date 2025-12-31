@@ -41,6 +41,10 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/notaMedica`);
     },
 
+    getNotasAclaratorias(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/notaAclaratoria`);
+    },
+
     getControlPrenatal(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/controlPrenatal`);
     },

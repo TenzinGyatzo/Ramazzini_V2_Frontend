@@ -1,6 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
-import { format } from 'date-fns';
+import { ref, watch, computed } from 'vue';
 import { convertirYYYYMMDDaISO, convertirFechaISOaYYYYMMDD } from '@/helpers/dates';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
@@ -17,6 +16,22 @@ const nombreDocumento = ref('');
 const fechaDocumento = ref('');
 const notasDocumento = ref('');
 const idTrabajador = ref('');
+const estadoDocumento = ref('');
+
+// Computed para verificar si el documento está finalizado
+const isFinalizado = computed(() => {
+  return estadoDocumento.value?.toLowerCase() === 'finalizado';
+});
+
+// Computed para verificar si el documento está anulado
+const isAnulado = computed(() => {
+  return estadoDocumento.value?.toLowerCase() === 'anulado';
+});
+
+// Computed para verificar si el documento está bloqueado (finalizado o anulado)
+const isBloqueado = computed(() => {
+  return isFinalizado.value || isAnulado.value;
+});
 
 // Inicialización de datos con valores precargados
 watch(
@@ -28,6 +43,7 @@ watch(
       fechaDocumento.value = convertirFechaISOaYYYYMMDD(newData.fechaDocumento) || '';
       notasDocumento.value = newData.notasDocumento || '';
       idTrabajador.value = newData.idTrabajador || '';
+      estadoDocumento.value = newData.estado || '';
     }
   },
   { immediate: true }
@@ -35,6 +51,11 @@ watch(
 
 // Función para manejar el envío del formulario
 const handleSubmit = async () => {
+  // Prevenir edición si el documento está bloqueado (finalizado o anulado)
+  if (isBloqueado.value) {
+    return;
+  }
+
   const fechaISO = convertirYYYYMMDDaISO(fechaDocumento.value);
 
   const updatedData = {
@@ -78,22 +99,57 @@ const closeModal = () => {
           &times;
         </div>
 
-        <h1 class="text-3xl">Editar Documento</h1>
+        <div class="flex items-center justify-between mb-3">
+          <h1 class="text-3xl">{{ isBloqueado ? 'Datos del Documento' : 'Editar Documento' }}</h1>
+          <span v-if="isFinalizado" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+            <i class="fas fa-check-circle mr-2"></i>
+            Finalizado
+          </span>
+          <span v-if="isAnulado" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-rose-100 text-rose-800 border border-rose-200">
+            <i class="fas fa-times-circle mr-2"></i>
+            Anulado
+          </span>
+        </div>
         <hr class="mt-2 mb-3">
 
         <FormKit type="form" :actions="false" @submit="handleSubmit">
-          <FormKit type="text" label="Nombre del Documento" name="nombreDocumento" v-model="nombreDocumento" validation="required"
+          <FormKit 
+            type="text" 
+            label="Nombre del Documento" 
+            name="nombreDocumento" 
+            v-model="nombreDocumento" 
+            :disabled="isBloqueado"
+            :validation="isBloqueado ? '' : 'required'"
             :validation-messages="{ required: 'Este campo es obligatorio' }" />
 
-          <FormKit type="date" label="Fecha de emisión del documento" name="fechaDocumento" v-model="fechaDocumento" validation="required"
+          <FormKit 
+            type="date" 
+            label="Fecha de emisión del documento" 
+            name="fechaDocumento" 
+            v-model="fechaDocumento" 
+            :disabled="isBloqueado"
+            :validation="isBloqueado ? '' : 'required'"
             :validation-messages="{ required: 'Este campo es obligatorio' }" />
 
-          <FormKit type="text" label="Agregar notas (opcional)" name="notasDocumento" v-model="notasDocumento" />
+          <FormKit 
+            type="text" 
+            label="Agregar notas (opcional)" 
+            name="notasDocumento" 
+            v-model="notasDocumento"
+            :disabled="isBloqueado" />
 
           <hr class="my-3">
-          <FormKit type="submit">
+          <FormKit v-if="!isBloqueado" type="submit">
             <span>Guardar</span>
           </FormKit>
+
+          <div v-if="isBloqueado" class="text-xs md:text-sm mt-6 mb-4 font-medium flex items-center justify-center gap-2"
+               :class="isAnulado ? 'text-rose-600' : 'text-amber-600'">
+            <i class="fas fa-lock"></i>
+            <span v-if="isAnulado">Documento anulado - Edición bloqueada</span>
+            <span v-else>Documento finalizado - Edición bloqueada</span>
+          </div>
+
           <button
             class="text-xl mt-2 w-full rounded-lg bg-white font-semibold text-gray-800 shadow-sm ring-2 ring-inset ring-gray-300 hover:bg-gray-100 p-3 transition-transform duration-300 transform hover:scale-105 hover:shadow-lg flex-1"
             @click="closeModal">

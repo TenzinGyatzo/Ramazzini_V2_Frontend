@@ -1,9 +1,10 @@
 <script>
 import axios from 'axios';
-import { ref, onMounted, onUnmounted, inject, computed } from 'vue';
+import { ref, onMounted, onUnmounted, inject, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
+import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
 import { useStepsStore } from '@/stores/steps';
@@ -135,6 +136,12 @@ import Step6NotaMedica from '../steps/notaMedicaSteps/Step6.vue';
 import Step7NotaMedica from '../steps/notaMedicaSteps/Step7.vue';
 import Step8NotaMedica from '../steps/notaMedicaSteps/Step8.vue';
 import Step9NotaMedica from '../steps/notaMedicaSteps/Step9.vue';
+import Step1NotaAclaratoria from '../steps/notaAclaratoriaSteps/Step1.vue';
+import Step2NotaAclaratoria from '../steps/notaAclaratoriaSteps/Step2.vue';
+import Step3NotaAclaratoria from '../steps/notaAclaratoriaSteps/Step3.vue';
+import Step4NotaAclaratoria from '../steps/notaAclaratoriaSteps/Step4.vue';
+import Step5NotaAclaratoria from '../steps/notaAclaratoriaSteps/Step5.vue';
+import Step6NotaAclaratoria from '../steps/notaAclaratoriaSteps/Step6.vue';
 import Step1ControlPrenatal from '../steps/controlPrenatalSteps/Step1.vue';
 import Step2ControlPrenatal from '../steps/controlPrenatalSteps/Step2.vue';
 import Step3ControlPrenatal from '../steps/controlPrenatalSteps/Step3.vue';
@@ -287,10 +294,11 @@ import ModalCamposFaltantes from '../ModalCamposFaltantes.vue';
 import { validarCamposRequeridos } from '@/helpers/validacionCampos';
 
 export default {
-  components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Audiometria, Step2Audiometria, Step3Audiometria, Step4Audiometria, Step5Audiometria, Step6Audiometria, Step7Audiometria, Step1Certificado, Step2Certificado, Step1CertificadoExpedito, Step2CertificadoExpedito, Step3CertificadoExpedito, Step4CertificadoExpedito, Step5CertificadoExpedito, Step6CertificadoExpedito, Step7CertificadoExpedito, Step8CertificadoExpedito, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step7ExamenVista, Step8ExamenVista, Step9ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica, Step1NotaMedica, Step2NotaMedica, Step3NotaMedica, Step4NotaMedica, Step5NotaMedica, Step6NotaMedica, Step7NotaMedica, Step8NotaMedica, Step9NotaMedica, Step1ControlPrenatal, Step2ControlPrenatal, Step3ControlPrenatal, Step4ControlPrenatal, Step5ControlPrenatal, Step6ControlPrenatal, Step7ControlPrenatal, Step8ControlPrenatal, Step9ControlPrenatal, Step10ControlPrenatal, Step11ControlPrenatal, Step12ControlPrenatal, Step13ControlPrenatal, Step14ControlPrenatal, Step15ControlPrenatal, Step16ControlPrenatal, Step17ControlPrenatal, Step18ControlPrenatal, Step19ControlPrenatal, Step20ControlPrenatal, Step21ControlPrenatal, Step22ControlPrenatal, Step23ControlPrenatal, Step24ControlPrenatal, Step25ControlPrenatal, Step26ControlPrenatal, Step27ControlPrenatal, Step28ControlPrenatal, Step29ControlPrenatal, Step30ControlPrenatal, Step31ControlPrenatal, Step32ControlPrenatal, Step33ControlPrenatal, Step34ControlPrenatal, Step35ControlPrenatal, Step36ControlPrenatal, Step37ControlPrenatal, Step38ControlPrenatal, Step39ControlPrenatal, Step40ControlPrenatal, Step41ControlPrenatal, Step42ControlPrenatal, Step43ControlPrenatal, Step44ControlPrenatal, Step45ControlPrenatal, Step46ControlPrenatal, Step47ControlPrenatal, Step48ControlPrenatal, Step49ControlPrenatal, Step50ControlPrenatal, Step51ControlPrenatal, Step52ControlPrenatal, Step53ControlPrenatal, Step54ControlPrenatal, Step55ControlPrenatal, Step56ControlPrenatal, Step57ControlPrenatal, Step58ControlPrenatal, Step59ControlPrenatal, Step60ControlPrenatal, Step61ControlPrenatal, Step62ControlPrenatal, Step63ControlPrenatal, Step64ControlPrenatal, Step65ControlPrenatal, Step66ControlPrenatal, Step67ControlPrenatal, Step68ControlPrenatal, Step69ControlPrenatal, Step70ControlPrenatal, Step71ControlPrenatal, Step72ControlPrenatal, Step73ControlPrenatal, Step74ControlPrenatal, Step75ControlPrenatal, Step76ControlPrenatal, Step77ControlPrenatal, Step78ControlPrenatal, Step79ControlPrenatal, Step80ControlPrenatal, Step81ControlPrenatal, Step82ControlPrenatal, Step83ControlPrenatal, Step84ControlPrenatal, Step85ControlPrenatal, Step86ControlPrenatal, Step87ControlPrenatal, Step88ControlPrenatal, Step89ControlPrenatal, Step1HistoriaOtologica, Step2HistoriaOtologica, Step3HistoriaOtologica, Step4HistoriaOtologica, Step5HistoriaOtologica, Step6HistoriaOtologica, Step7HistoriaOtologica, Step8HistoriaOtologica, Step9HistoriaOtologica, Step10HistoriaOtologica, Step11HistoriaOtologica, Step12HistoriaOtologica, Step13HistoriaOtologica, Step14HistoriaOtologica, Step15HistoriaOtologica, Step16HistoriaOtologica, Step17HistoriaOtologica, Step18HistoriaOtologica, Step19HistoriaOtologica, Step20HistoriaOtologica, Step21HistoriaOtologica, Step22HistoriaOtologica, Step23HistoriaOtologica, Step24HistoriaOtologica, Step25HistoriaOtologica, Step1PrevioEspirometria, Step2PrevioEspirometria, Step3PrevioEspirometria, Step4PrevioEspirometria, Step5PrevioEspirometria, Step6PrevioEspirometria, Step7PrevioEspirometria, Step8PrevioEspirometria, Step9PrevioEspirometria, Step10PrevioEspirometria, Step11PrevioEspirometria, Step12PrevioEspirometria, Step13PrevioEspirometria, Step14PrevioEspirometria, Step15PrevioEspirometria, Step16PrevioEspirometria, Step17PrevioEspirometria, Step18PrevioEspirometria, Step19PrevioEspirometria, Step20PrevioEspirometria, Step21PrevioEspirometria, Step22PrevioEspirometria, Step23PrevioEspirometria, Step24PrevioEspirometria, Step25PrevioEspirometria, Step26PrevioEspirometria, Step27PrevioEspirometria, Step28PrevioEspirometria, Step1Receta, Step2Receta, Step3Receta, Step4Receta, Step1ConstanciaAptitud, ModalFaltanCampos, ModalCamposFaltantes },
+  components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Audiometria, Step2Audiometria, Step3Audiometria, Step4Audiometria, Step5Audiometria, Step6Audiometria, Step7Audiometria, Step1Certificado, Step2Certificado, Step1CertificadoExpedito, Step2CertificadoExpedito, Step3CertificadoExpedito, Step4CertificadoExpedito, Step5CertificadoExpedito, Step6CertificadoExpedito, Step7CertificadoExpedito, Step8CertificadoExpedito, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step7ExamenVista, Step8ExamenVista, Step9ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica, Step1NotaMedica, Step2NotaMedica, Step3NotaMedica, Step4NotaMedica, Step5NotaMedica, Step6NotaMedica, Step7NotaMedica, Step8NotaMedica, Step9NotaMedica, Step1NotaAclaratoria, Step1ControlPrenatal, Step2ControlPrenatal, Step3ControlPrenatal, Step4ControlPrenatal, Step5ControlPrenatal, Step6ControlPrenatal, Step7ControlPrenatal, Step8ControlPrenatal, Step9ControlPrenatal, Step10ControlPrenatal, Step11ControlPrenatal, Step12ControlPrenatal, Step13ControlPrenatal, Step14ControlPrenatal, Step15ControlPrenatal, Step16ControlPrenatal, Step17ControlPrenatal, Step18ControlPrenatal, Step19ControlPrenatal, Step20ControlPrenatal, Step21ControlPrenatal, Step22ControlPrenatal, Step23ControlPrenatal, Step24ControlPrenatal, Step25ControlPrenatal, Step26ControlPrenatal, Step27ControlPrenatal, Step28ControlPrenatal, Step29ControlPrenatal, Step30ControlPrenatal, Step31ControlPrenatal, Step32ControlPrenatal, Step33ControlPrenatal, Step34ControlPrenatal, Step35ControlPrenatal, Step36ControlPrenatal, Step37ControlPrenatal, Step38ControlPrenatal, Step39ControlPrenatal, Step40ControlPrenatal, Step41ControlPrenatal, Step42ControlPrenatal, Step43ControlPrenatal, Step44ControlPrenatal, Step45ControlPrenatal, Step46ControlPrenatal, Step47ControlPrenatal, Step48ControlPrenatal, Step49ControlPrenatal, Step50ControlPrenatal, Step51ControlPrenatal, Step52ControlPrenatal, Step53ControlPrenatal, Step54ControlPrenatal, Step55ControlPrenatal, Step56ControlPrenatal, Step57ControlPrenatal, Step58ControlPrenatal, Step59ControlPrenatal, Step60ControlPrenatal, Step61ControlPrenatal, Step62ControlPrenatal, Step63ControlPrenatal, Step64ControlPrenatal, Step65ControlPrenatal, Step66ControlPrenatal, Step67ControlPrenatal, Step68ControlPrenatal, Step69ControlPrenatal, Step70ControlPrenatal, Step71ControlPrenatal, Step72ControlPrenatal, Step73ControlPrenatal, Step74ControlPrenatal, Step75ControlPrenatal, Step76ControlPrenatal, Step77ControlPrenatal, Step78ControlPrenatal, Step79ControlPrenatal, Step80ControlPrenatal, Step81ControlPrenatal, Step82ControlPrenatal, Step83ControlPrenatal, Step84ControlPrenatal, Step85ControlPrenatal, Step86ControlPrenatal, Step87ControlPrenatal, Step88ControlPrenatal, Step89ControlPrenatal, Step1HistoriaOtologica, Step2HistoriaOtologica, Step3HistoriaOtologica, Step4HistoriaOtologica, Step5HistoriaOtologica, Step6HistoriaOtologica, Step7HistoriaOtologica, Step8HistoriaOtologica, Step9HistoriaOtologica, Step10HistoriaOtologica, Step11HistoriaOtologica, Step12HistoriaOtologica, Step13HistoriaOtologica, Step14HistoriaOtologica, Step15HistoriaOtologica, Step16HistoriaOtologica, Step17HistoriaOtologica, Step18HistoriaOtologica, Step19HistoriaOtologica, Step20HistoriaOtologica, Step21HistoriaOtologica, Step22HistoriaOtologica, Step23HistoriaOtologica, Step24HistoriaOtologica, Step25HistoriaOtologica, Step1PrevioEspirometria, Step2PrevioEspirometria, Step3PrevioEspirometria, Step4PrevioEspirometria, Step5PrevioEspirometria, Step6PrevioEspirometria, Step7PrevioEspirometria, Step8PrevioEspirometria, Step9PrevioEspirometria, Step10PrevioEspirometria, Step11PrevioEspirometria, Step12PrevioEspirometria, Step13PrevioEspirometria, Step14PrevioEspirometria, Step15PrevioEspirometria, Step16PrevioEspirometria, Step17PrevioEspirometria, Step18PrevioEspirometria, Step19PrevioEspirometria, Step20PrevioEspirometria, Step21PrevioEspirometria, Step22PrevioEspirometria, Step23PrevioEspirometria, Step24PrevioEspirometria, Step25PrevioEspirometria, Step26PrevioEspirometria, Step27PrevioEspirometria, Step28PrevioEspirometria, Step1Receta, Step2Receta, Step3Receta, Step4Receta, Step1ConstanciaAptitud, ModalFaltanCampos, ModalCamposFaltantes },
   setup() {
     const empresas = useEmpresasStore();
     const trabajadores = useTrabajadoresStore();
+    const centrosTrabajo = useCentrosTrabajoStore();
     const formData = useFormDataStore();
     const documentos = useDocumentosStore();
     const stepsStore = useStepsStore();
@@ -302,6 +310,101 @@ export default {
 
     const isMX = computed(() => proveedorSaludStore.isMX);
     const isFinalized = computed(() => documentos.isFinalized);
+    
+    // Computed para verificar si el documento está finalizado
+    const isFinalizado = computed(() => {
+      if (!documentos.currentDocument) return false;
+      return documentos.currentDocument.estado?.toLowerCase() === 'finalizado';
+    });
+    
+    // Computed para verificar si el documento está anulado
+    const isAnulado = computed(() => {
+      if (!documentos.currentDocument) return false;
+      return documentos.currentDocument.estado?.toLowerCase() === 'anulado';
+    });
+
+    const tipoSingularAPlural = {
+        'antidoping': 'antidopings',
+        'aptitud': 'aptitudes',
+        'audiometria': 'audiometrias',
+        'certificado': 'certificados',
+        'certificadoExpedito': 'certificadosExpedito',
+        'documentoExterno': 'documentosExternos',
+        'examenVista': 'examenesVista',
+        'exploracionFisica': 'exploracionesFisicas',
+        'historiaClinica': 'historiasClinicas',
+        'notaMedica': 'notasMedicas',
+        'controlPrenatal': 'controlPrenatal',
+        'historiaOtologica': 'historiaOtologica',
+        'previoEspirometria': 'previoEspirometria',
+        'receta': 'recetas',
+        'constanciaAptitud': 'constanciasAptitud'
+    };
+
+    const normalizarTipoAPlural = (tipo) => {
+        if (!tipo) return tipo;
+        const normalizado = tipo.replace(/\s+/g, '');
+        if (tipoSingularAPlural[tipo]) return tipoSingularAPlural[tipo];
+        const camelCase = normalizado.charAt(0).toLowerCase() + normalizado.slice(1);
+        if (tipoSingularAPlural[camelCase]) return tipoSingularAPlural[camelCase];
+        if (tipoSingularAPlural[normalizado]) return tipoSingularAPlural[normalizado];
+        return tipo;
+    };
+
+    const crearNotaAclaratoria = () => {
+      const tipoOriginal = documentos.currentTypeOfDocument;
+      const idOriginal = documentos.currentDocument?._id;
+      
+      console.log('🚀 Iniciando creación de Nota Aclaratoria:', {
+        tipoOriginal,
+        idOriginal,
+        currentDocument: documentos.currentDocument
+      });
+      
+      if (!tipoOriginal || !idOriginal) {
+        console.warn('❌ No se puede crear nota aclaratoria: faltan datos', { tipoOriginal, idOriginal });
+        return;
+      }
+
+      const tipoPlural = normalizarTipoAPlural(tipoOriginal);
+      
+      console.log('📝 Navegando a crear nota aclaratoria con:', {
+        documentoOrigenTipo: tipoPlural,
+        documentoOrigenId: idOriginal,
+        idEmpresa: empresas.currentEmpresaId,
+        idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId,
+        idTrabajador: trabajadores.currentTrabajadorId
+      });
+      
+      // IMPORTANTE: Establecer los valores en el store ANTES de navegar
+      // Esto asegura que estén disponibles cuando los Steps se monten
+      formData.formDataNotaAclaratoria.documentoOrigenTipo = tipoPlural;
+      formData.formDataNotaAclaratoria.documentoOrigenId = idOriginal;
+      
+      console.log('💾 Valores establecidos en store ANTES de navegar:', {
+        documentoOrigenTipo: formData.formDataNotaAclaratoria.documentoOrigenTipo,
+        documentoOrigenId: formData.formDataNotaAclaratoria.documentoOrigenId
+      });
+      
+      // Limpiar el documento actual antes de navegar para que el nuevo formulario inicie desde el paso 1
+      documentos.currentDocument = null;
+      
+      router.push({
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idCentroTrabajo: centrosTrabajo.currentCentroTrabajoId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'notaAclaratoria'
+        },
+        query: {
+          documentoOrigenTipo: tipoPlural,
+          documentoOrigenId: idOriginal,
+          skipToStep: '3' // Saltar directamente al paso 3
+        }
+      });
+    };
+    
     const disableEdit = computed(() => isMX.value && isFinalized.value);
 
     // Computed properties para mejor UX
@@ -496,6 +599,15 @@ export default {
           { component: Step8NotaMedica, name: 'Paso 8' },
           { component: Step9NotaMedica, name: 'Paso 9' },
         ]);
+      } else if (documentos.currentTypeOfDocument === 'notaAclaratoria') {
+        stepsStore.setSteps([
+          { component: Step1NotaAclaratoria, name: 'Paso 1' },
+          { component: Step2NotaAclaratoria, name: 'Paso 2' },
+          { component: Step3NotaAclaratoria, name: 'Paso 3' },
+          { component: Step4NotaAclaratoria, name: 'Paso 4' },
+          { component: Step5NotaAclaratoria, name: 'Paso 5' },
+          { component: Step6NotaAclaratoria, name: 'Paso 6' },
+        ]);
       } else if (documentos.currentTypeOfDocument === 'controlPrenatal') {
         stepsStore.setSteps([
           { component: Step1ControlPrenatal, name: 'Paso 1' },
@@ -662,12 +774,45 @@ export default {
         console.error(`Tipo de documento no reconocido: ${documentos.currentTypeOfDocument}`);
       }
 
-      // Verifica si se está editando
+      // Verificar si hay un query param para saltar a un paso específico (ej: desde crear nota aclaratoria)
+      const skipToStep = route.query.skipToStep;
+      if (skipToStep) {
+        const stepNumber = parseInt(skipToStep, 10);
+        if (stepNumber > 0 && stepNumber <= stepsStore.steps.length) {
+          stepsStore.currentStep = stepNumber;
+          console.log(`⏭️ Saltando al paso ${stepNumber} (skipToStep desde query params)`);
+          return; // No continuar con el check de documento existente
+        }
+      }
+
+      // Verifica si se está editando (puede que currentDocument aún no esté cargado)
       if (documentos.currentDocument) {
         // Si se está editando, mostrar mensaje final
         stepsStore.currentStep = stepsStore.steps.length + 1;
       }
     });
+
+    // Watch para detectar cuando currentDocument cambia (carga asíncrona)
+    // Esto es necesario porque fetchDocumentById es asíncrono y puede no estar listo en onMounted
+    watch(
+      () => documentos.currentDocument,
+      (newDocument, oldDocument) => {
+        // Solo actualizar al paso final si:
+        // 1. Hay un documento cargado
+        // 2. Hay pasos definidos
+        // 3. Estamos editando (hay documentoId en la ruta)
+        // 4. El documento es nuevo (oldDocument era null), indicando carga inicial
+        // 5. NO hay skipToStep en query params (no interferir con navegación desde crear nota aclaratoria)
+        const documentoId = route.params.idDocumento;
+        const skipToStep = route.query.skipToStep;
+        
+        if (newDocument && stepsStore.steps.length > 0 && documentoId && !oldDocument && !skipToStep) {
+          // Si el documento se carga después del onMounted (edición), actualizar al paso final
+          stepsStore.currentStep = stepsStore.steps.length + 1;
+        }
+      },
+      { immediate: false } // No ejecutar inmediatamente, solo cuando cambie
+    );
 
     // Manejo de eventos de teclado
     const handleKeyDown = (event) => {
@@ -754,6 +899,8 @@ export default {
         datosLimpios = limpiarValoresUndefined(formData.formDataHistoriaClinica);
       } else if (documentos.currentTypeOfDocument === 'notaMedica') {
         datosLimpios = limpiarValoresUndefined(formData.formDataNotaMedica);
+      } else if (documentos.currentTypeOfDocument === 'notaAclaratoria') {
+        datosLimpios = limpiarValoresUndefined(formData.formDataNotaAclaratoria);
       } else if (documentos.currentTypeOfDocument === 'controlPrenatal') {
         datosLimpios = limpiarValoresUndefined(formData.formDataControlPrenatal);
       } else if (documentos.currentTypeOfDocument === 'historiaOtologica') {
@@ -928,6 +1075,10 @@ export default {
       camposFaltantes,
       documentos,
       disableEdit,
+      isFinalizado,
+      isAnulado,
+      isMX,
+      crearNotaAclaratoria,
     };
   },
 };
@@ -994,9 +1145,11 @@ export default {
       >
         Guardar cambios
       </button>
-      <div v-else class="text-xs md:text-sm mt-6 text-amber-600 font-medium flex items-center justify-center gap-2">
+      <div v-else class="text-xs md:text-sm mt-6 font-medium flex items-center justify-center gap-2"
+           :class="isAnulado ? 'text-rose-600' : 'text-amber-600'">
         <i class="fas fa-lock"></i>
-        Documento finalizado - Edición bloqueada
+        <span v-if="isAnulado">Documento anulado - Edición bloqueada</span>
+        <span v-else>Documento finalizado - Edición bloqueada</span>
       </div>
     </div>
 
@@ -1006,11 +1159,28 @@ export default {
         <div>
           <p class="text-center text-2xl font-bold mb-2 text-emerald-600">¡Completado!</p>
           <p class="text-center text-sm font-medium text-gray-500 mb-6">
-            {{ disableEdit 
-              ? 'Este documento está finalizado y no se pueden guardar nuevos cambios.' 
-              : 'Todos los pasos se han completado correctamente. Puedes guardar el PDF o revisar nuevamente.' 
-            }}
+            <span v-if="disableEdit && isAnulado">
+              Este documento está anulado y no se pueden guardar nuevos cambios.
+            </span>
+            <span v-else-if="disableEdit">
+              Este documento está finalizado y no se pueden guardar nuevos cambios.
+            </span>
+            <span v-else>
+              Todos los pasos se han completado correctamente. Puedes guardar el PDF o revisar nuevamente.
+            </span>
           </p>
+
+          <!-- Botón para crear nota aclaratoria (solo México y documento finalizado/anulado) -->
+          <div v-if="isMX && (disableEdit || isAnulado)" class="flex justify-center mb-6">
+            <button 
+              @click="crearNotaAclaratoria"
+              class="w-full sm:w-3/5 md:w-2/3 px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 hover:text-amber-800 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm"
+            >
+              <i class="fas fa-file-signature"></i>
+              Crear nota aclaratoria
+            </button>
+          </div>
+
           <div class="flex justify-between">
             <button @click="stepsStore.previousStep"
               class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-gray-500 hover:bg-gray-600 transition-all duration-300 shadow-md">

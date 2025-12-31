@@ -364,6 +364,32 @@ export interface NotaMedica {
     finalizadoPor?: string;
 }
 
+export interface NotaAclaratoria {
+    _id: string;
+    fechaNotaAclaratoria: string;
+    motivoAclaracion: string;
+    descripcionAclaracion: string;
+    alcanceAclaracion: string;
+    impactoClinico: string;
+    idTrabajador: string;
+    rutaPDF: string;
+    createdBy: string;
+    updatedBy: string;
+    // NOM-024 Fields
+    estado?: DocumentoEstado;
+    fechaFinalizacion?: string;
+    finalizadoPor?: string;
+    documentoOrigenId: string;
+    documentoOrigenTipo: string;
+    documentoOrigenNombre?: string;
+    documentoOrigenFecha: string;
+    documentoOrigenUsuario: string;
+    documentoOrigenMotivo: string;
+    documentoOrigenObservaciones: string;
+    documentoOrigenEstado: string;
+    documentoOrigenFinalizadoPor: string;
+}
+
 export interface ControlPrenatal {
     _id: string;
     fechaInicioControlPrenatal: string;

@@ -20,6 +20,7 @@ import VisualizadorExamenVista from '@/components/steps/VisualizadorExamenVista.
 import VisualizadorExploracionFisica from '@/components/steps/VisualizadorExploracionFisica.vue';
 import VisualizadorHistoriaClinica from '@/components/steps/VisualizadorHistoriaClinica.vue';
 import VisualizadorNotaMedica from '@/components/steps/VisualizadorNotaMedica.vue';
+import VisualizadorNotaAclaratoria from '@/components/steps/VisualizadorNotaAclaratoria.vue';
 import VisualizadorControlPrenatal from '@/components/steps/VisualizadorControlPrenatal.vue';
 import VisualizadorHistoriaOtologica from '@/components/steps/VisualizadorHistoriaOtologica.vue';
 import VisualizadorPrevioEspirometria from '@/components/steps/VisualizadorPrevioEspirometria.vue';
@@ -63,11 +64,37 @@ onMounted(() => {
   empresas.fetchEmpresaById(empresaId.value);
   centrosTrabajo.fetchCentroTrabajoById(empresaId.value, centroTrabajoId.value);
   trabajadores.fetchTrabajadorById(empresaId.value, centroTrabajoId.value, trabajadorId.value);
-
+  
+  // IMPORTANTE: Guardar valores que ya pueden estar en el store (establecidos por FormStepper)
+  const documentoOrigenTipoPreexistente = formData.formDataNotaAclaratoria.documentoOrigenTipo;
+  const documentoOrigenIdPreexistente = formData.formDataNotaAclaratoria.documentoOrigenId;
+  
+  // IMPORTANTE: Guardar query params ANTES de resetear
+  const documentoOrigenTipoTemp = route.query.documentoOrigenTipo;
+  const documentoOrigenIdTemp = route.query.documentoOrigenId;
+  
   formData.resetFormData();
 
-  // Cargar documento si existe
+  // Detectar si se viene con un documento origen para nota aclaratoria
+  // Priorizar valores preexistentes (establecidos por FormStepper) sobre query params
+  if (tipoDocumento.value === 'notaAclaratoria') {
+    if (documentoOrigenTipoPreexistente && documentoOrigenIdPreexistente) {
+      // Restaurar valores que ya estaban en el store antes del reset
+      formData.formDataNotaAclaratoria.documentoOrigenTipo = documentoOrigenTipoPreexistente;
+      formData.formDataNotaAclaratoria.documentoOrigenId = documentoOrigenIdPreexistente;
+    } else if (documentoOrigenTipoTemp && documentoOrigenIdTemp) {
+      // Si no había valores preexistentes, usar los query params
+      formData.formDataNotaAclaratoria.documentoOrigenTipo = String(documentoOrigenTipoTemp);
+      formData.formDataNotaAclaratoria.documentoOrigenId = String(documentoOrigenIdTemp);
+    }
+  }
+
+  // Cargar documento si existe, o limpiar si es nuevo documento
   if (documentoId.value && tipoDocumento.value) {
+    // Limpiar currentDocument antes de cargar para que el watcher en FormStepper
+    // detecte correctamente el cambio de null a documento cargado
+    documentos.currentDocument = null;
+    
     documentos.fetchDocumentById(tipoDocumento.value, trabajadores.currentTrabajadorId, documentoId.value)
       .then(() => {
         if (documentos.currentDocument) {
@@ -86,6 +113,10 @@ onMounted(() => {
           router.back();
         }
       });
+  } else {
+    // Si es un nuevo documento (sin documentoId), limpiar el currentDocument 
+    // para que FormStepper inicie desde el paso 1
+    documentos.currentDocument = null;
   }
 
   // Consultar altura disponible para control prenatal (una sola vez al iniciar)
@@ -144,6 +175,7 @@ watchEffect(async () => {
       exploracionFisica: formData.formDataExploracionFisica,
       historiaClinica: formData.formDataHistoriaClinica,
       notaMedica: formData.formDataNotaMedica,
+      notaAclaratoria: formData.formDataNotaAclaratoria,
       controlPrenatal: formData.formDataControlPrenatal,
       historiaOtologica: formData.formDataHistoriaOtologica,
       previoEspirometria: formData.formDataPrevioEspirometria,
@@ -548,6 +580,18 @@ const contraindicacionesAbsolutasNegadas = () => {
           </div>
           <div class="w-full xl:w-2/3 max-w-3xl mx-auto">
             <VisualizadorNotaMedica />
+          </div>
+        </div>
+      </Transition> 
+
+      <Transition appear mode="out-in" name="slide-up">  
+        <div v-if="documentos.currentTypeOfDocument === 'notaAclaratoria'"
+          class="max-w-6xl mx-auto flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/3">
+            <FormStepper />
+          </div>
+          <div class="w-full xl:w-2/3 max-w-3xl mx-auto">
+            <VisualizadorNotaAclaratoria />
           </div>
         </div>
       </Transition> 

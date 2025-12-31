@@ -12,6 +12,7 @@ import type {
   ExploracionFisica,
   HistoriaClinica,
   NotaMedica,
+  NotaAclaratoria,
   ControlPrenatal,
   HistoriaOtologica,
   PrevioEspirometria,
@@ -31,6 +32,7 @@ export type DocumentsByYear = {
     exploracionesFisicas?: ExploracionFisica[];
     historiasClinicas?: HistoriaClinica[];
     notasMedicas?: NotaMedica[];
+    notasAclaratorias?: NotaAclaratoria[];
     controlPrenatal?: ControlPrenatal[];
     historiaOtologica?: HistoriaOtologica[];
     previoEspirometria?: PrevioEspirometria[];
@@ -74,6 +76,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
         exploracionesFisicas,
         historiasClinicas,
         notasMedicas,
+        notasAclaratorias,
         controlPrenatal,
         historiaOtologica,
         previoEspirometria,
@@ -120,6 +123,10 @@ export const useDocumentosStore = defineStore("documentos", () => {
           console.error("Error al obtener notasMedicas", error);
           return { data: [] };
         }),
+        DocumentosAPI.getNotasAclaratorias(trabajadorId).catch(error => {
+          console.error("Error al obtener notasAclaratorias", error);
+          return { data: [] };
+        }),
         DocumentosAPI.getControlPrenatal(trabajadorId).catch(error => {
           console.error("Error al obtener controlPrenatal", error);
           return { data: [] };
@@ -154,6 +161,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
         exploracionesFisicas: Array.isArray(exploracionesFisicas.data) ? exploracionesFisicas.data : [],
         historiasClinicas: Array.isArray(historiasClinicas.data) ? historiasClinicas.data : [],
         notasMedicas: Array.isArray(notasMedicas.data) ? notasMedicas.data : [],
+        notasAclaratorias: Array.isArray(notasAclaratorias.data) ? notasAclaratorias.data : [],
         controlPrenatal: Array.isArray(controlPrenatal.data) ? controlPrenatal.data : [],
         historiaOtologica: Array.isArray(historiaOtologica.data) ? historiaOtologica.data : [],
         previoEspirometria: Array.isArray(previoEspirometria.data) ? previoEspirometria.data : [],
@@ -201,6 +209,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
       exploracionesFisicas: "fechaExploracionFisica",
       historiasClinicas: "fechaHistoriaClinica",
       notasMedicas: "fechaNotaMedica",
+      notasAclaratorias: "fechaNotaAclaratoria",
       controlPrenatal: "fechaInicioControlPrenatal",
       historiaOtologica: "fechaHistoriaOtologica",
       previoEspirometria: "fechaPrevioEspirometria",

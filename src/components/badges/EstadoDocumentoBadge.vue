@@ -9,6 +9,7 @@ interface Props {
   fechaAnulacion?: string | Date;
   anuladoPor?: string | { username: string };
   razonAnulacion?: string;
+  tipoDocumento?: string;
 }
 
 const props = defineProps<Props>();
@@ -56,11 +57,19 @@ const badgeConfig = computed(() => {
       label: 'Anulado'
     };
   } else {
-    // Default a BORRADOR
+    // Lógica para determinar el label del borrador según el tipo
+    let label = 'Borrador';
+    if (props.tipoDocumento) {
+      const tipoSinEspacios = props.tipoDocumento.toLowerCase().replace(/\s+/g, '');
+      if (tipoSinEspacios === 'documentoexterno') {
+        label = 'En revisión';
+      }
+    }
+    
     return {
       classes: 'bg-blue-100 text-blue-800 border-blue-200',
       icon: 'fas fa-edit',
-      label: 'Borrador'
+      label: label
     };
   }
 });
@@ -115,6 +124,13 @@ const tooltipText = computed(() => {
     }
     return 'Documento anulado';
   } else if (estado === 'BORRADOR') {
+    // Personalizar el tooltip según el tipo
+    if (props.tipoDocumento) {
+      const tipoSinEspacios = props.tipoDocumento.toLowerCase().replace(/\s+/g, '');
+      if (tipoSinEspacios === 'documentoexterno') {
+        return 'Documento en revisión - Puede ser editado';
+      }
+    }
     return 'Documento en borrador - Puede ser editado';
   }
   
@@ -123,7 +139,7 @@ const tooltipText = computed(() => {
 </script>
 
 <template>
-  <div class="inline-flex items-center relative" :aria-label="`Estado del documento: ${badgeConfig.label}`">
+  <div class="hidden sm:flex items-center relative" :aria-label="`Estado del documento: ${badgeConfig.label}`">
     <span 
       ref="badgeRef"
       class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border transition-colors duration-200 cursor-help"
