@@ -676,6 +676,7 @@ const añoMasReciente = computed(() => {
         <ModalAnularDocumento v-if="showAnularModal && selectedDocumentId && selectedDocumentType"
           :documentId="selectedDocumentId"
           :documentType="selectedDocumentType"
+          :trabajadorId="trabajadores.currentTrabajadorId!"
           :documentLabel="selectedDocumentName"
           @closeModal="toggleAnularModal"
           @confirmAnular="handleAnularDocument"

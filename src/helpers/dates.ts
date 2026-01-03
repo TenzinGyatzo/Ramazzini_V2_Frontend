@@ -119,6 +119,22 @@ function calcularAntiguedad(dateString: string): string {
     return `${day}-${month}-${year}`;
   }
 
+  function formatDateDDMMYYYYHHMMSS(date) {
+    if (!date) return '';
+  
+    const d = new Date(date); // Sin modificar la fecha
+    if (isNaN(d.getTime())) return ''; // Validar si la fecha es válida
+  
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const year = d.getUTCFullYear();
+    const hours = String(d.getUTCHours()).padStart(2, '0');
+    const minutes = String(d.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(d.getUTCSeconds()).padStart(2, '0');
+  
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+  }
+
   function formatDateYYYYMMDD(date) {
     if (!date) return '';
   
@@ -202,6 +218,7 @@ export {
   calcularEdad,
   calcularAntiguedad,
   formatDateDDMMYYYY,
+  formatDateDDMMYYYYHHMMSS,
   formatDateYYYYMMDD,
   convertirYYYYMMDDaISO,
   determinarVistaCorregida

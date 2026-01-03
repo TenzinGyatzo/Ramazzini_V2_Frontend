@@ -1,18 +1,190 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { formatDateDDMMYYYY } from '@/helpers/dates';
+import { ref, computed, onMounted } from 'vue';
+import { formatDateDDMMYYYY, formatDateDDMMYYYYHHMMSS } from '@/helpers/dates';
+import { useDocumentosStore } from '@/stores/documentos';
+import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
+import { useEnfermeraFirmanteStore } from '@/stores/enfermeraFirmante';
+import { useTecnicoFirmanteStore } from '@/stores/tecnicoFirmante';
+import MedicoFirmanteAPI from '@/api/MedicoFirmanteAPI';
+import EnfermeraFirmanteAPI from '@/api/EnfermeraFirmanteAPI';
+import TecnicoFirmanteAPI from '@/api/TecnicoFirmanteAPI';
 
 interface Props {
   documentType: string;
   documentId: string;
+  trabajadorId: string;
   documentLabel?: string;
 }
 
 const props = defineProps<Props>();
 const emit = defineEmits(['closeModal', 'confirmAnular']);
 
+// Stores
+const documentosStore = useDocumentosStore();
+const medicoStore = useMedicoFirmanteStore();
+const enfermeraStore = useEnfermeraFirmanteStore();
+const tecnicoStore = useTecnicoFirmanteStore();
+
+// Estados reactivos
 const loading = ref(false);
+const loadingDocumento = ref(false);
+const loadingFirmantes = ref(false);
+const documento = ref<any>(null);
+const firmanteFinalizador = ref<any>(null);
+const firmanteAnulador = ref<any>(null);
+
+// Computed properties para fechas del documento
+const fechaCreacion = computed(() => {
+  if (!documento.value?.createdAt) return null;
+  return formatDateDDMMYYYYHHMMSS(new Date(documento.value.createdAt));
+});
+
+const fechaFinalizacion = computed(() => {
+  if (!documento.value?.fechaFinalizacion) return null;
+  return formatDateDDMMYYYYHHMMSS(new Date(documento.value.fechaFinalizacion));
+});
+
 const fechaActual = computed(() => formatDateDDMMYYYY(new Date()));
+const fechaAnulacion = computed(() => fechaActual.value);
+
+// Usuario actual
+const user = computed(() => {
+  try {
+    return JSON.parse(localStorage.getItem('user') || '{}');
+  } catch (e) {
+    return {};
+  }
+});
+
+// Computed property para datos formateados del finalizador
+const finalizadorData = computed(() => {
+  if (!firmanteFinalizador.value) {
+    return null;
+  }
+
+  const firmante = firmanteFinalizador.value;
+  
+  return {
+    nombre: firmante.nombre || 'No disponible',
+    tituloProfesional: firmante.tituloProfesional || '',
+    cedulaProfesional: firmante.numeroCedulaProfesional 
+      ? `Cédula Profesional No. ${firmante.numeroCedulaProfesional}`
+      : null,
+    cedulaEspecialista: (firmante.especialistaSaludTrabajo === 'Si' || firmante.especialistaSaludTrabajo === true) && firmante.numeroCedulaEspecialista
+      ? `Cédula Especialidad Med. del Trab. No. ${firmante.numeroCedulaEspecialista}`
+      : null,
+    credencialAdicional: firmante.nombreCredencialAdicional && firmante.numeroCredencialAdicional
+      ? `${firmante.nombreCredencialAdicional} No. ${firmante.numeroCredencialAdicional}`
+      : null
+  };
+});
+
+// Computed property para datos formateados del anulador
+const anuladorData = computed(() => {
+  if (!firmanteAnulador.value) {
+    return null;
+  }
+
+  const firmante = firmanteAnulador.value;
+  
+  return {
+    nombre: firmante.nombre || 'No disponible',
+    tituloProfesional: firmante.tituloProfesional || '',
+    cedulaProfesional: firmante.numeroCedulaProfesional 
+      ? `Cédula Profesional No. ${firmante.numeroCedulaProfesional}`
+      : null,
+    cedulaEspecialista: (firmante.especialistaSaludTrabajo === 'Si' || firmante.especialistaSaludTrabajo === true) && firmante.numeroCedulaEspecialista
+      ? `Cédula Especialidad Med. del Trab. No. ${firmante.numeroCedulaEspecialista}`
+      : null,
+    credencialAdicional: firmante.nombreCredencialAdicional && firmante.numeroCredencialAdicional
+      ? `${firmante.nombreCredencialAdicional} No. ${firmante.numeroCredencialAdicional}`
+      : null
+  };
+});
+
+// Función para cargar información del documento y firmantes
+const loadDocumentData = async () => {
+  loadingDocumento.value = true;
+  loadingFirmantes.value = true;
+  
+  try {
+    // 1. Obtener documento completo
+    await documentosStore.fetchDocumentById(props.documentType, props.trabajadorId, props.documentId);
+    documento.value = documentosStore.currentDocument;
+    
+    if (!documento.value) {
+      console.error('No se pudo cargar el documento');
+      return;
+    }
+
+    // 2. Obtener finalizadoPor del documento (si está finalizado)
+    let finalizadorUserId = documento.value.finalizadoPor;
+    
+    // Si finalizadoPor es un objeto (poblado), extraer el _id
+    if (finalizadorUserId && typeof finalizadorUserId === 'object') {
+      finalizadorUserId = finalizadorUserId._id || finalizadorUserId.toString();
+    }
+    
+    // Asegurarse de que sea string
+    finalizadorUserId = finalizadorUserId ? String(finalizadorUserId).trim() : null;
+    
+    if (finalizadorUserId && finalizadorUserId !== 'null' && finalizadorUserId !== 'undefined') {
+      // 3. Intentar cargar firmante finalizador (médico, enfermera o técnico)
+      try {
+        const results = await Promise.allSettled([
+          MedicoFirmanteAPI.getMedicoFirmanteByUserId(finalizadorUserId),
+          EnfermeraFirmanteAPI.getEnfermeraFirmanteByUserId(finalizadorUserId),
+          TecnicoFirmanteAPI.getTecnicoFirmanteByUserId(finalizadorUserId)
+        ]);
+
+        // El primero que tenga datos será el firmante finalizador
+        for (const result of results) {
+          if (result.status === 'fulfilled' && result.value?.data) {
+            const responseData = result.value.data;
+            // Verificar que tenga un _id (indica que es un firmante válido, no un mensaje de error)
+            if (responseData && responseData._id) {
+              firmanteFinalizador.value = responseData;
+              break;
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error al intentar cargar firmantes del finalizador:', error);
+      }
+    }
+
+    // 4. Cargar firmante anulador (usuario actual)
+    const currentUserId = user.value?._id;
+    const userRole = user.value?.role;
+    
+    if (currentUserId && userRole) {
+      try {
+        if (userRole === 'Médico' || userRole === 'Principal') {
+          await medicoStore.loadMedicoFirmante(currentUserId);
+          firmanteAnulador.value = medicoStore.medicoFirmante;
+        } else if (userRole === 'Enfermero/a') {
+          await enfermeraStore.loadEnfermeraFirmante(currentUserId);
+          firmanteAnulador.value = enfermeraStore.enfermeraFirmante;
+        } else if (userRole === 'Técnico Evaluador') {
+          await tecnicoStore.loadTecnicoFirmante(currentUserId);
+          firmanteAnulador.value = tecnicoStore.tecnicoFirmante;
+        }
+      } catch (error) {
+        console.error('Error al cargar firmante anulador:', error);
+      }
+    }
+  } catch (error) {
+    console.error('Error al cargar el documento:', error);
+  } finally {
+    loadingDocumento.value = false;
+    loadingFirmantes.value = false;
+  }
+};
+
+// Cargar datos al montar el componente
+onMounted(() => {
+  loadDocumentData();
+});
 
 // Razones predefinidas comunes
 const razonesPredefinidas = [
@@ -21,7 +193,6 @@ const razonesPredefinidas = [
   { id: 'paciente_incorrecto', label: 'Paciente incorrecto' },
   { id: 'fecha_incorrecta', label: 'Fecha incorrecta' },
   { id: 'error_diagnostico', label: 'Error en diagnóstico o conclusión' },
-  { id: 'solicitud_paciente', label: 'Solicitud del paciente' },
   { id: 'otro', label: 'Otro (especificar)' },
 ];
 
@@ -64,7 +235,7 @@ const handleConfirm = async () => {
     aria-modal="true"
     aria-labelledby="modal-title"
   >
-    <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden transform transition-all">
+    <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full overflow-hidden transform transition-all">
       <div class="p-6">
         <!-- Header -->
         <div class="flex items-center gap-4 mb-6">
@@ -79,25 +250,157 @@ const handleConfirm = async () => {
 
         <!-- Content -->
         <div class="space-y-4 mb-6">
-          <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
-            <div class="flex flex-col gap-2">
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-500 font-medium">Tipo:</span>
-                <span class="text-gray-900 font-semibold">{{ documentLabel || documentType }}</span>
+          <!-- Información del Documento -->
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-file-alt text-rose-600 text-sm"></i>
               </div>
-              <div class="flex justify-between text-sm">
-                <span class="text-gray-500 font-medium">Fecha de Anulación:</span>
-                <span class="text-gray-900 font-semibold">{{ fechaActual }}</span>
+              <h4 class="text-sm font-bold text-gray-800">Información del Documento</h4>
+            </div>
+            
+            <div v-if="loadingDocumento" class="flex items-center justify-center py-4">
+              <i class="fas fa-spinner fa-spin text-gray-400"></i>
+              <span class="ml-2 text-xs text-gray-500">Cargando información...</span>
+            </div>
+            
+            <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Tipo de Documento -->
+              <div class="flex items-center justify-between sm:flex-col sm:items-start sm:gap-1 py-1.5 border-b sm:border-b-0 sm:border-r border-gray-100 sm:border-gray-200 sm:pr-4 last:border-0 last:sm:border-r-0 sm:mx-2">
+                <div class="flex items-center gap-2 text-gray-600">
+                  <i class="fas fa-tag text-gray-400 text-xs w-4"></i>
+                  <span class="text-xs font-medium">Documento:</span>
+                </div>
+                <span class="text-xs font-semibold text-gray-900">{{ documentLabel || documentType }}</span>
+              </div>
+
+              <!-- Fecha de Creación -->
+              <div v-if="fechaCreacion" class="flex items-center justify-between sm:flex-col sm:items-start sm:gap-1 py-1.5 border-b sm:border-b-0 sm:border-r border-gray-100 sm:border-gray-200 sm:pr-4 last:border-0 last:sm:border-r-0 sm:mx-2">
+                <div class="flex items-center gap-2 text-gray-600">
+                  <i class="fas fa-calendar-plus text-blue-400 text-xs w-4"></i>
+                  <span class="text-xs font-medium">Creado:</span>
+                </div>
+                <span class="text-xs font-semibold text-gray-900">{{ fechaCreacion }}</span>
+              </div>
+
+              <!-- Fecha de Finalización -->
+              <div v-if="fechaFinalizacion" class="flex items-center justify-between sm:flex-col sm:items-start sm:gap-1 py-1.5 border-b sm:border-b-0 sm:border-r border-gray-100 sm:border-gray-200 sm:pr-4 last:border-0 last:sm:border-r-0 sm:mx-2">
+                <div class="flex items-center gap-2 text-gray-600">
+                  <i class="fas fa-calendar-check text-emerald-400 text-xs w-4"></i>
+                  <span class="text-xs font-medium">Finalizado:</span>
+                </div>
+                <span class="text-xs font-semibold text-gray-900">{{ fechaFinalizacion }}</span>
+              </div>
+
+              <!-- Fecha de Anulación -->
+              <div class="flex items-center justify-between sm:flex-col sm:items-start sm:gap-1 py-1.5 bg-rose-50 -mx-2 sm:-mx-0 px-2 sm:py-2 rounded-md border-l-2 border-rose-500 sm:pt-2">
+                <div class="flex items-center gap-2 text-rose-700">
+                  <i class="fas fa-calendar-times text-rose-500 text-xs w-4"></i>
+                  <span class="text-xs font-semibold">Anulación:</span>
+                </div>
+                <span class="text-xs font-bold text-rose-900">{{ fechaAnulacion }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información de Firmantes -->
+          <div v-if="loadingFirmantes" class="bg-blue-50 rounded-xl border border-blue-200 p-4">
+            <div class="flex items-center justify-center gap-3">
+              <i class="fas fa-spinner fa-spin text-blue-600"></i>
+              <span class="text-sm text-blue-700">Cargando información de firmantes...</span>
+            </div>
+          </div>
+
+          <div v-else-if="finalizadorData || anuladorData" class="bg-white rounded-xl border border-gray-200 p-4">
+            <h4 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+              <i class="fas fa-user-md text-rose-600"></i>
+              Información de Firmantes
+            </h4>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <!-- Columna Finalizador -->
+              <div class="space-y-3">
+                <div class="bg-emerald-50 rounded-lg p-3 border border-emerald-200">
+                  <h5 class="text-xs font-bold text-emerald-900 uppercase mb-2">Finalizado por</h5>
+                  
+                  <div v-if="finalizadorData" class="space-y-2 text-xs">
+                    
+                    <div>
+                      <div class="text-gray-900 font-semibold mt-1 text-sm">{{ finalizadorData.tituloProfesional }} {{ finalizadorData.nombre }}</div>
+                    </div>
+                    
+                    <div v-if="finalizadorData.cedulaProfesional">
+                      <div class="text-gray-900 mt-1">{{ finalizadorData.cedulaProfesional }}</div>
+                    </div>
+                    
+                    <div v-if="finalizadorData.cedulaEspecialista" class="bg-emerald-100 rounded p-2 -mx-1">
+                      <div class="text-gray-900 mt-1">{{ finalizadorData.cedulaEspecialista }}</div>
+                    </div>
+                    
+                    <div v-if="finalizadorData.credencialAdicional">
+                      <div class="text-gray-900 mt-1 break-words">{{ finalizadorData.credencialAdicional }}</div>
+                    </div>
+                  </div>
+                  
+                  <div v-else class="text-xs text-gray-500 italic">
+                    No se encontró información del finalizador
+                  </div>
+                </div>
+              </div>
+
+              <!-- Columna Anulador -->
+              <div class="space-y-3">
+                <div class="bg-rose-50 rounded-lg p-3 border border-rose-200">
+                  <h5 class="text-xs font-bold text-rose-900 uppercase mb-2">Anulador</h5>
+                  
+                  <div v-if="anuladorData" class="space-y-2 text-xs">
+                    
+                    <div>
+                      <div class="text-gray-900 font-semibold mt-1 text-sm">{{ anuladorData.tituloProfesional }} {{ anuladorData.nombre }}</div>
+                    </div>
+                    
+                    <div v-if="anuladorData.cedulaProfesional">
+                      <div class="text-gray-900 mt-1">{{ anuladorData.cedulaProfesional }}</div>
+                    </div>
+                    
+                    <div v-if="anuladorData.cedulaEspecialista" class="bg-rose-100 rounded p-2 -mx-1">
+                      <div class="text-gray-900 mt-1">{{ anuladorData.cedulaEspecialista }}</div>
+                    </div>
+                    
+                    <div v-if="anuladorData.credencialAdicional">
+                      <div class="text-gray-900 mt-1 break-words">{{ anuladorData.credencialAdicional }}</div>
+                    </div>
+                  </div>
+                  
+                  <div v-else class="text-xs text-gray-500 italic">
+                    No se encontró información del anulador
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advertencia si falta información del anulador -->
+          <div v-if="!loadingFirmantes && !anuladorData" class="bg-red-50 border-l-4 border-red-400 p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-circle text-red-400"></i>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-red-700 font-medium">
+                  <span class="font-bold">Advertencia:</span> No se encontró información de firmante para su usuario.
+                  Es necesario configurar sus datos profesionales antes de anular documentos.
+                </p>
               </div>
             </div>
           </div>
 
           <!-- Selección de razón -->
-          <div class="space-y-3">
+          <div class="space-y-3 bg-white rounded-xl border border-gray-200 p-4">
             <label class="block text-sm font-semibold text-gray-700">
               Razón de anulación <span class="text-rose-500">*</span>
             </label>
-            <div class="space-y-2 max-h-48 overflow-y-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
               <label 
                 v-for="razon in razonesPredefinidas" 
                 :key="razon.id"

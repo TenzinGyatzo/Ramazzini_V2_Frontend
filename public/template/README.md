@@ -107,3 +107,4 @@ El archivo de exportaci√≥n (`exportarExcel.ts`) ya incluye estas columnas autom√
 
 
 
+

@@ -1,18 +1,36 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import { formatDateDDMMYYYY } from '@/helpers/dates';
+import MedicoFirmanteAPI from '@/api/MedicoFirmanteAPI';
+import EnfermeraFirmanteAPI from '@/api/EnfermeraFirmanteAPI';
+import TecnicoFirmanteAPI from '@/api/TecnicoFirmanteAPI';
+
+interface FirmanteBase {
+  nombre: string;
+  tituloProfesional?: string;
+}
+
+type Firmante = FirmanteBase;
 
 interface Props {
   estado?: string;
   fechaFinalizacion?: string | Date;
   finalizadoPor?: string | { username: string };
+  finalizadoPorFirmante?: Firmante;
   fechaAnulacion?: string | Date;
   anuladoPor?: string | { username: string };
+  anuladoPorFirmante?: Firmante;
   razonAnulacion?: string;
   tipoDocumento?: string;
 }
 
 const props = defineProps<Props>();
+
+// Refs para almacenar firmantes cargados dinámicamente
+const finalizadoPorFirmanteLoaded = ref<Firmante | null>(null);
+const anuladoPorFirmanteLoaded = ref<Firmante | null>(null);
+const loadingFinalizadoPorFirmante = ref(false);
+const loadingAnuladoPorFirmante = ref(false);
 
 const showTooltip = ref(false);
 const badgeRef = ref<HTMLElement | null>(null);
@@ -39,6 +57,113 @@ const handleMouseLeave = () => {
 const estadoDisplay = computed(() => {
   if (!props.estado) return 'BORRADOR';
   return props.estado.toUpperCase();
+});
+
+// Función helper para formatear nombre del firmante
+const formatFirmanteNombre = (firmante: Firmante | null | undefined): string | null => {
+  if (!firmante) return null;
+  const titulo = firmante.tituloProfesional?.trim();
+  const nombre = firmante.nombre?.trim();
+  if (!nombre) return null;
+  return titulo ? `${titulo} ${nombre}` : nombre;
+};
+
+// Función para obtener userId de finalizadoPor/anuladoPor
+const extractUserId = (value: string | { username: string; _id?: string } | undefined): string | null => {
+  if (!value) return null;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'object' && value._id) return value._id;
+  return null;
+};
+
+// Función para cargar firmante por userId
+const loadFirmanteByUserId = async (userId: string): Promise<Firmante | null> => {
+  if (!userId) return null;
+  
+  try {
+    const results = await Promise.allSettled([
+      MedicoFirmanteAPI.getMedicoFirmanteByUserId(userId),
+      EnfermeraFirmanteAPI.getEnfermeraFirmanteByUserId(userId),
+      TecnicoFirmanteAPI.getTecnicoFirmanteByUserId(userId)
+    ]);
+
+    // El primero que tenga datos será el firmante
+    for (const result of results) {
+      if (result.status === 'fulfilled' && result.value?.data) {
+        const responseData = result.value.data;
+        // Verificar que tenga un _id (indica que es un firmante válido)
+        if (responseData && responseData._id && responseData.nombre) {
+          return {
+            nombre: responseData.nombre,
+            tituloProfesional: responseData.tituloProfesional
+          };
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error al cargar firmante:', error);
+  }
+  
+  return null;
+};
+
+// Cargar firmante finalizadoPor si no se proporciona como prop
+const loadFinalizadoPorFirmante = async () => {
+  if (props.finalizadoPorFirmante || loadingFinalizadoPorFirmante.value) return;
+  
+  const userId = extractUserId(props.finalizadoPor);
+  if (!userId) return;
+  
+  loadingFinalizadoPorFirmante.value = true;
+  try {
+    finalizadoPorFirmanteLoaded.value = await loadFirmanteByUserId(userId);
+  } finally {
+    loadingFinalizadoPorFirmante.value = false;
+  }
+};
+
+// Cargar firmante anuladoPor si no se proporciona como prop
+const loadAnuladoPorFirmante = async () => {
+  if (props.anuladoPorFirmante || loadingAnuladoPorFirmante.value) return;
+  
+  const userId = extractUserId(props.anuladoPor);
+  if (!userId) return;
+  
+  loadingAnuladoPorFirmante.value = true;
+  try {
+    anuladoPorFirmanteLoaded.value = await loadFirmanteByUserId(userId);
+  } finally {
+    loadingAnuladoPorFirmante.value = false;
+  }
+};
+
+// Computed para obtener el firmante finalizadoPor (prop o cargado)
+const finalizadoPorFirmante = computed(() => {
+  return props.finalizadoPorFirmante || finalizadoPorFirmanteLoaded.value;
+});
+
+// Computed para obtener el firmante anuladoPor (prop o cargado)
+const anuladoPorFirmante = computed(() => {
+  return props.anuladoPorFirmante || anuladoPorFirmanteLoaded.value;
+});
+
+// Watchers para cargar firmantes cuando cambien las props
+watch(() => props.finalizadoPor, () => {
+  if (!props.finalizadoPorFirmante) {
+    loadFinalizadoPorFirmante();
+  }
+}, { immediate: true });
+
+watch(() => props.anuladoPor, () => {
+  if (!props.anuladoPorFirmante) {
+    loadAnuladoPorFirmante();
+  }
+}, { immediate: true });
+
+// Cargar firmantes al montar si no se proporcionan
+onMounted(() => {
+  loadFinalizadoPorFirmante();
+  loadAnuladoPorFirmante();
 });
 
 const badgeConfig = computed(() => {
@@ -81,13 +206,27 @@ const metadata = computed(() => {
   if (props.fechaFinalizacion) {
     parts.push(`el ${formatDateDDMMYYYY(props.fechaFinalizacion)}`);
   }
-  if (props.finalizadoPor) {
+  
+  // Priorizar usar el firmante si está disponible
+  const nombreFirmante = formatFirmanteNombre(finalizadoPorFirmante.value);
+  if (nombreFirmante) {
+    if (parts.length > 0) {
+      return `Finalizado ${parts.join(' ')} por:\n${nombreFirmante}`;
+    } else {
+      return `Finalizado por:\n${nombreFirmante}`;
+    }
+  } else if (props.finalizadoPor) {
+    // Fallback al username si no hay firmante
     const nombreUsuario = typeof props.finalizadoPor === 'object' 
       ? props.finalizadoPor.username 
       : props.finalizadoPor;
     
     if (nombreUsuario) {
-      parts.push(`por ${nombreUsuario}`);
+      if (parts.length > 0) {
+        return `Finalizado ${parts.join(' ')} por:\n${nombreUsuario}`;
+      } else {
+        return `Finalizado por:\n${nombreUsuario}`;
+      }
     }
   }
   
@@ -105,13 +244,37 @@ const tooltipText = computed(() => {
     if (props.fechaAnulacion) {
       parts.push(`el ${formatDateDDMMYYYY(props.fechaAnulacion)}`);
     }
-    if (props.anuladoPor) {
+    
+    // Priorizar usar el firmante si está disponible
+    const nombreFirmante = formatFirmanteNombre(anuladoPorFirmante.value);
+    if (nombreFirmante) {
+      let tooltip = '';
+      if (parts.length > 0) {
+        tooltip = `Anulado ${parts.join(' ')} por:\n${nombreFirmante}`;
+      } else {
+        tooltip = `Anulado por:\n${nombreFirmante}`;
+      }
+      if (props.razonAnulacion) {
+        tooltip += `\nMotivo: ${props.razonAnulacion}`;
+      }
+      return tooltip;
+    } else if (props.anuladoPor) {
+      // Fallback al username si no hay firmante
       const nombreUsuario = typeof props.anuladoPor === 'object' 
         ? props.anuladoPor.username 
         : props.anuladoPor;
       
       if (nombreUsuario) {
-        parts.push(`por ${nombreUsuario}`);
+        let tooltip = '';
+        if (parts.length > 0) {
+          tooltip = `Anulado ${parts.join(' ')} por:\n${nombreUsuario}`;
+        } else {
+          tooltip = `Anulado por:\n${nombreUsuario}`;
+        }
+        if (props.razonAnulacion) {
+          tooltip += `\nMotivo: ${props.razonAnulacion}`;
+        }
+        return tooltip;
       }
     }
     
@@ -121,6 +284,9 @@ const tooltipText = computed(() => {
         tooltip += `\nMotivo: ${props.razonAnulacion}`;
       }
       return tooltip;
+    }
+    if (props.razonAnulacion) {
+      return `Anulado\nMotivo: ${props.razonAnulacion}`;
     }
     return 'Documento anulado';
   } else if (estado === 'BORRADOR') {
