@@ -95,8 +95,7 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
 
 <template>
   <div>
-    <h1 class="font-bold mb-4 text-gray-800 ">Mediciones de las funciones más básicas del cuerpo</h1>
-    <h2 class="mb-4">SIGNOS VITALES</h2>
+    <h2 class="text-2xl font-bold text-gray-900 mb-4 uppercase">Signos Vitales</h2>
 
     <h2>Tensión Arterial</h2>
     <div class="flex gap-4 mb-4">

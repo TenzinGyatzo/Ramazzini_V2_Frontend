@@ -17,6 +17,6 @@ export interface NOM024DocumentMetadata {
   fechaFinalizacion?: string;
   finalizadoPor?: string;
   codigoCIE10Principal?: string;
-  codigosCIE10Secundarios?: string[];
+  codigosCIE10Complementarios?: string[];
 }
 

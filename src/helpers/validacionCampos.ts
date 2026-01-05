@@ -55,8 +55,66 @@ function validarSeleccion(seleccion: any): boolean {
   return typeof seleccion === 'string' && seleccion.trim().length > 0;
 }
 
+// Función helper para extraer código CIE-10 del formato "CODE - DESCRIPTION"
+function extractCode(value: string): string {
+  if (!value) return '';
+  if (!value.includes(' - ')) return value;
+  return value.split(' - ')[0].trim();
+}
+
+// Función para determinar si requiere confirmación diagnóstica
+function requiereConfirmacionDiagnostica(codigoCIE10Principal: any): boolean {
+  if (!codigoCIE10Principal) return false;
+  const codigo = extractCode(codigoCIE10Principal).toUpperCase();
+  const esCronico = codigo.startsWith('E11') || codigo.startsWith('I1');
+  const esCancer = codigo.startsWith('C');
+  return esCronico || esCancer;
+}
+
+// Función para determinar si requiere causa externa
+function requiereCausaExterna(codigoCIE10Principal: any): boolean {
+  if (!codigoCIE10Principal) return false;
+  const codigo = extractCode(codigoCIE10Principal);
+  const primeraLetra = codigo.charAt(0).toUpperCase();
+  // Cap. XIX (S, T) o Cap. XX (V-Y)
+  return primeraLetra === 'S' || primeraLetra === 'T' || (primeraLetra >= 'V' && primeraLetra <= 'Y');
+}
+
+// Función para validar relación temporal
+function validarRelacionTemporal(valor: any): boolean {
+  // Debe ser 0 (Primera Vez) o 1 (Subsecuente)
+  return valor === 0 || valor === 1;
+}
+
+// Función para validar confirmación diagnóstica (condicional)
+function validarConfirmacionDiagnostica(valor: any, datosFormulario: any): boolean {
+  // Si no se requiere, no validar (siempre válido)
+  if (!requiereConfirmacionDiagnostica(datosFormulario.codigoCIE10Principal)) {
+    return true;
+  }
+  // Si se requiere, debe estar definido (true o false explícito)
+  return valor !== undefined && valor !== null;
+}
+
+// Función para validar causa externa (condicional)
+function validarCausaExterna(valor: any, datosFormulario: any): boolean {
+  // Si no se requiere, no validar (siempre válido)
+  if (!requiereCausaExterna(datosFormulario.codigoCIE10Principal)) {
+    return true;
+  }
+  // Si se requiere, debe estar presente
+  return validarSeleccion(valor);
+}
+
 // Definición de campos requeridos por tipo de documento
-const camposRequeridosPorTipo: Record<string, Array<{campo: string, nombre: string, tipo: string, paso?: number, validacion?: (valor: any) => boolean}>> = {
+const camposRequeridosPorTipo: Record<string, Array<{
+  campo: string, 
+  nombre: string, 
+  tipo: string, 
+  paso?: number, 
+  validacion?: (valor: any, datosFormulario?: any) => boolean,
+  condicional?: boolean
+}>> = {
   antidoping: [
     { campo: 'fechaAntidoping', nombre: 'Fecha de la prueba', tipo: 'fecha', paso: 1, validacion: validarFecha },
     { campo: 'marihuana', nombre: 'Resultados', tipo: 'seleccion', paso: 2, validacion: validarSeleccion }
@@ -125,7 +183,24 @@ const camposRequeridosPorTipo: Record<string, Array<{campo: string, nombre: stri
   notaMedica: [
     { campo: 'fechaNotaMedica', nombre: 'Fecha de la nota médica', tipo: 'fecha', paso: 1, validacion: validarFecha },
     { campo: 'motivoConsulta', nombre: 'Motivo de consulta', tipo: 'texto', paso: 2, validacion: validarTexto },
-    // Nota: diagnosticoTexto ya no es requerido porque ahora el diagnóstico se hace con CIE-10
+    { campo: 'codigoCIE10Principal', nombre: 'Diagnóstico principal', tipo: 'seleccion', paso: 6, validacion: validarSeleccion },
+    { campo: 'relacionTemporal', nombre: 'Relación temporal', tipo: 'seleccion', paso: 6, validacion: validarRelacionTemporal },
+    { 
+      campo: 'confirmacionDiagnostica', 
+      nombre: 'Confirmación diagnóstica', 
+      tipo: 'booleano', 
+      paso: 6, 
+      validacion: (valor: any, datosFormulario: any) => validarConfirmacionDiagnostica(valor, datosFormulario),
+      condicional: true
+    },
+    { 
+      campo: 'codigoCIECausaExterna', 
+      nombre: 'Causa externa', 
+      tipo: 'seleccion', 
+      paso: 6, 
+      validacion: (valor: any, datosFormulario: any) => validarCausaExterna(valor, datosFormulario),
+      condicional: true
+    },
   ],
 
   notaAclaratoria: [
@@ -169,10 +244,19 @@ export function validarCamposRequeridos(tipoDocumento: string, datosFormulario: 
   for (const campoRequerido of camposRequeridos) {
     const valor = datosFormulario[campoRequerido.campo];
     
-    // Usar la función de validación específica si está definida, sino usar validación general
-    const esValido = campoRequerido.validacion 
-      ? campoRequerido.validacion(valor)
-      : !esValorVacio(valor);
+    // Para validaciones condicionales, pasar datosFormulario completo
+    let esValido: boolean;
+    if (campoRequerido.validacion) {
+      if (campoRequerido.condicional) {
+        // Validaciones condicionales reciben (valor, datosFormulario)
+        esValido = campoRequerido.validacion(valor, datosFormulario);
+      } else {
+        // Validaciones normales reciben solo (valor)
+        esValido = campoRequerido.validacion(valor);
+      }
+    } else {
+      esValido = !esValorVacio(valor);
+    }
     
     if (!esValido) {
       camposFaltantes.push({

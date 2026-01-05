@@ -324,7 +324,7 @@ export interface HistoriaClinica {
     diagnosticoTexto?: string;
     // NOM-024 Fields
     codigoCIE10Principal?: string;
-    codigosCIE10Secundarios?: string[];
+    codigosCIE10Complementarios?: string[];
     idTrabajador: string;
     rutaPDF: string;
     createdBy: string;
@@ -353,7 +353,7 @@ export interface NotaMedica {
     observaciones?: string;
     // NOM-024 Fields
     codigoCIE10Principal?: string;
-    codigosCIE10Secundarios?: string[];
+    codigosCIE10Complementarios?: string[];
     idTrabajador: string;
     rutaPDF: string;
     createdBy: string;

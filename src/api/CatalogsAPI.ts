@@ -4,11 +4,16 @@ export default {
     /**
      * Search CIE-10 codes by query string
      * @param query Search term (code or description)
+     * @param limit Optional result limit (default 50, max 100)
+     * @param sexo Optional sex filter (1=Hombre, 2=Mujer) for pre-filtering results
+     * @param edad Optional age filter for pre-filtering results
      */
-    searchCIE10(query: string) {
-        return api.get(`/catalogs/cie10/search`, {
-            params: { q: query }
-        });
+    searchCIE10(query: string, limit?: number, sexo?: number, edad?: number) {
+        const params: any = { q: query };
+        if (limit !== undefined) params.limit = limit;
+        if (sexo !== undefined) params.sexo = sexo;
+        if (edad !== undefined) params.edad = edad;
+        return api.get(`/catalogs/cie10/search`, { params });
     },
 
     /**

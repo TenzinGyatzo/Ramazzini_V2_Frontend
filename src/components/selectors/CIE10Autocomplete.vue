@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import CatalogsAPI from '@/api/CatalogsAPI';
+import { useTrabajadoresStore } from '@/stores/trabajadores';
 
 interface Props {
   modelValue: string;
   required?: boolean;
   label?: string;
   placeholder?: string;
+  trabajadorId?: string; // Para obtener datos del paciente
+  fechaConsulta?: Date | string; // Para calcular edad
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -17,6 +20,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits(['update:modelValue']);
 
+const trabajadoresStore = useTrabajadoresStore();
+
 // Local state
 const searchTerm = ref('');
 const results = ref<any[]>([]);
@@ -25,6 +30,47 @@ const showDropdown = ref(false);
 const selectedIndex = ref(-1);
 const errorMessage = ref('');
 const containerRef = ref<HTMLElement | null>(null);
+
+// Computed: Mapear sexo a numérico (Masculino→1, Femenino→2)
+const sexoNumeric = computed(() => {
+  if (!props.trabajadorId || !trabajadoresStore.currentTrabajador) {
+    return undefined;
+  }
+  const sexo = trabajadoresStore.currentTrabajador.sexo;
+  if (sexo === 'Masculino' || sexo === 'masculino') return 1;
+  if (sexo === 'Femenino' || sexo === 'femenino') return 2;
+  return undefined;
+});
+
+// Computed: Calcular edad
+const edad = computed(() => {
+  if (!props.trabajadorId || !props.fechaConsulta || !trabajadoresStore.currentTrabajador?.fechaNacimiento) {
+    return undefined;
+  }
+  try {
+    const fechaNac = new Date(trabajadoresStore.currentTrabajador.fechaNacimiento);
+    const fechaConsulta = typeof props.fechaConsulta === 'string' 
+      ? new Date(props.fechaConsulta) 
+      : props.fechaConsulta;
+    
+    if (isNaN(fechaNac.getTime()) || isNaN(fechaConsulta.getTime())) {
+      return undefined;
+    }
+
+    let edadCalculada = fechaConsulta.getFullYear() - fechaNac.getFullYear();
+    const monthDiff = fechaConsulta.getMonth() - fechaNac.getMonth();
+    const dayDiff = fechaConsulta.getDate() - fechaNac.getDate();
+
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+      edadCalculada--;
+    }
+
+    return edadCalculada;
+  } catch (error) {
+    console.error('Error calculating age:', error);
+    return undefined;
+  }
+});
 
 // Debounce timer
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -41,7 +87,19 @@ const performSearch = async (query: string) => {
   errorMessage.value = '';
   
   try {
-    const { data } = await CatalogsAPI.searchCIE10(query);
+    // Obtener trabajador si trabajadorId está presente y no está cargado
+    if (props.trabajadorId && !trabajadoresStore.currentTrabajador) {
+      // Intentar cargar trabajador si es necesario
+      // Nota: Esto requiere que el componente padre pase el trabajadorId correctamente
+    }
+
+    // Enviar parámetros al backend con filtros si están disponibles
+    const { data } = await CatalogsAPI.searchCIE10(
+      query,
+      50,
+      sexoNumeric.value,
+      edad.value
+    );
     results.value = data || [];
     showDropdown.value = true;
     selectedIndex.value = -1;
@@ -69,8 +127,10 @@ const onInput = (e: Event) => {
 };
 
 const selectResult = (item: any) => {
-  searchTerm.value = `${item.code} - ${item.description}`;
-  emit('update:modelValue', item.code);
+  const fullText = `${item.code} - ${item.description}`;
+  searchTerm.value = fullText;
+  // Emitir formato completo: "CODE - DESCRIPTION" para guardar en BD
+  emit('update:modelValue', fullText);
   showDropdown.value = false;
   results.value = [];
 };
@@ -112,19 +172,25 @@ const handleClickOutside = (e: MouseEvent) => {
 onMounted(async () => {
   window.addEventListener('click', handleClickOutside);
   
-  // If modelValue is provided initially, try to fetch its label
+  // If modelValue is provided initially
   if (props.modelValue) {
-    try {
-      isLoading.value = true;
-      const { data } = await CatalogsAPI.getCIE10ByCode(props.modelValue);
-      if (data) {
-        searchTerm.value = `${data.code} - ${data.description}`;
-      }
-    } catch (error) {
-      console.error('Error fetching initial CIE-10:', error);
+    // If it's already in format "CODE - DESCRIPTION", use it directly
+    if (props.modelValue.includes(' - ')) {
       searchTerm.value = props.modelValue;
-    } finally {
-      isLoading.value = false;
+    } else {
+      // If it's just a code, fetch the full description
+      try {
+        isLoading.value = true;
+        const { data } = await CatalogsAPI.getCIE10ByCode(props.modelValue);
+        if (data) {
+          searchTerm.value = `${data.code} - ${data.description}`;
+        }
+      } catch (error) {
+        console.error('Error fetching initial CIE-10:', error);
+        searchTerm.value = props.modelValue;
+      } finally {
+        isLoading.value = false;
+      }
     }
   }
 });
@@ -133,18 +199,32 @@ onUnmounted(() => {
   window.removeEventListener('click', handleClickOutside);
 });
 
+// Helper function to extract code from "CODE - DESCRIPTION" format
+const extractCode = (value: string): string => {
+  if (!value) return '';
+  // If it's already just a code (no " - "), return as is
+  if (!value.includes(' - ')) return value;
+  // Extract code before " - "
+  return value.split(' - ')[0].trim();
+};
+
 // Watch modelValue for external changes
 watch(() => props.modelValue, async (newVal) => {
   if (!newVal) {
     searchTerm.value = '';
-  } else if (!searchTerm.value.startsWith(newVal)) {
-    // Only fetch if searchTerm doesn't match the code (meaning it was changed externally)
-    try {
-      const { data } = await CatalogsAPI.getCIE10ByCode(newVal);
-      if (data) {
-        searchTerm.value = `${data.code} - ${data.description}`;
-      }
-    } catch {}
+  } else {
+    // If modelValue is in format "CODE - DESCRIPTION", use it directly
+    if (newVal.includes(' - ')) {
+      searchTerm.value = newVal;
+    } else if (!searchTerm.value.startsWith(newVal)) {
+      // If it's just a code, fetch the full description
+      try {
+        const { data } = await CatalogsAPI.getCIE10ByCode(newVal);
+        if (data) {
+          searchTerm.value = `${data.code} - ${data.description}`;
+        }
+      } catch {}
+    }
   }
 });
 </script>
@@ -188,7 +268,7 @@ watch(() => props.modelValue, async (newVal) => {
     <!-- Dropdown results -->
     <div 
       v-if="showDropdown || errorMessage" 
-      class="absolute z-50 mt-1 w-full bg-white shadow-2xl max-h-60 rounded-xl py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm border border-emerald-50"
+      class="absolute z-50 mt-1 w-full min-w-full max-w-2xl bg-white shadow-2xl max-h-80 rounded-xl py-1 text-sm ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none border border-emerald-50"
       role="listbox"
     >
       <div v-if="errorMessage" class="px-4 py-2 text-rose-600 font-medium flex items-center gap-2">
@@ -203,20 +283,20 @@ watch(() => props.modelValue, async (newVal) => {
           @click="selectResult(item)"
           @mouseenter="selectedIndex = index"
           :class="[
-            'cursor-pointer select-none relative py-2 pl-3 pr-9 transition-colors',
+            'cursor-pointer select-none relative py-1.5 px-2.5 transition-colors',
             selectedIndex === index ? 'bg-emerald-50 text-emerald-900' : 'text-gray-900'
           ]"
           role="option"
           :aria-selected="selectedIndex === index"
         >
-          <div class="flex items-center">
-            <span class="font-bold text-emerald-600 w-12">{{ item.code }}</span>
-            <span class="ml-2 truncate">{{ item.description }}</span>
+          <div class="flex items-start">
+            <span class="font-bold text-emerald-600 w-12 flex-shrink-0 mt-0.5">{{ item.code }}</span>
+            <span class="leading-snug break-words">{{ item.description }}</span>
           </div>
           
           <span 
-            v-if="modelValue === item.code"
-            class="absolute inset-y-0 right-0 flex items-center pr-4 text-emerald-600"
+            v-if="modelValue && (modelValue === item.code || modelValue.startsWith(item.code + ' - '))"
+            class="absolute top-1.5 right-0 flex items-center pr-4 text-emerald-600"
           >
             <i class="fas fa-check"></i>
           </span>

@@ -6,35 +6,35 @@ import { useDocumentosStore } from '@/stores/documentos';
 const { formDataNotaMedica } = useFormDataStore();
 const documentos = useDocumentosStore();
 
-const recomendaciones = ref([]);
+const tratamiento = ref([]);
 
 onMounted(() => {
-  if (documentos.currentDocument && documentos.currentDocument.recomendaciones) {
-    recomendaciones.value = Array.isArray(documentos.currentDocument.recomendaciones)
-      ? documentos.currentDocument.recomendaciones
-      : [documentos.currentDocument.recomendaciones];
+  if (documentos.currentDocument && documentos.currentDocument.tratamiento) {
+    tratamiento.value = Array.isArray(documentos.currentDocument.tratamiento)
+      ? documentos.currentDocument.tratamiento
+      : [documentos.currentDocument.tratamiento];
   }
 
-  if (formDataNotaMedica.recomendaciones) {
-    recomendaciones.value = Array.isArray(formDataNotaMedica.recomendaciones)
-      ? formDataNotaMedica.recomendaciones
-      : [formDataNotaMedica.recomendaciones];
+  if (formDataNotaMedica.tratamiento) {
+    tratamiento.value = Array.isArray(formDataNotaMedica.tratamiento)
+      ? formDataNotaMedica.tratamiento
+      : [formDataNotaMedica.tratamiento];
   }
 });
 
 onUnmounted(() => {
-  if (!formDataNotaMedica.recomendaciones || recomendaciones.value.length === 0) {
-    formDataNotaMedica.recomendaciones = [];
+  if (!formDataNotaMedica.tratamiento || tratamiento.value.length === 0) {
+    formDataNotaMedica.tratamiento = [];
   }
 });
 
-watch(recomendaciones, (newValue) => {
-  formDataNotaMedica.recomendaciones = newValue;
+watch(tratamiento, (newValue) => {
+  formDataNotaMedica.tratamiento = newValue;
 }, { deep: true });
 
 // Funciones para agregar o eliminar entradas
-function addRecomendacion() {
-  recomendaciones.value.push('');
+function addTratamiento() {
+  tratamiento.value.push('');
   // Esperar a que el DOM se actualice y luego establecer el focus
   setTimeout(() => {
     const inputs = document.querySelectorAll('input');
@@ -43,25 +43,26 @@ function addRecomendacion() {
   }, 0);
 }
 
-function removeRecomendacion(index) {
-  recomendaciones.value.splice(index, 1);
+function removeTratamiento(index) {
+  tratamiento.value.splice(index, 1);
 }
 </script>
 
 <template>
   <div>
-    <h2 class="font-bold mb-4 text-gray-800 leading-5">Recomendaciones:</h2>
+    <h2 class="text-2xl font-bold text-gray-900 mb-4 uppercase">Tratamiento</h2>
+
     <div class="space-y-2">
-      <div v-for="(item, index) in recomendaciones" :key="index" class="flex gap-2 items-center">
+      <div v-for="(item, index) in tratamiento" :key="index" class="flex gap-2 items-center">
         <input
           class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="recomendaciones[index]"
-          :placeholder="`Recomendación #${index + 1}`"
+          v-model="tratamiento[index]"
+          :placeholder="`Tratamiento #${index + 1}`"
         />
         <button
           type="button"
           class="text-red-500 font-bold px-2"
-          @click="removeRecomendacion(index)"
+          @click="removeTratamiento(index)"
           title="Eliminar"
         >
           ✕
@@ -70,9 +71,9 @@ function removeRecomendacion(index) {
       <button
         type="button"
         class="mt-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm"
-        @click="addRecomendacion"
+        @click="addTratamiento"
       >
-        Agregar recomendación
+        Agregar tratamiento
       </button>
     </div>
   </div>

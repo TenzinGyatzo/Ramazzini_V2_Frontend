@@ -1,79 +1,111 @@
 <script setup>
-import { watch, ref, onMounted, onUnmounted } from 'vue';
+import { watch, ref, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
+import { useTrabajadoresStore } from '@/stores/trabajadores';
+import CIE10Autocomplete from '@/components/selectors/CIE10Autocomplete.vue';
 
 const { formDataNotaMedica } = useFormDataStore();
 const documentos = useDocumentosStore();
+const proveedorSaludStore = useProveedorSaludStore();
+const trabajadores = useTrabajadoresStore();
 
-const tratamiento = ref([]);
+const isMX = computed(() => proveedorSaludStore.isMX);
+
+// NOM-024 GIIS-B015: Campos para segundo diagnóstico y texto libre
+const primeraVezDiagnostico2 = ref(false);
+const codigoCIEDiagnostico2 = ref('');
+const diagnosticoTexto = ref('');
+
+// Computed: fechaNotaMedica para calcular edad
+const fechaNotaMedica = computed(() => {
+  // Intentar obtener desde formData o desde documento actual
+  const fecha = formDataNotaMedica.fechaNotaMedica || documentos.currentDocument?.fechaNotaMedica;
+  if (fecha) {
+    try {
+      return new Date(fecha);
+    } catch {
+      return new Date();
+    }
+  }
+  return new Date();
+});
 
 onMounted(() => {
-  if (documentos.currentDocument && documentos.currentDocument.tratamiento) {
-    tratamiento.value = Array.isArray(documentos.currentDocument.tratamiento)
-      ? documentos.currentDocument.tratamiento
-      : [documentos.currentDocument.tratamiento];
-  }
+    // Cargar desde documento existente
+    if (documentos.currentDocument) {
+        codigoCIEDiagnostico2.value = documentos.currentDocument.codigoCIEDiagnostico2 || '';
+        diagnosticoTexto.value = documentos.currentDocument.diagnosticoTexto || documentos.currentDocument.diagnostico || '';
+    }
 
-  if (formDataNotaMedica.tratamiento) {
-    tratamiento.value = Array.isArray(formDataNotaMedica.tratamiento)
-      ? formDataNotaMedica.tratamiento
-      : [formDataNotaMedica.tratamiento];
-  }
+    // Cargar desde formData (estado temporal)
+    if (formDataNotaMedica.codigoCIEDiagnostico2) {
+        codigoCIEDiagnostico2.value = formDataNotaMedica.codigoCIEDiagnostico2;
+    }
+    if (formDataNotaMedica.diagnosticoTexto) {
+        diagnosticoTexto.value = formDataNotaMedica.diagnosticoTexto;
+    }
+    
+    // Establecer primeraVezDiagnostico2 basado en si hay código
+    primeraVezDiagnostico2.value = !!codigoCIEDiagnostico2.value;
+    formDataNotaMedica.primeraVezDiagnostico2 = primeraVezDiagnostico2.value;
 });
 
 onUnmounted(() => {
-  if (!formDataNotaMedica.tratamiento || tratamiento.value.length === 0) {
-    formDataNotaMedica.tratamiento = [];
-  }
+    // Guardar en formData
+    formDataNotaMedica.primeraVezDiagnostico2 = primeraVezDiagnostico2.value;
+    formDataNotaMedica.codigoCIEDiagnostico2 = codigoCIEDiagnostico2.value || '';
+    formDataNotaMedica.diagnosticoTexto = diagnosticoTexto.value || '';
 });
 
-watch(tratamiento, (newValue) => {
-  formDataNotaMedica.tratamiento = newValue;
-}, { deep: true });
+// Sincronizar valores con formData
+watch(codigoCIEDiagnostico2, (newValue) => {
+    formDataNotaMedica.codigoCIEDiagnostico2 = newValue;
+    // Actualizar primeraVezDiagnostico2 según si hay código o no
+    primeraVezDiagnostico2.value = !!newValue;
+    formDataNotaMedica.primeraVezDiagnostico2 = primeraVezDiagnostico2.value;
+});
 
-// Funciones para agregar o eliminar entradas
-function addTratamiento() {
-  tratamiento.value.push('');
-  // Esperar a que el DOM se actualice y luego establecer el focus
-  setTimeout(() => {
-    const inputs = document.querySelectorAll('input');
-    const lastInput = inputs[inputs.length - 1];
-    lastInput.focus();
-  }, 0);
-}
-
-function removeTratamiento(index) {
-  tratamiento.value.splice(index, 1);
-}
+watch(diagnosticoTexto, (newValue) => {
+    formDataNotaMedica.diagnosticoTexto = newValue;
+});
 </script>
 
 <template>
-  <div>
-    <h2 class="font-bold mb-4 text-gray-800 leading-5">TX:</h2>
-    <div class="space-y-2">
-      <div v-for="(item, index) in tratamiento" :key="index" class="flex gap-2 items-center">
-        <input
-          class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="tratamiento[index]"
-          :placeholder="`Tratamiento #${index + 1}`"
-        />
-        <button
-          type="button"
-          class="text-red-500 font-bold px-2"
-          @click="removeTratamiento(index)"
-          title="Eliminar"
-        >
-          ✕
-        </button>
-      </div>
-      <button
-        type="button"
-        class="mt-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm"
-        @click="addTratamiento"
-      >
-        Agregar tratamiento
-      </button>
+    <div class="space-y-6">
+        <h2 class="text-2xl font-bold text-gray-900">DIAGNÓSTICO SECUNDARIO</h2>
+        
+        <!-- Segundo Diagnóstico (NOM-024 GIIS-B015) -->
+        <div class="space-y-4">
+            <div>
+                <CIE10Autocomplete
+                    v-model="codigoCIEDiagnostico2"
+                    label="Código CIE-10 Diagnóstico 2"
+                    :trabajadorId="trabajadores.currentTrabajadorId"
+                    :fechaConsulta="fechaNotaMedica"
+                    placeholder="Buscar segundo diagnóstico..."
+                />
+                <p class="mt-1 text-xs text-gray-600">
+                    Padecimiento distinto al diagnóstico principal que también está presente.
+                </p>
+            </div>
+        </div>
+
+        <!-- Diagnóstico en texto libre -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Texto Libre Complementario
+            </label>
+            <input
+                class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                v-model="diagnosticoTexto"
+                placeholder="Descripción del diagnóstico..."
+                data-skip-validation
+            />
+            <p class="mt-1 text-xs text-gray-500">
+                Puede complementar el diagnóstico codificado con texto libre adicional
+            </p>
+        </div>
     </div>
-  </div>
 </template>

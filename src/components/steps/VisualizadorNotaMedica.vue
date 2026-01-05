@@ -20,6 +20,33 @@ const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
 };
 
+// Helper functions para extraer código y descripción del formato "CODE - DESCRIPTION"
+const extractCode = (value) => {
+  if (!value) return '';
+  // Si ya es solo código (no tiene " - "), retornar tal cual
+  if (!value.includes(' - ')) return value;
+  // Extraer código antes de " - "
+  return value.split(' - ')[0].trim();
+};
+
+const extractDescription = (value) => {
+  if (!value) return '';
+  // Si no tiene " - ", retornar vacío (solo código)
+  if (!value.includes(' - ')) return '';
+  // Extraer descripción después de " - "
+  return value.split(' - ').slice(1).join(' - ').trim();
+};
+
+// Computed: Determinar si requiere confirmación diagnóstica (crónicos/cáncer <18)
+// Replica la lógica de Step6.vue
+const requiereConfirmacionDiagnostica = computed(() => {
+  if (!formData.formDataNotaMedica.codigoCIE10Principal) return false;
+  const codigo = extractCode(formData.formDataNotaMedica.codigoCIE10Principal).toUpperCase();
+  const esCronico = codigo.startsWith('E11') || codigo.startsWith('I1');
+  const esCancer = codigo.startsWith('C');
+  return esCronico || esCancer;
+});
+
 // console.log('Datos del store en VisualizadorNotaMedica:', formData.formDataNotaMedica);
 
 </script>
@@ -137,20 +164,81 @@ const goToStep = (stepNumber) => {
     </div>
     <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 5 }" @click="goToStep(5)">+ Signos Vitales</div>
 
-    <!-- Diagnóstico -->
-    <div v-if="formData.formDataNotaMedica.diagnostico" class="w-full mb-1 cursor-pointer" :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }" @click="goToStep(6)">
-      <p class="text-justify font-medium">
-        IDX: {{ formData.formDataNotaMedica.diagnostico.toUpperCase() }}
+    <!-- Diagnóstico Principal (Step 6) -->
+    <div 
+      v-if="formData.formDataNotaMedica.codigoCIE10Principal || formData.formDataNotaMedica.relacionTemporal !== undefined && formData.formDataNotaMedica.relacionTemporal !== null || (formData.formDataNotaMedica.codigosCIE10Complementarios && formData.formDataNotaMedica.codigosCIE10Complementarios.length > 0) || formData.formDataNotaMedica.confirmacionDiagnostica || formData.formDataNotaMedica.codigoCIECausaExterna || formData.formDataNotaMedica.causaExterna" 
+      class="w-full mb-1 cursor-pointer" 
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }" 
+      @click="goToStep(6)"
+    >
+    
+      <!-- CIE-10 Principal -->
+      <p v-if="formData.formDataNotaMedica.codigoCIE10Principal" class="text-justify font-medium mb-1">
+        Diagnóstico Principal: <span class="font-light">{{ extractDescription(formData.formDataNotaMedica.codigoCIE10Principal) || extractCode(formData.formDataNotaMedica.codigoCIE10Principal) }}</span>
+      </p>
+      
+      <!-- CIE-10 Secundarios -->
+      <p v-if="formData.formDataNotaMedica.codigosCIE10Complementarios && formData.formDataNotaMedica.codigosCIE10Complementarios.length > 0" class="font-medium mb-1">
+        Diagnosticos relacionados al diagnostico principal: 
+        <span class="font-light text-justify">
+          <template v-for="(codigo, index) in formData.formDataNotaMedica.codigosCIE10Complementarios" :key="index">
+            {{ extractDescription(codigo) || extractCode(codigo) }}<span v-if="index < formData.formDataNotaMedica.codigosCIE10Complementarios.length - 1">, </span>
+          </template>
+        </span>
+      </p>
+    
+      <!-- Relación Temporal -->
+      <p v-if="formData.formDataNotaMedica.relacionTemporal !== undefined && formData.formDataNotaMedica.relacionTemporal !== null" class="text-justify font-medium mb-1">
+        Relación Temporal: <span class="font-light">{{ formData.formDataNotaMedica.relacionTemporal === 0 ? 'Primera Vez' : 'Subsecuente' }}</span>
+      </p>
+
+      <!-- Confirmación Diagnóstica -->
+      <p v-if="requiereConfirmacionDiagnostica && formData.formDataNotaMedica.confirmacionDiagnostica !== undefined" class="text-justify font-medium mb-1">
+        Confirmación Diagnóstica: <span class="font-light">{{ formData.formDataNotaMedica.confirmacionDiagnostica ? 'Sí' : 'No' }}</span>
+      </p>
+
+      <!-- Causa Externa -->
+      <template v-if="formData.formDataNotaMedica.codigoCIECausaExterna || formData.formDataNotaMedica.causaExterna">
+        <p v-if="formData.formDataNotaMedica.codigoCIECausaExterna" class="text-justify font-medium mb-1">
+          Causa Externa: <span class="font-light">{{ extractDescription(formData.formDataNotaMedica.codigoCIECausaExterna) || extractCode(formData.formDataNotaMedica.codigoCIECausaExterna) }}</span>
+        </p>
+        <p v-if="formData.formDataNotaMedica.causaExterna" class="text-justify font-medium mb-1">
+          Descripción Causa Externa: <span class="font-light">{{ formData.formDataNotaMedica.causaExterna }}</span>
+        </p>
+      </template>
+    </div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 6 }" @click="goToStep(6)">+ Agregar Diagnóstico Principal</div>
+
+    <!-- Diagnóstico Secundario (Step 7) -->
+    <div 
+      v-if="formData.formDataNotaMedica.primeraVezDiagnostico2 && formData.formDataNotaMedica.codigoCIEDiagnostico2 || formData.formDataNotaMedica.diagnosticoTexto || formData.formDataNotaMedica.diagnostico" 
+      class="w-full mb-1 cursor-pointer" 
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 7 }" 
+      @click="goToStep(7)"
+    >
+      <!-- Segundo Diagnóstico -->
+      <p v-if="formData.formDataNotaMedica.primeraVezDiagnostico2 && formData.formDataNotaMedica.codigoCIEDiagnostico2" class="text-justify font-medium mb-1">
+        Diagnóstico 2 (Comorbilidad clínica): <span class="font-light">{{ extractDescription(formData.formDataNotaMedica.codigoCIEDiagnostico2) || extractCode(formData.formDataNotaMedica.codigoCIEDiagnostico2) }}</span>
+      </p>
+
+      <!-- Texto Libre Complementario -->
+      <p v-if="formData.formDataNotaMedica.diagnosticoTexto || formData.formDataNotaMedica.diagnostico" class="text-justify font-medium">
+        <template v-if="formData.formDataNotaMedica.diagnosticoTexto">
+          Descripción complementaria: <span class="font-light">{{ formData.formDataNotaMedica.diagnosticoTexto }}</span>
+        </template>
+        <template v-else-if="formData.formDataNotaMedica.diagnostico">
+          IDX: <span class="font-light">{{ formData.formDataNotaMedica.diagnostico.toUpperCase() }}</span>
+        </template>
       </p>
     </div>
-    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 6 }" @click="goToStep(6)">+ Agregar Diagnóstico</div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 7 }" @click="goToStep(7)">+ Agregar Diagnóstico Secundario</div>
 
     <!-- Tratamiento -->
     <div 
       v-if="formData.formDataNotaMedica.tratamiento && formData.formDataNotaMedica.tratamiento.length > 0"
       class="w-full mb-1 cursor-pointer"
-      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 7 }"
-      @click="goToStep(7)"
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 8 }"
+      @click="goToStep(8)"
     >
       <p class="text-justify font-medium">
         TX:
@@ -166,14 +254,14 @@ const goToStep = (stepNumber) => {
         </span>
       </p>
     </div>
-    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 7 }" @click="goToStep(7)">+ Agregar Tratamiento</div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 8 }" @click="goToStep(8)">+ Agregar Tratamiento</div>
 
     <!-- Recomendaciones -->
     <div 
       v-if="formData.formDataNotaMedica.recomendaciones && formData.formDataNotaMedica.recomendaciones.length > 0"
       class="w-full mb-1 cursor-pointer"
-      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 8 }"
-      @click="goToStep(8)"
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 9 }"
+      @click="goToStep(9)"
     >
       <p class="text-justify font-medium">
       Recomendaciones:
@@ -189,17 +277,17 @@ const goToStep = (stepNumber) => {
       </span>
       </p>
     </div>
-    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 8 }" @click="goToStep(8)">+ Agregar Recomendaciones</div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 9 }" @click="goToStep(9)">+ Agregar Recomendaciones</div>
 
     <!-- Observaciones -->
     <div v-if="formData.formDataNotaMedica.observaciones" 
       class="w-full mb-1 cursor-pointer" 
-      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md' : steps.currentStep === 9 }" @click="goToStep(9)">
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md' : steps.currentStep === 10 }" @click="goToStep(10)">
       <p class="text-justify font-medium">
         Observaciones: <span class="font-light">{{ formData.formDataNotaMedica.observaciones }}</span> 
       </p>
     </div>
-    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 9 }" @click="goToStep(9)">+ Agregar Observaciones</div>
+    <div v-else class="w-full cursor-pointer text-gray-500 italic" :class="{ 'outline outline-1 outline-offset-1 outline-yellow-500 rounded-md': steps.currentStep === 10 }" @click="goToStep(10)">+ Agregar Observaciones</div>
 
   </div>
 </template>
