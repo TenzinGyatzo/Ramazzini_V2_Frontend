@@ -293,6 +293,7 @@ import Step1ConstanciaAptitud from '../steps/constanciaAptitudSteps/Step1.vue';
 import ModalFaltanCampos from '../ModalFaltanCampos.vue';
 import ModalCamposFaltantes from '../ModalCamposFaltantes.vue';
 import { validarCamposRequeridos } from '@/helpers/validacionCampos';
+import { validateCIE10Duplicates, generateBlockingToastMessage, validateCIE10SexAge } from '@/helpers/cie10';
 
 export default {
   components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Audiometria, Step2Audiometria, Step3Audiometria, Step4Audiometria, Step5Audiometria, Step6Audiometria, Step7Audiometria, Step1Certificado, Step2Certificado, Step1CertificadoExpedito, Step2CertificadoExpedito, Step3CertificadoExpedito, Step4CertificadoExpedito, Step5CertificadoExpedito, Step6CertificadoExpedito, Step7CertificadoExpedito, Step8CertificadoExpedito, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step7ExamenVista, Step8ExamenVista, Step9ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica, Step1NotaMedica, Step2NotaMedica, Step3NotaMedica, Step4NotaMedica, Step5NotaMedica, Step6NotaMedica, Step7NotaMedica, Step8NotaMedica, Step9NotaMedica, Step10NotaMedica, Step1NotaAclaratoria, Step1ControlPrenatal, Step2ControlPrenatal, Step3ControlPrenatal, Step4ControlPrenatal, Step5ControlPrenatal, Step6ControlPrenatal, Step7ControlPrenatal, Step8ControlPrenatal, Step9ControlPrenatal, Step10ControlPrenatal, Step11ControlPrenatal, Step12ControlPrenatal, Step13ControlPrenatal, Step14ControlPrenatal, Step15ControlPrenatal, Step16ControlPrenatal, Step17ControlPrenatal, Step18ControlPrenatal, Step19ControlPrenatal, Step20ControlPrenatal, Step21ControlPrenatal, Step22ControlPrenatal, Step23ControlPrenatal, Step24ControlPrenatal, Step25ControlPrenatal, Step26ControlPrenatal, Step27ControlPrenatal, Step28ControlPrenatal, Step29ControlPrenatal, Step30ControlPrenatal, Step31ControlPrenatal, Step32ControlPrenatal, Step33ControlPrenatal, Step34ControlPrenatal, Step35ControlPrenatal, Step36ControlPrenatal, Step37ControlPrenatal, Step38ControlPrenatal, Step39ControlPrenatal, Step40ControlPrenatal, Step41ControlPrenatal, Step42ControlPrenatal, Step43ControlPrenatal, Step44ControlPrenatal, Step45ControlPrenatal, Step46ControlPrenatal, Step47ControlPrenatal, Step48ControlPrenatal, Step49ControlPrenatal, Step50ControlPrenatal, Step51ControlPrenatal, Step52ControlPrenatal, Step53ControlPrenatal, Step54ControlPrenatal, Step55ControlPrenatal, Step56ControlPrenatal, Step57ControlPrenatal, Step58ControlPrenatal, Step59ControlPrenatal, Step60ControlPrenatal, Step61ControlPrenatal, Step62ControlPrenatal, Step63ControlPrenatal, Step64ControlPrenatal, Step65ControlPrenatal, Step66ControlPrenatal, Step67ControlPrenatal, Step68ControlPrenatal, Step69ControlPrenatal, Step70ControlPrenatal, Step71ControlPrenatal, Step72ControlPrenatal, Step73ControlPrenatal, Step74ControlPrenatal, Step75ControlPrenatal, Step76ControlPrenatal, Step77ControlPrenatal, Step78ControlPrenatal, Step79ControlPrenatal, Step80ControlPrenatal, Step81ControlPrenatal, Step82ControlPrenatal, Step83ControlPrenatal, Step84ControlPrenatal, Step85ControlPrenatal, Step86ControlPrenatal, Step87ControlPrenatal, Step88ControlPrenatal, Step89ControlPrenatal, Step1HistoriaOtologica, Step2HistoriaOtologica, Step3HistoriaOtologica, Step4HistoriaOtologica, Step5HistoriaOtologica, Step6HistoriaOtologica, Step7HistoriaOtologica, Step8HistoriaOtologica, Step9HistoriaOtologica, Step10HistoriaOtologica, Step11HistoriaOtologica, Step12HistoriaOtologica, Step13HistoriaOtologica, Step14HistoriaOtologica, Step15HistoriaOtologica, Step16HistoriaOtologica, Step17HistoriaOtologica, Step18HistoriaOtologica, Step19HistoriaOtologica, Step20HistoriaOtologica, Step21HistoriaOtologica, Step22HistoriaOtologica, Step23HistoriaOtologica, Step24HistoriaOtologica, Step25HistoriaOtologica, Step1PrevioEspirometria, Step2PrevioEspirometria, Step3PrevioEspirometria, Step4PrevioEspirometria, Step5PrevioEspirometria, Step6PrevioEspirometria, Step7PrevioEspirometria, Step8PrevioEspirometria, Step9PrevioEspirometria, Step10PrevioEspirometria, Step11PrevioEspirometria, Step12PrevioEspirometria, Step13PrevioEspirometria, Step14PrevioEspirometria, Step15PrevioEspirometria, Step16PrevioEspirometria, Step17PrevioEspirometria, Step18PrevioEspirometria, Step19PrevioEspirometria, Step20PrevioEspirometria, Step21PrevioEspirometria, Step22PrevioEspirometria, Step23PrevioEspirometria, Step24PrevioEspirometria, Step25PrevioEspirometria, Step26PrevioEspirometria, Step27PrevioEspirometria, Step28PrevioEspirometria, Step1Receta, Step2Receta, Step3Receta, Step4Receta, Step1ConstanciaAptitud, ModalFaltanCampos, ModalCamposFaltantes },
@@ -918,6 +919,58 @@ export default {
         return; // Salir si el tipo de documento no es válido
       }
 
+      // VALIDACIÓN CIE-10: Verificar restricciones de sexo/edad para notaMedica (ANTES de otras validaciones)
+      if (documentos.currentTypeOfDocument === 'notaMedica') {
+        const trabajador = trabajadores.currentTrabajador;
+        if (trabajador && trabajador.sexo && trabajador.fechaNacimiento) {
+          const fechaNotaMedica = formData.formDataNotaMedica.fechaNotaMedica 
+            ? new Date(formData.formDataNotaMedica.fechaNotaMedica)
+            : new Date();
+
+          try {
+            const sexAgeIssues = await validateCIE10SexAge({
+              codigoCIE10Principal: formData.formDataNotaMedica.codigoCIE10Principal,
+              codigosCIE10Complementarios: formData.formDataNotaMedica.codigosCIE10Complementarios,
+              codigoCIEDiagnostico2: formData.formDataNotaMedica.codigoCIEDiagnostico2,
+              trabajadorSexo: trabajador.sexo,
+              trabajadorFechaNacimiento: new Date(trabajador.fechaNacimiento),
+              fechaNotaMedica: fechaNotaMedica
+            });
+
+            if (sexAgeIssues.length > 0) {
+              // Mostrar toast con el primer issue encontrado
+              toast.open({ 
+                message: sexAgeIssues[0].messageToast, 
+                type: 'error' 
+              });
+              return; // NO continuar con el envío
+            }
+          } catch (error) {
+            console.error('Error validando restricciones de sexo/edad CIE-10:', error);
+            // En caso de error, continuar (no bloquear por error de red)
+          }
+        }
+      }
+
+      // VALIDACIÓN CIE-10: Verificar duplicidades para notaMedica
+      if (documentos.currentTypeOfDocument === 'notaMedica') {
+        const cie10Validation = validateCIE10Duplicates({
+          codigoCIE10Principal: formData.formDataNotaMedica.codigoCIE10Principal,
+          codigosCIE10Complementarios: formData.formDataNotaMedica.codigosCIE10Complementarios,
+          codigoCIEDiagnostico2: formData.formDataNotaMedica.codigoCIEDiagnostico2
+        });
+        
+        if (!cie10Validation.ok && cie10Validation.issues.length > 0) {
+          // Mostrar toast con el primer issue encontrado
+          const message = generateBlockingToastMessage(cie10Validation.issues[0]);
+          toast.open({ 
+            message: message, 
+            type: 'error' 
+          });
+          return; // No continuar con el envío
+        }
+      }
+
       // VALIDACIÓN PREVIA: Verificar campos requeridos antes de enviar al backend
       const validacion = validarCamposRequeridos(documentos.currentTypeOfDocument, datosLimpios);
       
@@ -1041,18 +1094,51 @@ export default {
         // Mejorar mensajes de error específicos
         let mensajeError = 'Hubo un error, por favor intente nuevamente.';
         
+        // Verificar si es un error de axios
         if (error.response) {
-          console.error('Detalles del error (respuesta del backend):', error.response.data);
+          // Log completo del error para debugging (usando JSON.stringify para ver objetos completos)
+          console.error('=== Detalles del error (respuesta del backend) ===');
+          console.error('Status:', error.response.status);
+          console.error('Status Text:', error.response.statusText);
+          console.error('Data completo:', JSON.stringify(error.response.data, null, 2));
+          if (error.response.data?.message) {
+            console.error('Message:', error.response.data.message);
+          }
+          if (error.response.data?.code) {
+            console.error('Code:', error.response.data.code);
+          }
+          if (error.response.data?.ruleId) {
+            console.error('Rule ID:', error.response.data.ruleId);
+          }
+          if (error.response.data?.details) {
+            console.error('Details:', JSON.stringify(error.response.data.details, null, 2));
+          }
+          console.error('================================================');
           
-          // Mensajes específicos según el tipo de error
-          if (error.response.status === 400) {
-            mensajeError = 'Los datos enviados no son válidos. Verifique que todos los campos estén completos correctamente.';
-          } else if (error.response.status === 404) {
-            mensajeError = 'No se encontró el recurso solicitado. Verifique que el trabajador y empresa existan.';
-          } else if (error.response.status === 500) {
-            mensajeError = 'Error interno del servidor. Por favor, contacte al administrador si el problema persiste.';
-          } else if (error.response.data && error.response.data.message) {
+          // Priorizar mensaje del response si existe
+          if (error.response.data && error.response.data.message) {
             mensajeError = error.response.data.message;
+            
+            // Si hay detalles, agregarlos al mensaje para mejor información
+            if (error.response.data.details && Array.isArray(error.response.data.details) && error.response.data.details.length > 0) {
+              const detallesTexto = error.response.data.details.map((detail) => {
+                const campo = detail.field || 'campo desconocido';
+                const cie10 = detail.cie10 || 'N/A';
+                const razon = detail.reason || 'razón desconocida';
+                return `${campo}: ${cie10} - ${razon}`;
+              }).join('; ');
+              
+              mensajeError += ` (${detallesTexto})`;
+            }
+          } else {
+            // Mensajes específicos según el tipo de error si no hay mensaje personalizado
+            if (error.response.status === 400) {
+              mensajeError = 'Los datos enviados no son válidos. Verifique que todos los campos estén completos correctamente.';
+            } else if (error.response.status === 404) {
+              mensajeError = 'No se encontró el recurso solicitado. Verifique que el trabajador y empresa existan.';
+            } else if (error.response.status === 500) {
+              mensajeError = 'Error interno del servidor. Por favor, contacte al administrador si el problema persiste.';
+            }
           }
         } else if (error.code === 'NETWORK_ERROR') {
           mensajeError = 'Error de conexión. Verifique su conexión a internet e intente nuevamente.';

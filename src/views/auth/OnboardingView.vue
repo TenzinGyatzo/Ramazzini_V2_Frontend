@@ -407,6 +407,7 @@ onMounted(() => {
           v-model="formDataProveedorSalud.nombre"
         />
         <CountrySelect
+          class="mb-4"
           label="¿En qué país te encuentras?"
           placeholder="Selecciona tu país"
           v-model="formDataProveedorSalud.pais"
@@ -422,28 +423,6 @@ onMounted(() => {
           :validation-messages="{ required: 'Este campo es obligatorio' }"
           v-model="formDataProveedorSalud.perfilProveedorSalud"
         />
-
-        <!-- Campo CLUES (NOM-024) -->
-        <FormKit
-          type="text"
-          name="clues"
-          placeholder="Ej. DFSSA012345"
-          v-model="formDataProveedorSalud.clues"
-        >
-          <template #label>
-            <span class="text-base text-gray-700">
-              CLUES (Clave Única de Establecimientos de Salud)
-              <span v-if="isMX" class="text-red-500">*</span>
-            </span>
-          </template>
-          <template #help>
-            <span class="text-xs text-gray-600">
-              <i class="fas fa-info-circle mr-1"></i>
-              Código de 11 caracteres (ej. DFSSA012345)
-              <span v-if="isMX" class="text-amber-700 font-medium"> - Obligatorio para proveedores en México (NOM-024)</span>
-            </span>
-          </template>
-        </FormKit>
         
         <FormKit
           type="hidden"

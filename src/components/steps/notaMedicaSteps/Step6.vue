@@ -6,6 +6,7 @@ import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import CIE10Autocomplete from '@/components/selectors/CIE10Autocomplete.vue';
 import CIE10ComplementaryDiagnoses from '@/components/selectors/CIE10ComplementaryDiagnoses.vue';
+import { validateCIE10Duplicates, validateCIE10SexAge, extractCIE10Code } from '@/helpers/cie10';
 
 const { formDataNotaMedica } = useFormDataStore();
 const documentos = useDocumentosStore();
@@ -263,6 +264,87 @@ const getRelacionTemporalTooltipPosition = () => {
 // Cerrar tooltip de relación temporal al hacer click fuera o presionar Escape
 let relacionTemporalClickOutsideHandler = null;
 let relacionTemporalEscapeKeyHandler = null;
+
+// Validación de duplicidades CIE-10
+const cie10Validation = computed(() => {
+  return validateCIE10Duplicates({
+    codigoCIE10Principal: codigoCIE10Principal.value,
+    codigosCIE10Complementarios: codigosCIE10Complementarios.value,
+    codigoCIEDiagnostico2: null // En Step6 no validamos diagnóstico 2
+  });
+});
+
+// Mensajes de error específicos para mostrar en Step6
+const principalInComplementariesError = computed(() => {
+  return cie10Validation.value.issues.find(
+    issue => issue.type === 'principal_in_complementaries'
+  )?.message || null;
+});
+
+const complementariesDuplicateError = computed(() => {
+  return cie10Validation.value.issues.find(
+    issue => issue.type === 'complementaries_duplicate'
+  )?.message || null;
+});
+
+// Validación de sexo/edad
+const principalSexAgeError = ref('');
+const complementariesSexAgeErrors = ref([]);
+
+// Función para validar y actualizar mensajes de sexo/edad
+const validateSexAge = async () => {
+  // Resetear errores
+  principalSexAgeError.value = '';
+  complementariesSexAgeErrors.value = [];
+
+  // Validar solo si hay trabajador disponible
+  const trabajador = trabajadores.currentTrabajador;
+  if (!trabajador || !trabajador.sexo || !trabajador.fechaNacimiento) {
+    return;
+  }
+
+  try {
+    const issues = await validateCIE10SexAge({
+      codigoCIE10Principal: codigoCIE10Principal.value,
+      codigosCIE10Complementarios: codigosCIE10Complementarios.value,
+      codigoCIEDiagnostico2: null, // En Step6 no validamos diagnóstico 2
+      trabajadorSexo: trabajador.sexo,
+      trabajadorFechaNacimiento: new Date(trabajador.fechaNacimiento),
+      fechaNotaMedica: fechaNotaMedica.value
+    });
+
+    // Procesar issues para diagnóstico principal
+    const principalIssue = issues.find(
+      issue => issue.field === 'codigoCIE10Principal'
+    );
+    if (principalIssue) {
+      principalSexAgeError.value = principalIssue.messageInline;
+    }
+
+    // Procesar issues para complementarios
+    const complementariesIssues = issues.filter(
+      issue => issue.field === 'codigosCIE10Complementarios'
+    );
+    if (complementariesIssues.length > 0) {
+      complementariesSexAgeErrors.value = complementariesIssues.map(issue => issue.messageInline);
+    }
+  } catch (error) {
+    console.error('Error validando sexo/edad CIE-10:', error);
+    // En caso de error, no mostrar nada (UX neutra)
+  }
+};
+
+// Watchers para recalcular validación cuando cambien los valores
+watch([codigoCIE10Principal, fechaNotaMedica], validateSexAge);
+watch([codigosCIE10Complementarios, fechaNotaMedica], validateSexAge, { deep: true });
+watch(
+  () => trabajadores.currentTrabajador?.sexo,
+  validateSexAge
+);
+watch(
+  () => trabajadores.currentTrabajador?.fechaNacimiento,
+  validateSexAge
+);
 </script>
 
 <template>
@@ -280,10 +362,19 @@ let relacionTemporalEscapeKeyHandler = null;
                     :fechaConsulta="fechaNotaMedica"
                     placeholder="Buscar código diagnóstico principal..."
                 />
-                <p v-if="isMX" class="mt-1 text-xs text-amber-600 flex items-center gap-1">
+                <!-- Mensaje de error por sexo/edad para diagnóstico principal -->
+                <Transition name="fade">
+                    <div v-if="principalSexAgeError" class="mt-2">
+                        <div class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
+                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
+                            <span class="flex-1 font-medium">{{ principalSexAgeError }}</span>
+                        </div>
+                    </div>
+                </Transition>
+                <!-- <p v-if="isMX" class="mt-1 text-xs text-amber-600 flex items-center gap-1">
                     <i class="fas fa-info-circle"></i>
                     Campo obligatorio para proveedores en México (NOM-024)
-                </p>
+                </p> -->
             </div>
         </div>
 
@@ -303,6 +394,34 @@ let relacionTemporalEscapeKeyHandler = null;
                     <p class="text-xs text-gray-500">
                         Condiciones asociadas al diagnóstico principal que ayudan a describir mejor el cuadro clínico.
                     </p>
+                </div>
+
+                <!-- Avisos de duplicidad -->
+                <div v-if="principalInComplementariesError || complementariesDuplicateError" class="mt-3 space-y-2">
+                    <Transition name="fade">
+                        <div v-if="principalInComplementariesError" class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
+                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
+                            <span class="flex-1 font-medium">{{ principalInComplementariesError }}</span>
+                        </div>
+                    </Transition>
+                    <Transition name="fade">
+                        <div v-if="complementariesDuplicateError" class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
+                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
+                            <span class="flex-1 font-medium">{{ complementariesDuplicateError }}</span>
+                        </div>
+                    </Transition>
+                </div>
+
+                <!-- Mensajes de error por sexo/edad para complementarios -->
+                <div v-if="complementariesSexAgeErrors.length > 0" class="mt-2 space-y-2">
+                    <TransitionGroup name="fade">
+                        <div v-for="(error, index) in complementariesSexAgeErrors" 
+                             :key="index"
+                             class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
+                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
+                            <span class="flex-1 font-medium">{{ error }}</span>
+                        </div>
+                    </TransitionGroup>
                 </div>
 
             </div>
@@ -431,10 +550,10 @@ let relacionTemporalEscapeKeyHandler = null;
                 </label>
             </div>
             
-            <p v-if="isMX" class="mt-1 text-xs text-amber-600 flex items-center gap-1">
+            <!-- <p v-if="isMX" class="mt-1 text-xs text-amber-600 flex items-center gap-1">
                 <i class="fas fa-info-circle"></i>
                 Campo obligatorio para proveedores en México (NOM-024)
-            </p>
+            </p> -->
         </div>
 
         <!-- Confirmación Diagnóstica (NOM-024 GIIS-B015) -->

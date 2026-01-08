@@ -162,11 +162,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="space-y-4 border border-emerald-100 rounded-2xl p-3 bg-emerald-50/30">
-    <div class="flex items-center justify-between">
+  <div class="space-y-2.5 border border-emerald-100 rounded-xl p-2.5 bg-emerald-50/30">
+    <div class="flex items-center justify-between gap-3">
       <div class="flex items-center gap-2">
-        <i class="fas fa-list-ol text-emerald-900"></i>
-        <h3 class="text-sm font-bold text-emerald-900 uppercase tracking-wider inline-flex items-center flex-shrink-0">
+        <i class="fas fa-list-ol text-emerald-900 text-sm"></i>
+        <h3 class="text-xs font-bold text-emerald-900 uppercase tracking-wider inline-flex items-center flex-shrink-0">
           <span class="mx-1">Diagnósticos <br>Complementarios</span>
           <button
             ref="iconRef"
@@ -180,7 +180,7 @@ onUnmounted(() => {
             aria-label="Más información sobre diagnósticos complementarios"
             :aria-expanded="showComplementaryTooltip"
           >
-            <i class="fas fa-info-circle text-sm"></i>
+            <i class="fas fa-info-circle text-xs"></i>
           </button>
         </h3>
       </div>
@@ -189,9 +189,9 @@ onUnmounted(() => {
         v-if="canAdd"
         type="button"
         @click="addDiagnosis"
-        class="inline-flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition-all shadow-sm active:scale-95"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-all shadow-sm active:scale-95"
       >
-        <i class="fas fa-plus-circle"></i>
+        <i class="fas fa-plus-circle text-xs"></i>
         Agregar
       </button>
     </div>
@@ -248,23 +248,23 @@ onUnmounted(() => {
 
     <!-- Warning Message -->
     <Transition name="fade">
-      <div v-if="warningMessage" class="p-3 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
-        <i class="fas fa-exclamation-triangle mt-0.5"></i>
+      <div v-if="warningMessage" class="p-2.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs rounded-lg flex items-start gap-2 shadow-sm">
+        <i class="fas fa-exclamation-triangle mt-0.5 text-xs"></i>
         <span class="flex-1 font-medium">{{ warningMessage }}</span>
         <button @click="warningMessage = ''" class="hover:text-amber-900">
-          <i class="fas fa-times"></i>
+          <i class="fas fa-times text-xs"></i>
         </button>
       </div>
     </Transition>
 
     <!-- List of Diagnoses -->
-    <div v-if="modelValue.length > 0" class="space-y-3">
+    <div v-if="modelValue.length > 0" class="space-y-2">
       <div 
         v-for="(code, index) in modelValue" 
         :key="index"
-        class="flex items-end gap-2 p-3 bg-white border border-gray-100 rounded-xl shadow-sm group hover:border-emerald-200 transition-colors"
+        class="flex items-center gap-3 py-2 px-3 bg-white border border-gray-100 rounded-lg shadow-sm group hover:border-emerald-200 transition-colors"
       >
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
           <CIE10Autocomplete
             :modelValue="code"
             @update:modelValue="(val) => updateDiagnosis(index, val)"
@@ -278,20 +278,20 @@ onUnmounted(() => {
         <button 
           type="button"
           @click="removeDiagnosis(index)"
-          class="mb-0.5 p-2.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+          class="flex-shrink-0 p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
           title="Quitar diagnóstico"
         >
-          <i class="fas fa-trash-alt text-lg"></i>
+          <i class="fas fa-trash-alt text-sm"></i>
         </button>
       </div>
     </div>
 
     <!-- Empty State -->
-    <div v-else class="py-8 text-center border-2 border-dashed border-emerald-100 rounded-xl">
-      <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-3">
-        <i class="fas fa-notes-medical text-emerald-300 text-xl"></i>
+    <div v-else class="py-5 text-center border-2 border-dashed border-emerald-100 rounded-lg">
+      <div class="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-2">
+        <i class="fas fa-notes-medical text-emerald-300 text-lg"></i>
       </div>
-      <p class="text-sm text-emerald-600 font-medium">Sin diagnósticos complementarios</p>
+      <p class="text-xs text-emerald-600 font-medium">Sin diagnósticos complementarios</p>
       <p class="text-xs text-gray-400 mt-1">Puedes agregar hasta 5 códigos adicionales</p>
     </div>
   </div>
