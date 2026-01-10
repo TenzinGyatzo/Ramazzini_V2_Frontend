@@ -7,6 +7,29 @@ interface AddOn {
     cantidad: number;
 }
 
+/**
+ * Regulatory Policy Interface
+ * Define las features habilitadas según el régimen regulatorio
+ */
+export interface RegulatoryPolicy {
+    regime: 'SIRES_NOM024' | 'SIN_REGIMEN';
+    features: {
+        sessionTimeoutEnabled: boolean;
+        enforceDocumentImmutabilityUI: boolean;
+        documentImmutabilityEnabled: boolean;
+        showSiresUI: boolean;
+        giisExportEnabled: boolean;
+        notaAclaratoriaEnabled: boolean;
+        cluesFieldVisible: boolean; // CLUES visible solo en SIRES
+    };
+    validation: {
+        curpFirmantes: 'required' | 'optional';
+        workerCurp: 'required_strict' | 'optional'; // CURP trabajadores
+        cie10Principal: 'required' | 'optional'; // CIE-10 principal
+        geoFields: 'required' | 'optional'; // Campos geográficos
+    };
+}
+
 interface ProveedorSalud {
     _id: string;
     nombre: string;
@@ -36,6 +59,8 @@ interface ProveedorSalud {
     finDeSuscripcion: Date;
     colorInforme?: string;
     semaforizacionActivada?: boolean;
+    regimenRegulatorio?: 'SIRES_NOM024' | 'SIN_REGIMEN';
+    regulatoryPolicy?: RegulatoryPolicy;
 }
 
 // Define el store
@@ -228,12 +253,73 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         }
     }
 
+    async function changeRegimenRegulatorio(regimen: string, reason: string) {
+        if (!proveedorSalud.value?._id) {
+            throw new Error('Proveedor no cargado');
+        }
+        try {
+            loading.value = true;
+            const { data } = await ProveedorSaludAPI.changeRegimenRegulatorio(
+                proveedorSalud.value._id,
+                regimen,
+                reason
+            );
+            // Actualizar proveedorSalud con los datos devueltos (incluye regulatoryPolicy)
+            proveedorSalud.value = data.data;
+            localStorage.setItem('proveedorSalud', JSON.stringify(proveedorSalud.value));
+            return data;
+        } catch (error) {
+            console.error('Error al cambiar régimen regulatorio:', error);
+            throw error;
+        } finally {
+            loading.value = false;
+        }
+    }
+
     const isMX = computed(() => proveedorSalud.value?.pais === 'MX');
+
+    // Regulatory Policy Computed Properties
+    const regimenRegulatorio = computed(() => proveedorSalud.value?.regimenRegulatorio);
+    const regulatoryPolicy = computed(() => proveedorSalud.value?.regulatoryPolicy);
+    
+    // Helpers basados en policy - Features
+    const isSIRES = computed(() => regulatoryPolicy.value?.regime === 'SIRES_NOM024');
+    const isSinRegimen = computed(() => regulatoryPolicy.value?.regime === 'SIN_REGIMEN');
+    const sessionTimeoutEnabled = computed(() => regulatoryPolicy.value?.features.sessionTimeoutEnabled ?? false);
+    const showSiresUI = computed(() => regulatoryPolicy.value?.features.showSiresUI ?? false);
+    const notaAclaratoriaEnabled = computed(() => regulatoryPolicy.value?.features.notaAclaratoriaEnabled ?? false);
+    const documentImmutabilityEnabled = computed(() => regulatoryPolicy.value?.features.documentImmutabilityEnabled ?? false);
+    const giisExportEnabled = computed(() => regulatoryPolicy.value?.features.giisExportEnabled ?? false);
+    const cluesFieldVisible = computed(() => regulatoryPolicy.value?.features.cluesFieldVisible ?? false);
+    
+    // Helpers basados en policy - Validations
+    const curpFirmantesRequired = computed(() => regulatoryPolicy.value?.validation.curpFirmantes === 'required');
+    const workerCurpRequired = computed(() => regulatoryPolicy.value?.validation.workerCurp === 'required_strict');
+    const cie10PrincipalRequired = computed(() => regulatoryPolicy.value?.validation.cie10Principal === 'required');
+    const geoFieldsRequired = computed(() => regulatoryPolicy.value?.validation.geoFields === 'required');
 
     return {
         proveedorSalud,
         loading,
         isMX,
+        // Regulatory Policy
+        regimenRegulatorio,
+        regulatoryPolicy,
+        isSIRES,
+        isSinRegimen,
+        // Features
+        sessionTimeoutEnabled,
+        showSiresUI,
+        notaAclaratoriaEnabled,
+        documentImmutabilityEnabled,
+        giisExportEnabled,
+        cluesFieldVisible,
+        // Validations
+        curpFirmantesRequired,
+        workerCurpRequired,
+        cie10PrincipalRequired,
+        geoFieldsRequired,
+        // Methods
         loadProveedorSalud,
         getProveedorById,
         createProveedor,
@@ -247,6 +333,7 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         getNotasMedicasDelMesById,
         getCantidadHistoriasClinicasById,
         getCantidadNotasMedicasById,
-        getAllProveedores
+        getAllProveedores,
+        changeRegimenRegulatorio
     };
 });

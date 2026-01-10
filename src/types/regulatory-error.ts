@@ -1,0 +1,51 @@
+/**
+ * Tipos para errores regulatorios
+ */
+
+/**
+ * Códigos de error regulatorios
+ */
+export enum RegulatoryErrorCode {
+  REGIMEN_FEATURE_DISABLED = 'REGIMEN_FEATURE_DISABLED',
+  REGIMEN_DOCUMENT_IMMUTABLE = 'REGIMEN_DOCUMENT_IMMUTABLE',
+  REGIMEN_FIELD_REQUIRED = 'REGIMEN_FIELD_REQUIRED',
+}
+
+/**
+ * Detalles opcionales de errores regulatorios
+ */
+export interface RegulatoryErrorDetails {
+  /**
+   * Nombre de la feature que está deshabilitada
+   * Ejemplos: 'giisExport', 'notaAclaratoria'
+   */
+  feature?: string;
+
+  /**
+   * Estado del documento cuando es inmutable
+   * Ejemplos: 'FINALIZADO', 'ANULADO'
+   */
+  documentState?: string;
+
+  /**
+   * Nombre del campo que es requerido
+   * Ejemplos: 'curp', 'cie10Principal', 'entidadNacimiento'
+   */
+  fieldName?: string;
+
+  /**
+   * Tipo de documento afectado (opcional)
+   * Ejemplos: 'notaMedica', 'historiaClinica', 'lesion'
+   */
+  documentType?: string;
+}
+
+/**
+ * Respuesta de error regulatorio del backend
+ */
+export interface RegulatoryErrorResponse {
+  statusCode: number;
+  message: string;
+  errorCode: RegulatoryErrorCode;
+  details?: RegulatoryErrorDetails;
+}

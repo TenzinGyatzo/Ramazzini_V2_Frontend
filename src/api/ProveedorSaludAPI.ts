@@ -47,5 +47,12 @@ export default {
 
     getAllProveedores() {
         return proveedor.get("/obtener-proveedores-salud");
+    },
+
+    changeRegimenRegulatorio(proveedorId: string, regimen: string, reason: string) {
+        return proveedor.patch(`/${proveedorId}/regimen-regulatorio`, {
+            regimenRegulatorio: regimen,
+            reason: reason
+        });
     }
 }

@@ -7,13 +7,14 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import CIE10Autocomplete from '@/components/selectors/CIE10Autocomplete.vue';
 import CIE10ComplementaryDiagnoses from '@/components/selectors/CIE10ComplementaryDiagnoses.vue';
 import { validateCIE10Duplicates, validateCIE10SexAge, extractCIE10Code } from '@/helpers/cie10';
+import { useNom024Fields } from '@/composables/useNom024Fields';
 
 const { formDataNotaMedica } = useFormDataStore();
 const documentos = useDocumentosStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const trabajadores = useTrabajadoresStore();
 
-const isMX = computed(() => proveedorSaludStore.isMX);
+const { cie10Required } = useNom024Fields();
 
 const codigoCIE10Principal = ref('');
 const codigosCIE10Complementarios = ref([]);
@@ -356,8 +357,8 @@ watch(
             <div>
                 <CIE10Autocomplete
                     v-model="codigoCIE10Principal"
-                    :label="isMX ? 'Código CIE-10 Principal *' : 'Código CIE-10 Principal'"
-                    :required="isMX"
+                    :label="cie10Required ? 'Código CIE-10 Principal *' : 'Código CIE-10 Principal'"
+                    :required="cie10Required"
                     :trabajadorId="trabajadores.currentTrabajadorId"
                     :fechaConsulta="fechaNotaMedica"
                     placeholder="Buscar código diagnóstico principal..."
@@ -431,7 +432,7 @@ watch(
         <div>
             <div class="flex items-center gap-2 mb-3">
                 <h3 class="text-base font-medium text-gray-700">
-                    Relación Temporal <span v-if="isMX" class="text-rose-500">*</span>
+                    Relación Temporal <span v-if="cie10Required" class="text-rose-500">*</span>
                 </h3>
                 <button
                     ref="relacionTemporalIconRef"

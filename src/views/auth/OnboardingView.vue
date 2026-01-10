@@ -5,6 +5,8 @@ import { useUserStore } from "@/stores/user";
 import { useRouter } from "vue-router";
 import CountryPhoneInput from "@/components/CountryPhoneInput.vue";
 import CountrySelect from "@/components/CountrySelect.vue";
+import RegimenRegulatorioSelector from "@/components/onboarding/RegimenRegulatorioSelector.vue";
+import CLUESAutocomplete from "@/components/selectors/CLUESAutocomplete.vue";
 
 const toast = inject("toast");
 
@@ -16,6 +18,8 @@ const transitioning = ref(false);
 const showPassword = ref(false);
 const passwordContainer = ref(null);
 const toggleButton = ref(null);
+const isLoading = ref(false);
+const showCountryMessage = ref(false);
 const formDataUser = reactive({
   username: "",
   email: "",
@@ -39,6 +43,10 @@ const formDataProveedorSalud = reactive({
   termsAccepted: false,
   acceptedAt: new Date().toISOString(),
   termsVersion: "1.0",
+  regimenRegulatorio: null,
+  declaracionAceptada: false,
+  declaracionAceptadaAt: null,
+  declaracionVersion: "1.0",
 });
 
 // Acceso a los stores
@@ -54,17 +62,54 @@ const handleSubmitStep1 = async (data) => {
 
 const handleSubmitStep2 = async (data) => {
   Object.assign(formDataProveedorSalud, data); // Guardar datos del Proveedor de Salud
-  let idProveedorSalud = null; // Variable para almacenar el ID del proveedor de salud
-
-  // Validación NOM-024: CLUES obligatorio para proveedores MX
-  if (isMX.value && (!formDataProveedorSalud.clues || formDataProveedorSalud.clues.trim() === '')) {
-    toast.open({
-      type: "error",
-      message: "El código CLUES es obligatorio para proveedores en México (NOM-024)",
-      position: "bottom-left",
-    });
-    return;
+  
+  // Lógica de régimen regulatorio para México
+  if (isMX.value) {
+    // Normalizar valores antiguos
+    if (formDataProveedorSalud.regimenRegulatorio === 'NO_SUJETO_SIRES') {
+      formDataProveedorSalud.regimenRegulatorio = 'SIN_REGIMEN';
+    }
+    
+    // Si no se seleccionó régimen explícitamente, asignar SIN_REGIMEN implícitamente
+    if (formDataProveedorSalud.regimenRegulatorio === null) {
+      formDataProveedorSalud.regimenRegulatorio = 'SIN_REGIMEN';
+    }
+    
+    // Si seleccionó SIN_REGIMEN, validar declaración
+    if (formDataProveedorSalud.regimenRegulatorio === 'SIN_REGIMEN') {
+      if (!formDataProveedorSalud.declaracionAceptada) {
+        toast.open({
+          type: "error",
+          message: "Debes aceptar la declaración de contexto operativo para continuar",
+          position: "bottom-left",
+        });
+        return;
+      }
+      // Asignar timestamp y versión de la declaración
+      formDataProveedorSalud.declaracionAceptadaAt = new Date().toISOString();
+      formDataProveedorSalud.declaracionVersion = "1.0";
+    }
+    
+    // Si seleccionó SIRES_NOM024, validar CLUES
+    if (formDataProveedorSalud.regimenRegulatorio === 'SIRES_NOM024') {
+      if (!formDataProveedorSalud.clues || formDataProveedorSalud.clues.trim() === '') {
+        toast.open({
+          type: "error",
+          message: "El código CLUES es obligatorio para el régimen SIRES (NOM-024)",
+          position: "bottom-left",
+        });
+        return;
+      }
+    }
   }
+  
+  // Continuar con el submit
+  submitProveedorSalud();
+};
+
+const submitProveedorSalud = async () => {
+  isLoading.value = true;
+  let idProveedorSalud = null; // Variable para almacenar el ID del proveedor de salud
 
   try {
     // 1. Crear Proveedor Salud y obtener idProveedorSalud
@@ -105,7 +150,7 @@ const handleSubmitStep2 = async (data) => {
     // Mostrar mensaje de error en el toast
     toast.open({
       type: "error",
-      message: `Error: ${error.response.data.message}`,
+      message: `Error: ${error.response?.data?.message || error.message || 'Error al registrar'}`,
       position: "bottom-left",
     });
 
@@ -118,6 +163,8 @@ const handleSubmitStep2 = async (data) => {
         console.error("Error al eliminar el proveedor de salud:", deleteError);
       }
     }
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -184,6 +231,75 @@ watch(() => formDataUser.country, (newCountry) => {
     formDataProveedorSalud.pais = newCountry;
   }
 }, { immediate: true });
+
+// Watcher para mostrar mensaje cuando se selecciona México
+watch(() => formDataProveedorSalud.pais, (newPais) => {
+  if (newPais === 'MX' && currentStep.value === 2) {
+    showCountryMessage.value = true;
+    setTimeout(() => {
+      showCountryMessage.value = false;
+    }, 5000);
+  } else {
+    showCountryMessage.value = false;
+  }
+});
+
+// Computed para validar si se puede enviar el formulario del paso 2
+const canSubmitStep2 = computed(() => {
+  if (isLoading.value) return false;
+  
+  // Términos deben estar aceptados
+  if (!formDataProveedorSalud.termsAccepted) {
+    return false;
+  }
+  
+  // Si es México
+  if (isMX.value) {
+    // Normalizar valores antiguos
+    if (formDataProveedorSalud.regimenRegulatorio === 'NO_SUJETO_SIRES') {
+      formDataProveedorSalud.regimenRegulatorio = 'SIN_REGIMEN';
+    }
+    
+    // Si seleccionó SIN_REGIMEN, debe aceptar la declaración
+    if (formDataProveedorSalud.regimenRegulatorio === 'SIN_REGIMEN') {
+      if (!formDataProveedorSalud.declaracionAceptada) {
+        return false;
+      }
+    }
+    
+    // Si seleccionó SIRES_NOM024, debe tener CLUES
+    if (formDataProveedorSalud.regimenRegulatorio === 'SIRES_NOM024') {
+      if (!formDataProveedorSalud.clues || formDataProveedorSalud.clues.trim() === '') {
+        return false;
+      }
+    }
+  }
+  
+  return true;
+});
+
+// Computed para porcentaje de progreso
+const progresoOnboarding = computed(() => {
+  if (currentStep.value === 1) {
+    const camposCompletos = [
+      formDataUser.username,
+      formDataUser.email,
+      formDataUser.phone,
+      formDataUser.password
+    ].filter(v => v && v.trim() !== '').length;
+    return Math.round((camposCompletos / 4) * 50);
+  } else if (currentStep.value === 2) {
+    const camposCompletos = [
+      formDataProveedorSalud.nombre,
+      formDataProveedorSalud.pais,
+      formDataProveedorSalud.perfilProveedorSalud
+    ].filter(v => v && v.trim() !== '').length;
+    const base = 50;
+    const adicional = Math.round((camposCompletos / 3) * 50);
+    return base + adicional;
+  }
+  return 100;
+});
 
 // Reposicionar el toggle cuando el componente se monte
 onMounted(() => {
@@ -254,9 +370,9 @@ onMounted(() => {
     </div>
   </div>
 
-  <div v-else>
+  <div v-else role="main" aria-label="Formulario de registro">
     <!-- Indicador de pasos -->
-    <div class="flex justify-center items-center gap-3 my-3">
+    <div class="flex justify-center items-center gap-3 my-3" role="progressbar" :aria-valuenow="currentStep" aria-valuemin="1" aria-valuemax="2" :aria-label="`Paso ${currentStep} de 2`">
       <div class="flex flex-col items-center">
         <div
           :class="[
@@ -289,11 +405,11 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="flex justify-center items-center gap-0 mb-6">
+    <div class="flex justify-center items-center gap-0 mb-4">
       <div class="flex flex-col items-center">
         <span
           :class="[currentStep === 1 ? 'text-emerald-500' : 'text-gray-400']"
-          class="text-sm mt-1"
+          class="text-sm mt-1 font-medium"
           >&nbsp;&nbsp;Crear una cuenta</span
         >
       </div>
@@ -303,9 +419,23 @@ onMounted(() => {
       <div class="flex flex-col items-center">
         <span
           :class="[currentStep === 2 ? 'text-emerald-500' : 'text-gray-400']"
-          class="text-sm mt-1"
+          class="text-sm mt-1 font-medium"
           >&nbsp;Registra tu empresa</span
         >
+      </div>
+    </div>
+    
+    <!-- Barra de progreso -->
+    <div class="mb-6 px-4">
+      <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+        <span>Progreso</span>
+        <span>{{ progresoOnboarding }}%</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+        <div 
+          class="bg-emerald-500 h-2 rounded-full transition-all duration-500 ease-out"
+          :style="{ width: `${progresoOnboarding}%` }"
+        ></div>
       </div>
     </div>
 
@@ -328,6 +458,8 @@ onMounted(() => {
             required: 'Este campo es obligatorio',
           }"
           v-model="formDataUser.username"
+          aria-label="Nombre completo"
+          autocomplete="name"
         />
 
         <FormKit
@@ -341,6 +473,8 @@ onMounted(() => {
             emailValidation: 'Por favor ingresa un correo válido',
           }"
           v-model="formDataUser.email"
+          aria-label="Correo electrónico"
+          autocomplete="email"
         />
 
         <CountryPhoneInput
@@ -367,7 +501,7 @@ onMounted(() => {
           <button
             type="button"
             @click="togglePasswordVisibility"
-            class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md p-1 z-10"
+            class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 rounded-md p-2 z-10 min-w-[44px] min-h-[44px] flex items-center justify-center"
             :aria-label="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
             ref="toggleButton"
           >
@@ -376,7 +510,7 @@ onMounted(() => {
         </div>
 
         <div class="w-full pr-2 mt-4">
-          <FormKit type="submit">
+          <FormKit type="submit" aria-label="Continuar al siguiente paso">
             <span class="mr-2">Siguiente</span>
             <i class="fa-solid fa-arrow-right-long"></i>
           </FormKit>
@@ -405,6 +539,8 @@ onMounted(() => {
           validation="required"
           :validation-messages="{ required: 'Este campo es obligatorio' }"
           v-model="formDataProveedorSalud.nombre"
+          aria-label="Nombre o razón social de la empresa"
+          autocomplete="organization"
         />
         <CountrySelect
           class="mb-4"
@@ -413,6 +549,20 @@ onMounted(() => {
           v-model="formDataProveedorSalud.pais"
           validation="required"
         />
+        
+        <!-- Mensaje informativo cuando se selecciona México -->
+        <Transition name="fade">
+          <div 
+            v-if="showCountryMessage && isMX" 
+            class="mb-4 p-3 bg-blue-50 border-l-4 border-blue-500 rounded flex items-start gap-2"
+          >
+            <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
+            <p class="text-sm text-blue-800">
+              <strong>México seleccionado:</strong> Por favor, selecciona el régimen regulatorio aplicable a tu operación.
+            </p>
+          </div>
+        </Transition>
+        
         <FormKit
           type="select"
           label="¿Cuál describe mejor al proveedor de salud ocupacional que registras?"
@@ -423,6 +573,16 @@ onMounted(() => {
           :validation-messages="{ required: 'Este campo es obligatorio' }"
           v-model="formDataProveedorSalud.perfilProveedorSalud"
         />
+
+        <!-- Selector de Régimen Regulatorio (solo para México) -->
+        <Transition name="fade">
+          <RegimenRegulatorioSelector
+            v-if="isMX"
+            v-model="formDataProveedorSalud.regimenRegulatorio"
+            @update:declaracion="formDataProveedorSalud.declaracionAceptada = $event"
+            class="my-4"
+          />
+        </Transition>
         
         <FormKit
           type="hidden"
@@ -446,7 +606,10 @@ onMounted(() => {
             type="button"
             @click="formDataProveedorSalud.termsAccepted = !formDataProveedorSalud.termsAccepted" 
             :class="formDataProveedorSalud.termsAccepted ? 'bg-emerald-500' : 'bg-gray-300'"
-            class="relative w-12 h-6 rounded-full transition-colors">
+            class="relative w-12 h-6 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 min-w-[48px] min-h-[24px]"
+            :aria-label="formDataProveedorSalud.termsAccepted ? 'Términos aceptados' : 'Aceptar términos y condiciones'"
+            :aria-pressed="formDataProveedorSalud.termsAccepted"
+          >
             <span 
               class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform"
               :class="formDataProveedorSalud.termsAccepted ? 'translate-x-6' : ''">
@@ -455,9 +618,11 @@ onMounted(() => {
         </div>
 
         <div class="w-full mt-3">
-          <FormKit type="submit" :disabled="!formDataProveedorSalud.termsAccepted">
-            <span class="mr-2">Finalizar</span>
-            <i class="fa-solid fa-check"></i>
+          <FormKit type="submit" :disabled="!canSubmitStep2">
+            <span v-if="!isLoading" class="mr-2">Finalizar</span>
+            <span v-else class="mr-2">Procesando registro...</span>
+            <i v-if="!isLoading" class="fa-solid fa-check"></i>
+            <i v-else class="fas fa-spinner fa-spin"></i>
           </FormKit>
         </div>
       </FormKit>
@@ -471,13 +636,14 @@ onMounted(() => {
         ><strong class="hover:underline">Inicia sesión</strong></RouterLink
       >
     </nav>
-    <p
+    <button
       v-else
       @click="goBackToStep1"
-      class="text-sm block mx-auto text-center font-light mt-5 text-sky-500 cursor-pointer hover:underline"
+      class="text-sm block mx-auto text-center font-light mt-5 text-sky-500 cursor-pointer hover:underline focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 rounded px-2 py-1"
+      aria-label="Regresar al paso anterior"
     >
       Regresar
-    </p>
+    </button>
   </div>
 </template>
 
@@ -515,5 +681,15 @@ onMounted(() => {
   opacity: 1;
   transform: translateX(0);
   filter: blur(0);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

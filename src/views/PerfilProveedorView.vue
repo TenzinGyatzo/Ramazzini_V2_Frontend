@@ -7,6 +7,8 @@ import CountrySelect from "@/components/CountrySelect.vue";
 import CLUESAutocomplete from "@/components/selectors/CLUESAutocomplete.vue";
 import MexicoGeoSelect from "@/components/selectors/MexicoGeoSelect.vue";
 import CPAutocomplete from "@/components/selectors/CPAutocomplete.vue";
+import { useNom024Fields } from "@/composables/useNom024Fields";
+import ChangeRegimenModal from "@/components/onboarding/ChangeRegimenModal.vue";
 
 const proveedorSalud = useProveedorSaludStore();
 const router = useRouter();
@@ -20,6 +22,9 @@ const colorInforme = ref("#343A40");
 const semaforizacionActivada = ref(false);
 
 const isMX = computed(() => formulario.value.pais === 'MX');
+const { cluesFieldVisible } = useNom024Fields();
+
+const showChangeRegimenModal = ref(false);
 
 // Objeto reactivo para el formulario
 const formulario = ref({
@@ -373,6 +378,28 @@ const volver = () => {
   router.push({ name: "inicio" });
 };
 
+const handleRegimenChange = async (reason: string) => {
+  try {
+    await proveedorSalud.changeRegimenRegulatorio('SIRES_NOM024', reason);
+    toast.open({
+      message: 'Régimen regulatorio actualizado exitosamente',
+      type: 'success'
+    });
+    showChangeRegimenModal.value = false;
+    // El store ya actualizó proveedorSalud, la policy se refleja automáticamente
+    // Recargar los datos del proveedor para obtener la policy actualizada
+    if (proveedorSalud.proveedorSalud._id) {
+      await proveedorSalud.loadProveedorSalud(proveedorSalud.proveedorSalud._id);
+    }
+  } catch (error) {
+    console.error('Error al cambiar régimen regulatorio:', error);
+    toast.open({
+      message: error.response?.data?.message || 'Error al cambiar régimen regulatorio',
+      type: 'error'
+    });
+  }
+};
+
 const perfiles = [
   "Médico único de empresa",
   "Médico independiente que brinda servicios a empresas",
@@ -575,11 +602,71 @@ const logoSrc = computed(() => {
 
               <!-- Campo CLUES (NOM-024) -->
               <CLUESAutocomplete
-                v-if="isMX"
+                v-if="cluesFieldVisible"
                 class="sm:col-span-2 mb-4"
                 v-model="formulario.clues"
                 :required="false"
               />
+
+              <!-- Banner de setup incompleto SIRES -->
+              <div
+                v-if="proveedorSalud.isSIRES && !proveedorSalud.proveedorSalud?.clues"
+                class="sm:col-span-2 mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div class="flex items-start gap-2">
+                  <i class="fa-solid fa-exclamation-triangle text-amber-600 mt-0.5"></i>
+                  <div>
+                    <p class="font-medium text-amber-800 mb-1">
+                      Configuración SIRES incompleta
+                    </p>
+                    <p class="text-sm text-amber-700">
+                      Completa tu CLUES para habilitar todas las funcionalidades SIRES.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sección Régimen Regulatorio -->
+              <div class="sm:col-span-2 mb-4 p-4 border rounded-lg bg-gray-50">
+                <h3 class="font-medium text-lg text-gray-700 mb-3">
+                  Régimen Regulatorio
+                </h3>
+                
+                <!-- Estado actual -->
+                <div class="mb-3">
+                  <p class="text-sm text-gray-600">
+                    Estado actual: 
+                    <span class="font-semibold">
+                      {{ proveedorSalud.proveedorSalud?.regimenRegulatorio === 'SIRES_NOM024' 
+                        ? 'SIRES (NOM-024)' 
+                        : 'Sin régimen regulatorio' }}
+                    </span>
+                  </p>
+                </div>
+
+                <!-- Si es SIN_REGIMEN: mostrar CTA para upgrade -->
+                <div v-if="proveedorSalud.isSinRegimen">
+                  <button 
+                    @click="showChangeRegimenModal = true"
+                    type="button"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <i class="fa-solid fa-arrow-up mr-2"></i>
+                    Activar SIRES (NOM-024)
+                  </button>
+                </div>
+
+                <!-- Si es SIRES: mostrar estado y bloqueo de downgrade -->
+                <div v-else-if="proveedorSalud.isSIRES">
+                  <div class="bg-green-50 border border-green-200 rounded p-3 mb-2">
+                    <p class="text-sm text-green-800">
+                      <i class="fa-solid fa-check-circle mr-2"></i>
+                      SIRES activo. Las funcionalidades regulatorias están habilitadas.
+                    </p>
+                  </div>
+                  <p class="text-xs text-gray-500">
+                    Para desactivar SIRES, contacta a soporte.
+                  </p>
+                </div>
+              </div>
 
             </div>
 
@@ -712,6 +799,13 @@ const logoSrc = computed(() => {
         </div>
       </Transition>
     </div>
+
+    <!-- Modal de cambio de régimen -->
+    <ChangeRegimenModal
+      v-if="showChangeRegimenModal"
+      @close="showChangeRegimenModal = false"
+      @confirm="handleRegimenChange"
+    />
   </Transition>
 </template>
 

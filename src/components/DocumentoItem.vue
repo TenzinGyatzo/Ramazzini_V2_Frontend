@@ -1110,18 +1110,27 @@ const isAnulado = computed(() => {
     return currentDocumentData.value.estado?.toLowerCase() === 'anulado';
 });
 
-// Un documento es de solo lectura si está finalizado O anulado
+// Un documento es de solo lectura si está finalizado O anulado Y la inmutabilidad está habilitada
+const documentImmutabilityEnabled = computed(() => 
+    proveedorSaludStore.documentImmutabilityEnabled
+);
 const isReadOnly = computed(() => {
-    return isFinalized.value || isAnulado.value;
+    const isFinalizedOrAnulado = isFinalized.value || isAnulado.value;
+    return documentImmutabilityEnabled.value && isFinalizedOrAnulado;
 });
 
 const isMX = computed(() => {
     return useProveedorSaludStore().isMX;
 });
 
+const showSiresUI = computed(() => {
+    return proveedorSaludStore.showSiresUI;
+});
+
 // Solo mostrar botón de anular si está FINALIZADO (no si ya está anulado)
+// y la inmutabilidad está habilitada (SIRES_NOM024)
 const isAnulacion = computed(() => {
-    return isMX.value && isFinalized.value && !isAnulado.value;
+    return documentImmutabilityEnabled.value && isFinalized.value && !isAnulado.value;
 });
 
 const canEditFinalized = computed(() => {
@@ -2951,9 +2960,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
                     ]"
                     @click="handleEditDocumentoExterno"
-                    @mouseenter="(e) => updateTooltipPosition(e, isMX && isReadOnly ? 'Ver documento' : 'Editar documento')"
+                    @mouseenter="(e) => updateTooltipPosition(e, isReadOnly ? 'Ver documento' : 'Editar documento')"
                     @mouseleave="hideTooltip">
-                    <i :class="isMX && isReadOnly ? 'fa-regular fa-eye fa-lg' : 'fa-regular fa-pen-to-square fa-lg'"></i>
+                    <i :class="isReadOnly ? 'fa-regular fa-eye fa-lg' : 'fa-regular fa-pen-to-square fa-lg'"></i>
                 </button>
                 <button v-else type="button" 
                     :class="[
@@ -2963,12 +2972,12 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
                     ]"
                     @click="handleEditDocument(documentoId, documentoTipo)"
-                    @mouseenter="(e) => updateTooltipPosition(e, isMX && isReadOnly ? 'Ver documento' : 'Editar documento')"
+                    @mouseenter="(e) => updateTooltipPosition(e, isReadOnly ? 'Ver documento' : 'Editar documento')"
                     @mouseleave="hideTooltip">
-                    <i :class="isMX && isReadOnly ? 'fa-regular fa-eye fa-lg' : 'fa-regular fa-pen-to-square fa-lg'"></i>
+                    <i :class="isReadOnly ? 'fa-regular fa-eye fa-lg' : 'fa-regular fa-pen-to-square fa-lg'"></i>
                 </button>
 
-                <button v-if="puedeFinalizar && isMX" type="button" 
+                <button v-if="puedeFinalizar" type="button" 
                     class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5"
                     @click="$emit('abrirModalFinalizar', documentoId, documentoNombre, documentoTipo)"
                     @mouseenter="(e) => updateTooltipPosition(e, 'Finalizar documento')"

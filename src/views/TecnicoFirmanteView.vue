@@ -3,10 +3,12 @@ import { ref, inject, watchEffect, computed } from 'vue';
 import { useTecnicoFirmanteStore } from '@/stores/tecnicoFirmante';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useRouter } from 'vue-router';
+import { useCurpPolicy } from '@/composables/useCurpPolicy';
 
 const tecnicoFirmante = useTecnicoFirmanteStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const router = useRouter();
+const { curpRequired, showCurpField, isSIRES, isSinRegimen } = useCurpPolicy();
 
 const firmaPreview = ref(null);
 const firmaArchivo = ref(null);
@@ -22,6 +24,7 @@ const formularioTecnicoFirmante = ref({
   numeroCredencialAdicional: ""
 });
 
+// Mantener isMX solo para lógica no-regulatoria (ej: mostrar "Cédula Profesional" vs "Registro Profesional")
 const isMX = computed(() => proveedorSaludStore.proveedorSalud?.pais === 'MX');
 
 watchEffect(() => {
@@ -94,11 +97,11 @@ const handleDrop = (event) => {
 const user = ref(JSON.parse(localStorage.getItem('user')) || null);
 
 const handleSubmit = async (data) => {
-  // Validación NOM-024: CURP obligatorio para proveedores MX
-  if (isMX.value && (!data.curp || data.curp.trim() === '')) {
+  // Validación basada en política regulatoria: CURP obligatorio para SIRES_NOM024
+  if (curpRequired.value && (!data.curp || data.curp.trim() === '')) {
     toast.open({
       type: "error",
-      message: "El CURP es obligatorio para proveedores en México (NOM-024)",
+      message: "El CURP es obligatorio para firmantes en régimen SIRES_NOM024",
     });
     return;
   }
@@ -139,19 +142,21 @@ const firmaSrc = computed(() => `${baseURL}/assets/signatories/${tecnicoFirmante
           <hr class="mt-2 mb-3">
 
           <FormKit type="form" :actions="false" incomplete-message="Por favor, valide que los datos sean correctos*" @submit="handleSubmit">
-            <!-- Campo CURP (NOM-024) - Solo visible para MX -->
-            <div v-if="isMX" class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <!-- Campo CURP - Visible según política regulatoria -->
+            <div v-if="showCurpField" class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <FormKit
                 type="text"
                 name="curp"
                 placeholder="Ej. PERJ920315HDFRDN05"
                 maxlength="18"
+                :validation="curpRequired ? 'required' : ''"
+                :validation-messages="curpRequired ? { required: 'El CURP es obligatorio' } : {}"
                 v-model="formularioTecnicoFirmante.curp"
               >
                 <template #label>
                   <span class="text-base text-gray-700">
                     CURP (Clave Única de Registro de Población)
-                    <span class="text-red-500">*</span>
+                    <span v-if="curpRequired" class="text-red-500">*</span>
                   </span>
                 </template>
               </FormKit>
@@ -160,8 +165,8 @@ const firmaSrc = computed(() => `${baseURL}/assets/signatories/${tecnicoFirmante
                 <span class="text-xs text-gray-600 mt-0 md:mt-3 mb-5 md:mb-0">
                   <i class="fas fa-info-circle mr-1"></i>
                   CURP de 18 caracteres (ej. PERJ920315HDFRDN05)
-                  <br>
-                  <span class="text-amber-700 font-medium">Obligatorio para proveedores en México (NOM-024)</span>
+                  <br v-if="isSIRES">
+                  <span v-if="isSIRES" class="text-amber-700 font-medium">Obligatorio para régimen SIRES_NOM024</span>
                 </span>
               </p>
             </div>

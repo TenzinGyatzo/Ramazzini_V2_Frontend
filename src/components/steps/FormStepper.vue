@@ -294,6 +294,7 @@ import ModalFaltanCampos from '../ModalFaltanCampos.vue';
 import ModalCamposFaltantes from '../ModalCamposFaltantes.vue';
 import { validarCamposRequeridos } from '@/helpers/validacionCampos';
 import { validateCIE10Duplicates, generateBlockingToastMessage, validateCIE10SexAge } from '@/helpers/cie10';
+import { useNom024Fields } from '@/composables/useNom024Fields';
 
 export default {
   components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Audiometria, Step2Audiometria, Step3Audiometria, Step4Audiometria, Step5Audiometria, Step6Audiometria, Step7Audiometria, Step1Certificado, Step2Certificado, Step1CertificadoExpedito, Step2CertificadoExpedito, Step3CertificadoExpedito, Step4CertificadoExpedito, Step5CertificadoExpedito, Step6CertificadoExpedito, Step7CertificadoExpedito, Step8CertificadoExpedito, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step7ExamenVista, Step8ExamenVista, Step9ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica, Step1NotaMedica, Step2NotaMedica, Step3NotaMedica, Step4NotaMedica, Step5NotaMedica, Step6NotaMedica, Step7NotaMedica, Step8NotaMedica, Step9NotaMedica, Step10NotaMedica, Step1NotaAclaratoria, Step1ControlPrenatal, Step2ControlPrenatal, Step3ControlPrenatal, Step4ControlPrenatal, Step5ControlPrenatal, Step6ControlPrenatal, Step7ControlPrenatal, Step8ControlPrenatal, Step9ControlPrenatal, Step10ControlPrenatal, Step11ControlPrenatal, Step12ControlPrenatal, Step13ControlPrenatal, Step14ControlPrenatal, Step15ControlPrenatal, Step16ControlPrenatal, Step17ControlPrenatal, Step18ControlPrenatal, Step19ControlPrenatal, Step20ControlPrenatal, Step21ControlPrenatal, Step22ControlPrenatal, Step23ControlPrenatal, Step24ControlPrenatal, Step25ControlPrenatal, Step26ControlPrenatal, Step27ControlPrenatal, Step28ControlPrenatal, Step29ControlPrenatal, Step30ControlPrenatal, Step31ControlPrenatal, Step32ControlPrenatal, Step33ControlPrenatal, Step34ControlPrenatal, Step35ControlPrenatal, Step36ControlPrenatal, Step37ControlPrenatal, Step38ControlPrenatal, Step39ControlPrenatal, Step40ControlPrenatal, Step41ControlPrenatal, Step42ControlPrenatal, Step43ControlPrenatal, Step44ControlPrenatal, Step45ControlPrenatal, Step46ControlPrenatal, Step47ControlPrenatal, Step48ControlPrenatal, Step49ControlPrenatal, Step50ControlPrenatal, Step51ControlPrenatal, Step52ControlPrenatal, Step53ControlPrenatal, Step54ControlPrenatal, Step55ControlPrenatal, Step56ControlPrenatal, Step57ControlPrenatal, Step58ControlPrenatal, Step59ControlPrenatal, Step60ControlPrenatal, Step61ControlPrenatal, Step62ControlPrenatal, Step63ControlPrenatal, Step64ControlPrenatal, Step65ControlPrenatal, Step66ControlPrenatal, Step67ControlPrenatal, Step68ControlPrenatal, Step69ControlPrenatal, Step70ControlPrenatal, Step71ControlPrenatal, Step72ControlPrenatal, Step73ControlPrenatal, Step74ControlPrenatal, Step75ControlPrenatal, Step76ControlPrenatal, Step77ControlPrenatal, Step78ControlPrenatal, Step79ControlPrenatal, Step80ControlPrenatal, Step81ControlPrenatal, Step82ControlPrenatal, Step83ControlPrenatal, Step84ControlPrenatal, Step85ControlPrenatal, Step86ControlPrenatal, Step87ControlPrenatal, Step88ControlPrenatal, Step89ControlPrenatal, Step1HistoriaOtologica, Step2HistoriaOtologica, Step3HistoriaOtologica, Step4HistoriaOtologica, Step5HistoriaOtologica, Step6HistoriaOtologica, Step7HistoriaOtologica, Step8HistoriaOtologica, Step9HistoriaOtologica, Step10HistoriaOtologica, Step11HistoriaOtologica, Step12HistoriaOtologica, Step13HistoriaOtologica, Step14HistoriaOtologica, Step15HistoriaOtologica, Step16HistoriaOtologica, Step17HistoriaOtologica, Step18HistoriaOtologica, Step19HistoriaOtologica, Step20HistoriaOtologica, Step21HistoriaOtologica, Step22HistoriaOtologica, Step23HistoriaOtologica, Step24HistoriaOtologica, Step25HistoriaOtologica, Step1PrevioEspirometria, Step2PrevioEspirometria, Step3PrevioEspirometria, Step4PrevioEspirometria, Step5PrevioEspirometria, Step6PrevioEspirometria, Step7PrevioEspirometria, Step8PrevioEspirometria, Step9PrevioEspirometria, Step10PrevioEspirometria, Step11PrevioEspirometria, Step12PrevioEspirometria, Step13PrevioEspirometria, Step14PrevioEspirometria, Step15PrevioEspirometria, Step16PrevioEspirometria, Step17PrevioEspirometria, Step18PrevioEspirometria, Step19PrevioEspirometria, Step20PrevioEspirometria, Step21PrevioEspirometria, Step22PrevioEspirometria, Step23PrevioEspirometria, Step24PrevioEspirometria, Step25PrevioEspirometria, Step26PrevioEspirometria, Step27PrevioEspirometria, Step28PrevioEspirometria, Step1Receta, Step2Receta, Step3Receta, Step4Receta, Step1ConstanciaAptitud, ModalFaltanCampos, ModalCamposFaltantes },
@@ -312,6 +313,10 @@ export default {
 
     const isMX = computed(() => proveedorSaludStore.isMX);
     const isFinalized = computed(() => documentos.isFinalized);
+    const regulatoryPolicy = computed(() => proveedorSaludStore.regulatoryPolicy);
+    const showSiresUI = computed(() => proveedorSaludStore.showSiresUI);
+    const notaAclaratoriaEnabled = computed(() => proveedorSaludStore.notaAclaratoriaEnabled);
+    const { cie10Required } = useNom024Fields();
     
     // Computed para verificar si el documento está finalizado
     const isFinalizado = computed(() => {
@@ -407,7 +412,14 @@ export default {
       });
     };
     
-    const disableEdit = computed(() => isMX.value && isFinalized.value);
+    // Usar policy regulatoria en lugar de isMX para decisiones regulatorias
+    // documentImmutabilityEnabled solo es true para SIRES_NOM024
+    const documentImmutabilityEnabled = computed(() => 
+      proveedorSaludStore.documentImmutabilityEnabled
+    );
+    const disableEdit = computed(() => 
+      documentImmutabilityEnabled.value && (isFinalized.value || isAnulado.value)
+    );
 
     // Computed properties para mejor UX
     const progressPercentage = computed(() => {
@@ -972,7 +984,11 @@ export default {
       }
 
       // VALIDACIÓN PREVIA: Verificar campos requeridos antes de enviar al backend
-      const validacion = validarCamposRequeridos(documentos.currentTypeOfDocument, datosLimpios);
+      const validacion = validarCamposRequeridos(
+        documentos.currentTypeOfDocument, 
+        datosLimpios,
+        { cie10Required: cie10Required.value }
+      );
       
       if (!validacion.esValido) {
         // Mostrar modal con campos faltantes específicos
@@ -981,11 +997,11 @@ export default {
         return; // No continuar con el envío
       }
 
-      // VALIDACIÓN NOM-024: Verificar CIE-10 principal para proveedores MX en NotaMedica e HistoriaClinica
-      if (isMX.value && (documentos.currentTypeOfDocument === 'notaMedica')) {
+      // VALIDACIÓN NOM-024: Verificar CIE-10 principal para proveedores SIRES en NotaMedica e HistoriaClinica
+      if (cie10Required.value && (documentos.currentTypeOfDocument === 'notaMedica')) {
         if (!datosLimpios.codigoCIE10Principal || datosLimpios.codigoCIE10Principal.trim() === '') {
           toast.open({ 
-            message: 'El código CIE-10 principal es obligatorio para proveedores en México (NOM-024)', 
+            message: 'El código CIE-10 principal es obligatorio para proveedores con régimen SIRES_NOM024', 
             type: 'error' 
           });
           return; // No continuar con el envío
@@ -1115,36 +1131,49 @@ export default {
           }
           console.error('================================================');
           
-          // Priorizar mensaje del response si existe
-          if (error.response.data && error.response.data.message) {
-            mensajeError = error.response.data.message;
-            
-            // Si hay detalles, agregarlos al mensaje para mejor información
-            if (error.response.data.details && Array.isArray(error.response.data.details) && error.response.data.details.length > 0) {
-              const detallesTexto = error.response.data.details.map((detail) => {
-                const campo = detail.field || 'campo desconocido';
-                const cie10 = detail.cie10 || 'N/A';
-                const razon = detail.reason || 'razón desconocida';
-                return `${campo}: ${cie10} - ${razon}`;
-              }).join('; ');
-              
-              mensajeError += ` (${detallesTexto})`;
-            }
+          // Si es un error regulatorio, el interceptor ya mostró el toast
+          // Solo mostrar toast adicional si no es un error regulatorio
+          if (error.response.data?.errorCode) {
+            // Error regulatorio ya manejado por el interceptor, no duplicar toast
+            // El mensaje ya fue mostrado por el interceptor, solo log para debugging
+            console.log('Error regulatorio manejado por interceptor:', error.response.data);
           } else {
-            // Mensajes específicos según el tipo de error si no hay mensaje personalizado
-            if (error.response.status === 400) {
-              mensajeError = 'Los datos enviados no son válidos. Verifique que todos los campos estén completos correctamente.';
-            } else if (error.response.status === 404) {
-              mensajeError = 'No se encontró el recurso solicitado. Verifique que el trabajador y empresa existan.';
-            } else if (error.response.status === 500) {
-              mensajeError = 'Error interno del servidor. Por favor, contacte al administrador si el problema persiste.';
+            // Priorizar mensaje del response si existe
+            if (error.response.data && error.response.data.message) {
+              mensajeError = error.response.data.message;
+              
+              // Si hay detalles, agregarlos al mensaje para mejor información
+              if (error.response.data.details && Array.isArray(error.response.data.details) && error.response.data.details.length > 0) {
+                const detallesTexto = error.response.data.details.map((detail) => {
+                  const campo = detail.field || 'campo desconocido';
+                  const cie10 = detail.cie10 || 'N/A';
+                  const razon = detail.reason || 'razón desconocida';
+                  return `${campo}: ${cie10} - ${razon}`;
+                }).join('; ');
+                
+                mensajeError += ` (${detallesTexto})`;
+              }
+            } else {
+              // Mensajes específicos según el tipo de error si no hay mensaje personalizado
+              if (error.response.status === 400) {
+                mensajeError = 'Los datos enviados no son válidos. Verifique que todos los campos estén completos correctamente.';
+              } else if (error.response.status === 404) {
+                mensajeError = 'No se encontró el recurso solicitado. Verifique que el trabajador y empresa existan.';
+              } else if (error.response.status === 403) {
+                // Errores 403 ya manejados por el interceptor si son regulatorios
+                mensajeError = 'No tienes permisos para realizar esta acción.';
+              } else if (error.response.status === 500) {
+                mensajeError = 'Error interno del servidor. Por favor, contacte al administrador si el problema persiste.';
+              }
             }
+            
+            // Mostrar toast solo si no es un error regulatorio
+            toast.open({ message: mensajeError, type: 'error' });
           }
         } else if (error.code === 'NETWORK_ERROR') {
           mensajeError = 'Error de conexión. Verifique su conexión a internet e intente nuevamente.';
+          toast.open({ message: mensajeError, type: 'error' });
         }
-        
-        toast.open({ message: mensajeError, type: 'error' });
       }
 
       // Reiniciar el estado del formulario después de enviar
@@ -1258,8 +1287,8 @@ export default {
             </span>
           </p>
 
-          <!-- Botón para crear nota aclaratoria (solo México y documento finalizado/anulado) -->
-          <div v-if="isMX && (disableEdit || isAnulado)" class="flex justify-center mb-6">
+          <!-- Botón para crear nota aclaratoria (solo SIRES_NOM024 y documento finalizado/anulado) -->
+          <div v-if="notaAclaratoriaEnabled && (disableEdit || isAnulado)" class="flex justify-center mb-6">
             <button 
               @click="crearNotaAclaratoria"
               class="w-full sm:w-3/5 md:w-2/3 px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 hover:text-amber-800 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm"

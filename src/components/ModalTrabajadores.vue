@@ -13,6 +13,7 @@ import EmpresasSelector from './EmpresasSelector.vue';
 import EstadoAutocomplete from './selectors/EstadoAutocomplete.vue';
 import NacionalidadAutocomplete from './selectors/NacionalidadAutocomplete.vue';
 import ResidenciaGeoAutocomplete from './selectors/ResidenciaGeoAutocomplete.vue';
+import { useNom024Fields } from '@/composables/useNom024Fields';
 
 // Método para formatear la dirección (igual que en CentroTrabajoItem.vue)
 const formatDireccion = (centro) => {
@@ -31,6 +32,7 @@ const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const { ensureUserLoaded } = useCurrentUser();
+const { geoFieldsRequired, workerCurpRequired } = useNom024Fields();
 
 const emit = defineEmits(['closeModal', 'openSubscriptionModal'])
 
@@ -170,9 +172,9 @@ const identificadorPersonalValidationMessage = computed(() => {
   return 'Debe tener entre 4 y 30 caracteres alfanuméricos y puede incluir separadores comunes.';
 });
 
-// Validación condicional de CURP: requerido para MX, opcional para no-MX
+// Validación condicional de CURP: requerido para SIRES, opcional para SIN_REGIMEN
 const curpValidation = computed(() => {
-  if (paisProveedor.value === 'MX') {
+  if (workerCurpRequired.value) {
     return 'required|curpValidation';
   }
   return 'optional|curpValidation';
@@ -749,7 +751,7 @@ const cancelarTransferencia = () => {
                     @update:estadoResidencia="entidadResidenciaValue = $event"
                     @update:municipioResidencia="municipioResidenciaValue = $event"
                     @update:localidadResidencia="localidadResidenciaValue = $event"
-                    :required="paisProveedor === 'MX'"
+                    :required="geoFieldsRequired"
                   />
                 </div>
               </div>

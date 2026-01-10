@@ -231,12 +231,23 @@ const camposRequeridosPorTipo: Record<string, Array<{
 };
 
 // Función principal para validar campos requeridos
-export function validarCamposRequeridos(tipoDocumento: string, datosFormulario: any): ValidacionResultado {
-  const camposRequeridos = camposRequeridosPorTipo[tipoDocumento];
+export function validarCamposRequeridos(
+  tipoDocumento: string, 
+  datosFormulario: any,
+  options?: { cie10Required?: boolean }
+): ValidacionResultado {
+  let camposRequeridos = camposRequeridosPorTipo[tipoDocumento];
   
   if (!camposRequeridos) {
     console.warn(`No se encontraron campos requeridos para el tipo de documento: ${tipoDocumento}`);
     return { esValido: true, camposFaltantes: [] };
+  }
+  
+  // Filtrar codigoCIE10Principal si no es requerido según policy
+  if (tipoDocumento === 'notaMedica' && options?.cie10Required === false) {
+    camposRequeridos = camposRequeridos.filter(
+      campo => campo.campo !== 'codigoCIE10Principal'
+    );
   }
   
   const camposFaltantes: CampoFaltante[] = [];
