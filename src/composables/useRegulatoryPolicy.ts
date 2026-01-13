@@ -1,4 +1,4 @@
-import { computed, ComputedRef } from 'vue';
+import { computed } from 'vue';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
 /**
@@ -75,6 +75,13 @@ export function useRegulatoryPolicy() {
     proveedorSaludStore.showSiresUI
   );
 
+  /**
+   * Indica si el consentimiento diario está habilitado
+   */
+  const dailyConsentEnabled = computed<boolean>(() => 
+    proveedorSaludStore.dailyConsentEnabled
+  );
+
   // ========== VALIDATIONS ==========
 
   /**
@@ -116,6 +123,7 @@ export function useRegulatoryPolicy() {
     sessionTimeoutEnabled,
     cluesFieldVisible,
     showSiresUI,
+    dailyConsentEnabled,
     // Validations
     curpFirmantesRequired,
     workerCurpRequired,

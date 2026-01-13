@@ -21,6 +21,7 @@ export interface RegulatoryPolicy {
         giisExportEnabled: boolean;
         notaAclaratoriaEnabled: boolean;
         cluesFieldVisible: boolean; // CLUES visible solo en SIRES
+        dailyConsentEnabled: boolean; // Consentimiento diario habilitado solo en SIRES
     };
     validation: {
         curpFirmantes: 'required' | 'optional';
@@ -291,6 +292,7 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
     const documentImmutabilityEnabled = computed(() => regulatoryPolicy.value?.features.documentImmutabilityEnabled ?? false);
     const giisExportEnabled = computed(() => regulatoryPolicy.value?.features.giisExportEnabled ?? false);
     const cluesFieldVisible = computed(() => regulatoryPolicy.value?.features.cluesFieldVisible ?? false);
+    const dailyConsentEnabled = computed(() => regulatoryPolicy.value?.features.dailyConsentEnabled ?? false);
     
     // Helpers basados en policy - Validations
     const curpFirmantesRequired = computed(() => regulatoryPolicy.value?.validation.curpFirmantes === 'required');
@@ -314,6 +316,7 @@ export const useProveedorSaludStore = defineStore("proveedorSalud", () => {
         documentImmutabilityEnabled,
         giisExportEnabled,
         cluesFieldVisible,
+        dailyConsentEnabled,
         // Validations
         curpFirmantesRequired,
         workerCurpRequired,

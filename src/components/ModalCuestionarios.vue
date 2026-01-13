@@ -7,7 +7,10 @@ import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useUserPermissions } from '@/composables/useUserPermissions';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 import { useProfessionalDataValidation } from '@/composables/useProfessionalDataValidation';
+import { useNavigateWithDailyConsent } from '@/composables/useNavigateWithDailyConsent';
+import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 import ModalDatosProfesionales from '@/components/modals/ModalDatosProfesionales.vue';
+import DailyConsentModal from '@/components/DailyConsentModal.vue';
 
 const toast = inject('toast');
 
@@ -19,11 +22,24 @@ const proveedorSaludStore = useProveedorSaludStore();
 const { canCreateDocument, getRestrictionMessage } = useUserPermissions();
 const { executeIfCanManageCuestionariosAdicionales } = usePermissionRestrictions();
 const { validationResult, loadFirmanteData } = useProfessionalDataValidation();
+const {
+  navigateWithDailyConsent,
+  showModal: showConsentModal,
+  modalTrabajadorId,
+  modalTrabajadorNombre,
+  modalTrabajadorSexo,
+  handleConsentRegistered,
+  handleConsentCancel,
+} = useNavigateWithDailyConsent();
 
 const showProfessionalDataModal = ref(false);
 
 const isMX = computed(() => {
   return proveedorSaludStore.isMX;
+});
+
+const notaAclaratoriaEnabled = computed(() => {
+  return proveedorSaludStore.notaAclaratoriaEnabled;
 });
 
 onMounted(async () => {
@@ -35,7 +51,7 @@ const closeModal = () => {
 };
 
 // Función para manejar la selección de cuestionarios
-const handleQuestionnaireSelect = (questionnaireType) => {
+const handleQuestionnaireSelect = async (questionnaireType) => {
   // Validar datos profesionales antes de navegar
   if (!validationResult.value.isValid) {
     showProfessionalDataModal.value = true;
@@ -43,7 +59,7 @@ const handleQuestionnaireSelect = (questionnaireType) => {
   }
 
   // Validar permisos para cuestionarios adicionales
-  executeIfCanManageCuestionariosAdicionales(() => {
+  executeIfCanManageCuestionariosAdicionales(async () => {
     // Solo permitir cuestionarios habilitados
     if (questionnaireType === 'control-prenatal') {
       
@@ -57,73 +73,112 @@ const handleQuestionnaireSelect = (questionnaireType) => {
       }
       
       // Si es femenino, navegar a la vista crear-documento con el tipo controlPrenatal
-      router.push({
-        name: 'crear-documento',
-        params: {
-          idEmpresa: empresas.currentEmpresaId,
-          idTrabajador: trabajadores.currentTrabajadorId,
-          tipoDocumento: 'controlPrenatal'
-        }
+      await navigateWithDailyConsent({
+        trabajadorId: trabajadores.currentTrabajadorId,
+        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+        to: {
+          name: 'crear-documento',
+          params: {
+            idEmpresa: empresas.currentEmpresaId,
+            idTrabajador: trabajadores.currentTrabajadorId,
+            tipoDocumento: 'controlPrenatal'
+          }
+        },
       });
       
       // Cerrar el modal después de navegar
       closeModal();
     } else if (questionnaireType === 'constancia-aptitud') {
-      router.push({
-        name: 'crear-documento',
-        params: {
-          idEmpresa: empresas.currentEmpresaId,
-          idTrabajador: trabajadores.currentTrabajadorId,
-          tipoDocumento: 'constanciaAptitud'
-        }
+      await navigateWithDailyConsent({
+        trabajadorId: trabajadores.currentTrabajadorId,
+        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+        to: {
+          name: 'crear-documento',
+          params: {
+            idEmpresa: empresas.currentEmpresaId,
+            idTrabajador: trabajadores.currentTrabajadorId,
+            tipoDocumento: 'constanciaAptitud'
+          }
+        },
       });
       closeModal();
     } else if (questionnaireType === 'receta') {
-      router.push({
-        name: 'crear-documento',
-        params: {
-          idEmpresa: empresas.currentEmpresaId,
-          idTrabajador: trabajadores.currentTrabajadorId,
-          tipoDocumento: 'receta'
-        }
+      await navigateWithDailyConsent({
+        trabajadorId: trabajadores.currentTrabajadorId,
+        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+        to: {
+          name: 'crear-documento',
+          params: {
+            idEmpresa: empresas.currentEmpresaId,
+            idTrabajador: trabajadores.currentTrabajadorId,
+            tipoDocumento: 'receta'
+          }
+        },
       });
       closeModal();
     } else if (questionnaireType === 'certificado-expedito') {
-      router.push({
-        name: 'crear-documento',
-        params: {
-          idEmpresa: empresas.currentEmpresaId,
-          idTrabajador: trabajadores.currentTrabajadorId,
-          tipoDocumento: 'certificadoExpedito'
-        }
+      await navigateWithDailyConsent({
+        trabajadorId: trabajadores.currentTrabajadorId,
+        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+        to: {
+          name: 'crear-documento',
+          params: {
+            idEmpresa: empresas.currentEmpresaId,
+            idTrabajador: trabajadores.currentTrabajadorId,
+            tipoDocumento: 'certificadoExpedito'
+          }
+        },
       });
+      closeModal();
     } else if (questionnaireType === 'historia-otologica') {
-      router.push({
-        name: 'crear-documento',
-        params: {
-          idEmpresa: empresas.currentEmpresaId,
-          idTrabajador: trabajadores.currentTrabajadorId,
-          tipoDocumento: 'historiaOtologica'
-        }
+      await navigateWithDailyConsent({
+        trabajadorId: trabajadores.currentTrabajadorId,
+        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+        to: {
+          name: 'crear-documento',
+          params: {
+            idEmpresa: empresas.currentEmpresaId,
+            idTrabajador: trabajadores.currentTrabajadorId,
+            tipoDocumento: 'historiaOtologica'
+          }
+        },
       });
+      closeModal();
     } else if (questionnaireType === 'previo-espirometria') {
-      router.push({
-        name: 'crear-documento',
-        params: {
-          idEmpresa: empresas.currentEmpresaId,
-          idTrabajador: trabajadores.currentTrabajadorId,
-          tipoDocumento: 'previoEspirometria'
-        }
+      await navigateWithDailyConsent({
+        trabajadorId: trabajadores.currentTrabajadorId,
+        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+        to: {
+          name: 'crear-documento',
+          params: {
+            idEmpresa: empresas.currentEmpresaId,
+            idTrabajador: trabajadores.currentTrabajadorId,
+            tipoDocumento: 'previoEspirometria'
+          }
+        },
       });
+      closeModal();
     } else if (questionnaireType === 'nota-aclaratoria') {
-      router.push({
-        name: 'crear-documento',
-        params: {
-          idEmpresa: empresas.currentEmpresaId,
-          idTrabajador: trabajadores.currentTrabajadorId,
-          tipoDocumento: 'notaAclaratoria'
-        }
+      await navigateWithDailyConsent({
+        trabajadorId: trabajadores.currentTrabajadorId,
+        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+        to: {
+          name: 'crear-documento',
+          params: {
+            idEmpresa: empresas.currentEmpresaId,
+            idTrabajador: trabajadores.currentTrabajadorId,
+            tipoDocumento: 'notaAclaratoria'
+          }
+        },
       });
+      closeModal();
     }
   }, 'acceder a cuestionarios adicionales');
 };
@@ -159,7 +214,7 @@ const handleQuestionnaireSelect = (questionnaireType) => {
             </div>
             <div class="space-y-2">
               <button 
-                v-if="isMX"
+                v-if="isMX && notaAclaratoriaEnabled"
                 @click="handleQuestionnaireSelect('nota-aclaratoria')"
                 class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
               >
@@ -400,6 +455,18 @@ const handleQuestionnaireSelect = (questionnaireType) => {
         :routeName="validationResult.routeName"
         :firmanteTypeLabel="validationResult.firmanteTypeLabel"
         @closeModal="showProfessionalDataModal = false" 
+      />
+    </Transition>
+
+    <Transition appear name="fade">
+      <DailyConsentModal
+        v-if="showConsentModal"
+        :trabajadorId="modalTrabajadorId"
+        :trabajadorNombre="modalTrabajadorNombre"
+        :trabajadorSexo="modalTrabajadorSexo"
+        :open="showConsentModal"
+        @registered="handleConsentRegistered"
+        @cancel="handleConsentCancel"
       />
     </Transition>
   </div>

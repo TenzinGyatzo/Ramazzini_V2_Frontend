@@ -22,11 +22,13 @@ import ModalCuestionarios from '@/components/ModalCuestionarios.vue';
 import ModalFinalizarDocumento from '@/components/modals/ModalFinalizarDocumento.vue';
 import ModalAnularDocumento from '@/components/modals/ModalAnularDocumento.vue';
 import ModalDatosProfesionales from '@/components/modals/ModalDatosProfesionales.vue';
+import DailyConsentModal from '@/components/DailyConsentModal.vue';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 import { useUserPermissions } from '@/composables/useUserPermissions';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 import { useProfessionalDataValidation } from '@/composables/useProfessionalDataValidation';
+import { useNavigateWithDailyConsent } from '@/composables/useNavigateWithDailyConsent';
 
 const toast: any = inject('toast');
 
@@ -42,6 +44,15 @@ const medicoFirmanteStore = useMedicoFirmanteStore();
 const { canCreateDocument, getRestrictionMessage } = useUserPermissions();
 const { executeIfCanManageDocumentosExternos } = usePermissionRestrictions();
 const { validationResult, loadFirmanteData } = useProfessionalDataValidation();
+const {
+  navigateWithDailyConsent,
+  showModal: showConsentModal,
+  modalTrabajadorId,
+  modalTrabajadorNombre,
+  modalTrabajadorSexo,
+  handleConsentRegistered,
+  handleConsentCancel,
+} = useNavigateWithDailyConsent();
 
 const showDocumentoExternoModal = ref(false);
 const showDocumentoExternoUpdateModal = ref(false);
@@ -301,7 +312,7 @@ watch(
   }
 );
 
-const navigateTo = (routeName, params) => {
+const navigateTo = async (routeName, params) => {
   if (!proveedorSaludStore.proveedorSalud) return;
 
   if (periodoDePruebaFinalizado.value) {
@@ -336,9 +347,30 @@ const navigateTo = (routeName, params) => {
     return;
   }
 
-  router.push({ name: routeName, params });
-  documentos.setCurrentTypeOfDocument(params.tipoDocumento);
-  documentos.currentDocument = null;
+  // Si es crear-documento, usar navegación con consentimiento preventivo
+  if (routeName === 'crear-documento' && trabajadores.currentTrabajadorId && trabajadores.currentTrabajador) {
+    await navigateWithDailyConsent({
+      trabajadorId: trabajadores.currentTrabajadorId,
+      trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+      trabajadorSexo: trabajadores.currentTrabajador.sexo,
+      to: {
+        name: routeName,
+        params,
+      },
+    });
+    // Solo actualizar stores si la navegación fue exitosa (el composable maneja la navegación)
+    if (routeName === 'crear-documento') {
+      documentos.setCurrentTypeOfDocument(params.tipoDocumento);
+      documentos.currentDocument = null;
+    }
+  } else {
+    // Para otras rutas, navegar normalmente
+    router.push({ name: routeName, params });
+    if (routeName === 'crear-documento') {
+      documentos.setCurrentTypeOfDocument(params.tipoDocumento);
+      documentos.currentDocument = null;
+    }
+  }
 };
 
 const toggleRouteSelection = (route: string, isSelected: boolean) => {
@@ -694,6 +726,18 @@ const añoMasReciente = computed(() => {
           :routeName="validationResult.routeName"
           :firmanteTypeLabel="validationResult.firmanteTypeLabel"
           @closeModal="showProfessionalDataModal = false" 
+        />
+      </Transition>
+
+      <Transition appear name="fade">
+        <DailyConsentModal
+          v-if="showConsentModal"
+          :trabajadorId="modalTrabajadorId"
+          :trabajadorNombre="modalTrabajadorNombre"
+          :trabajadorSexo="modalTrabajadorSexo"
+          :open="showConsentModal"
+          @registered="handleConsentRegistered"
+          @cancel="handleConsentCancel"
         />
       </Transition>
 

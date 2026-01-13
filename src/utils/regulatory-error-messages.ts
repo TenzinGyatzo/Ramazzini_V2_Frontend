@@ -67,6 +67,45 @@ const ERROR_CODE_MESSAGES: Record<
       type: 'error',
     },
   },
+
+  CONSENT_NOT_ENABLED: {
+    SIN_REGIMEN: {
+      title: 'Consentimiento no disponible',
+      message: 'El consentimiento informado diario no está disponible para tu régimen regulatorio.',
+      type: 'error',
+    },
+    SIRES_NOM024: {
+      title: 'Consentimiento no habilitado',
+      message: 'El consentimiento informado diario no está habilitado para este proveedor.',
+      type: 'error',
+    },
+  },
+
+  CONSENT_ALREADY_EXISTS: {
+    SIN_REGIMEN: {
+      title: 'Consentimiento ya registrado',
+      message: 'Ya existe un consentimiento registrado para este trabajador en la fecha especificada.',
+      type: 'warning',
+    },
+    SIRES_NOM024: {
+      title: 'Consentimiento ya registrado',
+      message: 'Ya existe un consentimiento registrado para este trabajador en la fecha especificada.',
+      type: 'warning',
+    },
+  },
+
+  CONSENT_REQUIRED: {
+    SIN_REGIMEN: {
+      title: 'Consentimiento requerido',
+      message: 'Se requiere consentimiento informado diario para realizar esta acción.',
+      type: 'error',
+    },
+    SIRES_NOM024: {
+      title: 'Consentimiento requerido',
+      message: 'Se requiere consentimiento informado diario para crear este documento según la normativa SIRES (NOM-024).',
+      type: 'error',
+    },
+  },
 };
 
 /**

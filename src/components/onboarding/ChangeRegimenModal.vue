@@ -23,13 +23,16 @@ const handleClose = () => {
 };
 
 const features = [
-  { name: 'Timeout de sesión', description: 'La sesión se cerrará automáticamente tras inactividad' },
-  { name: 'Inmutabilidad de documentos', description: 'Los documentos no podrán ser editados después de guardarse' },
-  { name: 'UI SIRES', description: 'Interfaz específica para cumplimiento SIRES/NOM-024' },
-  { name: 'Validaciones regulatorias', description: 'CURP, CIE-10 y campos geográficos serán obligatorios' },
-  { name: 'Exportación GIIS', description: 'Habilitada para integración con GIIS' },
+  { name: 'UI SIRES', description: 'Interfaz específica para cumplimiento SIRES/NOM-024-SSA3-2012' },
+  { name: 'Timeout de sesión', description: 'La sesión se bloqueará automáticamente tras inactividad' },
+  { name: 'Inmutabilidad de documentos', description: 'Los documentos no podrán ser editados después de finalizarse' },
   { name: 'Notas aclaratorias', description: 'Funcionalidad de notas aclaratorias habilitada' },
+  { name: 'Validaciones regulatorias', description: 'CURP, CIE-10 y campos geográficos serán obligatorios' },
   { name: 'Campo CLUES', description: 'Visible y validado contra catálogo oficial' },
+  { name: 'Exportación GIIS', description: 'Habilitada para integración con GIIS' },
+  { name: 'Consentimiento informado', description: 'Funcionalidad de consentimiento informado habilitada' },
+  { name: 'Firma lectrónica Avanzada', description: 'Funcionalidad de firma electrónica avanzada habilitada' },
+  { name: 'Auditoría de cambios', description: 'Funcionalidad de auditoría de cambios habilitada' },
 ];
 </script>
 
@@ -45,7 +48,7 @@ const features = [
       <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-lg">
         <div class="flex items-center justify-between">
           <h2 class="text-2xl font-bold text-gray-800">
-            Activar SIRES (NOM-024)
+            Activar SIRES (NOM-024-SSA3-2012)
           </h2>
           <button
             @click="handleClose"
@@ -89,7 +92,7 @@ const features = [
             >
               <i class="fa-solid fa-check-circle text-emerald-600 mt-0.5"></i>
               <div>
-                <span class="font-medium">{{ feature.name }}:</span>
+                <span class="font-medium">{{ feature.name }}: </span>
                 <span class="text-gray-600"> {{ feature.description }}</span>
               </div>
             </li>
@@ -105,7 +108,7 @@ const features = [
               class="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
             <span class="text-sm text-gray-700">
-              Entiendo las implicaciones de activar SIRES (NOM-024) y acepto que 
+              Entiendo las implicaciones de activar SIRES (NOM-024-SSA3-2012) y acepto que 
               todas las funcionalidades regulatorias se habilitarán inmediatamente. 
               Soy consciente de que este cambio requiere contactar a soporte para revertirlo.
             </span>
@@ -120,7 +123,7 @@ const features = [
           <textarea
             v-model="reason"
             rows="4"
-            placeholder="Describe el motivo por el cual necesitas activar SIRES (NOM-024)..."
+            placeholder="Describe el motivo por el cual necesitas activar SIRES (NOM-024-SSA3-2012)"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             maxlength="500"
           ></textarea>

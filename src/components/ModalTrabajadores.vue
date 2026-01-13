@@ -32,7 +32,7 @@ const centrosTrabajo = useCentrosTrabajoStore();
 const trabajadores = useTrabajadoresStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const { ensureUserLoaded } = useCurrentUser();
-const { geoFieldsRequired, workerCurpRequired } = useNom024Fields();
+const { geoFieldsRequired, workerCurpRequired, isSIRES } = useNom024Fields();
 
 const emit = defineEmits(['closeModal', 'openSubscriptionModal'])
 
@@ -180,9 +180,9 @@ const curpValidation = computed(() => {
   return 'optional|curpValidation';
 });
 
-// Validación condicional para campos NOM-024: requeridos solo para MX
+// Validación condicional para campos NOM-024: requeridos solo para SIRES_NOM024
 const nom024FieldValidation = computed(() => {
-  return paisProveedor.value === 'MX' ? 'required' : 'optional';
+  return geoFieldsRequired.value ? 'required' : 'optional';
 });
 
 // Valores reactivos para campos NOM-024 (fuera de FormKit)
@@ -618,7 +618,7 @@ const cancelarTransferencia = () => {
                 >
                   <template #label>
                     <span class="font-medium text-lg text-gray-700">
-                      {{ identificadorPersonalLabel }}<span v-if="paisProveedor === 'MX'" class="text-red-500">*</span>
+                      {{ identificadorPersonalLabel }}<span v-if="workerCurpRequired" class="text-red-500">*</span>
                     </span>
                   </template>
                 </FormKit>
@@ -715,8 +715,8 @@ const cancelarTransferencia = () => {
                   maxlength="30" :value="trabajadores.currentTrabajador?.nss || ''" />
               </div>
 
-              <!-- NOM-024 Identification Fields -->
-              <div class="lg:col-span-2 mt-4">
+              <!-- NOM-024 Identification Fields (solo visible para SIRES_NOM024) -->
+              <div v-if="isSIRES" class="lg:col-span-2 mt-4">
                 <h3 class="text-lg font-semibold text-emerald-800 mb-3 border-b border-emerald-100 pb-2">
                   Identificación NOM-024 (Estandarización)
                 </h3>
@@ -729,14 +729,14 @@ const cancelarTransferencia = () => {
                       v-model="entidadNacimientoValue"
                       label="Entidad de Nacimiento"
                       placeholder="Buscar por nombre del estado"
-                      :required="paisProveedor === 'MX'"
+                      :required="geoFieldsRequired"
                     />
                     
                     <NacionalidadAutocomplete
                       v-model="nacionalidadValue"
                       label="Nacionalidad"
                       placeholder="Buscar por nombre de nacionalidad"
-                      :required="paisProveedor === 'MX'"
+                      :required="geoFieldsRequired"
                     />
                   </div>
                 </div>
@@ -758,6 +758,7 @@ const cancelarTransferencia = () => {
             </div>
 
             <!-- Campos ocultos para NOM-024 (para que FormKit los capture en el submit) -->
+            <!-- Solo validar si es SIRES_NOM024, pero siempre enviar valores para compatibilidad -->
             <FormKit 
               type="hidden" 
               name="entidadNacimiento" 

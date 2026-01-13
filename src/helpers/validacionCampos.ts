@@ -243,7 +243,9 @@ export function validarCamposRequeridos(
     return { esValido: true, camposFaltantes: [] };
   }
   
-  // Filtrar codigoCIE10Principal si no es requerido según policy
+  // Filtrar codigoCIE10Principal solo si explícitamente no es requerido
+  // NOTA: Actualmente codigoCIE10Principal es obligatorio para todos los regímenes (SIRES_NOM024 y SIN_REGIMEN)
+  // Esta lógica se mantiene por compatibilidad, pero normalmente cie10Required será true
   if (tipoDocumento === 'notaMedica' && options?.cie10Required === false) {
     camposRequeridos = camposRequeridos.filter(
       campo => campo.campo !== 'codigoCIE10Principal'

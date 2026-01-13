@@ -378,7 +378,7 @@ const volver = () => {
   router.push({ name: "inicio" });
 };
 
-const handleRegimenChange = async (reason: string) => {
+const handleRegimenChange = async (reason) => {
   try {
     await proveedorSalud.changeRegimenRegulatorio('SIRES_NOM024', reason);
     toast.open({
@@ -455,8 +455,9 @@ const logoSrc = computed(() => {
 <template>
     <!-- <Transition appear name="fade-slow"> -->
     <Transition appear mode="out-in" name="slide-up">
-    <div
-      class="relative bg-white text-gray-800 w-full max-w-5xl p-5 sm:p-8 lg:p-10 mt-2 sm:mt-4 rounded-lg shadow-lg mx-auto max-h-none overflow-visible lg:max-h-[82vh] lg:overflow-y-auto">
+    <div>
+      <div
+        class="relative bg-white text-gray-800 w-full max-w-5xl p-5 sm:p-8 lg:p-10 mt-2 sm:mt-4 rounded-lg shadow-lg mx-auto max-h-none overflow-visible lg:max-h-[82vh] lg:overflow-y-auto">
       <Transition appear name="fade-slow">
         <div v-if="proveedorSalud.loading">
           <!-- <h1 class="text-3xl text-center">Cargando proveedor...</h1> -->
@@ -609,7 +610,7 @@ const logoSrc = computed(() => {
               />
 
               <!-- Banner de setup incompleto SIRES -->
-              <div
+              <!-- <div
                 v-if="proveedorSalud.isSIRES && !proveedorSalud.proveedorSalud?.clues"
                 class="sm:col-span-2 mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                 <div class="flex items-start gap-2">
@@ -623,7 +624,7 @@ const logoSrc = computed(() => {
                     </p>
                   </div>
                 </div>
-              </div>
+              </div> -->
 
               <!-- Sección Régimen Regulatorio -->
               <div class="sm:col-span-2 mb-4 p-4 border rounded-lg bg-gray-50">
@@ -637,7 +638,7 @@ const logoSrc = computed(() => {
                     Estado actual: 
                     <span class="font-semibold">
                       {{ proveedorSalud.proveedorSalud?.regimenRegulatorio === 'SIRES_NOM024' 
-                        ? 'SIRES (NOM-024)' 
+                        ? 'SIRES (NOM-024-SSA3-2012)' 
                         : 'Sin régimen regulatorio' }}
                     </span>
                   </p>
@@ -650,7 +651,7 @@ const logoSrc = computed(() => {
                     type="button"
                     class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                     <i class="fa-solid fa-arrow-up mr-2"></i>
-                    Activar SIRES (NOM-024)
+                    Activar SIRES (NOM-024-SSA3-2012)
                   </button>
                 </div>
 
@@ -798,14 +799,15 @@ const logoSrc = computed(() => {
           </FormKit>
         </div>
       </Transition>
-    </div>
+      </div>
 
-    <!-- Modal de cambio de régimen -->
-    <ChangeRegimenModal
-      v-if="showChangeRegimenModal"
-      @close="showChangeRegimenModal = false"
-      @confirm="handleRegimenChange"
-    />
+      <!-- Modal de cambio de régimen -->
+      <ChangeRegimenModal
+        v-if="showChangeRegimenModal"
+        @close="showChangeRegimenModal = false"
+        @confirm="handleRegimenChange"
+      />
+    </div>
   </Transition>
 </template>
 

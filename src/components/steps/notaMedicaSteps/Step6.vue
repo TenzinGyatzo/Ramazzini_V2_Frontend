@@ -357,7 +357,7 @@ watch(
             <div>
                 <CIE10Autocomplete
                     v-model="codigoCIE10Principal"
-                    :label="cie10Required ? 'Código CIE-10 Principal *' : 'Código CIE-10 Principal'"
+                    :label="'Código CIE-10 Principal'"
                     :required="cie10Required"
                     :trabajadorId="trabajadores.currentTrabajadorId"
                     :fechaConsulta="fechaNotaMedica"

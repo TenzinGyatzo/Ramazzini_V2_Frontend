@@ -1,4 +1,4 @@
-import { computed, ComputedRef } from 'vue';
+import { computed } from 'vue';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
 /**

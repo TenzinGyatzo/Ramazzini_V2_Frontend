@@ -1596,7 +1596,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(notaAclaratoria.fechaNotaAclaratoria) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="notaAclaratoria.estado" 
                                     :fechaFinalizacion="notaAclaratoria.fechaFinalizacion" 
                                     :finalizadoPor="notaAclaratoria.finalizadoPor"
@@ -1704,7 +1704,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="antidoping.estado" 
                                     :fechaFinalizacion="antidoping.fechaFinalizacion" 
                                     :finalizadoPor="antidoping.finalizadoPor"
@@ -1765,7 +1765,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(constanciaAptitud.fechaConstanciaAptitud) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="constanciaAptitud.estado" 
                                     :fechaFinalizacion="constanciaAptitud.fechaFinalizacion" 
                                     :finalizadoPor="constanciaAptitud.finalizadoPor"
@@ -1830,7 +1830,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="aptitud.estado" 
                                     :fechaFinalizacion="aptitud.fechaFinalizacion" 
                                     :finalizadoPor="aptitud.finalizadoPor"
@@ -1912,7 +1912,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="audiometria.estado" 
                                     :fechaFinalizacion="audiometria.fechaFinalizacion" 
                                     :finalizadoPor="audiometria.finalizadoPor"
@@ -1982,7 +1982,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(certificado.fechaCertificado) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="certificado.estado" 
                                     :fechaFinalizacion="certificado.fechaFinalizacion" 
                                     :finalizadoPor="certificado.finalizadoPor"
@@ -2053,7 +2053,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="certificadoExpedito.estado" 
                                     :fechaFinalizacion="certificadoExpedito.fechaFinalizacion" 
                                     :finalizadoPor="certificadoExpedito.finalizadoPor"
@@ -2145,7 +2145,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 </span>
                             
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="documentoExterno.estado" 
                                     :fechaFinalizacion="documentoExterno.fechaFinalizacion" 
                                     :finalizadoPor="documentoExterno.finalizadoPor"
@@ -2216,7 +2216,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="examenVista.estado" 
                                     :fechaFinalizacion="examenVista.fechaFinalizacion" 
                                     :finalizadoPor="examenVista.finalizadoPor"
@@ -2313,7 +2313,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="exploracionFisica.estado" 
                                     :fechaFinalizacion="exploracionFisica.fechaFinalizacion" 
                                     :finalizadoPor="exploracionFisica.finalizadoPor"
@@ -2415,7 +2415,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="historiaClinica.estado" 
                                     :fechaFinalizacion="historiaClinica.fechaFinalizacion" 
                                     :finalizadoPor="historiaClinica.finalizadoPor"
@@ -2500,7 +2500,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="notaMedica.estado" 
                                     :fechaFinalizacion="notaMedica.fechaFinalizacion" 
                                     :finalizadoPor="notaMedica.finalizadoPor"
@@ -2517,6 +2517,14 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
                                     <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Diagnóstico</p>
                                     <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ notaMedica.diagnostico }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="notaMedica.codigoCIE10Principal" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Diagnóstico Principal</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ notaMedica.codigoCIE10Principal }}</p>
                                 </div>
                             </div>
                         </div>
@@ -2567,7 +2575,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(receta.fechaReceta) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="receta.estado" 
                                     :fechaFinalizacion="receta.fechaFinalizacion" 
                                     :finalizadoPor="receta.finalizadoPor"
@@ -2636,7 +2644,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="controlPrenatal.estado" 
                                     :fechaFinalizacion="controlPrenatal.fechaFinalizacion" 
                                     :finalizadoPor="controlPrenatal.finalizadoPor"
@@ -2798,7 +2806,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="historiaOtologica.estado" 
                                     :fechaFinalizacion="historiaOtologica.fechaFinalizacion" 
                                     :finalizadoPor="historiaOtologica.finalizadoPor"
@@ -2880,7 +2888,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                     {{ convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria) }}
                                 </p>
                                 <EstadoDocumentoBadge 
-                                    v-if="isMX"
+                                    v-if="isMX && documentImmutabilityEnabled"
                                     :estado="previoEspirometria.estado" 
                                     :fechaFinalizacion="previoEspirometria.fechaFinalizacion" 
                                     :finalizadoPor="previoEspirometria.finalizadoPor"
@@ -2977,7 +2985,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     <i :class="isReadOnly ? 'fa-regular fa-eye fa-lg' : 'fa-regular fa-pen-to-square fa-lg'"></i>
                 </button>
 
-                <button v-if="puedeFinalizar" type="button" 
+                <button v-if="puedeFinalizar && documentImmutabilityEnabled" type="button" 
                     class="py-1 px-1.5 sm:py-2 sm:px-2.5 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-600 transition-transform duration-200 ease-in-out transform hover:scale-110 shadow-sm z-5"
                     @click="$emit('abrirModalFinalizar', documentoId, documentoNombre, documentoTipo)"
                     @mouseenter="(e) => updateTooltipPosition(e, 'Finalizar documento')"
@@ -3181,7 +3189,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
 /* Animaciones para los modales */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .modal-fade-enter-from {
@@ -3196,22 +3204,42 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
 
 /* Estilos para los botones de control */
 .control-button {
-    @apply transition-all duration-200 ease-in-out;
+    transition-property: all;
+    transition-duration: 200ms;
+    transition-timing-function: ease-in-out;
 }
 
 .control-button:hover {
-    @apply transform scale-105;
+    transform: scale(1.05);
 }
 
 /* Estilos para el indicador de zoom */
 .zoom-indicator {
-    @apply bg-black bg-opacity-75 text-white px-3 py-2 rounded-full text-sm;
+    background-color: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
 /* Estilos para el indicador de ayuda */
 .help-indicator {
-    @apply bg-black bg-opacity-75 text-white px-4 py-2 rounded-full text-sm;
+    background-color: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
@@ -3220,7 +3248,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
     /* Pantallas muy pequeñas (xs) */
     .modal-fade-enter-active,
     .modal-fade-leave-active {
-        transition: all 0.2s ease;
+        transition: opacity 0.2s ease, transform 0.2s ease;
     }
 }
 
@@ -3238,11 +3266,13 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
 @media (max-width: 768px) {
     /* Pantallas pequeñas (sm) */
     .control-button {
-        @apply px-2 py-1 text-xs;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
     }
     
     .help-indicator {
-        @apply text-xs px-2 py-1;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
     }
     
     /* Ajustes específicos para móviles */
@@ -3255,15 +3285,8 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
 @media (min-width: 768px) and (max-width: 1024px) {
     /* Pantallas medianas (md) */
     .control-button {
-        @apply px-3 py-2 text-sm;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
     }
-}
-
-@media (min-width: 1024px) and (max-width: 1280px) {
-    /* Pantallas grandes (lg) */
-}
-
-@media (min-width: 1280px) {
-    /* Pantallas extra grandes (xl) */
 }
 </style>

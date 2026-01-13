@@ -18,6 +18,17 @@ export interface Antidoping {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
 }
 
 export interface Aptitud {
@@ -53,6 +64,17 @@ export interface Aptitud {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
 }
 
 export interface Audiometria {
@@ -91,6 +113,17 @@ export interface Audiometria {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
 }
 
 export interface Certificado {
@@ -104,6 +137,17 @@ export interface Certificado {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
 }
 
 export interface CertificadoExpedito {
@@ -147,6 +191,17 @@ export interface DocumentoExterno {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
 }
 
 export interface ExamenVista {
@@ -177,6 +232,17 @@ export interface ExamenVista {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
 }
 
 export interface ExploracionFisica {
@@ -233,6 +299,17 @@ export interface ExploracionFisica {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
 }
 
 export interface HistoriaClinica {
@@ -333,6 +410,17 @@ export interface HistoriaClinica {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
 }
 
 export interface NotaMedica {
@@ -379,6 +467,17 @@ export interface NotaAclaratoria {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
     documentoOrigenId: string;
     documentoOrigenTipo: string;
     documentoOrigenNombre?: string;
@@ -502,6 +601,17 @@ export interface ControlPrenatal {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
 }
 
 export interface HistoriaOtologica {
@@ -540,6 +650,17 @@ export interface HistoriaOtologica {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
 }
 
 export interface PrevioEspirometria {
@@ -582,6 +703,17 @@ export interface PrevioEspirometria {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
 }
 
 export interface Receta {
@@ -598,6 +730,17 @@ export interface Receta {
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    // Consentimiento Diario (NOM-024)
+    consentimientoDiarioId?: string;
+    consentimientoDiario?: {
+        _id: string;
+        acceptedAt: string;
+        consentMethod: 'VERBAL' | 'AUTOGRAFO';
+        acceptedByUserId: string | {
+            username?: string;
+            nombre?: string;
+        };
+    };
 }
 
 export interface ConstanciaAptitud {

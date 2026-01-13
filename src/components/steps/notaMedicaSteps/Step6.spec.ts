@@ -47,7 +47,7 @@ describe('Step6 NotaMedica - CIE-10 Required Marker', () => {
     validation: {
       curpFirmantes: 'optional' as const,
       workerCurp: 'optional' as const,
-      cie10Principal: 'optional' as const,
+      cie10Principal: 'required' as const,
       geoFields: 'optional' as const,
     },
   });
@@ -85,15 +85,15 @@ describe('Step6 NotaMedica - CIE-10 Required Marker', () => {
     expect(policy.cie10Required.value).toBe(true);
   });
 
-  it('should NOT show asterisk (*) for CIE-10 principal label in SIN_REGIMEN', () => {
+  it('should show asterisk (*) for CIE-10 principal label in SIN_REGIMEN', () => {
     const proveedorSaludStore = useProveedorSaludStore();
     proveedorSaludStore.proveedorSalud = {
       _id: 'test-id',
       regulatoryPolicy: createSinRegimenPolicy(),
     } as any;
 
-    // Verificar que cie10Required es false para SIN_REGIMEN
+    // Verificar que cie10Required es true para SIN_REGIMEN (ahora es obligatorio)
     const policy = useNom024Fields();
-    expect(policy.cie10Required.value).toBe(false);
+    expect(policy.cie10Required.value).toBe(true);
   });
 });

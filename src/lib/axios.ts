@@ -26,6 +26,13 @@ api.interceptors.response.use(
     const errorData = error.response?.data as any;
     
     if (errorData?.errorCode) {
+      // CONSENT_REQUIRED se maneja mediante modal, no mostrar toast aquí
+      if (errorData.errorCode === 'CONSENT_REQUIRED') {
+        // El modal se manejará en el composable useDailyConsentGate
+        // No mostrar toast para evitar duplicación
+        return Promise.reject(error);
+      }
+      
       // Es un error regulatorio, mapearlo a mensaje UX
       try {
         const toast = getToast();
