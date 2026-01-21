@@ -299,6 +299,81 @@ const showTooltipEnfermera = ref(false);
 const showTooltipLogotipo = ref(false);
 const showTooltipTecnicoEvaluador = ref(false);
 
+// Refs para posicionar tooltips con Teleport
+const tooltipLogotipoRef = ref<HTMLElement | null>(null);
+const tooltipProveedorRef = ref<HTMLElement | null>(null);
+const tooltipMedicoRef = ref<HTMLElement | null>(null);
+const tooltipEnfermeraRef = ref<HTMLElement | null>(null);
+const tooltipTecnicoEvaluadorRef = ref<HTMLElement | null>(null);
+
+// Estilos reactivos para tooltips (se actualizan en mouseenter)
+const tooltipLogotipoStyle = ref<Record<string, string>>({});
+const tooltipProveedorStyle = ref<Record<string, string>>({});
+const tooltipMedicoStyle = ref<Record<string, string>>({});
+const tooltipEnfermeraStyle = ref<Record<string, string>>({});
+const tooltipTecnicoEvaluadorStyle = ref<Record<string, string>>({});
+
+// Funciones para mostrar tooltips y calcular posición
+const showTooltipLogotipoHandler = () => {
+  if (tooltipLogotipoRef.value) {
+    const rect = tooltipLogotipoRef.value.getBoundingClientRect();
+    tooltipLogotipoStyle.value = {
+      top: `${rect.top + rect.height / 2}px`,
+      left: `${rect.left - 285}px`,
+      transform: 'translateY(-20%)'
+    };
+  }
+  showTooltipLogotipo.value = true;
+};
+
+const showTooltipProveedorHandler = () => {
+  if (tooltipProveedorRef.value) {
+    const rect = tooltipProveedorRef.value.getBoundingClientRect();
+    tooltipProveedorStyle.value = {
+      top: `${rect.top + rect.height / 2}px`,
+      left: `${rect.left - 285}px`,
+      transform: 'translateY(-20%)'
+    };
+  }
+  showTooltipProveedor.value = true;
+};
+
+const showTooltipMedicoHandler = () => {
+  if (tooltipMedicoRef.value) {
+    const rect = tooltipMedicoRef.value.getBoundingClientRect();
+    tooltipMedicoStyle.value = {
+      top: `${rect.top + rect.height / 2}px`,
+      left: `${rect.left - 285}px`,
+      transform: 'translateY(-20%)'
+    };
+  }
+  showTooltipMedico.value = true;
+};
+
+const showTooltipEnfermeraHandler = () => {
+  if (tooltipEnfermeraRef.value) {
+    const rect = tooltipEnfermeraRef.value.getBoundingClientRect();
+    tooltipEnfermeraStyle.value = {
+      top: `${rect.top + rect.height / 2}px`,
+      left: `${rect.left - 285}px`,
+      transform: 'translateY(-20%)'
+    };
+  }
+  showTooltipEnfermera.value = true;
+};
+
+const showTooltipTecnicoEvaluadorHandler = () => {
+  if (tooltipTecnicoEvaluadorRef.value) {
+    const rect = tooltipTecnicoEvaluadorRef.value.getBoundingClientRect();
+    tooltipTecnicoEvaluadorStyle.value = {
+      top: `${rect.top + rect.height / 2}px`,
+      left: `${rect.left - 285}px`,
+      transform: 'translateY(-20%)'
+    };
+  }
+  showTooltipTecnicoEvaluador.value = true;
+};
+
 let intervaloAnimacion: ReturnType<typeof setInterval> | null = null;
 let intervaloTooltipProveedor: ReturnType<typeof setInterval> | null = null;
 let intervaloTooltipMedico: ReturnType<typeof setInterval> | null = null;
@@ -781,9 +856,10 @@ watch(mostrarTooltipTecnicoEvaluador, (nuevoValor) => {
       <div 
         v-if="isMenuOpen && ['inicio', 'add-user', 'remove-users', 'manage-permissions', 'manage-assignments', 'user-productivity', 'perfil-proveedor', 'medico-firmante', 'enfermera-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador', 'exportacion-giis', 'auditoria'].includes(route.name as string)"
         ref="menuRef"
-        class="fixed top-20 right-6 bg-white rounded-2xl shadow-2xl p-6 w-72 max-h-[70vh] overflow-y-auto pr-3 z-40 border border-gray-100 backdrop-blur-sm bg-white/95">
+        class="fixed top-20 right-6 bg-white rounded-2xl shadow-2xl p-6 w-72 z-40 border border-gray-100 backdrop-blur-sm bg-white/95 overflow-visible">
 
-        <div class="space-y-4">
+        <div class="max-h-[70vh] overflow-y-auto pr-3">
+          <div class="space-y-4">
 
           <!-- Administrador -->
           <div v-if="user.user?.role === 'Administrador'">
@@ -820,22 +896,26 @@ watch(mostrarTooltipTecnicoEvaluador, (nuevoValor) => {
                ]">
               <div class="flex items-center gap-3">
                 <!-- Icono con animación para logotipo pendiente -->
-                <div v-if="logotipoPendiente" class="relative group" @mouseenter="showTooltipLogotipo = true" @mouseleave="showTooltipLogotipo = false">
+                <div v-if="logotipoPendiente" class="relative group" ref="tooltipLogotipoRef" @mouseenter="showTooltipLogotipoHandler" @mouseleave="showTooltipLogotipo = false">
                   <i :class="['fa-solid fa-triangle-exclamation text-red-500 text-lg cursor-pointer', animacionTooltipProveedor]"></i>
-                  <div v-if="showTooltipLogotipo" class="absolute right-full -mr-4 top-1/2 transform -translate-y-1/2 z-50 bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64">
-                    <p class="font-semibold mb-1 text-base">Se requiere un logotipo para el encabezado del informe</p>
-                  </div>
+                  <Teleport to="body">
+                    <div v-if="showTooltipLogotipo" class="fixed z-[9999] bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64" :style="tooltipLogotipoStyle">
+                      <p class="font-semibold mb-1 text-base">Se requiere un logotipo para el encabezado del informe</p>
+                    </div>
+                  </Teleport>
                 </div>
                 
                 <!-- Icono con animación para campos pendientes -->
-                <div v-if="mostrarTooltipProveedor" class="relative group" @mouseenter="showTooltipProveedor = true" @mouseleave="showTooltipProveedor = false">
+                <div v-if="mostrarTooltipProveedor" class="relative group" ref="tooltipProveedorRef" @mouseenter="showTooltipProveedorHandler" @mouseleave="showTooltipProveedor = false">
                   <i :class="['fa-solid fa-exclamation-circle text-yellow-500 text-lg cursor-pointer', animacionTooltipProveedor]"></i>
-                  <div v-if="showTooltipProveedor" class="absolute right-full -mr-4 top-1/2 transform -translate-y-1/2 z-50 bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64">
-                    <p class="font-semibold mb-1 text-base">Para un mejor pie de página, se recomienda guardar:</p>
-                    <ul class="list-disc pl-4 mt-2 text-gray-300">
-                      <li v-for="item in camposPendientesProveedor" :key="item">{{ item }}</li>
-                    </ul>
-                  </div>
+                  <Teleport to="body">
+                    <div v-if="showTooltipProveedor" class="fixed z-[9999] bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64" :style="tooltipProveedorStyle">
+                      <p class="font-semibold mb-1 text-base">Para un mejor pie de página, se recomienda guardar:</p>
+                      <ul class="list-disc pl-4 mt-2 text-gray-300">
+                        <li v-for="item in camposPendientesProveedor" :key="item">{{ item }}</li>
+                      </ul>
+                    </div>
+                  </Teleport>
                 </div>
                 
                 <i v-if="!logotipoPendiente && !mostrarTooltipProveedor" :class="[
@@ -862,14 +942,16 @@ watch(mostrarTooltipTecnicoEvaluador, (nuevoValor) => {
                ]">
               <div class="flex items-center gap-3">
                 <!-- Icono con animación para campos pendientes del médico -->
-                <div v-if="mostrarTooltipMedico" class="relative group" @mouseenter="showTooltipMedico = true" @mouseleave="showTooltipMedico = false">
+                <div v-if="mostrarTooltipMedico" class="relative group" ref="tooltipMedicoRef" @mouseenter="showTooltipMedicoHandler" @mouseleave="showTooltipMedico = false">
                   <i :class="['fa-solid fa-exclamation-circle text-yellow-500 text-lg cursor-pointer', animacionTooltipMedico]"></i>
-                  <div v-if="showTooltipMedico" class="absolute right-full -mr-4 top-1/2 transform -translate-y-1/2 z-50 bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64">
-                    <p class="font-semibold mb-1 text-base">Para un mejor pie de página, se recomienda guardar:</p>
-                    <ul class="list-disc pl-4 mt-2 text-gray-300">
-                      <li v-for="item in camposPendientesMedico" :key="item">{{ item }}</li>
-                    </ul>
-                  </div>
+                  <Teleport to="body">
+                    <div v-if="showTooltipMedico" class="fixed z-[9999] bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64" :style="tooltipMedicoStyle">
+                      <p class="font-semibold mb-1 text-base">Para un mejor pie de página, se recomienda guardar:</p>
+                      <ul class="list-disc pl-4 mt-2 text-gray-300">
+                        <li v-for="item in camposPendientesMedico" :key="item">{{ item }}</li>
+                      </ul>
+                    </div>
+                  </Teleport>
                 </div>
                 
                 <i v-if="!mostrarTooltipMedico" :class="[
@@ -894,14 +976,16 @@ watch(mostrarTooltipTecnicoEvaluador, (nuevoValor) => {
                ]">
               <div class="flex items-center gap-3">
                 <!-- Icono con animación para campos pendientes de la enfermera -->
-                <div v-if="mostrarTooltipEnfermera" class="relative group" @mouseenter="showTooltipEnfermera = true" @mouseleave="showTooltipEnfermera = false">
+                <div v-if="mostrarTooltipEnfermera" class="relative group" ref="tooltipEnfermeraRef" @mouseenter="showTooltipEnfermeraHandler" @mouseleave="showTooltipEnfermera = false">
                   <i :class="['fa-solid fa-exclamation-circle text-yellow-500 text-lg cursor-pointer', animacionTooltipEnfermera]"></i>
-                  <div v-if="showTooltipEnfermera" class="absolute right-full -mr-4 top-1/2 transform -translate-y-1/2 z-50 bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64">
-                    <p class="font-semibold mb-1 text-base">Para un mejor pie de página, se recomienda guardar:</p>
-                    <ul class="list-disc pl-4 mt-2 text-gray-300">
-                      <li v-for="item in camposPendientesEnfermera" :key="item">{{ item }}</li>
-                    </ul>
-                  </div>
+                  <Teleport to="body">
+                    <div v-if="showTooltipEnfermera" class="fixed z-[9999] bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64" :style="tooltipEnfermeraStyle">
+                      <p class="font-semibold mb-1 text-base">Para un mejor pie de página, se recomienda guardar:</p>
+                      <ul class="list-disc pl-4 mt-2 text-gray-300">
+                        <li v-for="item in camposPendientesEnfermera" :key="item">{{ item }}</li>
+                      </ul>
+                    </div>
+                  </Teleport>
                 </div>
                 
                 <i v-if="!mostrarTooltipEnfermera" :class="[
@@ -926,14 +1010,16 @@ watch(mostrarTooltipTecnicoEvaluador, (nuevoValor) => {
                ]">
               <div class="flex items-center gap-3">
                 <!-- Icono con animación para campos pendientes del técnico evaluador -->
-                <div v-if="mostrarTooltipTecnicoEvaluador" class="relative group" @mouseenter="showTooltipTecnicoEvaluador = true" @mouseleave="showTooltipTecnicoEvaluador = false">
+                <div v-if="mostrarTooltipTecnicoEvaluador" class="relative group" ref="tooltipTecnicoEvaluadorRef" @mouseenter="showTooltipTecnicoEvaluadorHandler" @mouseleave="showTooltipTecnicoEvaluador = false">
                   <i :class="['fa-solid fa-exclamation-circle text-yellow-500 text-lg cursor-pointer', animacionTooltipTecnicoEvaluador]"></i>
-                  <div v-if="showTooltipTecnicoEvaluador" class="absolute right-full -mr-4 top-1/2 transform -translate-y-1/2 z-50 bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64">
-                    <p class="font-semibold mb-1 text-base">Para un mejor pie de página, se recomienda guardar:</p>
-                    <ul class="list-disc pl-4 mt-2 text-gray-300">
-                      <li v-for="item in camposPendientesTecnicoEvaluador" :key="item">{{ item }}</li>
-                    </ul>
-                  </div>
+                  <Teleport to="body">
+                    <div v-if="showTooltipTecnicoEvaluador" class="fixed z-[9999] bg-black bg-opacity-90 text-white border border-gray-700 rounded-md shadow-lg p-3 text-sm w-64" :style="tooltipTecnicoEvaluadorStyle">
+                      <p class="font-semibold mb-1 text-base">Para un mejor pie de página, se recomienda guardar:</p>
+                      <ul class="list-disc pl-4 mt-2 text-gray-300">
+                        <li v-for="item in camposPendientesTecnicoEvaluador" :key="item">{{ item }}</li>
+                      </ul>
+                    </div>
+                  </Teleport>
                 </div>
                 
                 <i v-if="!mostrarTooltipTecnicoEvaluador" :class="[
@@ -1053,6 +1139,7 @@ watch(mostrarTooltipTecnicoEvaluador, (nuevoValor) => {
             </button>
           </div>
 
+          </div>
         </div>
       </div>
     </Transition>
