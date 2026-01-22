@@ -23,6 +23,9 @@ import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 import { useUserPermissions } from '@/composables/useUserPermissions';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
+import { useResultadosClinicosStore } from '@/stores/resultadosClinicos';
+import ResultadosClinicosPanel from '@/components/ResultadosClinicosPanel.vue';
+import ResultadosClinicosSubsection from '@/components/ResultadosClinicosSubsection.vue';
 
 const toast: any = inject('toast');
 
@@ -35,6 +38,7 @@ const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const medicoFirmanteStore = useMedicoFirmanteStore();
+const resultadosClinicos = useResultadosClinicosStore();
 const { canCreateDocument, getRestrictionMessage } = useUserPermissions();
 const { executeIfCanManageDocumentosExternos } = usePermissionRestrictions();
 
@@ -43,6 +47,7 @@ const showDocumentoExternoUpdateModal = ref(false);
 const showSubscriptionModal = ref(false);
 const showDeleteModal = ref(false);
 const showCuestionariosModal = ref(false);
+const showResultadosClinicosPanel = ref(false);
 const selectedDocumentId = ref<string | null>(null);
 const selectedDocumentName = ref<string>('');
 const selectedDocumentType = ref<string | null>(null);
@@ -158,7 +163,10 @@ const handleDeleteDocument = async () => {
   toast.open({ message: "Documento eliminado exitosamente." });
 
   toggleDeleteModal();
-  await documentos.fetchAllDocuments(trabajadores.currentTrabajadorId!);
+  await Promise.all([
+    documentos.fetchAllDocuments(trabajadores.currentTrabajadorId!),
+    resultadosClinicos.fetchResultadosAgrupados(trabajadores.currentTrabajadorId!)
+  ]);
   } catch (error) {
     console.log("Error al eliminar el documento:", error);
     toast.open({ message: "Error al eliminar, por favor intente nuevamente.", type: "error" });
@@ -187,6 +195,7 @@ const fetchData = async () => {
   try {
     await Promise.all([
       documentos.fetchAllDocuments(trabajadorId),
+      resultadosClinicos.fetchResultadosAgrupados(trabajadorId),
       empresas.fetchEmpresaById(empresaId),
       centrosTrabajo.fetchCentroTrabajoById(empresaId, centroTrabajoId),
       trabajadores.fetchTrabajadorById(empresaId, centroTrabajoId, trabajadorId)
@@ -210,6 +219,15 @@ watch(
     fetchData();
   }
 );
+
+const documentosPorAnio = computed(() => documentos.documentsByYear || {});
+const resultadosPorAnio = computed(() => resultadosClinicos.resultsByYear || {});
+const yearsWithRecords = computed(() => {
+  const años = new Set<string>();
+  Object.keys(documentosPorAnio.value || {}).forEach((year) => años.add(year));
+  Object.keys(resultadosPorAnio.value || {}).forEach((year) => años.add(year));
+  return Array.from(años).sort((a, b) => Number(b) - Number(a));
+});
 
 const navigateTo = (routeName, params) => {
   if (!proveedorSaludStore.proveedorSalud) return;
@@ -259,6 +277,20 @@ const toggleDeletionMode = () => {
     isDeletionMode.value = !isDeletionMode.value;
     // Ya no limpiamos la selección al cambiar de modo
     // Los checkboxes mantienen su estado
+};
+
+const handleEditResultado = (resultado: any) => {
+  // Abrir el drawer y prellenar con el resultado
+  resultadosClinicos.setCurrent(resultado);
+  showResultadosClinicosPanel.value = true;
+};
+
+const handleCloseResultadosPanel = async () => {
+  showResultadosClinicosPanel.value = false;
+  // Refrescar resultados agrupados al cerrar el drawer
+  if (trabajadores.currentTrabajadorId) {
+    await resultadosClinicos.fetchResultadosAgrupados(trabajadores.currentTrabajadorId);
+  }
 };
 
 const handleDeleteSelected = async () => {
@@ -472,8 +504,11 @@ const handleDeleteSelected = async () => {
         selectedRoutes.value = [];
         isDeletionMode.value = false;
         
-        // Recargar documentos
-        await documentos.fetchAllDocuments(trabajadores.currentTrabajadorId!);
+        // Recargar documentos y resultados
+        await Promise.all([
+          documentos.fetchAllDocuments(trabajadores.currentTrabajadorId!),
+          resultadosClinicos.fetchResultadosAgrupados(trabajadores.currentTrabajadorId!)
+        ]);
         
     } catch (error) {
         console.error('Error al eliminar documentos:', error);
@@ -555,6 +590,13 @@ const añoMasReciente = computed(() => {
       <Transition appear name="fade">
         <ModalCuestionarios v-if="showCuestionariosModal" @closeModal="toggleCuestionariosModal" />
       </Transition>
+
+      <ResultadosClinicosPanel 
+        v-if="showResultadosClinicosPanel && trabajadores.currentTrabajadorId" 
+        :isOpen="showResultadosClinicosPanel"
+        :trabajadorId="trabajadores.currentTrabajadorId"
+        @close="handleCloseResultadosPanel"
+      />
 
         <!-- Header principal con información del trabajador -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden mb-4">
@@ -844,6 +886,18 @@ const añoMasReciente = computed(() => {
                   <i class="fas fa-arrow-right text-emerald-600 text-sm mr-4 transition-transform duration-200 hover:translate-x-1"></i>
                 </button>
               </div>
+
+              <!-- Botón para Registrar Resultados Clínicos -->
+              <div class="sm:mt-6 flex justify-center">
+                <button
+                  @click="showResultadosClinicosPanel = true"
+                  class="relative w-[232px] h-[50px] rounded-lg cursor-pointer flex items-center border-2 border-blue-600 bg-white overflow-hidden transition-all duration-200 hover:bg-blue-50 hover:shadow-lg"
+                >
+                  <i class="fas fa-clipboard-check text-blue-600 text-lg ml-4"></i>
+                  <span class="flex-1 text-center text-blue-600 text-lg ml-3">Resultados</span>
+                  <i class="fas fa-arrow-right text-blue-600 text-sm mr-4 transition-transform duration-200 hover:translate-x-1"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -860,26 +914,42 @@ const añoMasReciente = computed(() => {
             </div>
             
             <div v-else>
-              <!-- Lista de documentos por año -->
-              <div v-if="documentos.documentsByYear && Object.keys(documentos.documentsByYear).length" class="grid grid-cols-1 gap-6">
-                <GrupoDocumentos 
-                  v-for="year in Object.keys(documentos.documentsByYear).sort((a, b) => Number(b) - Number(a))"
-                  :key="year" 
-                  :documents="documentos.documentsByYear[year]" 
-                  :year="year"
-                  :trabajador="trabajadores.currentTrabajador || {}"
-                  @eliminarDocumento="toggleDeleteModal" 
-                  @abrirModalUpdate="toggleDocumentoExternoUpdateModal" 
-                  @openSubscriptionModal="showSubscriptionModal = true"
-                  :toggleRouteSelection="toggleRouteSelection" 
-                  :selectedRoutes="selectedRoutes"
-                  :isDeletionMode="isDeletionMode"
-                  :toggleDeletionMode="toggleDeletionMode"
-                  :onDeleteSelected="handleDeleteSelected"
-                />
+              <!-- <div v-if="resultadosClinicos.loadingGrouped" class="text-center py-4">
+                <div class="inline-flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-full mb-4 animate-pulse">
+                  <i class="fas fa-spinner fa-spin text-xl text-emerald-600"></i>
+                </div>
+                <p class="text-gray-500">Actualizando resultados clínicos...</p>
+              </div> -->
+
+              <div v-if="yearsWithRecords.length" class="space-y-6">
+                <div
+                  v-for="year in yearsWithRecords"
+                  :key="year"
+                  class="space-y-4"
+                >
+                  <GrupoDocumentos
+                    :documents="documentosPorAnio[year] || {}"
+                    :year="year"
+                    :trabajador="trabajadores.currentTrabajador || {}"
+                    @eliminarDocumento="toggleDeleteModal"
+                    @abrirModalUpdate="toggleDocumentoExternoUpdateModal"
+                    @openSubscriptionModal="showSubscriptionModal = true"
+                    :toggleRouteSelection="toggleRouteSelection"
+                    :selectedRoutes="selectedRoutes"
+                    :isDeletionMode="isDeletionMode"
+                    :toggleDeletionMode="toggleDeletionMode"
+                    :onDeleteSelected="handleDeleteSelected"
+                  >
+                    <template #extraSection v-if="resultadosPorAnio[year] && resultadosPorAnio[year].length">
+                      <ResultadosClinicosSubsection
+                        :results="resultadosPorAnio[year]"
+                        @edit="handleEditResultado"
+                      />
+                    </template>
+                  </GrupoDocumentos>
+                </div>
               </div>
-              
-              <!-- Estado vacío -->
+
               <div v-else class="text-center py-8">
                 <div class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-full mb-6">
                   <i class="fas fa-folder-open text-6xl text-gray-400"></i>
