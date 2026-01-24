@@ -578,7 +578,10 @@ const añoMasReciente = computed(() => {
 
       <Transition appear name="fade">
         <ModalUpdateDocumentoExterno v-if="showDocumentoExternoUpdateModal"
-          @closeModalUpdate="toggleDocumentoExternoUpdateModal" @updateData="fetchData"/>
+          @closeModalUpdate="toggleDocumentoExternoUpdateModal" 
+          @updateData="fetchData"
+          @abrirResultados="showResultadosClinicosPanel = true"
+        />
       </Transition>
 
       <Transition appear name="fade">

@@ -11,17 +11,20 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
       <div
         v-for="resultado in sortedResults"
         :key="resultado._id"
         class="rounded-2xl border border-gray-200 bg-white p-3 shadow-sm"
       >
-        <div class="flex flex-col gap-3">
-          <div class="flex flex-wrap items-start justify-between gap-3">
-            <div class="flex items-center gap-3 flex-1 min-w-0">
+        <div class="flex flex-col gap-2 sm:gap-3">
+          <div
+            class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 cursor-pointer"
+            @click="emitEdit(resultado)"
+          >
+            <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
               <div
-                class="w-10 h-10 rounded-full flex items-center justify-center shadow-sm"
+                class="hidden sm:flex w-10 h-10 rounded-full items-center justify-center shadow-sm"
                 :style="{ backgroundColor: getIconBackground(resultado.tipoEstudio) }"
               >
                 <i
@@ -31,68 +34,67 @@
                 ></i>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-gray-800 truncate">
+                <p class="text-xs sm:text-sm font-semibold text-gray-800 truncate flex items-center gap-1.5">
                   {{ store.getTipoLabel(resultado.tipoEstudio) }}
+                  <i
+                    v-if="resultado.idDocumentoExterno"
+                    class="fas fa-paperclip text-emerald-600 text-[10px] sm:text-xs"
+                    :title="resultado.documentoExterno ? `Documento: ${resultado.documentoExterno.nombreDocumento}` : 'Documento vinculado'"
+                  ></i>
                 </p>
-                <div class="flex flex-wrap gap-2 text-xs text-gray-500 mt-0.5 items-center">
-                  <span>{{ formatDate(resultado.fechaEstudio) }}</span>
+                <div class="flex flex-wrap items-center gap-2 mt-0.5">
+                  <span class="text-[10px] sm:text-xs text-gray-500">{{ formatDate(resultado.fechaEstudio) }}</span>
+                  <div class="flex items-center">
+                    <span
+                      v-if="resultado.tipoEstudio !== 'TIPO_SANGRE' && resultado.resultadoGlobal === 'NORMAL'"
+                      :class="['px-1.5 py-0.5 rounded-full font-semibold text-[10px] sm:text-xs', getResultadoBadgeClasses(resultado.resultadoGlobal)]"
+                    >
+                      {{ store.getResultadoLabel(resultado.resultadoGlobal) }}
+                    </span>
+                    <span
+                      v-else-if="resultado.tipoEstudio === 'TIPO_SANGRE' && resultado.tipoSangre"
+                      class="px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-700 font-semibold text-[10px] sm:text-xs"
+                    >
+                      {{ getTipoSangreLabel(resultado.tipoSangre) }}
+                    </span>
+                    <span
+                      v-if="resultado.resultadoGlobal === 'ANORMAL' && getAlteracionLabel(resultado)"
+                      class="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold text-[10px] sm:text-xs"
+                    >
+                      {{ store.getResultadoLabel(resultado.resultadoGlobal) }}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div class="text-xs lg:text-sm mt-0.5 items-center">
-                <span
-                  v-if="resultado.tipoEstudio !== 'TIPO_SANGRE' && resultado.resultadoGlobal === 'NORMAL'"
-                  :class="['px-2 py-0.5 rounded-full font-semibold', getResultadoBadgeClasses(resultado.resultadoGlobal)]"
-                >
-                  {{ store.getResultadoLabel(resultado.resultadoGlobal) }}
-                </span>
-                <span
-                  v-else-if="resultado.tipoEstudio === 'TIPO_SANGRE' && resultado.tipoSangre"
-                  class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-semibold"
-                >
-                  {{ getTipoSangreLabel(resultado.tipoSangre) }}
-                </span>
-                <span
-                  v-if="resultado.resultadoGlobal === 'ANORMAL' && getAlteracionLabel(resultado)"
-                  class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold"
-                >
-                  {{ store.getResultadoLabel(resultado.resultadoGlobal) }}
-                </span>
-              </div>
             </div>
-              <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center justify-around gap-5 w-full sm:w-auto pt-2 border-t sm:border-t-0 border-gray-200">
               <button
+                v-if="hasDetails(resultado)"
                 type="button"
-                @click="toggleDetails(resultado._id)"
-                class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-1"
+                @click.stop="toggleDetails(resultado._id)"
+                class="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-1 hover:text-emerald-600 transition-colors"
               >
                 <i
-                  class="fas fa-chevron-down transition-transform"
+                  class="fas fa-chevron-down transition-transform text-sm"
                   :class="isExpanded(resultado._id) ? 'rotate-180' : ''"
                 ></i>
-              </button>
-              <button
-                type="button"
-                @click.stop="emitEdit(resultado)"
-                class="text-gray-500 hover:text-gray-700 transition-colors"
-                aria-label="Editar resultado"
-              >
-                <i class="fas fa-edit text-lg"></i>
+                <span>Detalles</span>
               </button>
               <button
                 type="button"
                 @click.stop="openDeleteModal(resultado)"
-                class="text-red-500 hover:text-red-600 transition-colors"
+                class="text-red-500 hover:text-red-600 transition-colors sm:pr-1"
                 aria-label="Eliminar resultado"
               >
-                <i class="fas fa-trash-alt text-base"></i>
+                <i class="fas fa-trash-alt text-xs sm:text-base"></i>
               </button>
             </div>
           </div>
 
           <transition name="fade">
             <div
-              v-if="isExpanded(resultado._id)"
-              class="mt-3 rounded-xl border border-gray-100 bg-gray-50 p-3 text-sm text-gray-600 space-y-1"
+              v-if="isExpanded(resultado._id) && hasDetails(resultado)"
+              class="mt-1 sm:mt-3 rounded-xl border border-gray-100 bg-gray-50 p-2 sm:p-3 text-[11px] sm:text-sm text-gray-600 space-y-1"
             >
               <p v-if="getAlteracionLabel(resultado)">
                 <span class="font-semibold text-gray-800">Tipo de Alteración:</span> {{ getAlteracionLabel(resultado) }}
@@ -247,6 +249,15 @@ const getAlteracionLabel = (resultado: ResultadoClinico) => {
   }
 
   return '';
+};
+
+const hasDetails = (resultado: ResultadoClinico) => {
+  return !!(
+    getAlteracionLabel(resultado) ||
+    resultado.hallazgoEspecifico ||
+    resultado.relevanciaClinica ||
+    resultado.recomendacion
+  );
 };
 
 const getTipoSangreLabel = (tipo?: string) => {

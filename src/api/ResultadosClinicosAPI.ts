@@ -25,4 +25,14 @@ export default {
   getResultadoById(id: string) {
     return api.get(`/resultados-clinicos/${id}`);
   },
+
+  vincularDocumento(resultadoId: string, documentoId: string) {
+    return api.patch(`/resultados-clinicos/${resultadoId}/vincular-documento`, { 
+      idDocumentoExterno: documentoId 
+    });
+  },
+
+  desvincularDocumento(resultadoId: string) {
+    return api.delete(`/resultados-clinicos/${resultadoId}/desvincular-documento`);
+  },
 }

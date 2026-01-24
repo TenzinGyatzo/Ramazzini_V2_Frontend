@@ -16,8 +16,8 @@
         class="fixed inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col"
       >
         <!-- Header -->
-        <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-green-50">
-          <h2 class="text-2xl font-bold text-gray-800">
+        <div class="flex items-center justify-between h-14 md:h-auto p-3 md:p-6 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-green-50">
+          <h2 class="text-xl md:text-2xl font-bold text-gray-800">
             {{ isEditing ? 'Editar Resultado Clínico' : 'Registrar Resultado Clínico' }}
           </h2>
           <button
@@ -28,12 +28,11 @@
           </button>
         </div>
 
-        <div class="px-6 pt-4 text-sm text-gray-600 leading-relaxed">
-          Resultados de evaluaciones adicionales que enriquecen el seguimiento y la estadística, pero no generan documentos en PDF.
-        </div>
-
         <!-- Content -->
-        <div class="flex-1 overflow-y-auto p-6">
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6">
+          <div class="px-1 pb-3 text-xs leading-tight text-gray-600 md:px-3 md:text-sm md:leading-relaxed">
+            Resultados de evaluaciones adicionales que enriquecen el seguimiento y la estadística, pero no generan documentos en PDF.
+          </div>
           <!-- Paso 1: Selector de tipo -->
           <div v-if="currentStep === 'select'" class="space-y-6">
             <div>
@@ -123,26 +122,39 @@
 
           <!-- Paso 2: Formulario -->
           <div v-if="currentStep === 'form'" class="space-y-6">
-            <div class="flex items-center mb-4">
-              <button
-                @click="handleBackToSelect"
-                class="text-emerald-600 hover:text-emerald-700 mr-2"
-                type="button"
-              >
-                <i class="fas fa-arrow-left"></i>
-              </button>
-              <span class="text-sm text-gray-600">
-                Tipo: {{ getTipoLabel(formData.tipoEstudio) }}
-                <span v-if="isEditing" class="ml-2 text-emerald-600 font-semibold">(Editando)</span>
-              </span>
+          <div class="flex items-center gap-4 mb-5">
+            <button
+              @click="handleBackToSelect"
+              class="text-emerald-600 hover:text-emerald-700 p-1 rounded-full hover:bg-emerald-50 transition-colors"
+              type="button"
+              aria-label="Volver a selección"
+            >
+              <i class="fas fa-arrow-left text-lg"></i>
+            </button>
+            <div
+              class="text-3xl leading-none flex-shrink-0"
+              :style="{ color: getIconColor(formData.tipoEstudio) }"
+            >
+              <i :class="getTipoIcon(formData.tipoEstudio)"></i>
             </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                <span>{{ getTipoLabel(formData.tipoEstudio) }}</span>
+                <span
+                  v-if="isEditing"
+                  class="text-emerald-600 font-semibold"
+                  >(Editando)</span
+                >
+              </div>
+            </div>
+          </div>
 
             <form @submit.prevent="handleSubmit" class="space-y-4">
               <!-- Fecha del estudio -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                  Fecha del estudio <span class="text-red-500">*</span>
-                </label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                {{ getFechaFieldLabel(formData.tipoEstudio) }} <span class="text-red-500">*</span>
+              </label>
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 items-end">
                   <div class="sm:col-span-1">
                     <input
@@ -314,6 +326,166 @@
                 </div>
               </div>
 
+              <!-- Documento de respaldo (opcional) -->
+              <div class="border-t border-gray-200 pt-3 mt-4 sm:pt-4 sm:mt-6">
+                <div class="mb-3">
+                  <h4 class="text-sm font-semibold text-gray-700 flex items-center">
+                    <i class="fas fa-paperclip text-gray-500 mr-2"></i>
+                    Documento de respaldo
+                    <span class="ml-2 text-xs font-normal text-gray-500">(Opcional)</span>
+                  </h4>
+                  <p class="text-xs text-gray-500 mt-1">
+                    Vincula un documento externo como respaldo de este resultado
+                  </p>
+                </div>
+
+                <!-- Si tiene documento seleccionado o vinculado -->
+                <div v-if="formData.idDocumentoExterno && documentoVinculado" class="relative">
+                  <!-- Badge de estado pendiente -->
+                  <Transition name="fade">
+                    <div v-if="estadoVinculacion === 'desvinculacion-pendiente' || estadoVinculacion === 'vinculacion-pendiente'" class="absolute -top-2 -right-2 z-10">
+                      <div 
+                        :class="[
+                          'text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1 animate-pulse',
+                          estadoVinculacion === 'desvinculacion-pendiente' ? 'bg-amber-500' : 'bg-blue-500'
+                        ]"
+                      >
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Pendiente
+                      </div>
+                    </div>
+                  </Transition>
+                  
+                  <!-- Card de documento con transición de estado -->
+                  <div 
+                    :class="[
+                      'rounded-lg transition-all duration-300 overflow-hidden cursor-pointer',
+                      estadoVinculacion === 'desvinculacion-pendiente' 
+                        ? 'bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 shadow-lg' 
+                        : estadoVinculacion === 'vinculacion-pendiente'
+                        ? 'bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-300 shadow-lg'
+                        : 'bg-emerald-50 border border-emerald-200 shadow-sm'
+                    ]"
+                    @click="abrirDocumentoExterno(documentoVinculado)"
+                  >
+                    <!-- Header del documento -->
+                    <div class="flex items-center gap-3 p-3">
+                      <div class="flex-shrink-0">
+                        <i :class="getDocExtensionIcon(documentoVinculado.extension)" class="text-2xl"></i>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-0.5">
+                          <i 
+                            :class="[
+                              'text-xs',
+                              estadoVinculacion === 'desvinculacion-pendiente' ? 'fas fa-unlink text-amber-600' :
+                              estadoVinculacion === 'vinculacion-pendiente' ? 'fas fa-clock text-blue-600' :
+                              'fas fa-link text-emerald-600'
+                            ]"
+                          ></i>
+                          <span 
+                            :class="[
+                              'text-xs font-medium',
+                              estadoVinculacion === 'desvinculacion-pendiente' ? 'text-amber-700' :
+                              estadoVinculacion === 'vinculacion-pendiente' ? 'text-blue-700' :
+                              'text-emerald-700'
+                            ]"
+                          >
+                            {{ 
+                              estadoVinculacion === 'desvinculacion-pendiente' ? 'Vinculación a remover' :
+                              estadoVinculacion === 'vinculacion-pendiente' ? 'Vinculación pendiente' :
+                              'Documento vinculado' 
+                            }}
+                          </span>
+                        </div>
+                        <p class="text-sm font-semibold text-gray-800 truncate">
+                          {{ documentoVinculado.nombreDocumento }}
+                        </p>
+                        <p class="text-xs text-gray-500">
+                          {{ formatDate(documentoVinculado.fechaDocumento) }}
+                        </p>
+                      </div>
+                      <div class="flex-shrink-0">
+                        <button
+                          v-if="estadoVinculacion !== 'vinculacion-pendiente'"
+                          type="button"
+                          @click.stop="estadoVinculacion === 'desvinculacion-pendiente' ? cancelarPendingDesvincularDocumento() : handleDesvincularDocumento()"
+                          :disabled="store.loading"
+                          :class="[
+                            'px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 flex items-center gap-1',
+                            estadoVinculacion === 'desvinculacion-pendiente'
+                              ? 'text-amber-700 bg-white hover:bg-amber-50 border-2 border-amber-300 hover:border-amber-400 shadow-sm'
+                              : 'text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300',
+                            store.loading ? 'opacity-50 cursor-not-allowed' : ''
+                          ]"
+                          :title="estadoVinculacion === 'desvinculacion-pendiente' ? 'Cancelar desvinculación' : 'Desvincular documento'"
+                        >
+                          <i :class="estadoVinculacion === 'desvinculacion-pendiente' ? 'fas fa-undo' : 'fas fa-unlink'"></i>
+                          <span class="hidden sm:inline">
+                            {{ estadoVinculacion === 'desvinculacion-pendiente' ? 'Cancelar' : 'Desvincular' }}
+                          </span>
+                        </button>
+                        <button
+                          v-else
+                          type="button"
+                          @click.stop="cancelarPendingVincularDocumento"
+                          :disabled="store.loading"
+                          :class="[
+                            'px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200',
+                            'text-blue-700 bg-white hover:bg-blue-50 border-2 border-blue-300 hover:border-blue-400 shadow-sm',
+                            store.loading ? 'opacity-50 cursor-not-allowed' : ''
+                          ]"
+                          title="Cancelar vinculación pendiente"
+                        >
+                          <i class="fas fa-times mr-1"></i>
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <!-- Mensaje contextual según estado -->
+                    <Transition name="slide-down">
+                      <div v-if="estadoVinculacion === 'desvinculacion-pendiente' || estadoVinculacion === 'vinculacion-pendiente'" class="px-3 pb-3 pt-0">
+                        <div 
+                          :class="[
+                            'pt-2',
+                            estadoVinculacion === 'desvinculacion-pendiente' ? 'border-t border-amber-200' : 'border-t border-blue-200'
+                          ]"
+                        >
+                          <p 
+                            :class="[
+                              'text-xs leading-relaxed flex items-start gap-2',
+                              estadoVinculacion === 'desvinculacion-pendiente' ? 'text-amber-800' : 'text-blue-800'
+                            ]"
+                          >
+                            <i class="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
+                            <span>
+                              {{ 
+                                estadoVinculacion === 'desvinculacion-pendiente' 
+                                  ? 'El documento se desvinculará al guardar el resultado clínico'
+                                  : 'El documento se vinculará al guardar el resultado clínico'
+                              }}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </Transition>
+                  </div>
+                </div>
+
+                <!-- Si no tiene documento vinculado -->
+                <div v-else>
+                  <button
+                    type="button"
+                    @click="showSelectorDocumento = true"
+                    class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
+                  >
+                    <i class="fas fa-plus-circle"></i>
+                    <span class="font-medium">Vincular documento</span>
+                  </button>
+                </div>
+              </div>
+
               <!-- Botones -->
               <div class="flex gap-3 pt-4">
                 <button
@@ -346,21 +518,30 @@
           <div class="px-4 py-2 border-b border-gray-200">
             <h3 class="text-sm font-semibold text-gray-700">Resultados Registrados</h3>
           </div>
-          <div class="h-56 overflow-y-auto p-3">
+          <div class="h-32 sm:h-48 overflow-y-auto p-2 sm:p-2">
             <div class="space-y-3">
               <div v-for="year in sortedYears" :key="year" class="space-y-2">
                 <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide px-1">
                   {{ year }}
                 </div>
-                <div class="space-y-1.5">
+                <div class="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                   <div
                     v-for="item in sortedResultsByYear(year)"
                     :key="item._id"
-                    class="flex items-center justify-between p-2 bg-white border border-gray-200 rounded-lg hover:border-emerald-500 transition-colors"
+                    class="flex items-center justify-between py-2 px-3 bg-white border border-gray-200 rounded-lg hover:border-emerald-500 transition-colors cursor-pointer"
+                    @click="handleEdit(item)"
                   >
                     <div class="flex-1 min-w-0">
-                      <div class="font-medium text-sm text-gray-800 truncate">
-                        {{ getTipoLabel(item.tipoEstudio) }}
+                      <div class="flex items-center gap-2">
+                        <div
+                          class="text-lg"
+                          :style="{ color: getIconColor(item.tipoEstudio) }"
+                        >
+                          <i :class="getTipoIcon(item.tipoEstudio)"></i>
+                        </div>
+                        <span class="font-medium text-sm text-gray-800 truncate">
+                          {{ getTipoLabel(item.tipoEstudio) }}
+                        </span>
                       </div>
                       <div class="text-xs text-gray-600 truncate">
                         {{ formatDate(item.fechaEstudio) }}
@@ -376,14 +557,7 @@
                     </div>
                     <div class="flex gap-1 ml-2 flex-shrink-0">
                       <button
-                        @click="handleEdit(item)"
-                        class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="Editar"
-                      >
-                        <i class="fas fa-edit text-sm"></i>
-                      </button>
-                      <button
-                        @click="handleDelete(item)"
+                        @click.stop="handleDelete(item)"
                         class="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
                         title="Eliminar"
                       >
@@ -396,7 +570,7 @@
             </div>
           </div>
         </div>
-        </div>
+      </div>
     </Transition>
 
       <ConfirmacionEliminar
@@ -410,14 +584,171 @@
         @close="closeDeleteModal"
         @confirm="confirmDeleteResultado"
       />
+
+      <SelectorDocumentoExterno
+        :is-open="showSelectorDocumento"
+        :trabajador-id="trabajadorId"
+        :documento-vinculado-id="formData.idDocumentoExterno"
+        @close="showSelectorDocumento = false"
+        @seleccionar="handleSeleccionarDocumento"
+      />
+
+      <!-- Visor de PDF -->
+      <Teleport to="body">
+        <Transition name="modal-fade" appear>
+          <div v-if="showPdfViewer"
+            class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-90 backdrop-blur-sm flex justify-center items-center z-[60]"
+            @click.self="cerrarPdf">
+            
+            <!-- Header del visor -->
+            <div class="absolute top-0 left-0 right-0 bg-white bg-opacity-95 backdrop-blur-sm border-b border-gray-200 z-10">
+              <div class="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                  <button @click="cerrarPdf" 
+                    class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1 sm:py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                    <i class="fas fa-times text-xs sm:text-sm"></i>
+                    <span class="font-medium hidden sm:inline">Cerrar</span>
+                  </button>
+                  <div class="flex items-center space-x-1 sm:space-x-2">
+                    <i class="fas fa-file-pdf text-red-500 text-sm sm:text-lg"></i>
+                    <span class="text-gray-700 font-medium text-xs sm:text-sm">Visor de PDF</span>
+                  </div>
+                </div>
+                
+                <div class="flex items-center space-x-1 sm:space-x-3">
+                  <button @click="descargarPdfActual" 
+                    class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                    <i class="fas fa-download text-xs sm:text-sm"></i>
+                    <span class="font-medium hidden sm:inline">Descargar</span>
+                  </button>
+                  <button @click="imprimirPdfActual" 
+                    class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                    <i class="fas fa-print text-xs sm:text-sm"></i>
+                    <span class="font-medium hidden sm:inline">Imprimir</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contenedor principal del visor -->
+            <div class="relative w-full h-full flex flex-col">
+              <div class="flex-1 mt-16 sm:mt-20 mx-2 sm:mx-4 mb-4 bg-white rounded-xl shadow-2xl overflow-hidden">
+                <VPdfViewer 
+                  :src="pdfUrl" 
+                  :initialThumbnails-visible="initialThumbnailsVisible" 
+                  :initialScale="initialScale"
+                  locale="customLang" 
+                  :localization="localization" 
+                />
+              </div>
+            </div>
+
+            <!-- Indicador de ayuda -->
+            <div class="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm">
+                <i class="fas fa-keyboard mr-1 sm:mr-2"></i>
+                <span class="hidden sm:inline">Presiona</span> <kbd class="px-1 sm:px-2 py-0.5 sm:py-1 bg-gray-700 rounded text-xs">ESC</kbd> <span class="hidden sm:inline">para cerrar</span>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+
+      <!-- Visor de Imágenes -->
+      <Teleport to="body">
+        <Transition name="modal-fade" appear>
+          <div v-if="showImageViewer"
+            class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-90 backdrop-blur-sm flex justify-center items-center z-[60]"
+            @click.self="cerrarImagen">
+            
+            <div class="absolute top-0 left-0 right-0 bg-white bg-opacity-95 backdrop-blur-sm border-b border-gray-200 z-10">
+              <div class="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                  <button @click="cerrarImagen" 
+                    class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-1 sm:py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                    <i class="fas fa-times text-xs sm:text-sm"></i>
+                    <span class="font-medium hidden sm:inline">Cerrar</span>
+                  </button>
+                  <div class="flex items-center space-x-1 sm:space-x-2">
+                    <i class="fas fa-image text-blue-500 text-sm sm:text-lg"></i>
+                    <span class="text-gray-700 font-medium text-xs sm:text-sm">Visor de Imagen</span>
+                  </div>
+                </div>
+                
+                <div class="flex items-center space-x-1 sm:space-x-3">
+                  <button @click="rotarImagen" 
+                    class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                    <i class="fas fa-redo text-xs sm:text-sm"></i>
+                    <span class="font-medium hidden sm:inline">Rotar</span>
+                  </button>
+                  <button @click="descargarImagenActual" 
+                    class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                    <i class="fas fa-download text-xs sm:text-sm"></i>
+                    <span class="font-medium hidden sm:inline">Descargar</span>
+                  </button>
+                  <button @click="resetImagePosition" 
+                    class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                    <i class="fas fa-crosshairs text-xs sm:text-sm"></i>
+                    <span class="font-medium hidden sm:inline">Centrar</span>
+                  </button>
+                  <button @click="zoomIn" 
+                    class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                    <i class="fas fa-search-plus text-xs sm:text-sm"></i>
+                    <span class="font-medium hidden sm:inline">Zoom +</span>
+                  </button>
+                  <button @click="zoomOut" 
+                    class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1 sm:py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg transition-all duration-200 hover:scale-105 text-xs sm:text-sm">
+                    <i class="fas fa-search-minus text-xs sm:text-sm"></i>
+                    <span class="font-medium hidden sm:inline">Zoom -</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative w-full h-full flex flex-col image-viewer">
+              <div class="flex-1 mt-16 sm:mt-20 mx-2 sm:mx-4 mb-4 bg-white rounded-xl shadow-2xl overflow-hidden flex items-center justify-center">
+                <img 
+                  :src="imageUrl" 
+                  :style="{ 
+                    transform: `translate(${imagePosition.x}px, ${imagePosition.y}px) rotate(${rotationAngle}deg) scale(${imageZoom})`,
+                    cursor: isDragging ? 'grabbing' : 'grab'
+                  }"
+                  alt="Vista previa" 
+                  class="max-w-full max-h-full object-contain select-none"
+                  draggable="false"
+                  @wheel="handleImageWheel"
+                  @mousedown="startDrag"
+                />
+              </div>
+            </div>
+
+            <!-- Indicador de zoom -->
+            <div v-if="imageZoom !== 0.8" class="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 bg-black bg-opacity-75 text-white px-2 sm:px-3 py-1 sm:py-2 rounded-full text-xs sm:text-sm">
+                <i class="fas fa-search mr-1 sm:mr-2"></i>
+                {{ Math.round(imageZoom * 100) }}%
+            </div>
+
+            <!-- Indicador de ayuda -->
+            <div class="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white px-3 sm:px-4 py-1 sm:py-2 rounded-full text-xs sm:text-sm">
+                <i class="fas fa-mouse mr-1 sm:mr-2"></i>
+                <span class="hidden sm:inline">Rueda del mouse para zoom •</span> 
+                <span class="hidden sm:inline">Arrastra para mover •</span>
+                <kbd class="px-1 sm:px-2 py-0.5 sm:py-1 bg-gray-700 rounded text-xs">ESC</kbd> <span class="hidden sm:inline">para cerrar</span>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
   </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, inject, nextTick } from 'vue';
+import { ref, watch, computed, inject, nextTick, onMounted, onUnmounted } from 'vue';
+import axios from 'axios';
+import { VPdfViewer, Locales, useLicense } from '@vue-pdf-viewer/viewer';
 import { useResultadosClinicosStore, type ResultadoClinico } from '@/stores/resultadosClinicos';
+import type { DocumentoExterno } from '@/interfaces/documentos.inteface';
+import { useDocumentosStore } from '@/stores/documentos';
 import { convertirFechaISOaDDMMYYYY, formatDateYYYYMMDD } from '@/helpers/dates';
 import ConfirmacionEliminar from '@/components/ConfirmacionEliminar.vue';
+import SelectorDocumentoExterno from '@/components/SelectorDocumentoExterno.vue';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -430,6 +761,7 @@ const emit = defineEmits<{
 
 const toast: any = inject('toast');
 const store = useResultadosClinicosStore();
+const documentos = useDocumentosStore();
 
 const currentStep = ref<'select' | 'form'>('select');
 const isEditing = ref(false);
@@ -445,10 +777,46 @@ const formData = ref<Partial<ResultadoClinico>>({
   tipoAlteracion: undefined,
   tipoAlteracionPrincipal: undefined,
   tipoSangre: undefined,
+  idDocumentoExterno: undefined,
+  documentoExterno: undefined,
 });
 
 const isDeleteModalOpen = ref(false);
 const resultadoParaEliminar = ref<ResultadoClinico | null>(null);
+const showSelectorDocumento = ref(false);
+const previousDocumentoId = ref<string | undefined>(undefined);
+const pendingDesvincularDocumento = ref(false);
+const pendingVincularDocumento = ref(false);
+
+// Computed para obtener el documento vinculado
+const documentoVinculado = computed(() => {
+  const id = formData.value.idDocumentoExterno;
+  if (!id) return null;
+
+  // Intentar encontrarlo en el store de documentos para tener el objeto completo (con rutaDocumento)
+  const docs = documentos.documentsByYear;
+  for (const yearData of Object.values(docs)) {
+    if (yearData.documentosExternos) {
+      const found = yearData.documentosExternos.find(doc => doc._id === id);
+      if (found) return found;
+    }
+  }
+
+  // Si no se encuentra en el store, usar el que tenemos en formData (puede estar incompleto)
+  if (formData.value.documentoExterno) {
+    return formData.value.documentoExterno;
+  }
+
+  return null;
+});
+
+// Computed para determinar el estado de vinculación del documento
+const estadoVinculacion = computed(() => {
+  if (pendingDesvincularDocumento.value) return 'desvinculacion-pendiente';
+  if (pendingVincularDocumento.value) return 'vinculacion-pendiente';
+  if (previousDocumentoId.value && formData.value.idDocumentoExterno) return 'vinculado';
+  return 'sin-vincular';
+});
 
 // Observar cuando se abre el drawer
 watch(() => props.isOpen, async (newVal) => {
@@ -549,6 +917,9 @@ const handleEdit = (item: ResultadoClinico) => {
   }
   
   // Cargar datos del resultado en el formulario
+  const documentFromItem = item.documentoExterno || (typeof item.idDocumentoExterno === 'object' ? item.idDocumentoExterno : undefined);
+  const documentIdFromItem = typeof item.idDocumentoExterno === 'string' ? item.idDocumentoExterno : documentFromItem?._id;
+
   formData.value = {
     tipoEstudio: item.tipoEstudio,
     fechaEstudio: fecha,
@@ -559,7 +930,12 @@ const handleEdit = (item: ResultadoClinico) => {
     tipoAlteracion: item.tipoAlteracion,
     tipoAlteracionPrincipal: item.tipoAlteracionPrincipal,
     tipoSangre: item.tipoSangre,
+    idDocumentoExterno: documentIdFromItem,
+    documentoExterno: documentFromItem,
   };
+  previousDocumentoId.value = documentIdFromItem;
+  pendingDesvincularDocumento.value = false;
+  pendingVincularDocumento.value = false;
   
   // Ir directamente al formulario (no mostrar selector)
   currentStep.value = 'form';
@@ -653,23 +1029,50 @@ const handleSubmit = async () => {
       payload.tipoSangre = formData.value.tipoSangre;
     }
     
+    let savedResult: ResultadoClinico | null = null;
+
     if (isEditing.value && editingId.value) {
-      await store.updateResultado(editingId.value, payload);
+      savedResult = await store.updateResultado(editingId.value, payload);
       toast.open({
         message: 'Resultado actualizado correctamente',
         type: 'success',
       });
     } else {
-      await store.createResultado(payload);
+      savedResult = await store.createResultado(payload);
       toast.open({
         message: 'Resultado creado correctamente',
         type: 'success',
       });
     }
+
+    // Manejar vinculación/desvinculación de documentos
+    const selectedDocumentoId = formData.value.idDocumentoExterno;
+    
+    // Determinar si necesitamos vincular un documento nuevo
+    const shouldLinkDocumento = 
+      savedResult?._id && 
+      pendingVincularDocumento.value && 
+      selectedDocumentoId;
+    
+    // Determinar si necesitamos desvincular
+    const shouldDesvincular =
+      savedResult?._id &&
+      previousDocumentoId.value &&
+      pendingDesvincularDocumento.value;
+
+    if (shouldLinkDocumento && savedResult?._id) {
+      await store.vincularDocumento(savedResult._id, selectedDocumentoId as string);
+      previousDocumentoId.value = selectedDocumentoId;
+    } else if (shouldDesvincular && savedResult?._id) {
+      await store.desvincularDocumento(savedResult._id);
+      previousDocumentoId.value = undefined;
+    }
     
     // Refrescar resultados agrupados después de crear/actualizar
     await store.fetchResultadosAgrupados(props.trabajadorId);
     
+    pendingDesvincularDocumento.value = false;
+    pendingVincularDocumento.value = false;
     handleClose();
   } catch (error: any) {
     toast.open({
@@ -699,7 +1102,12 @@ const resetForm = () => {
     tipoAlteracion: undefined,
     tipoAlteracionPrincipal: undefined,
     tipoSangre: undefined,
+    idDocumentoExterno: undefined,
+    documentoExterno: undefined,
   };
+  previousDocumentoId.value = undefined;
+  pendingDesvincularDocumento.value = false;
+  pendingVincularDocumento.value = false;
 };
 
 const hasResults = computed(() => {
@@ -767,6 +1175,330 @@ const getResultadoColor = (resultado?: string) => {
   return 'text-yellow-600 font-semibold';
 };
 
+const getDocExtensionIcon = (extension: string) => {
+  if (extension === '.pdf') return 'fas fa-file-pdf text-red-500';
+  if (['.jpg', '.jpeg', '.png'].includes(extension)) return 'fas fa-file-image text-blue-500';
+  return 'fas fa-file text-gray-500';
+};
+
+const handleSeleccionarDocumento = (documento: DocumentoExterno) => {
+  formData.value.idDocumentoExterno = documento._id;
+  formData.value.documentoExterno = documento;
+  pendingVincularDocumento.value = true;
+  pendingDesvincularDocumento.value = false;
+  showSelectorDocumento.value = false;
+};
+
+const handleDesvincularDocumento = () => {
+  pendingDesvincularDocumento.value = true;
+};
+
+const cancelarPendingDesvincularDocumento = () => {
+  pendingDesvincularDocumento.value = false;
+};
+
+const cancelarPendingVincularDocumento = () => {
+  formData.value.idDocumentoExterno = undefined;
+  formData.value.documentoExterno = undefined;
+  pendingVincularDocumento.value = false;
+};
+
+const licenseKey = import.meta.env.VITE_VPV_LICENSE;
+useLicense({ licenseKey });
+
+const localization = {
+    customLang: {
+        ...Locales.en_US,
+        documentPropertiesLabel: 'Propiedades del documento',
+        documentPropertiesTooltip: 'Mostrar propiedades del documento',
+        downloadFileLabel: 'Descargar',
+        downloadFileTooltip: 'Descargar archivo',
+        dragDropFileMessage: 'Arrastra y suelta un archivo aquí para abrirlo',
+        dualPageLabel: 'Página doble',
+        firstPageTooltip: 'Ir a la primera página',
+        fullScreenLabel: 'Pantalla completa',
+        fullScreenTooltip: 'Ver en pantalla completa',
+        handToolLabel: 'Herramienta de mano',
+        handToolTooltip: 'Mover página con herramienta de mano',
+        horizontalScrollingLabel: 'Desplazamiento horizontal',
+        lastPageLabel: 'Última página',
+        lastPageTooltip: 'Ir a la última página',
+        moreOptionTooltip: 'Más opciones',
+        nextPageTooltip: 'Página siguiente',
+        openLocalFileLabel: 'Abrir archivo local',
+        openLocalFileTooltip: 'Seleccionar un archivo local para abrir',
+        pageScrollingLabel: 'Desplazamiento por página',
+        passwordConfirmLabel: 'Confirmar',
+        passwordError: 'Contraseña incorrecta',
+        passwordModalMessage: 'Este documento está protegido con contraseña. Introduce la contraseña para continuar.',
+        passwordModalTitle: 'Contraseña requerida',
+        passwordPlaceholder: 'Introducir contraseña',
+        previousPageTooltip: 'Página anterior',
+        printCancelLabel: 'Cancelar impresión',
+        printLabel: 'Imprimir',
+        printLoadingMessage: 'Preparando para imprimir...',
+        printTooltip: 'Imprimir archivo',
+        propertiesAuthorLabel: 'Autor',
+        propertiesCreateOnLabel: 'Creado el',
+        propertiesCreatorLabel: 'Creador',
+        propertiesFilenameLabel: 'Nombre del archivo',
+        propertiesFileSizeLabel: 'Tamaño del archivo',
+        propertiesKeywordLabel: 'Palabras clave',
+        propertiesModifiedOnLabel: 'Modificado el',
+        propertiesPageCountLabel: 'Cantidad de páginas',
+        propertiesPDFProducerLabel: 'Productor PDF',
+        propertiesPDFVersionLabel: 'Versión de PDF',
+        propertiesSubjectLabel: 'Asunto',
+        propertiesTitleLabel: 'Título',
+        rotateClockwiseLabel: 'Girar a la derecha',
+        rotateClockwiseTooltip: 'Girar en sentido horario',
+        rotateCounterclockwiseLabel: 'Girar a la izquierda',
+        rotateCounterclockwiseTooltip: 'Girar en sentido antihorario',
+        searchButtonTooltip: 'Buscar',
+        searchCloseButtonTooltip: 'Cerrar búsqueda',
+        searchInputPlaceholder: 'Buscar...',
+        searchNextTooltip: 'Siguiente resultado',
+        searchPrevTooltip: 'Resultado anterior',
+        singlePageLabel: 'Página única',
+        textSelectionLabel: 'Seleccionar texto',
+        textSelectionTooltip: 'Activar herramienta de selección de texto',
+        themeEnableDarkTooltip: 'Activar modo oscuro',
+        themeEnableLightTooltip: 'Activar modo claro',
+        thumbnailTooltip: 'Miniaturas',
+        verticalScrollingLabel: 'Desplazamiento vertical',
+        wrappedScrollingLabel: 'Desplazamiento envuelto',
+        zoomActualSize: 'Tamaño real',
+        zoomInTooltip: 'Acercar',
+        zoomOutTooltip: 'Alejar',
+        zoomPageFit: 'Ajustar a la página',
+        zoomPageWidth: 'Ajustar al ancho de la página',
+        zoomSelectTooltip: 'Seleccionar nivel de zoom'
+    }
+};
+
+const BASE_URL = import.meta.env.VITE_API_URL;
+
+// Estado para el visor de PDF
+const showPdfViewer = ref(false);
+const pdfUrl = ref('');
+const currentPdfUrl = ref('');
+
+// Estado para el visor de imágenes
+const showImageViewer = ref(false);
+const imageUrl = ref('');
+const currentImageUrl = ref('');
+const imageZoom = ref(0.8);
+const rotationAngle = ref(0);
+const isDragging = ref(false);
+const dragStart = ref({ x: 0, y: 0 });
+const imagePosition = ref({ x: 0, y: 0 });
+const lastImagePosition = ref({ x: 0, y: 0 });
+
+const windowWidth = ref(window.innerWidth);
+const updateWindowWidth = () => { windowWidth.value = window.innerWidth; };
+
+/// Computed para las condiciones responsivas
+const isExtraLargeScreen = computed(() => windowWidth.value >= 1280);
+const isLargeScreen = computed(() => windowWidth.value >= 1024 && windowWidth.value < 1280);
+const isMediumScreen = computed(() => windowWidth.value >= 768 && windowWidth.value < 1024);
+const isSmallScreen = computed(() => windowWidth.value < 768);
+
+// Valores dinámicos para initialThumbnails-visible y initialScale
+const initialThumbnailsVisible = computed(() => isLargeScreen.value || isExtraLargeScreen.value);
+const initialScale = computed(() => {
+  if (isExtraLargeScreen.value) return 2; // >= 1280px
+  if (isLargeScreen.value) return 1.75;   // 1024px - 1279px
+  if (isMediumScreen.value) return 1.4;   // 768px - 1023px
+  return 0.8;                               // < 768px
+});
+
+const abrirPdf = async (ruta: string, nombre: string, updatedAt: number | null) => {
+  const fullPath = new URL(`${ruta}/${nombre}`, BASE_URL);
+  if (updatedAt) {
+    fullPath.searchParams.append('t', updatedAt.toString());
+  }
+
+  try {
+    const response = await axios.get(fullPath.href, { responseType: 'blob' });
+    const contentType = response.headers['content-type'];
+
+    if (response.status === 200 && contentType === 'application/pdf') {
+      pdfUrl.value = fullPath.href;
+      currentPdfUrl.value = fullPath.href;
+      showPdfViewer.value = true;
+      // Asegurar que la ventana tenga el foco para capturar eventos de teclado
+      nextTick(() => {
+        window.focus();
+      });
+    } else {
+      alert('El archivo PDF no existe o no es válido.');
+    }
+  } catch (error) {
+    console.error('Error al cargar el PDF:', error);
+    alert('Ocurrió un error al intentar cargar el archivo PDF.');
+  }
+};
+
+const cerrarPdf = () => {
+  showPdfViewer.value = false;
+  pdfUrl.value = '';
+};
+
+const obtenerExtensionArchivo = (documento: any) => {
+  if (!documento) return '';
+  const nombreArchivo = `${documento.nombreDocumento} ${convertirFechaISOaDDMMYYYY(documento.fechaDocumento)}${documento.extension}`;
+  const archivo = (documento.rutaDocumento && documento.rutaDocumento.includes('.')) 
+    ? documento.rutaDocumento.split('/').pop() 
+    : nombreArchivo;
+  return archivo.split('.').pop().toLowerCase();
+};
+
+const construirRutaCompleta = (documento: any) => {
+  if (!documento || !documento.rutaDocumento) return '';
+  const nombreArchivo = `${documento.nombreDocumento} ${convertirFechaISOaDDMMYYYY(documento.fechaDocumento)}${documento.extension}`;
+  if (documento.rutaDocumento.endsWith(nombreArchivo)) {
+    return `${BASE_URL}/${documento.rutaDocumento}`;
+  }
+  return `${BASE_URL}/${documento.rutaDocumento}/${nombreArchivo}`;
+};
+
+const abrirImagen = async (rutaCompleta: string) => {
+  try {
+    const response = await axios.head(rutaCompleta);
+    if (response.status === 200 && response.headers['content-type'].startsWith('image/')) {
+      imageUrl.value = rutaCompleta;
+      currentImageUrl.value = rutaCompleta;
+      showImageViewer.value = true;
+      
+      nextTick(() => {
+        window.focus();
+        document.addEventListener('mousemove', handleGlobalMouseMove);
+        document.addEventListener('mouseup', handleGlobalMouseUp);
+      });
+    } else {
+      alert('El archivo no es una imagen válida.');
+    }
+  } catch (error) {
+    console.error('Error al cargar la imagen:', error);
+    alert('Ocurrió un error al intentar cargar la imagen.');
+  }
+};
+
+const cerrarImagen = () => {
+  showImageViewer.value = false;
+  imageUrl.value = '';
+  imageZoom.value = 0.8;
+  rotationAngle.value = 0;
+  imagePosition.value = { x: 0, y: 0 };
+  lastImagePosition.value = { x: 0, y: 0 };
+  isDragging.value = false;
+  
+  document.removeEventListener('mousemove', handleGlobalMouseMove);
+  document.removeEventListener('mouseup', handleGlobalMouseUp);
+};
+
+const abrirDocumentoExterno = async (documento: any) => {
+  if (!documento) return;
+  
+  const extension = obtenerExtensionArchivo(documento);
+  const isImage = ['png', 'jpg', 'jpeg'].includes(extension);
+  const rutaCompleta = construirRutaCompleta(documento);
+
+  if (!rutaCompleta && documento.rutaDocumento) {
+    // Si no hay ruta completa pero hay rutaDocumento, es un PDF de informe (no externo)
+    // Pero aquí estamos tratando con documentos externos mayormente
+  }
+
+  if (isImage && rutaCompleta) {
+    abrirImagen(rutaCompleta);
+  } else if (documento.rutaDocumento) {
+    const updatedAt = documento.updatedAt ? new Date(documento.updatedAt).getTime() : null;
+    abrirPdf(documento.rutaDocumento, `${documento.nombreDocumento} ${convertirFechaISOaDDMMYYYY(documento.fechaDocumento)}.pdf`, updatedAt);
+  } else {
+    alert('No se puede abrir el documento: faltan datos de la ruta del archivo.');
+  }
+};
+
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') {
+    if (showImageViewer.value) cerrarImagen();
+    else if (showPdfViewer.value) cerrarPdf();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('resize', updateWindowWidth);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener('resize', updateWindowWidth);
+});
+
+const handleGlobalMouseMove = (event: MouseEvent) => {
+  if (isDragging.value) {
+    imagePosition.value = {
+      x: event.clientX - dragStart.value.x,
+      y: event.clientY - dragStart.value.y
+    };
+  }
+};
+
+const handleGlobalMouseUp = () => {
+  if (isDragging.value) {
+    isDragging.value = false;
+    lastImagePosition.value = { ...imagePosition.value };
+  }
+};
+
+const startDrag = (event: MouseEvent) => {
+  event.preventDefault();
+  isDragging.value = true;
+  dragStart.value = {
+    x: event.clientX - imagePosition.value.x,
+    y: event.clientY - imagePosition.value.y
+  };
+};
+
+const handleImageWheel = (event: WheelEvent) => {
+  event.preventDefault();
+  if (event.deltaY < 0) zoomIn();
+  else zoomOut();
+};
+
+const zoomIn = () => { imageZoom.value = Math.min(imageZoom.value * 1.2, 5); };
+const zoomOut = () => { imageZoom.value = Math.max(imageZoom.value / 1.2, 0.4); };
+const rotarImagen = () => { rotationAngle.value += 90; };
+const resetImagePosition = () => {
+  imagePosition.value = { x: 0, y: 0 };
+  imageZoom.value = 0.8;
+};
+
+const descargarPdfActual = async () => {
+  if (!currentPdfUrl.value) return;
+  const response = await axios.get(currentPdfUrl.value, { responseType: 'blob' });
+  const blob = response.data;
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'documento.pdf';
+  link.click();
+};
+
+const imprimirPdfActual = () => {
+  if (currentPdfUrl.value) window.open(currentPdfUrl.value, '_blank')?.print();
+};
+
+const descargarImagenActual = async () => {
+  if (!currentImageUrl.value) return;
+  const response = await axios.get(currentImageUrl.value, { responseType: 'blob' });
+  const blob = response.data;
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'imagen.jpg';
+  link.click();
+};
+
 const getTipoSangreLabel = (tipo?: string) => {
   const option = store.tipoSangreOptions.find(opt => opt.value === tipo);
   return option?.label || tipo || '';
@@ -791,6 +1523,12 @@ const getIconBackground = (tipo?: string) => {
   if (tipo === 'EKG') return 'rgba(220,38,38,0.12)';
   if (tipo === 'TIPO_SANGRE') return 'rgba(153,27,27,0.12)';
   return 'rgba(71,85,105,0.08)';
+};
+
+const getFechaFieldLabel = (tipo?: string) => {
+  if (tipo === 'TIPO_SANGRE') return 'Fecha de determinación';
+  if (tipo === 'ESPIROMETRIA' || tipo === 'EKG') return 'Fecha del estudio';
+  return 'Fecha de toma de muestra';
 };
 
 const formatDate = (date: string | Date) => {
@@ -825,5 +1563,46 @@ const formatDate = (date: string | Date) => {
 
 .slide-right-leave-to {
   transform: translateX(100%);
+}
+
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* Transición para el mensaje de desvinculación */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+  max-height: 0;
+}
+
+.slide-down-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 100px;
+}
+
+.slide-down-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 100px;
+}
+
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+  max-height: 0;
 }
 </style>

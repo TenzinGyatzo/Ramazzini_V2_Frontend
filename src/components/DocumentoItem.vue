@@ -172,6 +172,16 @@ const handleEditDocumentoExterno = async () => {
   }, 'editar documentos externos');
 };
 
+// Función para obtener el label del tipo de estudio del resultado vinculado
+const getResultadoTipoLabel = (tipoEstudio) => {
+  const labels = {
+    'ESPIROMETRIA': 'Espirometría',
+    'EKG': 'EKG',
+    'TIPO_SANGRE': 'Tipo de Sangre',
+  };
+  return labels[tipoEstudio] || tipoEstudio;
+};
+
 // Función para manejar la eliminación con validación de permisos
 const handleDeleteDocument = (documentoId, documentoNombre, documentoTipo) => {
   const tipoSinEspacios = documentoTipo.toLowerCase().replace(/\s+/g, '');
@@ -1561,6 +1571,14 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                         <i v-else-if="!pdfDisponible" class="fas fa-exclamation-triangle mr-0.5 text-rose-500 text-sm" title="Documento externo no disponible"></i>
                                         <!-- <i v-else class="fas fa-check-circle mr-0.5 text-emerald-500 text-sm" title="Documento disponible"></i> -->
                                         {{ documentoExterno.nombreDocumento }}
+                                    </span>
+                                    <span
+                                      v-if="documentoExterno.idResultadoClinico && documentoExterno.resultadoClinico"
+                                      class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-700 flex items-center gap-1"
+                                      :title="`Resultado: ${getResultadoTipoLabel(documentoExterno.resultadoClinico.tipoEstudio)}`"
+                                    >
+                                      <i class="fas fa-link text-emerald-600"></i>
+                                      <span class="hidden md:inline">{{ getResultadoTipoLabel(documentoExterno.resultadoClinico.tipoEstudio) }}</span>
                                     </span>
                                     <span class="hidden sm:flex ml-2 px-2 py-1 text-xs font-medium rounded-full"
                                           :class="obtenerExtensionArchivo(documentoExterno) === 'pdf' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'">

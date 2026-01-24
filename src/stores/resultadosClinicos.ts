@@ -15,6 +15,14 @@ export interface ResultadoClinico {
   tipoAlteracion?: 'ANORMAL_OBSTRUCTIVO' | 'ANORMAL_RESTRICTIVO_SOSPECHADO' | 'ANORMAL_MIXTO';
   tipoAlteracionPrincipal?: 'ANORMAL_ARRITMIA' | 'ANORMAL_TRASTORNO_CONDUCCION' | 'ANORMAL_ISQUEMIA_INFARTO' | 'ANORMAL_REPOLARIZACION' | 'ANORMAL_HIPERTROFIA_CRECIMIENTO_CAVIDADES' | 'ANORMAL_QT_ALTERADO';
   tipoSangre?: 'A_POS' | 'A_NEG' | 'B_POS' | 'B_NEG' | 'AB_POS' | 'AB_NEG' | 'O_POS' | 'O_NEG';
+  idDocumentoExterno?: string;
+  documentoExterno?: {
+    _id: string;
+    nombreDocumento: string;
+    fechaDocumento: string;
+    extension: string;
+    rutaDocumento?: string;
+  };
   createdAt?: string;
   updatedAt?: string;
 }
@@ -191,6 +199,66 @@ export const useResultadosClinicosStore = defineStore("resultadosClinicos", () =
     return 'text-gray-600';
   }
 
+  async function vincularDocumento(resultadoId: string, documentoId: string) {
+    try {
+      loading.value = true;
+      const response = await ResultadosClinicosAPI.vincularDocumento(resultadoId, documentoId);
+      
+      // Actualizar en items si existe
+      const index = items.value.findIndex(item => item._id === resultadoId);
+      if (index !== -1 && response.data) {
+        items.value[index] = response.data;
+      }
+      
+      // Actualizar current si es el actual
+      if (current.value?._id === resultadoId && response.data) {
+        current.value = response.data;
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error al vincular documento:', error);
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function fetchResultadoById(resultadoId: string) {
+    try {
+      const response = await ResultadosClinicosAPI.getResultadoById(resultadoId);
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener resultado clínico por ID:', error);
+      throw error;
+    }
+  }
+
+  async function desvincularDocumento(resultadoId: string) {
+    try {
+      loading.value = true;
+      const response = await ResultadosClinicosAPI.desvincularDocumento(resultadoId);
+      
+      // Actualizar en items si existe
+      const index = items.value.findIndex(item => item._id === resultadoId);
+      if (index !== -1 && response.data) {
+        items.value[index] = response.data;
+      }
+      
+      // Actualizar current si es el actual
+      if (current.value?._id === resultadoId && response.data) {
+        current.value = response.data;
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error al desvincular documento:', error);
+      throw error;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   function reset() {
     items.value = [];
     resultsByYear.value = {};
@@ -216,6 +284,9 @@ export const useResultadosClinicosStore = defineStore("resultadosClinicos", () =
     createResultado,
     updateResultado,
     deleteResultado,
+    vincularDocumento,
+    desvincularDocumento,
+    fetchResultadoById,
     setCurrent,
     setDrawerOpen,
     getTipoLabel,

@@ -121,6 +121,13 @@ export interface DocumentoExterno {
     rutaDocumento: string;
     createdBy: string;
     updatedBy: string;
+    idResultadoClinico?: string;
+    resultadoClinico?: {
+        _id: string;
+        tipoEstudio: string;
+        fechaEstudio: string;
+        resultadoGlobal?: string;
+    };
 }
 
 export interface ExamenVista {
