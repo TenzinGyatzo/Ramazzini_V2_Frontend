@@ -5,7 +5,7 @@
         <div>
           <p class="text-sm font-semibold text-gray-800">Resultados clínicos ({{ results.length }})</p>
           <p class="text-xs text-gray-500">
-            Resultados registrados que complementan el expediente. No representan documentos; son datos capturados.
+            Resultados registrados que complementan el expediente. Pueden vincularse a documentos externos.
           </p>
         </div>
       </div>

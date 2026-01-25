@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, inject, computed } from 'vue';
+import { ref, onMounted, watch, inject, computed, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
@@ -229,6 +229,13 @@ const yearsWithRecords = computed(() => {
   return Array.from(años).sort((a, b) => Number(b) - Number(a));
 });
 
+// Función para verificar si hay resultados para un año específico (accede directamente al store para reactividad)
+const tieneResultadosParaAnio = (year: string) => {
+  // Acceder directamente al store para asegurar reactividad
+  const resultados = resultadosClinicos.resultsByYear[year];
+  return resultados && Array.isArray(resultados) && resultados.length > 0;
+};
+
 const navigateTo = (routeName, params) => {
   if (!proveedorSaludStore.proveedorSalud) return;
 
@@ -290,6 +297,8 @@ const handleCloseResultadosPanel = async () => {
   // Refrescar resultados agrupados al cerrar el drawer
   if (trabajadores.currentTrabajadorId) {
     await resultadosClinicos.fetchResultadosAgrupados(trabajadores.currentTrabajadorId);
+    // Forzar actualización de la reactividad usando nextTick
+    await nextTick();
   }
 };
 
@@ -769,7 +778,7 @@ const añoMasReciente = computed(() => {
               })" class="group relative bg-gradient-to-br from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 border-2 border-indigo-200 hover:border-indigo-400 rounded-xl p-4 transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
                 <div class="text-center">
                   <div class="w-12 h-12 bg-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-indigo-600 transition-colors">
-                    <i class="fas fa-heartbeat text-white text-lg"></i>
+                    <i class="fa-solid fa-person text-white text-xl"></i>
                   </div>
                   <h3 class="font-semibold text-gray-900 text-sm mb-1">Exploración Física</h3>
                   <p class="text-xs text-gray-600">Aparatos y sistemas</p>
@@ -867,31 +876,33 @@ const añoMasReciente = computed(() => {
               </button>
             </div>
 
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-row justify-center items-center gap-4 mt-6">
               <!-- Documento Externo -->
-              <div class="mt-4 sm:mt-6 flex justify-center">
+              <div class="flex justify-center">
                 <SliderButton 
                   class="w-full max-w-md" 
-                  text="Documento Externo" 
                   @click="toggleDocumentoExternoModal"
                   @closeModal="toggleDocumentoExternoModal" 
-                />
+                >
+                  <span class="sm:hidden">Doc. Ext.</span>
+                  <span class="hidden sm:inline">Documento Externo</span>
+                </SliderButton>
               </div>
   
               <!-- Botón para Cuestionarios de Vigilancia Médica -->
-              <div class="sm:mt-6 flex justify-center">
+              <div class="flex justify-center">
                 <button
                   @click="toggleCuestionariosModal"
                   class="relative w-[232px] h-[50px] rounded-lg cursor-pointer flex items-center border-2 border-emerald-600 bg-white overflow-hidden transition-all duration-200 hover:bg-emerald-50 hover:shadow-lg"
                 >
                   <i class="fas fa-file-alt text-emerald-600 text-lg ml-4"></i>
-                  <span class="flex-1 text-center text-emerald-600 text-lg ml-3">Otros Documentos</span>
+                  <span class="flex-1 text-center text-emerald-600 text-lg ml-3">Otros<span class="hidden sm:inline"> Documentos</span></span>
                   <i class="fas fa-arrow-right text-emerald-600 text-sm mr-4 transition-transform duration-200 hover:translate-x-1"></i>
                 </button>
               </div>
-
+  
               <!-- Botón para Registrar Resultados Clínicos -->
-              <div class="sm:mt-6 flex justify-center">
+              <div class="sm:col-span-2 lg:col-span-1 flex justify-center">
                 <button
                   @click="showResultadosClinicosPanel = true"
                   class="relative w-[232px] h-[50px] rounded-lg cursor-pointer flex items-center border-2 border-blue-600 bg-white overflow-hidden transition-all duration-200 hover:bg-blue-50 hover:shadow-lg"
@@ -943,7 +954,7 @@ const añoMasReciente = computed(() => {
                     :toggleDeletionMode="toggleDeletionMode"
                     :onDeleteSelected="handleDeleteSelected"
                   >
-                    <template #extraSection v-if="resultadosPorAnio[year] && resultadosPorAnio[year].length">
+                    <template #extraSection v-if="tieneResultadosParaAnio(year)">
                       <ResultadosClinicosSubsection
                         :results="resultadosPorAnio[year]"
                         @edit="handleEditResultado"

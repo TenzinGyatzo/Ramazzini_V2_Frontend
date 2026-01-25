@@ -11,6 +11,7 @@ import { useDocumentosStore } from '@/stores/documentos';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento, obtenerNombreDescargaCertificadoExpedito } from '@/helpers/rutas.ts';
 import ModalPdfEliminado from './ModalPdfEliminado.vue';
+import DocumentHoverPreview from './DocumentHoverPreview.vue';
 import { useUserPermissions } from '@/composables/useUserPermissions';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 
@@ -384,29 +385,36 @@ const localization = {
     }
 };
 
-const abrirPdf = async (ruta, nombrePDF, updatedAt = null) => {
+const buildPdfUrl = (ruta, nombrePDF, updatedAt = null, options = {}) => {
+    const { useCacheBuster = true, fallbackToNow = false } = options;
     // Sanear la ruta y el nombre del archivo para eliminar dobles diagonales
-    const sanitizedRuta = ruta.replace(/\/+/g, '/'); // Reemplaza múltiples '/' por una sola
-    const sanitizedNombrePDF = nombrePDF.replace(/\/+/g, '/'); // Reemplaza múltiples '/' por una sola
+    const sanitizedRuta = ruta.replace(/\/+/g, '/');
+    const sanitizedNombrePDF = nombrePDF.replace(/\/+/g, '/');
 
     // Generar la URL de forma explícita usando `new URL`
-    let fullPath = new URL(`${sanitizedRuta}/${sanitizedNombrePDF}`, import.meta.env.VITE_API_URL);
-    
-    // Agregar parámetro de cache-busting para evitar que se muestre versión cacheada del PDF
-    // Si updatedAt está disponible, usarlo; si no, usar timestamp actual
-    const cacheBuster = updatedAt || Date.now();
-    fullPath.searchParams.set('t', cacheBuster.toString());
-    
-    // console.log('Ruta completa del PDF:', fullPath.href);
+    const fullPath = new URL(`${sanitizedRuta}/${sanitizedNombrePDF}`, import.meta.env.VITE_API_URL);
+
+    if (useCacheBuster) {
+        const cacheBuster = updatedAt || (fallbackToNow ? Date.now() : null);
+        if (cacheBuster) {
+            fullPath.searchParams.set('t', cacheBuster.toString());
+        }
+    }
+
+    return fullPath.href;
+};
+
+const abrirPdf = async (ruta, nombrePDF, updatedAt = null) => {
+    const fullPath = buildPdfUrl(ruta, nombrePDF, updatedAt, { useCacheBuster: true, fallbackToNow: true });
 
     try {
-        const response = await axios.get(fullPath.href, { responseType: 'blob' }); // Solicitud GET
+        const response = await axios.get(fullPath, { responseType: 'blob' }); // Solicitud GET
 
         const contentType = response.headers['content-type'];
 
         if (response.status === 200 && contentType === 'application/pdf') {
-            pdfUrl.value = fullPath.href; // Actualiza tu variable de URL
-            currentPdfUrl.value = fullPath.href; // Guarda la URL actual para descargar/imprimir
+            pdfUrl.value = fullPath; // Actualiza tu variable de URL
+            currentPdfUrl.value = fullPath; // Guarda la URL actual para descargar/imprimir
             showPdfViewer.value = true; // Muestra el visor PDF
         } else {
             console.warn('El archivo no es un PDF o no existe.', { status: response.status, contentType });
@@ -466,6 +474,295 @@ const imageZoom = ref(0.8); // Reducido de 1 a 0.8 para que las imágenes se vea
 const rotationAngle = ref(0);
 const currentPdfUrl = ref('');
 const currentImageUrl = ref('');
+
+// Estado para vista previa en hover
+const hoverPreview = ref({
+    visible: false,
+    type: 'pdf',
+    src: '',
+    title: '',
+    position: { x: 0, y: 0 },
+    size: { width: 320, height: 240 },
+    pdfAvailable: true,
+    isRegenerable: false,
+    openAction: null
+});
+const hoverPreviewKey = ref('');
+const previewCache = new Map();
+const canHover = ref(true);
+const isHoveringPreview = ref(false);
+let hoverTimer = null;
+let hideTimer = null;
+let hoverMediaQuery = null;
+
+const HOVER_DELAY = 250;
+const HIDE_DELAY = 160;
+const PREVIEW_MARGIN = 120;
+
+const updateHoverSupport = () => {
+    canHover.value = true;
+};
+
+const computePreviewPosition = (rect, size) => {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // --- AJUSTE MANUAL HORIZONTAL POR MEDIA QUERIES ---
+    // Aquí puedes ajustar el desplazamiento horizontal absoluto en píxeles.
+    let horizontalOffset = 0;
+
+    if (viewportWidth >= 3200) { // 4xl - superior
+        horizontalOffset = 0;
+    } else if (viewportWidth >= 2560) { // 4xl - inferior
+        horizontalOffset = -215;
+    } else if (viewportWidth >= 2240) { // 3xl - superior
+        horizontalOffset = -215;
+    } else if (viewportWidth >= 1920) { // 3xl - inferior
+        horizontalOffset = -205;
+    } else if (viewportWidth >= 1728) { // 2xl - superior
+        horizontalOffset = -165;
+    } else if (viewportWidth >= 1536) { // 2xl - inferior
+        horizontalOffset = -60;
+    } else if (viewportWidth >= 1408) { // xl - superior (1408px a 1535px)
+        horizontalOffset = -20;
+    } else if (viewportWidth >= 1280) { // xl - inferior (1280px a 1407px)
+        horizontalOffset = 70;
+    } else if (viewportWidth >= 1152) { // lg - superior (1152px a 1279px)
+        horizontalOffset = 110;
+    } else if (viewportWidth >= 1024) { // lg - inferior (1024px a 1151px)
+        horizontalOffset = 180;
+    } else if (viewportWidth >= 768) {  // md / base
+        horizontalOffset = 260;
+    } else if (viewportWidth >= 640) {  // sm
+        horizontalOffset = 220;
+    } else { // xs / mobile
+        horizontalOffset = 0;
+    }
+
+    // Centrar horizontalmente respecto al elemento + offset manual
+    let x = rect.left + (rect.width / 2) - (size.width / 2) + horizontalOffset;
+    
+    // Posicionar +150px parra posiciionar verticalmente
+    let y = rect.top - size.height + 150;
+
+    // Ajuste horizontal para no salir de la pantalla
+    const SAFE_MARGIN = 12; // Usamos un margen pequeño para seguridad en los bordes
+    if (x < SAFE_MARGIN) {
+        x = SAFE_MARGIN;
+    } else if (x + size.width > viewportWidth - SAFE_MARGIN) {
+        x = viewportWidth - size.width - SAFE_MARGIN;
+    }
+
+    // Ajuste vertical: si no cabe arriba, mostrar abajo
+    if (y < SAFE_MARGIN) {
+        y = rect.bottom + 10;
+        // Si tampoco cabe abajo, forzar dentro del viewport
+        if (y + size.height > viewportHeight - SAFE_MARGIN) {
+            y = Math.max(SAFE_MARGIN, viewportHeight - size.height - SAFE_MARGIN);
+        }
+    }
+
+    return { x: Math.round(x), y: Math.round(y) };
+};
+
+const closeHoverPreview = () => {
+    hoverPreview.value.visible = false;
+    hoverPreview.value.src = '';
+    hoverPreview.value.pdfAvailable = true;
+    hoverPreview.value.isRegenerable = false;
+    // Limpiamos el cache para asegurar que la próxima vez verifique el estado real
+    if (hoverPreviewKey.value) {
+        previewCache.delete(hoverPreviewKey.value);
+    }
+    hoverPreviewKey.value = '';
+};
+
+const scheduleHidePreview = () => {
+    clearTimeout(hoverTimer);
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => {
+        if (!isHoveringPreview.value) {
+            closeHoverPreview();
+        }
+    }, HIDE_DELAY);
+};
+
+const openHoverPreview = (targetOrEvent, payload) => {
+    if (!canHover.value || showPdfViewer.value || showImageViewer.value) return;
+
+    const target = targetOrEvent?.currentTarget || targetOrEvent?.target || targetOrEvent;
+    let rect = null;
+    
+    if (target && typeof target.getBoundingClientRect === 'function') {
+        rect = target.getBoundingClientRect();
+    } else if (targetOrEvent?.clientX !== undefined) {
+        // Fallback a coordenadas del mouse si no hay target con rect
+        rect = {
+            left: targetOrEvent.clientX,
+            right: targetOrEvent.clientX,
+            top: targetOrEvent.clientY,
+            bottom: targetOrEvent.clientY,
+            width: 0,
+            height: 0
+        };
+    }
+
+    if (!rect) return;
+
+    const maxWidth = Math.min(180, window.innerWidth - PREVIEW_MARGIN * 2);
+    // Ratio ajustado para llenar el contenedor verticalmente sin franjas negras
+    const LETTER_RATIO = 1.522;
+    
+    let finalWidth = Math.round(maxWidth);
+    let finalHeight = Math.round(maxWidth * LETTER_RATIO);
+    const maxPossibleHeight = window.innerHeight - PREVIEW_MARGIN * 2;
+    
+    if (finalHeight > maxPossibleHeight) {
+        finalHeight = Math.round(maxPossibleHeight);
+        finalWidth = Math.round(finalHeight / LETTER_RATIO);
+    }
+
+    const size = { width: finalWidth, height: finalHeight };
+    const position = computePreviewPosition(rect, size);
+
+    const cached = previewCache.get(payload.key);
+    const effectivePayload = cached || payload;
+    if (!cached) {
+        previewCache.set(payload.key, payload);
+    }
+
+    if (hoverPreviewKey.value === effectivePayload.key && hoverPreview.value.visible) {
+        hoverPreview.value.position = position;
+        hoverPreview.value.size = size;
+        hoverPreview.value.pdfAvailable = effectivePayload.pdfAvailable !== undefined ? effectivePayload.pdfAvailable : true;
+        hoverPreview.value.isRegenerable = effectivePayload.isRegenerable !== undefined ? effectivePayload.isRegenerable : false;
+        // Actualizamos la acción incluso si la key es la misma
+        hoverPreview.value.openAction = effectivePayload.openAction || null;
+        return;
+    }
+
+    hoverPreviewKey.value = effectivePayload.key;
+    hoverPreview.value = {
+        visible: true,
+        type: effectivePayload.type,
+        src: effectivePayload.src,
+        title: effectivePayload.title,
+        position,
+        size,
+        pdfAvailable: effectivePayload.pdfAvailable !== undefined ? effectivePayload.pdfAvailable : true,
+        isRegenerable: effectivePayload.isRegenerable !== undefined ? effectivePayload.isRegenerable : false,
+        openAction: effectivePayload.openAction || null
+    };
+};
+
+const schedulePdfHover = (event, ruta, nombrePDF, updatedAt, title) => {
+    if (!canHover.value) return;
+    if (!ruta || !nombrePDF) return;
+    clearTimeout(hideTimer);
+    clearTimeout(hoverTimer);
+
+    hoverTimer = setTimeout(() => {
+        // Determinar si el documento es regenerable (no es documento externo)
+        const tipoSinEspacios = props.documentoTipo.toLowerCase().replace(/\s+/g, '');
+        const isRegenerable = tipoSinEspacios !== 'documentoexterno';
+        
+        const src = buildPdfUrl(ruta, nombrePDF, updatedAt, { useCacheBuster: true, fallbackToNow: false });
+        // Incluimos pdfDisponible en la key para forzar el refresco cuando cambie el estado
+        const key = `pdf:${ruta}:${nombrePDF}:${updatedAt || 'no-ts'}:${pdfDisponible.value}`;
+        const target = event?.currentTarget || event?.target || event;
+        openHoverPreview(target || event, { 
+            key, 
+            type: 'pdf', 
+            src, 
+            title: title || 'Documento PDF',
+            pdfAvailable: pdfDisponible.value,
+            isRegenerable: isRegenerable,
+            openAction: () => {
+                if (pdfDisponible.value) {
+                    abrirPdf(ruta, nombrePDF, updatedAt);
+                } else if (isRegenerable) {
+                    mostrarModalPdfEliminado.value = true;
+                }
+            }
+        });
+    }, HOVER_DELAY);
+};
+
+const scheduleDocumentoExternoHover = (event, documento) => {
+    if (!documento || !canHover.value) return;
+    clearTimeout(hideTimer);
+    clearTimeout(hoverTimer);
+
+    hoverTimer = setTimeout(() => {
+        const extension = obtenerExtensionArchivo(documento);
+        const isImage = ['png', 'jpg', 'jpeg'].includes(extension);
+        const keyBase = documento._id || documento.id || documento.rutaDocumento || documento.nombreDocumento;
+        const target = event?.currentTarget || event?.target || event;
+        if (isImage) {
+            const src = construirRutaCompleta(documento);
+            if (!src) return;
+            openHoverPreview(target || event, {
+                key: `img:${keyBase}`,
+                type: 'image',
+                src,
+                title: documento.nombreDocumento || 'Imagen'
+            });
+        } else {
+            if (!documento.rutaDocumento || !documento.nombreDocumento || !documento.fechaDocumento) return;
+            const updatedAt = documento.updatedAt ? new Date(documento.updatedAt).getTime() : null;
+            const nombrePDF = `${documento.nombreDocumento} ${convertirFechaISOaDDMMYYYY(documento.fechaDocumento)}.pdf`;
+            const src = buildPdfUrl(documento.rutaDocumento, nombrePDF, updatedAt, { useCacheBuster: true, fallbackToNow: false });
+            openHoverPreview(target || event, {
+                key: `pdf:${keyBase}:${updatedAt || 'no-ts'}:${pdfDisponible.value}`,
+                type: 'pdf',
+                src,
+                title: documento.nombreDocumento || 'Documento PDF',
+                pdfAvailable: pdfDisponible.value,
+                isRegenerable: false,
+                openAction: () => {
+                    if (pdfDisponible.value) {
+                        abrirPdf(documento.rutaDocumento, nombrePDF, updatedAt);
+                    }
+                }
+            });
+        }
+    }, HOVER_DELAY);
+};
+
+const handlePreviewOpen = () => {
+    if (hoverPreview.value.openAction) {
+        hoverPreview.value.openAction();
+    }
+};
+
+const handleHoverLeave = () => {
+    scheduleHidePreview();
+};
+
+const handlePreviewEnter = () => {
+    isHoveringPreview.value = true;
+    clearTimeout(hideTimer);
+};
+
+const handlePreviewLeave = () => {
+    isHoveringPreview.value = false;
+    scheduleHidePreview();
+};
+
+watch([showPdfViewer, showImageViewer], () => {
+    if (showPdfViewer.value || showImageViewer.value) {
+        closeHoverPreview();
+    }
+});
+
+onMounted(() => {
+    updateHoverSupport();
+});
+
+onUnmounted(() => {
+    clearTimeout(hoverTimer);
+    clearTimeout(hideTimer);
+});
 
 // Estado para el pan (desplazamiento) de la imagen
 const isDragging = ref(false);
@@ -1218,10 +1515,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${antidoping.rutaPDF}`,
-                        `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`,
-                        antidoping.updatedAt ? new Date(antidoping.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${antidoping.rutaPDF}`,
+                            `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`,
+                            antidoping.updatedAt ? new Date(antidoping.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${antidoping.rutaPDF}`,
+                            `Antidoping ${convertirFechaISOaDDMMYYYY(antidoping.fechaAntidoping)}.pdf`,
+                            antidoping.updatedAt ? new Date(antidoping.updatedAt).getTime() : null,
+                            'Antidoping')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-red-100 rounded-lg mr-4 group-hover:bg-red-200 transition-colors duration-200 flex-shrink-0">
@@ -1272,10 +1578,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${constanciaAptitud.rutaPDF}`,
-                        `Constancia de Aptitud ${convertirFechaISOaDDMMYYYY(constanciaAptitud.fechaConstanciaAptitud)}.pdf`,
-                        constanciaAptitud.updatedAt ? new Date(constanciaAptitud.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${constanciaAptitud.rutaPDF}`,
+                            `Constancia de Aptitud ${convertirFechaISOaDDMMYYYY(constanciaAptitud.fechaConstanciaAptitud)}.pdf`,
+                            constanciaAptitud.updatedAt ? new Date(constanciaAptitud.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${constanciaAptitud.rutaPDF}`,
+                            `Constancia de Aptitud ${convertirFechaISOaDDMMYYYY(constanciaAptitud.fechaConstanciaAptitud)}.pdf`,
+                            constanciaAptitud.updatedAt ? new Date(constanciaAptitud.updatedAt).getTime() : null,
+                            'Constancia de Aptitud')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mr-4 group-hover:bg-green-200 transition-colors duration-200 flex-shrink-0">
@@ -1309,10 +1624,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${aptitud.rutaPDF}`,
-                        `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`,
-                        aptitud.updatedAt ? new Date(aptitud.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${aptitud.rutaPDF}`,
+                            `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`,
+                            aptitud.updatedAt ? new Date(aptitud.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${aptitud.rutaPDF}`,
+                            `Aptitud ${convertirFechaISOaDDMMYYYY(aptitud.fechaAptitudPuesto)}.pdf`,
+                            aptitud.updatedAt ? new Date(aptitud.updatedAt).getTime() : null,
+                            'Aptitud al Puesto')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mr-4 group-hover:bg-green-200 transition-colors duration-200 flex-shrink-0">
@@ -1370,10 +1694,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${audiometria.rutaPDF}`,
-                        `Audiometria ${convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria)}.pdf`,
-                        audiometria.updatedAt ? new Date(audiometria.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${audiometria.rutaPDF}`,
+                            `Audiometria ${convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria)}.pdf`,
+                            audiometria.updatedAt ? new Date(audiometria.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${audiometria.rutaPDF}`,
+                            `Audiometria ${convertirFechaISOaDDMMYYYY(audiometria.fechaAudiometria)}.pdf`,
+                            audiometria.updatedAt ? new Date(audiometria.updatedAt).getTime() : null,
+                            'Audiometria')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mr-4 group-hover:bg-purple-200 transition-colors duration-200 flex-shrink-0">
@@ -1432,10 +1765,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${certificado.rutaPDF}`,
-                        `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`,
-                        certificado.updatedAt ? new Date(certificado.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${certificado.rutaPDF}`,
+                            `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`,
+                            certificado.updatedAt ? new Date(certificado.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${certificado.rutaPDF}`,
+                            `Certificado ${convertirFechaISOaDDMMYYYY(certificado.fechaCertificado)}.pdf`,
+                            certificado.updatedAt ? new Date(certificado.updatedAt).getTime() : null,
+                            'Certificado')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mr-4 group-hover:bg-blue-200 transition-colors duration-200 flex-shrink-0">
@@ -1486,10 +1828,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${certificadoExpedito.rutaPDF}`,
-                        `Certificado Expedito ${convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito)}.pdf`,
-                        certificadoExpedito.updatedAt ? new Date(certificadoExpedito.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${certificadoExpedito.rutaPDF}`,
+                            `Certificado Expedito ${convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito)}.pdf`,
+                            certificadoExpedito.updatedAt ? new Date(certificadoExpedito.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${certificadoExpedito.rutaPDF}`,
+                            `Certificado Expedito ${convertirFechaISOaDDMMYYYY(certificadoExpedito.fechaCertificadoExpedito)}.pdf`,
+                            certificadoExpedito.updatedAt ? new Date(certificadoExpedito.updatedAt).getTime() : null,
+                            'Certificado Expedito')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mr-4 group-hover:bg-blue-200 transition-colors duration-200 flex-shrink-0">
@@ -1547,7 +1898,11 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirDocumentoExterno(documentoExterno)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirDocumentoExterno(documentoExterno)"
+                        @mouseenter="scheduleDocumentoExternoHover($event, documentoExterno)"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento dinámico -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 rounded-lg mr-4 transition-colors duration-200 flex-shrink-0"
@@ -1623,10 +1978,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${examenVista.rutaPDF}`,
-                        `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`,
-                        examenVista.updatedAt ? new Date(examenVista.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${examenVista.rutaPDF}`,
+                            `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`,
+                            examenVista.updatedAt ? new Date(examenVista.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${examenVista.rutaPDF}`,
+                            `Examen Vista ${convertirFechaISOaDDMMYYYY(examenVista.fechaExamenVista)}.pdf`,
+                            examenVista.updatedAt ? new Date(examenVista.updatedAt).getTime() : null,
+                            'Examen de la Vista')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-lg mr-4 group-hover:bg-yellow-200 transition-colors duration-200 flex-shrink-0">
@@ -1705,14 +2069,23 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${exploracionFisica.rutaPDF}`, 
-                        `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`,
-                        exploracionFisica.updatedAt ? new Date(exploracionFisica.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${exploracionFisica.rutaPDF}`, 
+                            `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`, 
+                            exploracionFisica.updatedAt ? new Date(exploracionFisica.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${exploracionFisica.rutaPDF}`,
+                            `Exploracion Fisica ${convertirFechaISOaDDMMYYYY(exploracionFisica.fechaExploracionFisica)}.pdf`,
+                            exploracionFisica.updatedAt ? new Date(exploracionFisica.updatedAt).getTime() : null,
+                            'Exploracion Fisica')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-lg mr-4 group-hover:bg-indigo-200 transition-colors duration-200 flex-shrink-0">
-                            <i class="fas fa-heartbeat text-indigo-600 text-lg"></i>
+                            <i class="fa-solid fa-person text-indigo-600 text-xl"></i>
                         </div>
                         
                         <!-- Información del documento -->
@@ -1792,10 +2165,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${historiaClinica.rutaPDF}`,
-                        `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`,
-                        historiaClinica.updatedAt ? new Date(historiaClinica.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${historiaClinica.rutaPDF}`,
+                            `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`,
+                            historiaClinica.updatedAt ? new Date(historiaClinica.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${historiaClinica.rutaPDF}`,
+                            `Historia Clinica ${convertirFechaISOaDDMMYYYY(historiaClinica.fechaHistoriaClinica)}.pdf`,
+                            historiaClinica.updatedAt ? new Date(historiaClinica.updatedAt).getTime() : null,
+                            'Historia Clinica')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-teal-100 rounded-lg mr-4 group-hover:bg-teal-200 transition-colors duration-200 flex-shrink-0">
@@ -1861,10 +2243,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${notaMedica.rutaPDF}`,
-                        `Nota Medica ${convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica)}.pdf`,
-                        notaMedica.updatedAt ? new Date(notaMedica.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${notaMedica.rutaPDF}`,
+                            `Nota Medica ${convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica)}.pdf`,
+                            notaMedica.updatedAt ? new Date(notaMedica.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${notaMedica.rutaPDF}`,
+                            `Nota Medica ${convertirFechaISOaDDMMYYYY(notaMedica.fechaNotaMedica)}.pdf`,
+                            notaMedica.updatedAt ? new Date(notaMedica.updatedAt).getTime() : null,
+                            'Nota Medica')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-orange-100 rounded-lg mr-4 group-hover:bg-orange-200 transition-colors duration-200 flex-shrink-0">
@@ -1911,10 +2302,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${receta.rutaPDF}`,
-                        `Receta ${convertirFechaISOaDDMMYYYY(receta.fechaReceta)}.pdf`,
-                        receta.updatedAt ? new Date(receta.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${receta.rutaPDF}`,
+                            `Receta ${convertirFechaISOaDDMMYYYY(receta.fechaReceta)}.pdf`,
+                            receta.updatedAt ? new Date(receta.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${receta.rutaPDF}`,
+                            `Receta ${convertirFechaISOaDDMMYYYY(receta.fechaReceta)}.pdf`,
+                            receta.updatedAt ? new Date(receta.updatedAt).getTime() : null,
+                            'Receta')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-emerald-100 rounded-lg mr-4 group-hover:bg-emerald-200 transition-colors duration-200 flex-shrink-0">
@@ -1963,10 +2363,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${controlPrenatal.rutaPDF}`,
-                        `Control Prenatal ${convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal)}.pdf`,
-                        controlPrenatal.updatedAt ? new Date(controlPrenatal.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${controlPrenatal.rutaPDF}`,
+                            `Control Prenatal ${convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal)}.pdf`,
+                            controlPrenatal.updatedAt ? new Date(controlPrenatal.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${controlPrenatal.rutaPDF}`,
+                            `Control Prenatal ${convertirFechaISOaDDMMYYYY(controlPrenatal.fechaInicioControlPrenatal)}.pdf`,
+                            controlPrenatal.updatedAt ? new Date(controlPrenatal.updatedAt).getTime() : null,
+                            'Control Prenatal')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-pink-100 rounded-lg mr-4 group-hover:bg-pink-200 transition-colors duration-200 flex-shrink-0">
@@ -2101,10 +2510,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${historiaOtologica.rutaPDF}`,
-                        `Historia Otologica ${convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica)}.pdf`,
-                        historiaOtologica.updatedAt ? new Date(historiaOtologica.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${historiaOtologica.rutaPDF}`,
+                            `Historia Otologica ${convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica)}.pdf`,
+                            historiaOtologica.updatedAt ? new Date(historiaOtologica.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${historiaOtologica.rutaPDF}`,
+                            `Historia Otologica ${convertirFechaISOaDDMMYYYY(historiaOtologica.fechaHistoriaOtologica)}.pdf`,
+                            historiaOtologica.updatedAt ? new Date(historiaOtologica.updatedAt).getTime() : null,
+                            'Historia Otologica')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mr-4 group-hover:bg-purple-200 transition-colors duration-200 flex-shrink-0">
@@ -2166,10 +2584,19 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                     
                     <!-- Contenido principal -->
-                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="abrirPdf(
-                        `${previoEspirometria.rutaPDF}`,
-                        `Previo Espirometria ${convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria)}.pdf`,
-                        previoEspirometria.updatedAt ? new Date(previoEspirometria.updatedAt).getTime() : null)">
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${previoEspirometria.rutaPDF}`,
+                            `Previo Espirometria ${convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria)}.pdf`,
+                            previoEspirometria.updatedAt ? new Date(previoEspirometria.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${previoEspirometria.rutaPDF}`,
+                            `Previo Espirometria ${convertirFechaISOaDDMMYYYY(previoEspirometria.fechaPrevioEspirometria)}.pdf`,
+                            previoEspirometria.updatedAt ? new Date(previoEspirometria.updatedAt).getTime() : null,
+                            'Previo Espirometria')"
+                        @mouseleave="handleHoverLeave">
                         
                         <!-- Icono del documento -->
                         <div class="hidden md:flex items-center justify-center w-12 h-12 bg-sky-100 rounded-lg mr-4 group-hover:bg-sky-200 transition-colors duration-200 flex-shrink-0">
@@ -2289,6 +2716,21 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
             </div>
         </div>
     </div>
+
+    <DocumentHoverPreview
+        :visible="hoverPreview.visible"
+        :type="hoverPreview.type"
+        :src="hoverPreview.src"
+        :title="hoverPreview.title"
+        :position="hoverPreview.position"
+        :size="hoverPreview.size"
+        :pdfAvailable="hoverPreview.pdfAvailable"
+        :isRegenerable="hoverPreview.isRegenerable"
+        @enter="handlePreviewEnter"
+        @leave="handlePreviewLeave"
+        @open="handlePreviewOpen"
+        @regenerate="mostrarModalPdfEliminado = true"
+    />
 
     <!-- Visor de PDF -->
     <Teleport to="body">

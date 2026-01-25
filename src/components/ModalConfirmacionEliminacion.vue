@@ -151,7 +151,7 @@ const documentTypes = computed(() => {
                         <span>{{ documentTypes.historiasClinicas }} Historia{{ documentTypes.historiasClinicas !== 1 ? 's' : '' }} Clínica{{ documentTypes.historiasClinicas !== 1 ? 's' : '' }}</span>
                       </div>
                       <div v-if="documentTypes.exploracionesFisicas" class="flex items-center space-x-2">
-                        <i class="fas fa-heartbeat text-indigo-600"></i>
+                        <i class="fas fa-person text-indigo-600"></i>
                         <span>{{ documentTypes.exploracionesFisicas }} Exploración{{ documentTypes.exploracionesFisicas !== 1 ? 'es' : '' }} Física</span>
                       </div>
                       <div v-if="documentTypes.examenesVista" class="flex items-center space-x-2">

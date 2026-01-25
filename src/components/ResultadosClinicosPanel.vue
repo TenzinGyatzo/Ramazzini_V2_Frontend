@@ -4,7 +4,7 @@
     <Transition name="fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 bg-black bg-opacity-50 z-40"
+        class="fixed inset-0 bg-black bg-opacity-50 z-20"
         @click="handleClose"
       ></div>
     </Transition>
@@ -13,10 +13,11 @@
     <Transition name="slide-right">
       <div
         v-if="isOpen"
-        class="fixed inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col"
+        ref="drawerRef"
+        class="fixed inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl z-30 flex flex-col"
       >
         <!-- Header -->
-        <div class="flex items-center justify-between h-14 md:h-auto p-3 md:p-6 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-green-50">
+        <div ref="drawerHeaderRef" class="flex items-center justify-between h-14 md:h-auto p-3 md:p-6 border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-green-50">
           <h2 class="text-xl md:text-2xl font-bold text-gray-800">
             {{ isEditing ? 'Editar Resultado Clínico' : 'Registrar Resultado Clínico' }}
           </h2>
@@ -29,9 +30,9 @@
         </div>
 
         <!-- Content -->
-        <div class="flex-1 overflow-y-auto p-4 sm:p-6">
-          <div class="px-1 pb-3 text-xs leading-tight text-gray-600 md:px-3 md:text-sm md:leading-relaxed">
-            Resultados de evaluaciones adicionales que enriquecen el seguimiento y la estadística, pero no generan documentos en PDF.
+        <div ref="contentRef" class="flex-1 overflow-y-auto p-4 sm:p-5">
+          <div class="px-1 pb-3 text-xs leading-tight text-gray-600 md:px-3 md:text-sm">
+            Resultados de evaluaciones adicionales que enriquecen el seguimiento y la estadística, no generan documentos en PDF, pero pueden vincularse a documentos externos.
           </div>
           <!-- Paso 1: Selector de tipo -->
           <div v-if="currentStep === 'select'" class="space-y-6">
@@ -147,6 +148,16 @@
                 >
               </div>
             </div>
+            <button
+              v-if="isEditing"
+              @click="handleDeleteFromEdit"
+              type="button"
+              class="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-colors flex-shrink-0"
+              aria-label="Eliminar resultado"
+              title="Eliminar resultado"
+            >
+              <i class="fas fa-trash text-lg"></i>
+            </button>
           </div>
 
             <form @submit.prevent="handleSubmit" class="space-y-4">
@@ -241,14 +252,14 @@
               <!-- Campos condicionales si resultadoGlobal = ANORMAL -->
               <template v-if="formData.resultadoGlobal === 'ANORMAL'">
                 <!-- Hallazgo Específico -->
-                <div>
+                <div class="mb-0">
                   <label class="block text-sm font-medium text-gray-700 mb-1">
                     Hallazgo Específico
                   </label>
                   <textarea
                     v-model="formData.hallazgoEspecifico"
-                    rows="3"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    rows="2"
+                    class="w-full px-3 py-2 -mb-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                     placeholder="Describa el hallazgo específico..."
                   ></textarea>
                 </div>
@@ -442,10 +453,31 @@
                         </button>
                       </div>
                     </div>
+                    <div v-if="documentoPreview" class="px-3 pb-3">
+                      <div
+                        ref="previewWrapperRef"
+                        class="rounded-lg border border-gray-200 bg-white overflow-hidden"
+                        :style="previewContainerStyle"
+                      >
+                        <img
+                          v-if="documentoPreview.type === 'image'"
+                          :src="documentoPreview.src"
+                          alt="Vista previa"
+                          class="w-full h-full object-cover"
+                        />
+                        <iframe
+                          v-else
+                          class="w-full h-full"
+                          :src="documentoPreview.src"
+                          title="Vista previa PDF"
+                          scrolling="no"
+                        ></iframe>
+                      </div>
+                    </div>
                     
                     <!-- Mensaje contextual según estado -->
                     <Transition name="slide-down">
-                      <div v-if="estadoVinculacion === 'desvinculacion-pendiente' || estadoVinculacion === 'vinculacion-pendiente'" class="px-3 pb-3 pt-0">
+                      <div ref="contextualMessageRef" v-if="estadoVinculacion === 'desvinculacion-pendiente' || estadoVinculacion === 'vinculacion-pendiente'" class="px-3 pb-3 pt-0">
                         <div 
                           :class="[
                             'pt-2',
@@ -487,7 +519,7 @@
               </div>
 
               <!-- Botones -->
-              <div class="flex gap-3 pt-4">
+              <div ref="buttonsContainerRef" class="flex gap-3">
                 <button
                   type="button"
                   @click="handleClose"
@@ -515,10 +547,10 @@
 
         <!-- Sección Resultados (Permanente) -->
         <div v-if="hasResults" class="border-t border-gray-200 bg-gray-50 flex-shrink-0">
-          <div class="px-4 py-2 border-b border-gray-200">
+          <div class="px-4 py-1.5 border-b border-gray-200">
             <h3 class="text-sm font-semibold text-gray-700">Resultados Registrados</h3>
           </div>
-          <div class="h-32 sm:h-48 overflow-y-auto p-2 sm:p-2">
+          <div class="h-32 sm:h-44 overflow-y-auto p-2 sm:p-2">
             <div class="space-y-3">
               <div v-for="year in sortedYears" :key="year" class="space-y-2">
                 <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide px-1">
@@ -534,7 +566,7 @@
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center gap-2">
                         <div
-                          class="text-lg"
+                          class="text-sm"
                           :style="{ color: getIconColor(item.tipoEstudio) }"
                         >
                           <i :class="getTipoIcon(item.tipoEstudio)"></i>
@@ -736,6 +768,7 @@
           </div>
         </Transition>
       </Teleport>
+
   </Teleport>
 </template>
 
@@ -810,6 +843,25 @@ const documentoVinculado = computed(() => {
   return null;
 });
 
+const documentoPreview = computed(() => {
+  const doc = documentoVinculado.value;
+  if (!doc) return null;
+
+  const extension = obtenerExtensionArchivo(doc);
+  const isImage = ['png', 'jpg', 'jpeg'].includes(extension);
+  if (isImage) {
+    const src = construirRutaCompleta(doc);
+    return src ? { type: 'image', src } : null;
+  }
+
+  if (!doc.rutaDocumento || !doc.nombreDocumento || !doc.fechaDocumento) return null;
+  const documentoConMeta = doc as DocumentoExterno & { updatedAt?: string | number | Date };
+  const updatedAt = documentoConMeta.updatedAt ? new Date(documentoConMeta.updatedAt).getTime() : null;
+  const nombrePDF = `${doc.nombreDocumento} ${convertirFechaISOaDDMMYYYY(doc.fechaDocumento)}.pdf`;
+  const src = buildPdfUrl(doc.rutaDocumento, nombrePDF, updatedAt, { useCacheBuster: true, fallbackToNow: false });
+  return { type: 'pdf', src };
+});
+
 // Computed para determinar el estado de vinculación del documento
 const estadoVinculacion = computed(() => {
   if (pendingDesvincularDocumento.value) return 'desvinculacion-pendiente';
@@ -836,8 +888,16 @@ watch(() => props.isOpen, async (newVal) => {
     }
     await store.fetchByTrabajador(props.trabajadorId);
     await store.fetchResultadosAgrupados(props.trabajadorId);
+    calculatePreviewHeight();
+    setupDrawerObserver();
+  } else {
+    teardownDrawerObserver();
   }
 }, { immediate: true });
+
+watch(documentoPreview, () => {
+  calculatePreviewHeight();
+});
 
 // Observar cambios en current del store (para edición desde fuera)
 // Esto maneja el caso cuando current se establece después de que el drawer ya está abierto
@@ -850,6 +910,28 @@ watch(() => store.current, (newCurrent, oldCurrent) => {
     }
   }
 });
+
+watch(
+  () => formData.value.resultadoGlobal,
+  () => {
+    calculatePreviewHeight();
+  },
+  { flush: 'post' }
+);
+
+watch(
+  estadoVinculacion,
+  async () => {
+    await nextTick();
+    setTimeout(() => {
+      if (contextualMessageRef.value && drawerResizeObserver) {
+        drawerResizeObserver.observe(contextualMessageRef.value);
+      }
+      calculatePreviewHeight();
+    }, 350);
+  },
+  { flush: 'post' }
+);
 
 const selectTipo = (tipo: 'ESPIROMETRIA' | 'EKG' | 'TIPO_SANGRE') => {
   // Entrar en modo "Registrar" (nuevo)
@@ -946,6 +1028,42 @@ const handleDelete = (item: ResultadoClinico) => {
   isDeleteModalOpen.value = true;
 };
 
+const handleDeleteFromEdit = async () => {
+  // Obtener el resultado actual que se está editando
+  // Primero intentar usar store.current (más eficiente)
+  if (store.current && store.current._id) {
+    resultadoParaEliminar.value = store.current;
+    isDeleteModalOpen.value = true;
+    return;
+  }
+
+  // Si no está en store.current, buscar por editingId
+  if (editingId.value) {
+    try {
+      const resultado = await store.fetchResultadoById(editingId.value);
+      if (resultado) {
+        resultadoParaEliminar.value = resultado;
+        isDeleteModalOpen.value = true;
+      } else {
+        toast.open({
+          message: 'No se puede eliminar: resultado no encontrado',
+          type: 'error',
+        });
+      }
+    } catch (error) {
+      toast.open({
+        message: 'Error al obtener el resultado para eliminar',
+        type: 'error',
+      });
+    }
+  } else {
+    toast.open({
+      message: 'No se puede eliminar: resultado no encontrado',
+      type: 'error',
+    });
+  }
+};
+
 const closeDeleteModal = () => {
   isDeleteModalOpen.value = false;
   resultadoParaEliminar.value = null;
@@ -960,6 +1078,17 @@ const confirmDeleteResultado = async () => {
       message: 'Resultado eliminado correctamente',
       type: 'success',
     });
+    
+    // Si se estaba editando el resultado eliminado, cerrar el panel y resetear
+    if (isEditing.value && editingId.value === resultadoParaEliminar.value._id) {
+      isEditing.value = false;
+      editingId.value = null;
+      store.setCurrent(null);
+      resetForm();
+      currentStep.value = 'select';
+      // Cerrar el panel completamente
+      handleClose();
+    }
   } catch (error) {
     toast.open({
       message: 'Error al eliminar el resultado',
@@ -1070,6 +1199,9 @@ const handleSubmit = async () => {
     
     // Refrescar resultados agrupados después de crear/actualizar
     await store.fetchResultadosAgrupados(props.trabajadorId);
+    
+    // Esperar un tick adicional para asegurar que Vue detecte los cambios reactivos
+    await nextTick();
     
     pendingDesvincularDocumento.value = false;
     pendingVincularDocumento.value = false;
@@ -1294,8 +1426,68 @@ const dragStart = ref({ x: 0, y: 0 });
 const imagePosition = ref({ x: 0, y: 0 });
 const lastImagePosition = ref({ x: 0, y: 0 });
 
+const drawerRef = ref<HTMLElement | null>(null);
+const drawerHeaderRef = ref<HTMLElement | null>(null);
+const buttonsContainerRef = ref<HTMLElement | null>(null);
+const contentRef = ref<HTMLElement | null>(null);
+const previewWrapperRef = ref<HTMLElement | null>(null);
+const contextualMessageRef = ref<HTMLElement | null>(null);
+const previewHeight = ref(240);
+let drawerResizeObserver: ResizeObserver | null = null;
+
+function calculatePreviewHeight() {
+  const content = contentRef.value;
+  const preview = previewWrapperRef.value;
+  if (!content || !preview) return;
+  const contentRect = content.getBoundingClientRect();
+  const previewRect = preview.getBoundingClientRect();
+  const buttonsHeight = buttonsContainerRef.value?.offsetHeight ?? 0;
+  const contextualMessageHeight = contextualMessageRef.value?.offsetHeight ?? 0;
+  const offsetTop = previewRect.top - contentRect.top;
+  const bottomGap = 49;
+  const available = content.clientHeight - offsetTop - buttonsHeight - contextualMessageHeight - bottomGap - 1;
+  previewHeight.value = Math.max(114, Math.min(480, available));
+}
+
+const previewContainerStyle = computed(() => ({
+  height: `${previewHeight.value}px`,
+  maxHeight: `${previewHeight.value}px`,
+  minHeight: '114'
+}));
+
+function setupDrawerObserver() {
+  if (typeof ResizeObserver === 'undefined') return;
+  if (drawerResizeObserver) {
+    drawerResizeObserver.disconnect();
+  }
+  drawerResizeObserver = new ResizeObserver(() => {
+    calculatePreviewHeight();
+  });
+  if (drawerRef.value) {
+    drawerResizeObserver.observe(drawerRef.value);
+  }
+  if (contentRef.value) {
+    drawerResizeObserver.observe(contentRef.value);
+  }
+  if (previewWrapperRef.value) {
+    drawerResizeObserver.observe(previewWrapperRef.value);
+  }
+  if (contextualMessageRef.value) {
+    drawerResizeObserver.observe(contextualMessageRef.value);
+  }
+}
+
+function teardownDrawerObserver() {
+  if (!drawerResizeObserver) return;
+  drawerResizeObserver.disconnect();
+  drawerResizeObserver = null;
+}
+
 const windowWidth = ref(window.innerWidth);
-const updateWindowWidth = () => { windowWidth.value = window.innerWidth; };
+const updateWindowWidth = () => { 
+  windowWidth.value = window.innerWidth;
+  calculatePreviewHeight();
+};
 
 /// Computed para las condiciones responsivas
 const isExtraLargeScreen = computed(() => windowWidth.value >= 1280);
@@ -1429,11 +1621,15 @@ const handleKeyDown = (event: KeyboardEvent) => {
 onMounted(() => {
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('resize', updateWindowWidth);
+  window.addEventListener('resize', calculatePreviewHeight);
+  setupDrawerObserver();
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
   window.removeEventListener('resize', updateWindowWidth);
+  window.removeEventListener('resize', calculatePreviewHeight);
+  teardownDrawerObserver();
 });
 
 const handleGlobalMouseMove = (event: MouseEvent) => {
@@ -1536,6 +1732,30 @@ const formatDate = (date: string | Date) => {
   const dateStr = date instanceof Date ? date.toISOString() : date;
   return convertirFechaISOaDDMMYYYY(dateStr);
 };
+
+const buildPdfUrl = (ruta: string, nombrePDF: string, updatedAt: number | null = null, options: { useCacheBuster?: boolean; fallbackToNow?: boolean } = {}) => {
+  const { useCacheBuster = true, fallbackToNow = false } = options;
+  const sanitizedRuta = ruta.replace(/\/+/g, '/');
+  const sanitizedNombrePDF = nombrePDF.replace(/\/+/g, '/');
+  const fullPath = new URL(`${sanitizedRuta}/${sanitizedNombrePDF}`, import.meta.env.VITE_API_URL);
+
+  if (useCacheBuster) {
+    const cacheBuster = updatedAt || (fallbackToNow ? Date.now() : null);
+    if (cacheBuster) {
+      fullPath.searchParams.set('t', cacheBuster.toString());
+    }
+  }
+
+  return fullPath.href;
+};
+
+
+
+
+
+
+
+
 </script>
 
 <style scoped>

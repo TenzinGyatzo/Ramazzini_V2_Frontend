@@ -10,7 +10,9 @@ defineProps({
 
 <template>
     <button class="button rounded-lg font-medium" type="button">
-        <span class="button__text">{{ text }}</span>
+        <span class="button__text">
+          <slot>{{ text }}</slot>
+        </span>
         <span class="button__icon text-lg text-white"><i class="fa-solid fa-arrow-up-from-bracket"></i></span>
     </button>
 </template>
@@ -34,7 +36,8 @@ defineProps({
 }
 
 .button .button__text {
-  transform: translateX(22px);
+  width: 186px;
+  text-align: center;
   color: #059669;
 }
 

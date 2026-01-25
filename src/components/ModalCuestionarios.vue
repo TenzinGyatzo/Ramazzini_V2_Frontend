@@ -115,8 +115,8 @@ const handleQuestionnaireSelect = (questionnaireType) => {
           &times;
         </div>
 
-        <h1 class="text-3xl mb-2">Cuestionarios de Vigilancia Médica</h1>
-        <p class="text-gray-600 mb-4">Selecciona el cuestionario a aplicar</p>
+        <h1 class="text-3xl mb-2">Otros documentos</h1>
+        <p class="text-gray-600 mb-4">Selecciona el documento a crear</p>
         <hr class="mt-2 mb-6">
 
         <!-- Contenido del modal -->
@@ -125,9 +125,16 @@ const handleQuestionnaireSelect = (questionnaireType) => {
           <div class="space-y-3">
             <div class="flex items-center text-sm font-semibold text-emerald-700 uppercase tracking-wide mb-3">
               <i class="fas fa-file text-emerald-500 mr-3"></i>
-              Otros informes
+              Miscelaneos
             </div>
             <div class="space-y-2">
+              <button 
+                @click="handleQuestionnaireSelect('receta')"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+                >
+                <i class="fas fa-prescription-bottle-medical text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
+                Receta Médica
+              </button>
               <button 
                 @click="handleQuestionnaireSelect('constancia-aptitud')"
                 class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
@@ -136,19 +143,22 @@ const handleQuestionnaireSelect = (questionnaireType) => {
                 Constancia de Aptitud
               </button>
               <button 
-                @click="handleQuestionnaireSelect('receta')"
-                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
-              >
-                <i class="fas fa-prescription-bottle-medical text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
-                Receta Médica
-              </button>
-              <button 
                 @click="handleQuestionnaireSelect('certificado-expedito')"
                 class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
               >
                 <i class="fas fa-file-alt text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
                 Certificado Expedito
               </button>
+            </div>
+          </div>
+
+          <!-- Cuestionarios previos a estudios de gabinete -->
+          <div class="space-y-3">
+            <div class="flex items-center text-sm font-semibold text-emerald-700 uppercase tracking-wide mb-3">
+              <i class="fas fa-clipboard-question text-emerald-500 mr-3"></i>
+              Cuestionarios previos a estudios de gabinete
+            </div>
+            <div class="space-y-2">
               <button 
                 @click="handleQuestionnaireSelect('historia-otologica')"
                 class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
