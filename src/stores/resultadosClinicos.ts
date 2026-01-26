@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import ResultadosClinicosAPI from "@/api/ResultadosClinicosAPI";
+import { useDocumentosStore } from "./documentos";
 
 export interface ResultadoClinico {
   _id?: string;
@@ -214,6 +215,36 @@ export const useResultadosClinicosStore = defineStore("resultadosClinicos", () =
       if (current.value?._id === resultadoId && response.data) {
         current.value = response.data;
       }
+
+      // IMPORTANTE: Actualizar el store de documentos para que el cambio de notasDocumento sea inmediato
+      const documentosStore = useDocumentosStore();
+      if (response.data.idDocumentoExterno) {
+        const docActualizado = response.data.idDocumentoExterno;
+        const year = new Date(docActualizado.fechaDocumento).getFullYear();
+        
+        if (documentosStore.documentsByYear[year]?.documentosExternos) {
+          const docIndex = documentosStore.documentsByYear[year].documentosExternos.findIndex(
+            d => d._id === docActualizado._id
+          );
+          if (docIndex !== -1) {
+            // Actualizar solo los campos necesarios o el objeto completo
+            documentosStore.documentsByYear[year].documentosExternos[docIndex] = {
+              ...documentosStore.documentsByYear[year].documentosExternos[docIndex],
+              ...docActualizado,
+              idResultadoClinico: resultadoId // Asegurar que tenga la vinculación
+            };
+          }
+        }
+
+        // También actualizar currentDocument si es el mismo
+        if (documentosStore.currentDocument?._id === docActualizado._id) {
+          documentosStore.currentDocument = {
+            ...documentosStore.currentDocument,
+            ...docActualizado,
+            idResultadoClinico: resultadoId
+          };
+        }
+      }
       
       return response.data;
     } catch (error) {
@@ -248,6 +279,30 @@ export const useResultadosClinicosStore = defineStore("resultadosClinicos", () =
       // Actualizar current si es el actual
       if (current.value?._id === resultadoId && response.data) {
         current.value = response.data;
+      }
+
+      // Actualizar el store de documentos para reflejar la desvinculación
+      const documentosStore = useDocumentosStore();
+      // Buscar el documento en el store de documentos para limpiar su idResultadoClinico
+      Object.values(documentosStore.documentsByYear).forEach(yearData => {
+        if (yearData.documentosExternos) {
+          const docIndex = yearData.documentosExternos.findIndex(d => d.idResultadoClinico === resultadoId);
+          if (docIndex !== -1) {
+            yearData.documentosExternos[docIndex] = {
+              ...yearData.documentosExternos[docIndex],
+              idResultadoClinico: undefined
+              // No limpiamos notasDocumento aquí porque el backend no lo hace en desvinculación (según el código actual)
+              // Si se desea limpiar las notas al desvincular, habría que hacerlo en el backend también.
+            };
+          }
+        }
+      });
+
+      if (documentosStore.currentDocument?.idResultadoClinico === resultadoId) {
+        documentosStore.currentDocument = {
+          ...documentosStore.currentDocument,
+          idResultadoClinico: undefined
+        };
       }
       
       return response.data;

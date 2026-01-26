@@ -303,7 +303,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                   Tipo de Sangre <span class="text-red-500">*</span>
                 </label>
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="grid grid-cols-4 gap-3">
                   <label
                     v-for="option in store.tipoSangreOptions"
                     :key="option.value"
@@ -1137,6 +1137,15 @@ const handleSubmit = async () => {
 
     if (formData.value.tipoEstudio !== 'TIPO_SANGRE') {
       payload.resultadoGlobal = formData.value.resultadoGlobal;
+      
+      // Si el resultado es NORMAL o NO_CONCLUYENTE, nos aseguramos de limpiar los campos de ANORMAL
+      if (formData.value.resultadoGlobal !== 'ANORMAL') {
+        payload.hallazgoEspecifico = '';
+        payload.relevanciaClinica = null;
+        payload.recomendacion = '';
+        payload.tipoAlteracion = null;
+        payload.tipoAlteracionPrincipal = null;
+      }
     }
     
     // Agregar campos condicionales

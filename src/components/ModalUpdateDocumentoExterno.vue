@@ -185,10 +185,23 @@ const handleVincular = async () => {
       type: 'success'
     });
 
-    // Actualizar la vista
-    const resultadoEncontrado = resultadosClinicosStore.items.find(r => r._id === resultadoSeleccionado.value);
-    if (resultadoEncontrado) {
-      resultadoVinculado.value = resultadoEncontrado;
+    // Actualizar notasDocumento localmente para reflejo inmediato
+    if (documentos.currentDocument && documentos.currentDocument._id === idDocumento.value) {
+      const resultadoEncontrado = resultadosClinicosStore.items.find(r => r._id === resultadoSeleccionado.value);
+      if (resultadoEncontrado) {
+        resultadoVinculado.value = resultadoEncontrado;
+        
+        // Aplicar la misma lógica de mapeo que en el backend para las notas
+        if (resultadoEncontrado.tipoEstudio === 'TIPO_SANGRE') {
+          const mapeoTipoSangre = {
+            'A_POS': 'A+', 'A_NEG': 'A-', 'B_POS': 'B+', 'B_NEG': 'B-',
+            'AB_POS': 'AB+', 'AB_NEG': 'AB-', 'O_POS': 'O+', 'O_NEG': 'O-'
+          };
+          notasDocumento.value = mapeoTipoSangre[resultadoEncontrado.tipoSangre] || resultadoEncontrado.tipoSangre;
+        } else if (['EKG', 'ESPIROMETRIA'].includes(resultadoEncontrado.tipoEstudio)) {
+          notasDocumento.value = resultadoEncontrado.resultadoGlobal;
+        }
+      }
     }
     
     showSelectorResultados.value = false;

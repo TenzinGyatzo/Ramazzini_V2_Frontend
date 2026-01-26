@@ -7,6 +7,7 @@ import { useStepsStore } from '@/stores/steps';
 import { calcularEdad, calcularAntiguedad, convertirFechaISOaDDMMYYYY, formatDateDDMMYYYY } from '@/helpers/dates';
 import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 import DocumentosAPI from '@/api/DocumentosAPI';
+import ResultadosClinicosAPI from '@/api/ResultadosClinicosAPI';
 import { findNearestDocument } from '@/helpers/findNearestDocuments';
 
 const empresas = useEmpresasStore();
@@ -29,6 +30,11 @@ const nearestAntidoping = ref(null);
 
 const audiometrias = ref([]);
 const nearestAudiometria = ref(null);
+
+const resultadosClinicos = ref([]);
+const nearestEKG = ref(null);
+const nearestEspirometria = ref(null);
+const nearestTipoSangre = ref(null);
 
 onMounted(async () => {
   try {
@@ -62,11 +68,41 @@ onMounted(async () => {
     console.error('Error al obtener los exámenes:', error);
   }
 
+  try {
+    const response = await ResultadosClinicosAPI.getByTrabajador(trabajadores.currentTrabajadorId);
+    resultadosClinicos.value = response.data || [];
+  } catch (error) {
+    console.error('Error al obtener los resultados clínicos:', error);
+    resultadosClinicos.value = [];
+  }
+
     // Llamar la función de cálculo inicial si ya existe fechaAptitudPuesto
     if (formData.formDataAptitud.fechaAptitudPuesto) {
     calculateNearestDocuments(formData.formDataAptitud.fechaAptitudPuesto);
   }
 });
+
+const findMostRecentByTipo = (items, tipo) => {
+  if (!items?.length) {
+    return null;
+  }
+
+  return items
+    .filter((item) => item?.tipoEstudio === tipo && item?.fechaEstudio)
+    .reduce((latest, current) => {
+      const currentDate = new Date(current.fechaEstudio);
+      if (isNaN(currentDate.getTime())) {
+        return latest;
+      }
+
+      if (!latest) {
+        return current;
+      }
+
+      const latestDate = new Date(latest.fechaEstudio);
+      return currentDate > latestDate ? current : latest;
+    }, null);
+};
 
 // Función reutilizable para calcular los documentos más cercanos
 const calculateNearestDocuments = (fechaAptitudPuesto) => {
@@ -75,6 +111,9 @@ const calculateNearestDocuments = (fechaAptitudPuesto) => {
   nearestExploracionFisica.value = findNearestDocument(exploracionesFisicas.value, fechaAptitudPuesto, 'fechaExploracionFisica');
   nearestAudiometria.value = findNearestDocument(audiometrias.value, fechaAptitudPuesto, 'fechaAudiometria');
   nearestAntidoping.value = findNearestDocument(antidopings.value, fechaAptitudPuesto, 'fechaAntidoping');
+  nearestEKG.value = findMostRecentByTipo(resultadosClinicos.value, 'EKG');
+  nearestEspirometria.value = findMostRecentByTipo(resultadosClinicos.value, 'ESPIROMETRIA');
+  nearestTipoSangre.value = findMostRecentByTipo(resultadosClinicos.value, 'TIPO_SANGRE');
 };
 
 // Watch para reactuar a cambios en la fecha
@@ -188,6 +227,86 @@ const antidopingResumen = computed(() => {
 
   return `Positivo a: ${sustanciasPositivas}`;
 });
+
+const tipoSangreLabels = {
+  A_POS: 'A RH Positivo',
+  A_NEG: 'A RH Negativo',
+  B_POS: 'B RH Positivo',
+  B_NEG: 'B RH Negativo',
+  AB_POS: 'AB RH Positivo',
+  AB_NEG: 'AB RH Negativo',
+  O_POS: 'O RH Positivo',
+  O_NEG: 'O RH Negativo',
+};
+
+const tipoAlteracionEspirometriaLabels = {
+  ANORMAL_OBSTRUCTIVO: 'Anormal obstructivo',
+  ANORMAL_RESTRICTIVO_SOSPECHADO: 'Anormal restrictivo sospechado',
+  ANORMAL_MIXTO: 'Anormal mixto',
+};
+
+const tipoAlteracionEKGLabels = {
+  ANORMAL_ARRITMIA: 'Anormal arritmia',
+  ANORMAL_TRASTORNO_CONDUCCION: 'Anormal trastorno de conducción',
+  ANORMAL_ISQUEMIA_INFARTO: 'Anormal isquemia/infarto',
+  ANORMAL_REPOLARIZACION: 'Anormal repolarización',
+  ANORMAL_HIPERTROFIA_CRECIMIENTO_CAVIDADES: 'Anormal hipertrofia/crecimiento de cavidades',
+  ANORMAL_QT_ALTERADO: 'Anormal QT alterado',
+};
+
+const tipoSangreResumen = computed(() => {
+  if (!nearestTipoSangre.value) {
+    return null;
+  }
+
+  const tipoSangre = nearestTipoSangre.value.tipoSangre;
+  return tipoSangreLabels[tipoSangre] || tipoSangre || '-';
+});
+
+const ekgResumen = computed(() => {
+  if (!nearestEKG.value || nearestEKG.value.resultadoGlobal === 'NO_CONCLUYENTE') {
+    return null;
+  }
+
+  if (nearestEKG.value.hallazgoEspecifico) {
+    return nearestEKG.value.hallazgoEspecifico;
+  }
+
+  if (nearestEKG.value.resultadoGlobal === 'NORMAL') {
+    return 'Normal, valores dentro del rango de referencia';
+  }
+
+  if (nearestEKG.value.resultadoGlobal === 'ANORMAL') {
+    const tipoAlteracion = nearestEKG.value.tipoAlteracionPrincipal;
+    return tipoAlteracionEKGLabels[tipoAlteracion] || tipoAlteracion || 'Anormal';
+  }
+
+  return null;
+});
+
+const espirometriaResumen = computed(() => {
+  if (!nearestEspirometria.value || nearestEspirometria.value.resultadoGlobal === 'NO_CONCLUYENTE') {
+    return null;
+  }
+
+  if (nearestEspirometria.value.hallazgoEspecifico) {
+    return nearestEspirometria.value.hallazgoEspecifico;
+  }
+
+  if (nearestEspirometria.value.resultadoGlobal === 'NORMAL') {
+    return 'Normal, valores dentro del rango de referencia';
+  }
+
+  if (nearestEspirometria.value.resultadoGlobal === 'ANORMAL') {
+    const tipoAlteracion = nearestEspirometria.value.tipoAlteracion;
+    return tipoAlteracionEspirometriaLabels[tipoAlteracion] || tipoAlteracion || 'Anormal';
+  }
+
+  return null;
+});
+
+const showEKG = computed(() => !!nearestEKG.value && nearestEKG.value.resultadoGlobal !== 'NO_CONCLUYENTE');
+const showEspirometria = computed(() => !!nearestEspirometria.value && nearestEspirometria.value.resultadoGlobal !== 'NO_CONCLUYENTE');
 
 </script>
 
@@ -350,6 +469,24 @@ const antidopingResumen = computed(() => {
               convertirFechaISOaDDMMYYYY(nearestAntidoping.fechaAntidoping) : '-' }}</td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestAntidoping ?
               antidopingResumen : '-' }}</td>
+          </tr>
+          <tr v-if="nearestTipoSangre" class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">TIPO DE SANGRE</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestTipoSangre ?
+              convertirFechaISOaDDMMYYYY(nearestTipoSangre.fechaEstudio) : '-' }}</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ tipoSangreResumen || '-' }}</td>
+          </tr>
+          <tr v-if="showEKG" class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">ELECTROCARDIOGRAMA</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestEKG ?
+              convertirFechaISOaDDMMYYYY(nearestEKG.fechaEstudio) : '-' }}</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ ekgResumen || '-' }}</td>
+          </tr>
+          <tr v-if="showEspirometria" class="odd:bg-white even:bg-gray-50">
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300 font-medium">ESPIROMETRIA</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ nearestEspirometria ?
+              convertirFechaISOaDDMMYYYY(nearestEspirometria.fechaEstudio) : '-' }}</td>
+            <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">{{ espirometriaResumen || '-' }}</td>
           </tr>
           <tr v-if="formData.formDataAptitud.evaluacionAdicional1" class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)"
             :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }">
