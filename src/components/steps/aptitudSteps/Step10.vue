@@ -105,8 +105,8 @@ watch(() => formDataAptitud.aptitudPuesto, async (newAptitudPuesto) => {
         return;
     }
     
-    // No regenerar si estamos editando un documento existente
-    if (documentos.currentDocument) {
+    // No regenerar si estamos editando un documento existente y la aptitud no ha cambiado
+    if (documentos.currentDocument && newAptitudPuesto === documentos.currentDocument.aptitudPuesto) {
         return;
     }
     
@@ -119,7 +119,14 @@ watch(() => formDataAptitud.aptitudPuesto, async (newAptitudPuesto) => {
 
 onMounted(async () => {
     if (documentos.currentDocument) {
-        resultados.value = documentos.currentDocument.resultados;
+        // Si la aptitud local ha cambiado respecto a la del documento guardado, regenerar automáticamente
+        if (formDataAptitud.aptitudPuesto && formDataAptitud.aptitudPuesto !== documentos.currentDocument.aptitudPuesto) {
+            await regenerarTextoAutomatico();
+        } else {
+            resultados.value = documentos.currentDocument.resultados;
+            // Registrar qué aptitud generó este texto para evitar regeneraciones innecesarias
+            setAptitudPuestoQueGeneroTexto(formDataAptitud.aptitudPuesto);
+        }
     } else {
         const textoActual = formDataAptitud.resultados || '';
         const textoEstaVacio = !textoActual || textoActual.trim() === '' || textoActual === inicioSugerido;
