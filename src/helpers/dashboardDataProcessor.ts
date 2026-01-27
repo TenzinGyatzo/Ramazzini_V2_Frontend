@@ -618,6 +618,95 @@ export function distribuirPorMetodo(
   ];
 }
 
+// ===== RESULTADOS CLINICOS (EKG / ESPIROMETRIA) =====
+export type ResultadoGlobalClinico = 'NORMAL' | 'ANORMAL' | 'NO_CONCLUYENTE';
+
+export const ordenTipoAlteracionEkg = [
+  'ANORMAL_ARRITMIA',
+  'ANORMAL_TRASTORNO_CONDUCCION',
+  'ANORMAL_ISQUEMIA_INFARTO',
+  'ANORMAL_REPOLARIZACION',
+  'ANORMAL_HIPERTROFIA_CRECIMIENTO_CAVIDADES',
+  'ANORMAL_QT_ALTERADO'
+];
+
+export const ordenTipoAlteracionEspirometria = [
+  'ANORMAL_OBSTRUCTIVO',
+  'ANORMAL_RESTRICTIVO_SOSPECHADO',
+  'ANORMAL_MIXTO'
+];
+
+export const etiquetasTipoAlteracionEkg: Record<string, string> = {
+  ANORMAL_ARRITMIA: 'Arritmia',
+  ANORMAL_TRASTORNO_CONDUCCION: 'Trastorno conducción',
+  ANORMAL_ISQUEMIA_INFARTO: 'Isquemia/Infarto',
+  ANORMAL_REPOLARIZACION: 'Repolarización',
+  ANORMAL_HIPERTROFIA_CRECIMIENTO_CAVIDADES: 'Hipertrofia/cavidades',
+  ANORMAL_QT_ALTERADO: 'QT alterado'
+};
+
+export const etiquetasTipoAlteracionEspirometria: Record<string, string> = {
+  ANORMAL_OBSTRUCTIVO: 'Obstructivo',
+  ANORMAL_RESTRICTIVO_SOSPECHADO: 'Restrictivo sospechado',
+  ANORMAL_MIXTO: 'Mixto'
+};
+
+export function calcularProporcionResultadosClinicos(
+  data: { resultadoGlobal?: string | null }[]
+): Record<ResultadoGlobalClinico, number> {
+  const conteo: Record<ResultadoGlobalClinico, number> = {
+    NORMAL: 0,
+    ANORMAL: 0,
+    NO_CONCLUYENTE: 0
+  };
+
+  for (const item of data) {
+    const valor = (item.resultadoGlobal || '').toUpperCase() as ResultadoGlobalClinico;
+    if (valor === 'NORMAL' || valor === 'ANORMAL' || valor === 'NO_CONCLUYENTE') {
+      conteo[valor] += 1;
+    }
+  }
+
+  return conteo;
+}
+
+export function distribuirResultadosClinicos(
+  data: { resultadoGlobal?: string | null; tipoAlteracion?: string | null }[],
+  ordenCategorias: string[]
+): [string, number, number][] {
+  const conteo: Record<string, number> = {
+    NORMAL: 0
+  };
+
+  for (const categoria of ordenCategorias) {
+    conteo[categoria] = 0;
+  }
+
+  for (const item of data) {
+    const resultado = (item.resultadoGlobal || '').toUpperCase();
+    if (resultado === 'NORMAL') {
+      conteo.NORMAL += 1;
+      continue;
+    }
+
+    if (resultado === 'ANORMAL') {
+      const alteracion = item.tipoAlteracion || '';
+      if (alteracion && conteo[alteracion] !== undefined) {
+        conteo[alteracion] += 1;
+      }
+    }
+  }
+
+  const totalParaPct = Object.values(conteo).reduce((acc, v) => acc + v, 0);
+
+  const labels = ['NORMAL', ...ordenCategorias];
+  return labels.map((label) => {
+    const cantidad = conteo[label] || 0;
+    const porcentaje = totalParaPct > 0 ? Math.round((cantidad / totalParaPct) * 100) : 0;
+    return [label, cantidad, porcentaje];
+  });
+}
+
 
 
 

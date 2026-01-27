@@ -379,7 +379,10 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         grupos: [3600, 2000], // Aspect ratio 9:5 para gráficas de barras más anchas
         cintura: [2000, 2700], // Aspect ratio 3:2 para gráficas de barras
         sexo: [2000, 2000], // Aspect ratio 1:1 para gráficas circulares
-        tensionArterial: [3000, 2000] // Aspect ratio 3:2 para gráficas de barras
+        tensionArterial: [3000, 2000], // Aspect ratio 3:2 para gráficas de barras
+        audiometriaDistribucion: [3000, 2000], // Barras distribución audiometría
+        espirometriaDistribucion: [3000, 2000], // Barras distribución espirometría
+        ekgDistribucion: [3000, 2000] // Barras distribución EKG
     } : {
         imc: [800, 600], // Aspect ratio 4:3 para gráficas de barras horizontales
         aptitud: [800, 600], // Aspect ratio 4:3 para gráficas de barras horizontales
@@ -390,7 +393,10 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         grupos: [1000, 600], // Aspect ratio 5:3 para gráficas de barras más anchas
         cintura: [600, 800], // Aspect ratio 4:3 para gráficas de barras
         sexo: [600, 600], // Aspect ratio 1:1 para gráficas circulares
-        tensionArterial: [800, 600] // Aspect ratio 4:3 para gráficas de barras
+        tensionArterial: [800, 600], // Aspect ratio 4:3 para gráficas de barras
+        audiometriaDistribucion: [800, 600], // Barras distribución audiometría
+        espirometriaDistribucion: [800, 600], // Barras distribución espirometría
+        ekgDistribucion: [800, 600] // Barras distribución EKG
     };
 
     const imagenes = {
@@ -403,7 +409,10 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         grupos: obtenerBase64(props.refsGraficas.grupos, dimensiones.grupos[0], dimensiones.grupos[1]),
         cintura: obtenerBase64(props.refsGraficas.cintura, dimensiones.cintura[0], dimensiones.cintura[1]),
         sexo: obtenerBase64(props.refsGraficas.sexo, dimensiones.sexo[0], dimensiones.sexo[1]),
-        tensionArterial: obtenerBase64(props.refsGraficas.tensionArterial, dimensiones.tensionArterial[0], dimensiones.tensionArterial[1])
+        tensionArterial: obtenerBase64(props.refsGraficas.tensionArterial, dimensiones.tensionArterial[0], dimensiones.tensionArterial[1]),
+        audiometriaDistribucion: obtenerBase64(props.refsGraficas.audiometriaDistribucion, dimensiones.audiometriaDistribucion[0], dimensiones.audiometriaDistribucion[1]),
+        espirometriaDistribucion: obtenerBase64(props.refsGraficas.espirometriaDistribucion, dimensiones.espirometriaDistribucion[0], dimensiones.espirometriaDistribucion[1]),
+        ekgDistribucion: obtenerBase64(props.refsGraficas.ekgDistribucion, dimensiones.ekgDistribucion[0], dimensiones.ekgDistribucion[1])
     };
 
     const contenido: Content[] = [];
@@ -1558,7 +1567,105 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         });
     }
 
-    // Sección 6: Aptitud al Puesto
+    // Sección 6: Estudios de Gabinete
+    const construirFilasDistribucion = (grafica: any): [string, string][] => {
+        const labels: string[] = Array.isArray(grafica?.labels) ? grafica.labels : [];
+        const data: number[] = Array.isArray(grafica?.datasets?.[0]?.data) ? grafica.datasets[0].data : [];
+        const total = data.reduce((acc, value) => acc + (Number(value) || 0), 0);
+        return labels.map((label, index) => {
+            const cantidad = Number(data[index]) || 0;
+            const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+            return [label, `${cantidad} (${porcentaje}%)`] as [string, string];
+        });
+    };
+
+    const filasAudiometria = construirFilasDistribucion(props.tablasDatos?.audiometriaDistribucion);
+    const filasEspirometria = construirFilasDistribucion(props.tablasDatos?.espirometriaDistribucion);
+    const filasEkg = construirFilasDistribucion(props.tablasDatos?.ekgDistribucion);
+
+    const hayGabinete = (imagenes.audiometriaDistribucion && filasAudiometria.length > 0)
+        || (imagenes.espirometriaDistribucion && filasEspirometria.length > 0)
+        || (imagenes.ekgDistribucion && filasEkg.length > 0);
+
+    const crearBloqueDistribucion = (
+        titulo: string,
+        descripcion: string,
+        imagen: string | undefined,
+        filas: [string, string][],
+        pageBreak: boolean
+    ) => {
+        if (!imagen || filas.length === 0) return;
+
+        contenido.push({
+            text: titulo,
+            style: 'subtituloSeccion',
+            ...(pageBreak ? { pageBreak: 'before' } : {})
+        });
+
+        contenido.push({
+            text: descripcion,
+            style: 'textoNormal',
+            margin: [0, 0, 0, 10]
+        });
+
+        contenido.push({
+            image: imagen,
+            width: 400,
+            alignment: 'center',
+            margin: [0, 0, 0, 15]
+        });
+
+        const tablaDistribucion = {
+            table: {
+                widths: ['*', 'auto'],
+                body: [
+                    [
+                        { text: 'Resultado', style: 'tableHeaderMedium' },
+                        { text: 'Trabajadores (%)', style: 'tableHeaderMedium' }
+                    ],
+                    ...filas.map((fila) => ([
+                        { text: fila[0], style: 'tableCellMedium' },
+                        { text: fila[1], style: 'tableCellMedium' }
+                    ]))
+                ]
+            },
+            layout: 'lightHorizontalLines',
+            margin: [0, 0, 0, 20]
+        } as Content;
+
+        contenido.push(tablaDistribucion);
+    };
+
+    if (hayGabinete) {
+        contenido.push({ text: `${numeroSeccion}. ESTUDIOS DE GABINETE`, style: 'tituloSeccion', pageBreak: 'before' });
+        const numeroSeccionGabinete = numeroSeccion;
+
+        crearBloqueDistribucion(
+            `${numeroSeccionGabinete}.1 Audiometría`,
+            'La audiometría permite evaluar la capacidad auditiva y detectar alteraciones que pueden afectar la seguridad y el desempeño laboral.',
+            imagenes.audiometriaDistribucion,
+            filasAudiometria,
+            false
+        );
+        crearBloqueDistribucion(
+            `${numeroSeccionGabinete}.2 Espirometría`,
+            'La espirometría ayuda a identificar patrones respiratorios y posibles alteraciones asociadas a exposición ocupacional o hábitos.',
+            imagenes.espirometriaDistribucion,
+            filasEspirometria,
+            true
+        );
+        crearBloqueDistribucion(
+            `${numeroSeccionGabinete}.3 EKG`,
+            'El EKG permite valorar la actividad eléctrica del corazón y detectar hallazgos que podrían requerir seguimiento clínico.',
+            imagenes.ekgDistribucion,
+            filasEkg,
+            true
+        );
+
+        numeroSeccion++;
+    }
+
+    // Sección 7: Aptitud al Puesto
     if (imagenes.aptitud) {
         contenido.push(
             { text: `${numeroSeccion}. RESULTADOS DE EXÁMENES MÉDICOS PERIÓDICOS`, style: 'tituloSeccion', pageBreak: 'before' },

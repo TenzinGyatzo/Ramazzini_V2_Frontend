@@ -6,7 +6,7 @@ import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 import { useInformePersonalizacionStore } from '@/stores/informePersonalizacion';
-import { clasificarPorEdadYSexo, ordenarPorGrupoEtario, contarPorCategoriaIMC, etiquetasEnfermedades, contarEnfermedadesCronicas, etiquetasAntecedentesReferidos, contarAntecedentesReferidos, etiquetasVisionSinCorreccion, calcularRequierenLentes, contarVisionSinCorreccion, calcularVistaCorregida, calcularDaltonismo, etiquetasAptitudPuesto, etiquetasAptitudPuestoTabla, contarPorAptitudPuesto, calcularCircunferenciaCintura, contarConsultasUltimos30Dias, etiquetasAgentesRiesgo, contarAgentesRiesgo, contarPorSexo, categoriasTensionArterialOrdenadas, contarPorCategoriaTensionArterial, calcularProporcionAudiometria, distribuirResultadosHBC } from '@/helpers/dashboardDataProcessor';
+import { clasificarPorEdadYSexo, ordenarPorGrupoEtario, contarPorCategoriaIMC, etiquetasEnfermedades, contarEnfermedadesCronicas, etiquetasAntecedentesReferidos, contarAntecedentesReferidos, etiquetasVisionSinCorreccion, calcularRequierenLentes, contarVisionSinCorreccion, calcularVistaCorregida, calcularDaltonismo, etiquetasAptitudPuesto, etiquetasAptitudPuestoTabla, contarPorAptitudPuesto, calcularCircunferenciaCintura, contarConsultasUltimos30Dias, etiquetasAgentesRiesgo, contarAgentesRiesgo, contarPorSexo, categoriasTensionArterialOrdenadas, contarPorCategoriaTensionArterial, calcularProporcionAudiometria, distribuirResultadosHBC, calcularProporcionResultadosClinicos, distribuirResultadosClinicos, ordenTipoAlteracionEkg, ordenTipoAlteracionEspirometria, etiquetasTipoAlteracionEkg, etiquetasTipoAlteracionEspirometria } from '@/helpers/dashboardDataProcessor';
 import GraficaBarras from '@/components/graficas/GraficaBarras.vue';
 import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
 import GraficaPastel from '@/components/graficas/GraficaPastel.vue';
@@ -152,6 +152,10 @@ const vistaAntecedentes = ref('tabla');
 const vistaAntecedentesKey = computed(() => `vista-${vistaAntecedentes.value}`);
 const vistaAudiometriaDistribucion = ref('grafico');
 const vistaAudiometriaDistribucionKey = computed(() => `vista-${vistaAudiometriaDistribucion.value}`);
+const vistaEkgDistribucion = ref('grafico');
+const vistaEkgDistribucionKey = computed(() => `vista-${vistaEkgDistribucion.value}`);
+const vistaEspirometriaDistribucion = ref('grafico');
+const vistaEspirometriaDistribucionKey = computed(() => `vista-${vistaEspirometriaDistribucion.value}`);
 const vistaAptitud = ref('grafico');
 const vistaAptitudKey = computed(() => `vista-${vistaAptitud.value}`);
 const vistaAgentes = ref('grafico');
@@ -171,6 +175,10 @@ const refCorregida = ref();
 const refDaltonismo = ref();
 const refAudiometriaProporcion = ref();
 const refAudiometriaDistribucion = ref();
+const refEkgProporcion = ref();
+const refEkgDistribucion = ref();
+const refEspirometriaProporcion = ref();
+const refEspirometriaDistribucion = ref();
 const refAgentes = ref();
 const refGruposEtarios = ref();
 const refCircunferencia = ref();
@@ -208,6 +216,15 @@ const cargarDatos = async (empresaId, inicio, fin) => {
     );
   } else {
     dashboardData.value = [];
+  }
+
+  // Debug: inspeccionar datos EKG y ESPIROMETRIA recibidos del backend
+  if (dashboardData.value?.length) {
+    console.log('Dashboard EKG/ESPIROMETRIA', dashboardData.value.map((data, index) => ({
+      centroId: centros[index]?._id,
+      ekg: data?.ekg ?? [],
+      espirometria: data?.espirometria ?? []
+    })));
   }
 };
 
@@ -427,6 +444,50 @@ const tablaAudiometriaDistribucion = computed(() => {
       ]?.audiometriaResumen || [];
 
   return distribuirResultadosHBC(datosAudio);
+});
+
+const tablaEkgDistribucion = computed(() => {
+  if (!dashboardData.value.length) return [];
+
+  const datosEkg = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.ekg?.[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.ekg?.[0] || [];
+
+  const distribucion = distribuirResultadosClinicos(datosEkg, ordenTipoAlteracionEkg);
+  const etiquetas = {
+    NORMAL: 'Normal',
+    ...etiquetasTipoAlteracionEkg
+  };
+
+  return distribucion.map(([label, cantidad, porcentaje]) => [
+    etiquetas[label] || label,
+    cantidad,
+    porcentaje
+  ]);
+});
+
+const tablaEspirometriaDistribucion = computed(() => {
+  if (!dashboardData.value.length) return [];
+
+  const datosEspirometria = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.espirometria?.[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.espirometria?.[0] || [];
+
+  const distribucion = distribuirResultadosClinicos(datosEspirometria, ordenTipoAlteracionEspirometria);
+  const etiquetas = {
+    NORMAL: 'Normal',
+    ...etiquetasTipoAlteracionEspirometria
+  };
+
+  return distribucion.map(([label, cantidad, porcentaje]) => [
+    etiquetas[label] || label,
+    cantidad,
+    porcentaje
+  ]);
 });
 
 const graficaTensionArterialData = computed(() => {
@@ -1468,6 +1529,242 @@ const graficaAudiometriaDistribucionData = computed(() => {
   };
 });
 
+// ===== RESULTADOS CLINICOS EKG =====
+const graficaEkgProporcionData = computed(() => {
+  if (!dashboardData.value.length) return { conAnormal: 0, porcentaje: 0, chart: { labels: [], datasets: [] } };
+
+  const datosEkg = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.ekg?.[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.ekg?.[0] || [];
+
+  const proporcion = calcularProporcionResultadosClinicos(datosEkg);
+  const total = proporcion.NORMAL + proporcion.ANORMAL + proporcion.NO_CONCLUYENTE;
+  const porcentaje = total > 0 ? Math.round((proporcion.ANORMAL / total) * 100) : 0;
+
+  return {
+    conAnormal: proporcion.ANORMAL,
+    porcentaje,
+    chart: {
+      labels: ['Anormal', 'Normal', 'No concluyente'],
+      datasets: [{
+        data: [proporcion.ANORMAL, proporcion.NORMAL, proporcion.NO_CONCLUYENTE],
+        backgroundColor: ['#f59e0b', '#D1D5DB', '#94a3b8'],
+        hoverOffset: 8,
+      }]
+    }
+  };
+});
+
+const graficaEkgDistribucionData = computed(() => {
+  if (!dashboardData.value.length) return { labels: [], datasets: [] };
+
+  const datosEkg = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.ekg?.[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.ekg?.[0] || [];
+
+  const distribucion = distribuirResultadosClinicos(datosEkg, ordenTipoAlteracionEkg);
+  const etiquetas = {
+    NORMAL: 'Normal',
+    ...etiquetasTipoAlteracionEkg
+  };
+
+  return {
+    labels: distribucion.map(([label]) => etiquetas[label] || label),
+    datasets: [{
+      label: 'Cantidad',
+      data: distribucion.map(([, cantidad]) => cantidad),
+      backgroundColor: [
+        '#10b981',
+        '#f59e0b',
+        '#f97316',
+        '#fb7185',
+        '#dc2626',
+        '#991b1b',
+        '#7c2d12'
+      ],
+      borderWidth: 0
+    }]
+  };
+});
+
+const graficaEkgDistribucionOptions = {
+  indexAxis: 'y',
+  responsive: true,
+  layout: {
+    padding: {
+      right: 60
+    }
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          const total = graficaEkgDistribucionData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `Trabajadores: ${value} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      color: '#374151',
+      anchor: 'end',
+      align: 'end',
+      formatter: (value, context) => {
+        const total = graficaEkgDistribucionData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return `${value} (${porcentaje}%)`;
+      },
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        stepSize: 1,
+        maxTicksLimit: 10,
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  }
+};
+
+// ===== RESULTADOS CLINICOS ESPIROMETRIA =====
+const graficaEspirometriaProporcionData = computed(() => {
+  if (!dashboardData.value.length) return { conAnormal: 0, porcentaje: 0, chart: { labels: [], datasets: [] } };
+
+  const datosEspirometria = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.espirometria?.[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.espirometria?.[0] || [];
+
+  const proporcion = calcularProporcionResultadosClinicos(datosEspirometria);
+  const total = proporcion.NORMAL + proporcion.ANORMAL + proporcion.NO_CONCLUYENTE;
+  const porcentaje = total > 0 ? Math.round((proporcion.ANORMAL / total) * 100) : 0;
+
+  return {
+    conAnormal: proporcion.ANORMAL,
+    porcentaje,
+    chart: {
+      labels: ['Anormal', 'Normal', 'No concluyente'],
+      datasets: [{
+        data: [proporcion.ANORMAL, proporcion.NORMAL, proporcion.NO_CONCLUYENTE],
+        backgroundColor: ['#f59e0b', '#D1D5DB', '#94a3b8'],
+        hoverOffset: 8,
+      }]
+    }
+  };
+});
+
+const graficaEspirometriaDistribucionData = computed(() => {
+  if (!dashboardData.value.length) return { labels: [], datasets: [] };
+
+  const datosEspirometria = centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.espirometria?.[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex(c => c.nombreCentro === centroSeleccionado.value)
+      ]?.espirometria?.[0] || [];
+
+  const distribucion = distribuirResultadosClinicos(datosEspirometria, ordenTipoAlteracionEspirometria);
+  const etiquetas = {
+    NORMAL: 'Normal',
+    ...etiquetasTipoAlteracionEspirometria
+  };
+
+  return {
+    labels: distribucion.map(([label]) => etiquetas[label] || label),
+    datasets: [{
+      label: 'Cantidad',
+      data: distribucion.map(([, cantidad]) => cantidad),
+      backgroundColor: [
+        '#10b981',
+        '#f59e0b',
+        '#f97316',
+        '#dc2626'
+      ],
+      borderWidth: 0
+    }]
+  };
+});
+
+const graficaEspirometriaDistribucionOptions = {
+  indexAxis: 'y',
+  responsive: true,
+  layout: {
+    padding: {
+      right: 60
+    }
+  },
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      enabled: true,
+      callbacks: {
+        label: (context) => {
+          const value = context.raw;
+          const total = graficaEspirometriaDistribucionData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+          const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+          return `Trabajadores: ${value} (${porcentaje}%)`;
+        }
+      }
+    },
+    datalabels: {
+      color: '#374151',
+      anchor: 'end',
+      align: 'end',
+      formatter: (value, context) => {
+        const total = graficaEspirometriaDistribucionData.value.datasets?.[0]?.data?.reduce((a, b) => a + b, 0) || 0;
+        const porcentaje = total > 0 ? Math.round((value / total) * 100) : 0;
+        return `${value} (${porcentaje}%)`;
+      },
+      font: {
+        weight: 'bold',
+        size: 12
+      },
+      clamp: true
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: {
+        stepSize: 1,
+        maxTicksLimit: 10,
+        color: '#374151',
+        font: { size: 12 }
+      }
+    },
+    y: {
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 12 }
+      }
+    }
+  }
+};
 // Computed para tabla y grafica de circunferencia de cintura
 const graficaCircunferenciaData = computed(() => {
   if (!dashboardData.value.length) return { chart: {}, alto: 0, porcentaje: 0 };
@@ -2405,6 +2702,10 @@ const tablaCintura = computed(() => {
                 daltonismo: { ref: refDaltonismo, config: { type: 'doughnut', data: graficaDaltonismoData.chart, options: opcionesGenericasAnilloPDF } },
                 audiometriaProporcion: { ref: refAudiometriaProporcion, config: { type: 'doughnut', data: graficaAudiometriaProporcionData.chart, options: opcionesGenericasAnilloPDF } },
                 audiometriaDistribucion: { ref: refAudiometriaDistribucion, config: { type: 'bar', data: graficaAudiometriaDistribucionData, options: graficaAudiometriaDistribucionOptionsPDF } },
+                espirometriaProporcion: { ref: refEspirometriaProporcion, config: { type: 'doughnut', data: graficaEspirometriaProporcionData.chart, options: opcionesGenericasAnilloPDF } },
+                espirometriaDistribucion: { ref: refEspirometriaDistribucion, config: { type: 'bar', data: graficaEspirometriaDistribucionData, options: graficaEspirometriaDistribucionOptions } },
+                ekgProporcion: { ref: refEkgProporcion, config: { type: 'doughnut', data: graficaEkgProporcionData.chart, options: opcionesGenericasAnilloPDF } },
+                ekgDistribucion: { ref: refEkgDistribucion, config: { type: 'bar', data: graficaEkgDistribucionData, options: graficaEkgDistribucionOptions } },
                 agentes: { ref: refAgentes, config: { type: 'bar', data: graficaAgentesRiesgoData, options: graficaAgentesRiesgoOptionsPDF } },
                 grupos: { ref: refGruposEtarios, config: { type: 'bar', data: graficaGruposEtariosData, options: graficaGruposEtariosOptionsPDF } },
                 cintura: { ref: refCircunferencia, config: { type: 'bar', data: graficaCircunferenciaData.chart, options: graficaCircunferenciaOptionsPDF } },
@@ -2432,6 +2733,10 @@ const tablaCintura = computed(() => {
                 daltonismo: graficaDaltonismoData,
                 audiometriaProporcion: graficaAudiometriaProporcionData,
                 audiometriaDistribucion: graficaAudiometriaDistribucionData,
+                espirometriaProporcion: graficaEspirometriaProporcionData,
+                espirometriaDistribucion: graficaEspirometriaDistribucionData,
+                ekgProporcion: graficaEkgProporcionData,
+                ekgDistribucion: graficaEkgDistribucionData,
                 cintura: graficaCircunferenciaData,
                 sexo: tablaSexoPDF,
                 tensionArterial: tablaTensionArterial
@@ -3469,6 +3774,237 @@ const tablaCintura = computed(() => {
 
               <h4 class="text-xs text-gray-600 font-normal italic text-center">
                 Actividad médica
+              </h4>
+            </div>
+
+            <!-- Proporción Espirometría -->
+            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1">
+              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                  Proporción Espirometría
+                  <span class="relative cursor-help">
+                    <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                    <span class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                      Proporción de resultados <span class="font-semibold text-emerald-600">normales</span>, <span class="font-semibold text-amber-600">anormales</span> y <span class="font-semibold text-slate-600">no concluyentes</span> en espirometría.
+                    </span>
+                  </span>
+                </h3>
+              </div>
+
+              <GraficaAnillo
+                v-if="graficaEspirometriaProporcionData.chart?.labels?.length"
+                ref="refEspirometriaProporcion"
+                :data="graficaEspirometriaProporcionData.chart"
+                :options="{ ...opcionesGenericasAnillo }"
+                :cantidad="graficaEspirometriaProporcionData.conAnormal"
+                :porcentaje="graficaEspirometriaProporcionData.porcentaje"
+              />
+
+              <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
+                Distribución de espirometría normal vs anormal.
+              </h4>
+            </div>
+
+            <!-- Distribución Espirometría -->
+            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                  Distribución Espirometría
+                  <span class="relative cursor-help">
+                    <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                    <span class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                      Distribución por tipo de alteración en espirometría.
+                    </span>
+                  </span>
+                </h3>
+                <div class="flex gap-2">
+                  <button
+                    @click="vistaEspirometriaDistribucion = 'grafico'"
+                    :class="[
+                      'px-3 py-1 rounded text-sm font-medium',
+                      vistaEspirometriaDistribucion === 'grafico'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    ]"
+                  >
+                    Gráfico
+                  </button>
+                  <button
+                    @click="vistaEspirometriaDistribucion = 'tabla'"
+                    :class="[
+                      'px-3 py-1 rounded text-sm font-medium',
+                      vistaEspirometriaDistribucion === 'tabla'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    ]"
+                  >
+                    Tabla
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex-1 overflow-x-auto">
+                <Transition name="fade" mode="out-in">
+                  <template v-if="vistaEspirometriaDistribucion === 'grafico'">
+                    <GraficaBarras
+                      v-if="graficaEspirometriaDistribucionData.labels?.length"
+                      ref="refEspirometriaDistribucion"
+                      :key="vistaEspirometriaDistribucionKey"
+                      :data="graficaEspirometriaDistribucionData"
+                      :options="{ ...graficaEspirometriaDistribucionOptions, elements: { bar: { borderWidth: 1, borderColor: '#000000' } } }"
+                    />
+                  </template>
+
+                  <template v-else>
+                    <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                      <thead class="bg-gray-100 text-gray-700">
+                        <tr>
+                          <th class="py-2 px-4 text-left text-lg lg:text-xl">Resultado</th>
+                          <th class="py-2 px-4 text-center text-lg lg:text-xl">Trabajadores</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="[resultado, cantidad, porcentaje] in tablaEspirometriaDistribucion"
+                          :key="resultado"
+                          class="border-t hover:bg-gray-200 transition"
+                        >
+                          <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ resultado }}</td>
+                          <td
+                            :class="[
+                              'py-1 px-4 text-center text-lg lg:text-xl',
+                              resultado === 'Normal' ? 'text-emerald-700' : 'text-amber-600'
+                            ]"
+                          >
+                            {{ cantidad }}
+                            <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </template>
+                </Transition>
+              </div>
+
+              <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
+                Normal + tipos de alteración por espirometría.
+              </h4>
+            </div>
+
+            <!-- Espacio vacío para mantener layout -->
+            <div class="bg-transparent p-6 rounded-lg shadow-none hidden sm:block"></div>
+
+            <!-- Proporción EKG -->
+            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1">
+              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                  Proporción EKG
+                  <span class="relative cursor-help">
+                    <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                    <span class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                      Proporción de resultados <span class="font-semibold text-emerald-600">normales</span>, <span class="font-semibold text-amber-600">anormales</span> y <span class="font-semibold text-slate-600">no concluyentes</span> en EKG.
+                    </span>
+                  </span>
+                </h3>
+              </div>
+
+              <GraficaAnillo
+                v-if="graficaEkgProporcionData.chart?.labels?.length"
+                ref="refEkgProporcion"
+                :data="graficaEkgProporcionData.chart"
+                :options="{ ...opcionesGenericasAnillo }"
+                :cantidad="graficaEkgProporcionData.conAnormal"
+                :porcentaje="graficaEkgProporcionData.porcentaje"
+              />
+
+              <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
+                Distribución de EKG normal vs anormal.
+              </h4>
+            </div>
+
+            <!-- Distribución EKG -->
+            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                  Distribución EKG
+                  <span class="relative cursor-help">
+                    <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                    <span class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                      Distribución por tipo de alteración en EKG.
+                    </span>
+                  </span>
+                </h3>
+                <div class="flex gap-2">
+                  <button
+                    @click="vistaEkgDistribucion = 'grafico'"
+                    :class="[
+                      'px-3 py-1 rounded text-sm font-medium',
+                      vistaEkgDistribucion === 'grafico'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    ]"
+                  >
+                    Gráfico
+                  </button>
+                  <button
+                    @click="vistaEkgDistribucion = 'tabla'"
+                    :class="[
+                      'px-3 py-1 rounded text-sm font-medium',
+                      vistaEkgDistribucion === 'tabla'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    ]"
+                  >
+                    Tabla
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex-1 overflow-x-auto">
+                <Transition name="fade" mode="out-in">
+                  <template v-if="vistaEkgDistribucion === 'grafico'">
+                    <GraficaBarras
+                      v-if="graficaEkgDistribucionData.labels?.length"
+                      ref="refEkgDistribucion"
+                      :key="vistaEkgDistribucionKey"
+                      :data="graficaEkgDistribucionData"
+                      :options="{ ...graficaEkgDistribucionOptions, elements: { bar: { borderWidth: 1, borderColor: '#000000' } } }"
+                    />
+                  </template>
+
+                  <template v-else>
+                    <table class="min-w-full text-sm border border-gray-300 rounded h-full">
+                      <thead class="bg-gray-100 text-gray-700">
+                        <tr>
+                          <th class="py-2 px-4 text-left text-lg lg:text-xl">Resultado</th>
+                          <th class="py-2 px-4 text-center text-lg lg:text-xl">Trabajadores</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="[resultado, cantidad, porcentaje] in tablaEkgDistribucion"
+                          :key="resultado"
+                          class="border-t hover:bg-gray-200 transition"
+                        >
+                          <td class="py-1 px-4 font-medium text-gray-700 text-lg lg:text-xl">{{ resultado }}</td>
+                          <td
+                            :class="[
+                              'py-1 px-4 text-center text-lg lg:text-xl',
+                              resultado === 'Normal' ? 'text-emerald-700' : 'text-amber-600'
+                            ]"
+                          >
+                            {{ cantidad }}
+                            <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </template>
+                </Transition>
+              </div>
+
+              <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
+                Normal + tipos de alteración por EKG.
               </h4>
             </div>
 
