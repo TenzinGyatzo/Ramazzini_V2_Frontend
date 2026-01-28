@@ -1583,15 +1583,22 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     const filasEspirometria = construirFilasDistribucion(props.tablasDatos?.espirometriaDistribucion);
     const filasEkg = construirFilasDistribucion(props.tablasDatos?.ekgDistribucion);
 
+    const coloresAudiometria: string[] = props.tablasDatos?.audiometriaDistribucion?.datasets?.[0]?.backgroundColor ?? [];
+    const coloresEspirometria: string[] = props.tablasDatos?.espirometriaDistribucion?.datasets?.[0]?.backgroundColor ?? [];
+    const coloresEkg: string[] = props.tablasDatos?.ekgDistribucion?.datasets?.[0]?.backgroundColor ?? [];
+
     const hayGabinete = (imagenes.audiometriaDistribucion && filasAudiometria.length > 0)
         || (imagenes.espirometriaDistribucion && filasEspirometria.length > 0)
         || (imagenes.ekgDistribucion && filasEkg.length > 0);
 
+    const COLOR_NEUTRO_CERO = '#6B7280';
     const crearBloqueDistribucion = (
         titulo: string,
-        descripcion: string,
+        descripcion: string | (string | { text: string; bold?: boolean })[],
+        descripcion2: string | (string | { text: string; bold?: boolean })[],
         imagen: string | undefined,
         filas: [string, string][],
+        colores: string[],
         pageBreak: boolean
     ) => {
         if (!imagen || filas.length === 0) return;
@@ -1608,6 +1615,14 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
             margin: [0, 0, 0, 10]
         });
 
+        if (descripcion2) {
+            contenido.push({
+                text: descripcion2,
+                style: 'textoNormal',
+                margin: [0, 0, 0, 10]
+            });
+        }
+
         contenido.push({
             image: imagen,
             width: 400,
@@ -1617,20 +1632,34 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
 
         const tablaDistribucion = {
             table: {
-                widths: ['*', 'auto'],
+                headerRows: 1,
+                widths: ['*', '*'],
                 body: [
                     [
-                        { text: 'Resultado', style: 'tableHeaderMedium' },
-                        { text: 'Trabajadores (%)', style: 'tableHeaderMedium' }
+                        { text: 'Resultado', style: 'tableHeader' },
+                        { text: 'Casos (%)', style: 'tableHeader' }
                     ],
-                    ...filas.map((fila) => ([
-                        { text: fila[0], style: 'tableCellMedium' },
-                        { text: fila[1], style: 'tableCellMedium' }
-                    ]))
+                    ...filas.map((fila, index) => {
+                        const textoCasos = fila[1];
+                        const cantidadMatch = textoCasos.match(/^(\d+)/);
+                        const cantidad = cantidadMatch ? parseInt(cantidadMatch[1], 10) : 0;
+                        const colorTexto = cantidad === 0
+                            ? COLOR_NEUTRO_CERO
+                            : (colores[index] || undefined);
+                        const celdaPorcentaje = {
+                            text: textoCasos,
+                            style: 'tableCellMedium',
+                            ...(colorTexto ? { color: colorTexto } : {})
+                        };
+                        return [
+                            { text: fila[0], style: 'tableCellMedium' },
+                            celdaPorcentaje
+                        ];
+                    })
                 ]
             },
             layout: 'lightHorizontalLines',
-            margin: [0, 0, 0, 20]
+            margin: [0, 5, 0, 15]
         } as Content;
 
         contenido.push(tablaDistribucion);
@@ -1642,23 +1671,58 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
 
         crearBloqueDistribucion(
             `${numeroSeccionGabinete}.1 Audiometría`,
-            'La audiometría permite evaluar la capacidad auditiva y detectar alteraciones que pueden afectar la seguridad y el desempeño laboral.',
+            [
+                'La audición adecuada es fundamental para la ',
+                { text: 'comunicación, la atención y la respuesta ante señales de alerta', bold: true },
+                'en el entorno laboral.'
+            ],
+            [
+                'Este indicador permite ',
+                { text: 'detectar alteraciones auditivas', bold: true },
+                'que pueden comprometer la seguridad, especialmente en áreas con maquinaria, tránsito vehicular o trabajo en equipo. Su detección oportuna facilita la ',
+                { text: 'prevención de accidentes y el ajuste de condiciones de trabajo', bold: true },
+                'según cada caso.'
+            ],
             imagenes.audiometriaDistribucion,
             filasAudiometria,
+            coloresAudiometria,
             false
         );
         crearBloqueDistribucion(
             `${numeroSeccionGabinete}.2 Espirometría`,
-            'La espirometría ayuda a identificar patrones respiratorios y posibles alteraciones asociadas a exposición ocupacional o hábitos.',
+            [
+                'Las alteraciones en la función respiratoria pueden ',
+                { text: 'afectar la resistencia física, la oxigenación y el rendimiento general', bold: true },
+                ' en el trabajo.'
+            ],
+            [
+                'Este estudio permite identificar ',
+                { text: 'limitaciones obstructivas, restrictivas o mixtas,', bold: true },
+                'útiles para detectar enfermedades respiratorias y ',
+                { text: 'evaluar riesgos en ambientes con exposición a polvos, gases o esfuerzo físico sostenido.', bold: true },
+                ' Su detección facilita el seguimiento clínico y la adaptación de tareas.'
+            ],
             imagenes.espirometriaDistribucion,
             filasEspirometria,
+            coloresEspirometria,
             true
         );
         crearBloqueDistribucion(
-            `${numeroSeccionGabinete}.3 EKG`,
-            'El EKG permite valorar la actividad eléctrica del corazón y detectar hallazgos que podrían requerir seguimiento clínico.',
+            `${numeroSeccionGabinete}.3 Electrocardiograma (EKG)`,
+            [
+                'Las alteraciones eléctricas del corazón pueden ',
+                { text: 'aumentar el riesgo de eventos cardiovasculares agudos', bold: true },
+                ' durante la jornada laboral, especialmente en actividades de alta demanda física o bajo estrés.'
+            ],
+            [
+                'Este estudio permite ',
+                { text: 'identificar arritmias, trastornos de conducción y otros hallazgos relevantes', bold: true },
+                ', facilitando el seguimiento médico y la ',
+                { text: 'prevención de incidentes asociados a condiciones cardíacas no detectadas.', bold: true },
+            ],
             imagenes.ekgDistribucion,
             filasEkg,
+            coloresEkg,
             true
         );
 

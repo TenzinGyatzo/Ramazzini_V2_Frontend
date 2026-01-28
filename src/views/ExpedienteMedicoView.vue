@@ -220,19 +220,23 @@ watch(
   }
 );
 
-const documentosPorAnio = computed(() => documentos.documentsByYear || {});
-const resultadosPorAnio = computed(() => resultadosClinicos.resultsByYear || {});
+const documentosPorAnio = computed(() => documentos.documentsByYear);
+// Crear una copia superficial para forzar reactividad cuando se añaden nuevas claves (años)
+const resultadosPorAnio = computed(() => ({ ...resultadosClinicos.resultsByYear }));
 const yearsWithRecords = computed(() => {
   const años = new Set<string>();
-  Object.keys(documentosPorAnio.value || {}).forEach((year) => años.add(year));
-  Object.keys(resultadosPorAnio.value || {}).forEach((year) => años.add(year));
+  if (documentosPorAnio.value) {
+    Object.keys(documentosPorAnio.value).forEach((year) => años.add(year));
+  }
+  if (resultadosPorAnio.value) {
+    Object.keys(resultadosPorAnio.value).forEach((year) => años.add(year));
+  }
   return Array.from(años).sort((a, b) => Number(b) - Number(a));
 });
 
-// Función para verificar si hay resultados para un año específico (accede directamente al store para reactividad)
+// Función para verificar si hay resultados para un año específico
 const tieneResultadosParaAnio = (year: string) => {
-  // Acceder directamente al store para asegurar reactividad
-  const resultados = resultadosClinicos.resultsByYear[year];
+  const resultados = resultadosPorAnio.value?.[year];
   return resultados && Array.isArray(resultados) && resultados.length > 0;
 };
 
@@ -297,7 +301,8 @@ const handleCloseResultadosPanel = async () => {
   // Refrescar resultados agrupados al cerrar el drawer
   if (trabajadores.currentTrabajadorId) {
     await resultadosClinicos.fetchResultadosAgrupados(trabajadores.currentTrabajadorId);
-    // Forzar actualización de la reactividad usando nextTick
+    // Forzar múltiples ciclos de actualización
+    await nextTick();
     await nextTick();
   }
 };
@@ -565,8 +570,12 @@ const totalDocumentosExternos = computed(() => {
 
 // Computed para el año más reciente con documentos
 const añoMasReciente = computed(() => {
-  if (!documentos.documentsByYear || Object.keys(documentos.documentsByYear).length === 0) return null;
-  return Math.max(...Object.keys(documentos.documentsByYear).map(Number));
+  const añosDocumentos = Object.keys(documentos.documentsByYear || {}).map(Number);
+  const añosResultados = Object.keys(resultadosClinicos.resultsByYear || {}).map(Number);
+  const todosLosAños = [...new Set([...añosDocumentos, ...añosResultados])];
+  
+  if (todosLosAños.length === 0) return null;
+  return Math.max(...todosLosAños);
 });
 
 </script>
@@ -919,7 +928,7 @@ const añoMasReciente = computed(() => {
         <!-- Contenido principal de documentos -->
         <div>
           <Transition appear mode="out-in" name="slide-up">
-            <div v-if="documentos.loading" class="text-center py-20">
+            <div v-if="documentos.loading && !yearsWithRecords.length" class="text-center py-20">
               <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4 animate-pulse">
                 <i class="fas fa-spinner fa-spin text-2xl text-emerald-600"></i>
               </div>
@@ -938,12 +947,12 @@ const añoMasReciente = computed(() => {
               <div v-if="yearsWithRecords.length" class="space-y-6">
                 <div
                   v-for="year in yearsWithRecords"
-                  :key="year"
+                  :key="`year-${year}-${resultadosPorAnio[year]?.length || 0}`"
                   class="space-y-4"
                 >
                   <GrupoDocumentos
                     :documents="documentosPorAnio[year] || {}"
-                    :year="year"
+                    :year="String(year)"
                     :trabajador="trabajadores.currentTrabajador || {}"
                     @eliminarDocumento="toggleDeleteModal"
                     @abrirModalUpdate="toggleDocumentoExternoUpdateModal"
@@ -954,9 +963,9 @@ const añoMasReciente = computed(() => {
                     :toggleDeletionMode="toggleDeletionMode"
                     :onDeleteSelected="handleDeleteSelected"
                   >
-                    <template #extraSection v-if="tieneResultadosParaAnio(year)">
+                    <template #extraSection v-if="resultadosPorAnio[year]?.length > 0">
                       <ResultadosClinicosSubsection
-                        :results="resultadosPorAnio[year]"
+                        :results="resultadosPorAnio[year] || []"
                         @edit="handleEditResultado"
                       />
                     </template>

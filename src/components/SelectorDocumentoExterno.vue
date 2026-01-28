@@ -27,7 +27,7 @@ const { ensureUserLoaded } = useCurrentUser();
 const { currentEmpresa } = useEmpresasStore();
 const { currentCentroTrabajo } = useCentrosTrabajoStore();
 
-const activeTab = ref<'seleccionar' | 'subir'>('seleccionar');
+const activeTab = ref<'seleccionar' | 'subir'>('subir');
 const selectedFiles = ref<File[]>([]);
 const isUploading = ref(false);
 const uploadProgress = ref(0);
@@ -177,7 +177,7 @@ const resetUploadState = () => {
   isDragOver.value = false;
   uploadProgress.value = 0;
   isUploading.value = false;
-  activeTab.value = 'seleccionar';
+  activeTab.value = 'subir';
 };
 
 const handleSubmitUpload = async () => {
@@ -303,18 +303,6 @@ const getExtensionIcon = (extension: string) => {
           <!-- Tabs -->
           <div class="flex border-b border-gray-200">
             <button
-              @click="activeTab = 'seleccionar'"
-              :class="[
-                'flex-1 px-6 py-3 text-sm font-semibold transition-colors',
-                activeTab === 'seleccionar'
-                  ? 'text-emerald-600 border-b-2 border-emerald-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              ]"
-            >
-              <i class="fas fa-list mr-2"></i>
-              Seleccionar existente
-            </button>
-            <button
               @click="activeTab = 'subir'"
               :class="[
                 'flex-1 px-6 py-3 text-sm font-semibold transition-colors',
@@ -325,6 +313,18 @@ const getExtensionIcon = (extension: string) => {
             >
               <i class="fas fa-cloud-upload-alt mr-2"></i>
               Subir nuevo
+            </button>
+            <button
+              @click="activeTab = 'seleccionar'"
+              :class="[
+                'flex-1 px-6 py-3 text-sm font-semibold transition-colors',
+                activeTab === 'seleccionar'
+                  ? 'text-emerald-600 border-b-2 border-emerald-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              ]"
+            >
+              <i class="fas fa-list mr-2"></i>
+              Seleccionar existente
             </button>
           </div>
 
