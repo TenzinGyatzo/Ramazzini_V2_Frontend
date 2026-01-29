@@ -1578,6 +1578,13 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
             return [label, `${cantidad} (${porcentaje}%)`] as [string, string];
         });
     };
+    const tieneResultados = (filas: [string, string][]): boolean => (
+        filas.length > 0 && filas.some((fila) => {
+            const cantidadMatch = fila[1].match(/^(\d+)/);
+            const cantidad = cantidadMatch ? parseInt(cantidadMatch[1], 10) : 0;
+            return cantidad > 0;
+        })
+    );
 
     const filasAudiometria = construirFilasDistribucion(props.tablasDatos?.audiometriaDistribucion);
     const filasEspirometria = construirFilasDistribucion(props.tablasDatos?.espirometriaDistribucion);
@@ -1587,9 +1594,10 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     const coloresEspirometria: string[] = props.tablasDatos?.espirometriaDistribucion?.datasets?.[0]?.backgroundColor ?? [];
     const coloresEkg: string[] = props.tablasDatos?.ekgDistribucion?.datasets?.[0]?.backgroundColor ?? [];
 
-    const hayGabinete = (imagenes.audiometriaDistribucion && filasAudiometria.length > 0)
-        || (imagenes.espirometriaDistribucion && filasEspirometria.length > 0)
-        || (imagenes.ekgDistribucion && filasEkg.length > 0);
+    const mostrarAudiometria = Boolean(imagenes.audiometriaDistribucion) && tieneResultados(filasAudiometria);
+    const mostrarEspirometria = Boolean(imagenes.espirometriaDistribucion) && tieneResultados(filasEspirometria);
+    const mostrarEkg = Boolean(imagenes.ekgDistribucion) && tieneResultados(filasEkg);
+    const hayGabinete = mostrarAudiometria || mostrarEspirometria || mostrarEkg;
 
     const COLOR_NEUTRO_CERO = '#6B7280';
     const crearBloqueDistribucion = (
@@ -1601,7 +1609,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         colores: string[],
         pageBreak: boolean
     ) => {
-        if (!imagen || filas.length === 0) return;
+        if (!imagen || !tieneResultados(filas)) return;
 
         contenido.push({
             text: titulo,
@@ -1669,62 +1677,75 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         contenido.push({ text: `${numeroSeccion}. ESTUDIOS DE GABINETE`, style: 'tituloSeccion', pageBreak: 'before' });
         const numeroSeccionGabinete = numeroSeccion;
 
-        crearBloqueDistribucion(
-            `${numeroSeccionGabinete}.1 Audiometría`,
-            [
-                'La audición adecuada es fundamental para la ',
-                { text: 'comunicación, la atención y la respuesta ante señales de alerta', bold: true },
-                'en el entorno laboral.'
-            ],
-            [
-                'Este indicador permite ',
-                { text: 'detectar alteraciones auditivas', bold: true },
-                'que pueden comprometer la seguridad, especialmente en áreas con maquinaria, tránsito vehicular o trabajo en equipo. Su detección oportuna facilita la ',
-                { text: 'prevención de accidentes y el ajuste de condiciones de trabajo', bold: true },
-                'según cada caso.'
-            ],
-            imagenes.audiometriaDistribucion,
-            filasAudiometria,
-            coloresAudiometria,
-            false
-        );
-        crearBloqueDistribucion(
-            `${numeroSeccionGabinete}.2 Espirometría`,
-            [
-                'Las alteraciones en la función respiratoria pueden ',
-                { text: 'afectar la resistencia física, la oxigenación y el rendimiento general', bold: true },
-                ' en el trabajo.'
-            ],
-            [
-                'Este estudio permite identificar ',
-                { text: 'limitaciones obstructivas, restrictivas o mixtas,', bold: true },
-                'útiles para detectar enfermedades respiratorias y ',
-                { text: 'evaluar riesgos en ambientes con exposición a polvos, gases o esfuerzo físico sostenido.', bold: true },
-                ' Su detección facilita el seguimiento clínico y la adaptación de tareas.'
-            ],
-            imagenes.espirometriaDistribucion,
-            filasEspirometria,
-            coloresEspirometria,
-            true
-        );
-        crearBloqueDistribucion(
-            `${numeroSeccionGabinete}.3 Electrocardiograma (EKG)`,
-            [
-                'Las alteraciones eléctricas del corazón pueden ',
-                { text: 'aumentar el riesgo de eventos cardiovasculares agudos', bold: true },
-                ' durante la jornada laboral, especialmente en actividades de alta demanda física o bajo estrés.'
-            ],
-            [
-                'Este estudio permite ',
-                { text: 'identificar arritmias, trastornos de conducción y otros hallazgos relevantes', bold: true },
-                ', facilitando el seguimiento médico y la ',
-                { text: 'prevención de incidentes asociados a condiciones cardíacas no detectadas.', bold: true },
-            ],
-            imagenes.ekgDistribucion,
-            filasEkg,
-            coloresEkg,
-            true
-        );
+        const bloquesGabinete = [
+            mostrarAudiometria ? {
+                nombre: 'Audiometría',
+                descripcion: [
+                    'La audición adecuada es fundamental para la ',
+                    { text: 'comunicación, la atención y la respuesta ante señales de alerta', bold: true },
+                    'en el entorno laboral.'
+                ],
+                descripcion2: [
+                    'Este indicador permite ',
+                    { text: 'detectar alteraciones auditivas', bold: true },
+                    'que pueden comprometer la seguridad, especialmente en áreas con maquinaria, tránsito vehicular o trabajo en equipo. Su detección oportuna facilita la ',
+                    { text: 'prevención de accidentes y el ajuste de condiciones de trabajo', bold: true },
+                    'según cada caso.'
+                ],
+                imagen: imagenes.audiometriaDistribucion,
+                filas: filasAudiometria,
+                colores: coloresAudiometria
+            } : null,
+            mostrarEspirometria ? {
+                nombre: 'Espirometría',
+                descripcion: [
+                    'Las alteraciones en la función respiratoria pueden ',
+                    { text: 'afectar la resistencia física, la oxigenación y el rendimiento general', bold: true },
+                    ' en el trabajo.'
+                ],
+                descripcion2: [
+                    'Este estudio permite identificar ',
+                    { text: 'limitaciones obstructivas, restrictivas o mixtas,', bold: true },
+                    'útiles para detectar enfermedades respiratorias y ',
+                    { text: 'evaluar riesgos en ambientes con exposición a polvos, gases o esfuerzo físico sostenido.', bold: true },
+                    ' Su detección facilita el seguimiento clínico y la adaptación de tareas.'
+                ],
+                imagen: imagenes.espirometriaDistribucion,
+                filas: filasEspirometria,
+                colores: coloresEspirometria
+            } : null,
+            mostrarEkg ? {
+                nombre: 'Electrocardiograma (EKG)',
+                descripcion: [
+                    'Las alteraciones eléctricas del corazón pueden ',
+                    { text: 'aumentar el riesgo de eventos cardiovasculares agudos', bold: true },
+                    ' durante la jornada laboral, especialmente en actividades de alta demanda física o bajo estrés.'
+                ],
+                descripcion2: [
+                    'Este estudio permite ',
+                    { text: 'identificar arritmias, trastornos de conducción y otros hallazgos relevantes', bold: true },
+                    ', facilitando el seguimiento médico y la ',
+                    { text: 'prevención de incidentes asociados a condiciones cardíacas no detectadas.', bold: true },
+                ],
+                imagen: imagenes.ekgDistribucion,
+                filas: filasEkg,
+                colores: coloresEkg
+            } : null
+        ].filter((bloque) => bloque !== null);
+
+        let subIndex = 0;
+        for (const bloque of bloquesGabinete) {
+            subIndex++;
+            crearBloqueDistribucion(
+                `${numeroSeccionGabinete}.${subIndex} ${bloque.nombre}`,
+                bloque.descripcion,
+                bloque.descripcion2,
+                bloque.imagen,
+                bloque.filas,
+                bloque.colores,
+                subIndex > 1
+            );
+        }
 
         numeroSeccion++;
     }
