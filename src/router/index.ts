@@ -168,6 +168,12 @@ const router = createRouter({
           name: "panel-administrador",
           component: () => import("@/views/PanelAdministradorView.vue"),
           meta: { requiresAdmin: true },
+        },
+        {
+          path: "/exportacion-giis",
+          name: "exportacion-giis",
+          component: () => import("@/views/ExportacionGiisView.vue"),
+          meta: { requiresAuth: true },
         }
       ],
     },

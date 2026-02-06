@@ -323,9 +323,15 @@ const handleSubmit = async (data) => {
   if (municipioValue) {
     formData.append("municipio", municipioValue);
   }
-  
-  if (formulario.value.clues) {
-    formData.append("clues", formulario.value.clues);
+
+  // CLUES opcional: solo si se incluye en el payload; si ya existía y se deja vacío, enviar "" para borrarlo
+  const cluesValue = (formulario.value.clues || "").trim();
+  const isUpdate = !!proveedorSalud.proveedorSalud?._id;
+  const hadClues = (proveedorSalud.proveedorSalud?.clues || "").trim() !== "";
+  if (cluesValue) {
+    formData.append("clues", cluesValue);
+  } else if (isUpdate && hadClues) {
+    formData.append("clues", "");
   }
 
   // Asegurar que solo se agrega un archivo válido
