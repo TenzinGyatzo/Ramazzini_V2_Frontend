@@ -1,8 +1,18 @@
 import auth from "@/lib/axiosAuth";
 
 export default {
-  login: (email: string, password: string) => {
-    return auth.post("/users/login", { email, password });
+  login: (
+    email: string,
+    password: string,
+    opts?: {
+      loginContext?: "PRIMARY_LOGIN" | "SESSION_UNLOCK" | "TOKEN_REFRESH";
+      sid?: string;
+      inactivityTimeoutMinutes?: number;
+      lockedAt?: string;
+      unlockedAt?: string;
+    },
+  ) => {
+    return auth.post("/users/login", { email, password, ...(opts ?? {}) });
   },
 
   auth: () => {

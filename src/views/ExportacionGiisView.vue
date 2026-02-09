@@ -123,7 +123,7 @@ watch(
       <p class="text-sm mt-1">Solo usuarios con rol Principal o Administrador pueden usar Exportación GIIS.</p>
     </div>
     <div v-else-if="!proveedorSaludStore.giisExportEnabled" class="rounded-lg bg-amber-50 border border-amber-200 p-4 text-amber-800">
-      <p class="font-medium">Exportación GIIS solo disponible para tenants SIRES</p>
+      <p class="font-medium">Exportación GIIS solo disponible para proveedores SIRES</p>
       <p class="text-sm mt-1">Su proveedor no está en régimen SIRES (NOM-024).</p>
     </div>
 

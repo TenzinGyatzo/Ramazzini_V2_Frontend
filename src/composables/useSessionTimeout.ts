@@ -10,6 +10,7 @@ export function useSessionTimeout() {
   
   // Estado de bloqueo
   const isLocked = ref(false);
+  const lockedAt = ref<string | null>(null);
   
   // Configuración del timeout: 30 segundos para pruebas (30000ms)
   // Cambiar a 15 minutos (900000ms) para producción
@@ -52,6 +53,7 @@ export function useSessionTimeout() {
       proveedorSaludStore.sessionTimeoutEnabled
     ) {
       isLocked.value = true;
+      lockedAt.value = new Date().toISOString();
       if (timeoutId) {
         clearTimeout(timeoutId);
         timeoutId = null;
@@ -61,6 +63,7 @@ export function useSessionTimeout() {
 
   const unlockSession = () => {
     isLocked.value = false;
+    lockedAt.value = null;
     resetTimer();
   };
 
@@ -115,6 +118,7 @@ export function useSessionTimeout() {
         timeoutId = null;
       }
       isLocked.value = false;
+      lockedAt.value = null;
     }
   });
 
@@ -136,11 +140,14 @@ export function useSessionTimeout() {
         window.removeEventListener(event, handleUserActivity);
       });
       isLocked.value = false;
+      lockedAt.value = null;
     }
   });
 
   return {
     isLocked,
+    lockedAt,
+    timeoutMinutes: TIMEOUT_MS / 60000,
     unlockSession,
     lockSession
   };

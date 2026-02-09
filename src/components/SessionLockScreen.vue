@@ -8,6 +8,11 @@ const emit = defineEmits<{
   (e: 'unlock'): void;
 }>();
 
+const props = defineProps<{
+  lockedAt?: string;
+  timeoutMinutes?: number;
+}>();
+
 const userStore = useUserStore();
 const password = ref("");
 const errorMessage = ref("");
@@ -33,7 +38,13 @@ const handleUnlock = async () => {
   errorMessage.value = "";
 
   try {
-    const response = await AuthAPI.login(userStore.user.email, password.value);
+    const response = await AuthAPI.login(userStore.user.email, password.value, {
+      loginContext: "SESSION_UNLOCK",
+      sid: localStorage.getItem("AUTH_SID") ?? undefined,
+      inactivityTimeoutMinutes: props.timeoutMinutes,
+      lockedAt: props.lockedAt,
+      unlockedAt: new Date().toISOString(),
+    });
     if (response.status === 200 || response.status === 201) {
       // Si la contraseña es correcta, desbloqueamos
       password.value = "";

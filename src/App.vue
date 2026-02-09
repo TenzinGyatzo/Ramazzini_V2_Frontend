@@ -6,7 +6,7 @@ import SessionLockScreen from './components/SessionLockScreen.vue';
 import { useSessionTimeout } from './composables/useSessionTimeout';
 
 const route = useRoute();
-const { isLocked, unlockSession } = useSessionTimeout();
+const { isLocked, unlockSession, lockedAt, timeoutMinutes } = useSessionTimeout();
 </script>
 
 <template>
@@ -21,7 +21,12 @@ const { isLocked, unlockSession } = useSessionTimeout();
     leave-from-class="opacity-100"
     leave-to-class="opacity-0"
   >
-    <SessionLockScreen v-if="isLocked" @unlock="unlockSession" />
+    <SessionLockScreen
+      v-if="isLocked"
+      :locked-at="lockedAt ?? undefined"
+      :timeout-minutes="timeoutMinutes"
+      @unlock="unlockSession"
+    />
   </Transition>
 </template>
 

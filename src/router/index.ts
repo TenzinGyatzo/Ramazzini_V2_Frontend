@@ -174,6 +174,12 @@ const router = createRouter({
           name: "exportacion-giis",
           component: () => import("@/views/ExportacionGiisView.vue"),
           meta: { requiresAuth: true },
+        },
+        {
+          path: "/auditoria",
+          name: "auditoria",
+          component: () => import("@/views/AuditoriaView.vue"),
+          meta: { requiresAuth: true },
         }
       ],
     },

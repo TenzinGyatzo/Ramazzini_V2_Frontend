@@ -779,7 +779,7 @@ watch(mostrarTooltipTecnicoEvaluador, (nuevoValor) => {
     <!-- Menú desplegable mejorado -->
     <Transition name="fade">
       <div 
-        v-if="isMenuOpen && ['inicio', 'add-user', 'remove-users', 'manage-permissions', 'manage-assignments', 'user-productivity', 'perfil-proveedor', 'medico-firmante', 'enfermera-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador', 'exportacion-giis'].includes(route.name as string)"
+        v-if="isMenuOpen && ['inicio', 'add-user', 'remove-users', 'manage-permissions', 'manage-assignments', 'user-productivity', 'perfil-proveedor', 'medico-firmante', 'enfermera-firmante', 'subscription', 'suscripcion-activa', 'subscription-success', 'panel-administrador', 'exportacion-giis', 'auditoria'].includes(route.name as string)"
         ref="menuRef"
         class="fixed top-20 right-6 bg-white rounded-2xl shadow-2xl p-6 w-72 max-h-[70vh] overflow-y-auto pr-3 z-40 border border-gray-100 backdrop-blur-sm bg-white/95">
 
@@ -955,6 +955,16 @@ watch(mostrarTooltipTecnicoEvaluador, (nuevoValor) => {
               <div class="flex items-center gap-3">
                 <i class="fa-solid fa-file-export transition-colors duration-200 text-blue-500 group-hover:text-blue-600"></i>
                 <span class="font-medium transition-colors duration-200 text-gray-700 group-hover:text-gray-900">Exportación GIIS</span>
+              </div>
+            </a>
+
+            <!-- Auditoría (NOM-024) -->
+            <a v-if="user.user?.role === 'Principal' || user.user?.role === 'Administrador'"
+               @click="router.push({ name: 'auditoria' })"
+               class="block py-3 px-4 rounded-xl mt-2 transition-all duration-300 ease-in-out cursor-pointer border group bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100 border-gray-200 hover:border-blue-300">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-clipboard-list transition-colors duration-200 text-blue-500 group-hover:text-blue-600"></i>
+                <span class="font-medium transition-colors duration-200 text-gray-700 group-hover:text-gray-900">Auditoría</span>
               </div>
             </a>
 
