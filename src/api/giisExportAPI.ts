@@ -38,7 +38,7 @@ export default {
     return api.get(`${BASE}/batches/${batchId}`).then((r) => r.data);
   },
 
-  /** Triggers browser download for one guide (CDT, CEX, LES). Uses blob + link to avoid new tab. */
+  /** Triggers browser download for one guide (CEX, LES). Uses blob + link to avoid new tab. */
   async downloadFile(batchId: string, guide: string, _filename?: string): Promise<void> {
     const res = await api.get(`${BASE}/batches/${batchId}/download/${guide}`, {
       responseType: "blob",

@@ -47,7 +47,14 @@ const requiereConfirmacionDiagnostica = computed(() => {
   return esCronico || esCancer;
 });
 
-// console.log('Datos del store en VisualizadorNotaMedica:', formData.formDataNotaMedica);
+// Computed: Requiere confirmación diagnóstica 2 (misma lógica con codigoCIEDiagnostico2)
+const requiereConfirmacionDiagnostica2 = computed(() => {
+  if (!formData.formDataNotaMedica.codigoCIEDiagnostico2) return false;
+  const codigo = extractCode(formData.formDataNotaMedica.codigoCIEDiagnostico2).toUpperCase();
+  const esCronico = codigo.startsWith('E11') || codigo.startsWith('I1');
+  const esCancer = codigo.startsWith('C');
+  return esCronico || esCancer;
+});
 
 </script>
 
@@ -172,6 +179,11 @@ const requiereConfirmacionDiagnostica = computed(() => {
       @click="goToStep(6)"
     >
     
+      <!-- Relación Temporal -->
+      <p v-if="formData.formDataNotaMedica.relacionTemporal !== undefined && formData.formDataNotaMedica.relacionTemporal !== null" class="text-justify font-medium mb-1">
+        Relación Temporal: <span class="font-light">{{ formData.formDataNotaMedica.relacionTemporal === 0 ? 'Primera Vez' : 'Subsecuente' }}</span>
+      </p>
+
       <!-- CIE-10 Principal -->
       <p v-if="formData.formDataNotaMedica.codigoCIE10Principal" class="text-justify font-medium mb-1">
         Diagnóstico Principal: <span class="font-light">{{ extractDescription(formData.formDataNotaMedica.codigoCIE10Principal) || extractCode(formData.formDataNotaMedica.codigoCIE10Principal) }}</span>
@@ -185,11 +197,6 @@ const requiereConfirmacionDiagnostica = computed(() => {
             {{ extractDescription(codigo) || extractCode(codigo) }}<span v-if="index < formData.formDataNotaMedica.codigosCIE10Complementarios.length - 1">, </span>
           </template>
         </span>
-      </p>
-    
-      <!-- Relación Temporal -->
-      <p v-if="formData.formDataNotaMedica.relacionTemporal !== undefined && formData.formDataNotaMedica.relacionTemporal !== null" class="text-justify font-medium mb-1">
-        Relación Temporal: <span class="font-light">{{ formData.formDataNotaMedica.relacionTemporal === 0 ? 'Primera Vez' : 'Subsecuente' }}</span>
       </p>
 
       <!-- Confirmación Diagnóstica -->
@@ -211,14 +218,24 @@ const requiereConfirmacionDiagnostica = computed(() => {
 
     <!-- Diagnóstico Secundario (Step 7) -->
     <div 
-      v-if="formData.formDataNotaMedica.primeraVezDiagnostico2 && formData.formDataNotaMedica.codigoCIEDiagnostico2 || formData.formDataNotaMedica.diagnosticoTexto || formData.formDataNotaMedica.diagnostico" 
+      v-if="(formData.formDataNotaMedica.primeraVezDiagnostico2 !== undefined && formData.formDataNotaMedica.primeraVezDiagnostico2 !== null) || formData.formDataNotaMedica.codigoCIEDiagnostico2 || (requiereConfirmacionDiagnostica2 && formData.formDataNotaMedica.confirmacionDiagnostica2 !== undefined) || formData.formDataNotaMedica.diagnosticoTexto || formData.formDataNotaMedica.diagnostico" 
       class="w-full mb-1 cursor-pointer" 
       :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 7 }" 
       @click="goToStep(7)"
     >
-      <!-- Segundo Diagnóstico -->
-      <p v-if="formData.formDataNotaMedica.primeraVezDiagnostico2 && formData.formDataNotaMedica.codigoCIEDiagnostico2" class="text-justify font-medium mb-1">
+      <!-- Primera vez diagnóstico 2 (0=No, 1=Sí) -->
+      <p v-if="formData.formDataNotaMedica.primeraVezDiagnostico2 !== undefined && formData.formDataNotaMedica.primeraVezDiagnostico2 !== null" class="text-justify font-medium mb-1">
+        Primera vez diagnóstico 2: <span class="font-light">{{ formData.formDataNotaMedica.primeraVezDiagnostico2 === 1 ? 'Sí' : 'No' }}</span>
+      </p>
+
+      <!-- Diagnóstico 2 (Comorbilidad clínica) -->
+      <p v-if="formData.formDataNotaMedica.codigoCIEDiagnostico2" class="text-justify font-medium mb-1">
         Diagnóstico 2 (Comorbilidad clínica): <span class="font-light">{{ extractDescription(formData.formDataNotaMedica.codigoCIEDiagnostico2) || extractCode(formData.formDataNotaMedica.codigoCIEDiagnostico2) }}</span>
+      </p>
+
+      <!-- Confirmación Diagnóstica 2 -->
+      <p v-if="requiereConfirmacionDiagnostica2 && formData.formDataNotaMedica.confirmacionDiagnostica2 !== undefined" class="text-justify font-medium mb-1">
+        Confirmación Diagnóstica 2: <span class="font-light">{{ formData.formDataNotaMedica.confirmacionDiagnostica2 ? 'Sí' : 'No' }}</span>
       </p>
 
       <!-- Texto Libre Complementario -->

@@ -89,11 +89,16 @@ const loadMunicipiosForEstado = async (estadoCode) => {
 
 // Cargar todos los municipios del estado (para mostrar al hacer focus)
 const loadAllMunicipios = async () => {
-  if (!props.estadoResidencia || props.estadoResidencia === 'NE' || props.estadoResidencia === '00') {
+  if (!props.estadoResidencia) {
     municipioResults.value = [];
     return;
   }
-  
+  if (props.estadoResidencia === 'NE' || props.estadoResidencia === '00') {
+    municipioResults.value = [municipioSentinel];
+    municipioShowResults.value = true;
+    return;
+  }
+
   municipioLoading.value = true;
   try {
     const { data } = await CatalogsAPI.getMunicipios(props.estadoResidencia);
@@ -110,13 +115,20 @@ const loadAllMunicipios = async () => {
 
 // Cargar todas las localidades del municipio (para mostrar al hacer focus)
 const loadAllLocalidades = async () => {
-  if (!props.estadoResidencia || !props.municipioResidencia || 
-      props.estadoResidencia === 'NE' || props.estadoResidencia === '00' ||
-      props.municipioResidencia === '000') {
+  if (!props.estadoResidencia || !props.municipioResidencia) {
     localidadResults.value = [];
     return;
   }
-  
+  if (props.municipioResidencia === '000') {
+    localidadResults.value = [localidadSentinel];
+    localidadShowResults.value = true;
+    return;
+  }
+  if (props.estadoResidencia === 'NE' || props.estadoResidencia === '00') {
+    localidadResults.value = [];
+    return;
+  }
+
   console.log('[ResidenciaGeo] Cargando localidades para estado:', props.estadoResidencia, 'municipio:', props.municipioResidencia);
   localidadLoading.value = true;
   try {
@@ -149,11 +161,16 @@ const loadLocalidadesForMunicipio = async (estadoCode, municipioCode) => {
 
 // Buscar municipio
 const searchMunicipio = async (query) => {
-  if (!props.estadoResidencia || props.estadoResidencia === 'NE' || props.estadoResidencia === '00') {
+  if (!props.estadoResidencia) {
     municipioResults.value = [];
     return;
   }
-  
+  if (props.estadoResidencia === 'NE' || props.estadoResidencia === '00') {
+    municipioResults.value = [municipioSentinel];
+    municipioShowResults.value = true;
+    return;
+  }
+
   if (!query || query.length < 2) {
     // Si no hay query, cargar todos los municipios del estado
     await loadAllMunicipios();
@@ -184,13 +201,20 @@ const searchMunicipio = async (query) => {
 
 // Buscar localidad
 const searchLocalidad = async (query) => {
-  if (!props.estadoResidencia || !props.municipioResidencia || 
-      props.estadoResidencia === 'NE' || props.estadoResidencia === '00' ||
-      props.municipioResidencia === '000') {
+  if (!props.estadoResidencia || !props.municipioResidencia) {
     localidadResults.value = [];
     return;
   }
-  
+  if (props.municipioResidencia === '000') {
+    localidadResults.value = [localidadSentinel];
+    localidadShowResults.value = true;
+    return;
+  }
+  if (props.estadoResidencia === 'NE' || props.estadoResidencia === '00') {
+    localidadResults.value = [];
+    return;
+  }
+
   if (!query || query.length < 2) {
     // Si no hay query, cargar todas las localidades del municipio
     await loadAllLocalidades();
@@ -345,11 +369,11 @@ watch(() => props.estadoResidencia, async (newEstado) => {
 
 // Computed para habilitar/deshabilitar campos
 const municipioEnabled = computed(() => {
-  return props.estadoResidencia && props.estadoResidencia !== 'NE' && props.estadoResidencia !== '00';
+  return !!props.estadoResidencia;
 });
 
 const localidadEnabled = computed(() => {
-  return municipioEnabled.value && props.municipioResidencia && props.municipioResidencia !== '000';
+  return municipioEnabled.value && !!props.municipioResidencia;
 });
 
 // Cargar valores iniciales para municipio y localidad

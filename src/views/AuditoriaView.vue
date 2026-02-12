@@ -52,16 +52,17 @@ async function search() {
   loading.value = true;
   errorMessage.value = null;
   try {
-    const params: Record<string, string | number | undefined> = {
+    const params: Record<string, string | number> = {
       page: page.value,
       limit: limit.value,
     };
     if (from.value) params.from = new Date(from.value).toISOString();
     if (to.value) params.to = new Date(to.value).toISOString();
-    if (actorId.value) params.actorId = actorId.value;
-    if (resourceType.value) params.resourceType = resourceType.value;
-    if (resourceId.value) params.resourceId = resourceId.value;
-    if (actionType.value) params.actionType = actionType.value;
+    const at = typeof actionType.value === "string" ? actionType.value.trim() : "";
+    if (at) params.actionType = at;
+    if (actorId.value?.trim()) params.actorId = actorId.value.trim();
+    if (resourceType.value?.trim()) params.resourceType = resourceType.value.trim();
+    if (resourceId.value?.trim()) params.resourceId = resourceId.value.trim();
     const data = await auditAPI.getEvents(params);
     items.value = data.items;
     total.value = data.total;
@@ -165,6 +166,32 @@ async function verifyAudit() {
           <label>Tipo de evento</label>
           <select v-model="actionType" class="filter-select">
             <option value="">Todos</option>
+            <optgroup label="Documentos">
+              <option value="DOC_CREATE_DRAFT">Doc. borrador creado</option>
+              <option value="DOC_UPDATE_DRAFT">Doc. borrador actualizado</option>
+              <option value="DOC_FINALIZE">Doc. finalizado</option>
+              <!-- <option value="DOC_CREATE_CORRECTION">Doc. corrección/versión</option> -->
+              <option value="DOC_ANULATE">Doc. anulado</option>
+            </optgroup>
+            <optgroup label="Accesos">
+              <option value="LOGIN_SUCCESS">Login exitoso</option>
+              <option value="LOGIN_FAIL">Login fallido</option>
+              <option value="SESSION_UNLOCK_SUCCESS">Sesión desbloqueada</option>
+              <option value="SESSION_UNLOCK_FAIL">Sesión desbloqueo fallido</option>
+            </optgroup>
+            <optgroup label="Admin / asignaciones">
+              <option value="ADMIN_ROLES_PERMISSIONS">Roles/permisos</option>
+              <option value="ADMIN_USER_ASSIGNMENTS">Asignaciones usuario</option>
+              <!-- <option value="ADMIN_CONFIG_SIRES">Config SIRES</option> -->
+            </optgroup>
+            <optgroup label="GIIS / sistema">
+              <option value="GIIS_EXPORT_STARTED">GIIS export iniciado</option>
+              <option value="GIIS_EXPORT_FILE_GENERATED">GIIS archivo generado</option>
+              <option value="GIIS_EXPORT_DOWNLOADED">GIIS descargado</option>
+              <!-- <option value="GIIS_VALIDATION_EXECUTED">GIIS validación</option> -->
+              <option value="AUDIT_EXPORT_DOWNLOAD">Export auditoría descargado</option>
+              <!-- <option value="SYSTEM_JOB">Job sistema</option> -->
+            </optgroup>S
             <optgroup label="Gestión de usuarios">
               <option value="USER_INVITATION_SENT">Invitación enviada</option>
               <option value="USER_ACTIVATED">Usuario activado</option>

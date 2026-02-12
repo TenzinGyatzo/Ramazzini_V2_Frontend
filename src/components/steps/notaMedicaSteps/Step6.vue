@@ -350,87 +350,11 @@ watch(
 
 <template>
     <div class="space-y-6">
-        <!-- 1. Diagnóstico Principal (Protagonista) -->
-        <div class="space-y-4">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4 uppercase">Diagnóstico Principal</h2>
-            
-            <div>
-                <CIE10Autocomplete
-                    v-model="codigoCIE10Principal"
-                    :label="'Código CIE-10 Principal'"
-                    :required="cie10Required"
-                    :trabajadorId="trabajadores.currentTrabajadorId"
-                    :fechaConsulta="fechaNotaMedica"
-                    placeholder="Buscar código diagnóstico principal..."
-                />
-                <!-- Mensaje de error por sexo/edad para diagnóstico principal -->
-                <Transition name="fade">
-                    <div v-if="principalSexAgeError" class="mt-2">
-                        <div class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
-                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
-                            <span class="flex-1 font-medium">{{ principalSexAgeError }}</span>
-                        </div>
-                    </div>
-                </Transition>
-                <!-- <p v-if="isMX" class="mt-1 text-xs text-amber-600 flex items-center gap-1">
-                    <i class="fas fa-info-circle"></i>
-                    Campo obligatorio para proveedores en México (NOM-024)
-                </p> -->
-            </div>
-        </div>
-
-        <!-- 2. Diagnósticos Relacionados/Complementarios -->
-        <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-gray-800">Complementar Diagnóstico</h3>
-            
-            <div>
-                <CIE10ComplementaryDiagnoses
-                    v-model="codigosCIE10Complementarios"
-                    :trabajadorId="trabajadores.currentTrabajadorId"
-                    :fechaConsulta="fechaNotaMedica"
-                />
-                
-                <!-- Nota informativa -->
-                <div class="mt-1">
-                    <p class="text-xs text-gray-500">
-                        Condiciones asociadas al diagnóstico principal que ayudan a describir mejor el cuadro clínico.
-                    </p>
-                </div>
-
-                <!-- Avisos de duplicidad -->
-                <div v-if="principalInComplementariesError || complementariesDuplicateError" class="mt-3 space-y-2">
-                    <Transition name="fade">
-                        <div v-if="principalInComplementariesError" class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
-                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
-                            <span class="flex-1 font-medium">{{ principalInComplementariesError }}</span>
-                        </div>
-                    </Transition>
-                    <Transition name="fade">
-                        <div v-if="complementariesDuplicateError" class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
-                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
-                            <span class="flex-1 font-medium">{{ complementariesDuplicateError }}</span>
-                        </div>
-                    </Transition>
-                </div>
-
-                <!-- Mensajes de error por sexo/edad para complementarios -->
-                <div v-if="complementariesSexAgeErrors.length > 0" class="mt-2 space-y-2">
-                    <TransitionGroup name="fade">
-                        <div v-for="(error, index) in complementariesSexAgeErrors" 
-                             :key="index"
-                             class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
-                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
-                            <span class="flex-1 font-medium">{{ error }}</span>
-                        </div>
-                    </TransitionGroup>
-                </div>
-
-            </div>
-        </div>
 
         <!-- 3. Relación Temporal (NOM-024 GIIS-B015) - Tamaño más mesurado -->
         <div>
-            <div class="flex items-center gap-2 mb-3">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4 uppercase">Diagnóstico Principal</h2>
+            <div class="flex items-center gap-2 mb-2">
                 <h3 class="text-base font-medium text-gray-700">
                     Relación Temporal <span v-if="cie10Required" class="text-rose-500">*</span>
                 </h3>
@@ -481,7 +405,7 @@ watch(
             </Teleport>
             
             <!-- Diseño de Radio Buttons más Visual tipo Card -->
-            <div class="grid grid-cols-2 gap-3 mb-2">
+            <div class="grid grid-cols-2 gap-3 mb-1">
                 <!-- Opción Primera Vez -->
                 <label 
                     :class="[
@@ -557,6 +481,33 @@ watch(
             </p> -->
         </div>
 
+        <!-- 1. Diagnóstico Principal (Protagonista) -->
+        <div class="space-y-4">         
+            <div>
+                <CIE10Autocomplete
+                    v-model="codigoCIE10Principal"
+                    :label="'Código CIE-10 Principal'"
+                    :required="cie10Required"
+                    :trabajadorId="trabajadores.currentTrabajadorId"
+                    :fechaConsulta="fechaNotaMedica"
+                    placeholder="Buscar código diagnóstico principal..."
+                />
+                <!-- Mensaje de error por sexo/edad para diagnóstico principal -->
+                <Transition name="fade">
+                    <div v-if="principalSexAgeError" class="mt-2">
+                        <div class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
+                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
+                            <span class="flex-1 font-medium">{{ principalSexAgeError }}</span>
+                        </div>
+                    </div>
+                </Transition>
+                <!-- <p v-if="isMX" class="mt-1 text-xs text-amber-600 flex items-center gap-1">
+                    <i class="fas fa-info-circle"></i>
+                    Campo obligatorio para proveedores en México (NOM-024)
+                </p> -->
+            </div>
+        </div>
+
         <!-- Confirmación Diagnóstica (NOM-024 GIIS-B015) -->
         <div v-if="requiereConfirmacionDiagnostica" class="space-y-2 border border-amber-200 rounded-xl p-4 bg-amber-50/30">
             <div class="flex items-center gap-2">
@@ -574,6 +525,55 @@ watch(
                 <i class="fas fa-exclamation-triangle"></i>
                 Requerida para diagnósticos crónicos (Diabetes, HTA) o Cáncer en menores de 18 años
             </p>
+        </div>
+
+        <!-- 2. Diagnósticos Relacionados/Complementarios -->
+        <div class="space-y-4">
+            <h3 class="text-lg font-semibold text-gray-800">Complementar Diagnóstico</h3>
+            
+            <div>
+                <CIE10ComplementaryDiagnoses
+                    v-model="codigosCIE10Complementarios"
+                    :trabajadorId="trabajadores.currentTrabajadorId"
+                    :fechaConsulta="fechaNotaMedica"
+                />
+                
+                <!-- Nota informativa -->
+                <div class="mt-1">
+                    <p class="text-xs text-gray-500">
+                        Condiciones asociadas al diagnóstico principal que ayudan a describir mejor el cuadro clínico.
+                    </p>
+                </div>
+
+                <!-- Avisos de duplicidad -->
+                <div v-if="principalInComplementariesError || complementariesDuplicateError" class="mt-3 space-y-2">
+                    <Transition name="fade">
+                        <div v-if="principalInComplementariesError" class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
+                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
+                            <span class="flex-1 font-medium">{{ principalInComplementariesError }}</span>
+                        </div>
+                    </Transition>
+                    <Transition name="fade">
+                        <div v-if="complementariesDuplicateError" class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
+                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
+                            <span class="flex-1 font-medium">{{ complementariesDuplicateError }}</span>
+                        </div>
+                    </Transition>
+                </div>
+
+                <!-- Mensajes de error por sexo/edad para complementarios -->
+                <div v-if="complementariesSexAgeErrors.length > 0" class="mt-2 space-y-2">
+                    <TransitionGroup name="fade">
+                        <div v-for="(error, index) in complementariesSexAgeErrors" 
+                             :key="index"
+                             class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
+                            <i class="fas fa-exclamation-triangle mt-0.5"></i>
+                            <span class="flex-1 font-medium">{{ error }}</span>
+                        </div>
+                    </TransitionGroup>
+                </div>
+
+            </div>
         </div>
 
         <!-- Causa Externa (NOM-024 GIIS-B015) -->
