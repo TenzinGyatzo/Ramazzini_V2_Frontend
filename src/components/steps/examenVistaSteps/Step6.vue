@@ -129,17 +129,14 @@ function interpretarIshihara() {
         <label for="interpretacionIshihara" class="block text-lg font-normal text-gray-800 mb-3">
           Interpretación
         </label>
-        <div class="relative">
-          <input 
-            type="text"
-            :class="[
-              'w-full p-3 text-center border-2 border-gray-200 rounded-lg cursor-not-allowed font-semibold',
-              colorInterpretacion
-            ]"
-            v-model="interpretacionIshihara" 
-            readonly 
-            title="Determinado automáticamente en función al porcentaje de placas correctas"
-          />
+        <div
+          :class="[
+            'w-full p-3 text-center border-2 border-gray-200 rounded-lg cursor-not-allowed font-semibold min-h-[3rem] flex items-center justify-center',
+            colorInterpretacion
+          ]"
+          :title="interpretacionIshihara"
+        >
+          <span class="break-words">{{ interpretacionIshihara }}</span>
         </div>
       </div>
     </div>

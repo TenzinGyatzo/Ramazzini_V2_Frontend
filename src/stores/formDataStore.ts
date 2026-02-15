@@ -77,6 +77,14 @@ export const useFormDataStore = defineStore('formData', () => {
     }
   };  
 
+  const setExamenVistaCeguera = (ojoIzquierdo: boolean, ojoDerecho: boolean) => {
+    const data = formDataExamenVista.value;
+    if (typeof data === 'object' && data !== null) {
+      (data as Record<string, unknown>).ojoIzquierdoCegueraTotal = ojoIzquierdo;
+      (data as Record<string, unknown>).ojoDerechoCegueraTotal = ojoDerecho;
+    }
+  };
+
   const resetFormData = () => {
     // Reiniciar el estado directamente asignando un objeto vacío.
     formDataAntidoping.value = {};
@@ -134,6 +142,7 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataConstanciaAptitud,
     setFormDataFromDocument,
     resetFormData,
+    setExamenVistaCeguera,
     consultarAlturaDisponible
   };
 });

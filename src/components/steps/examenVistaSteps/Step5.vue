@@ -3,38 +3,54 @@ import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
 
-const { formDataExamenVista } = useFormDataStore();
+const formDataStore = useFormDataStore();
+const formDataExamenVista = formDataStore.formDataExamenVista;
 const documentos = useDocumentosStore();
 
-const ojoIzquierdoCercanaConCorreccion = ref(20);
-const ojoDerechoCercanaConCorreccion = ref(20);
-const conCorreccionCercanaInterpretacion = ref('Visión normal');
-const usaLentes = ref('No');
+const ciegaOI = computed(() => formDataExamenVista.ojoIzquierdoCegueraTotal ?? formDataExamenVista.ojoIzquierdoLejanaCegueraTotal ?? formDataExamenVista.ojoIzquierdoCercanaCegueraTotal ?? false);
+const ciegaOD = computed(() => formDataExamenVista.ojoDerechoCegueraTotal ?? formDataExamenVista.ojoDerechoLejanaCegueraTotal ?? formDataExamenVista.ojoDerechoCercanaCegueraTotal ?? false);
 
-// Computed properties para validaciones y mensajes de error
+const usaLentes = ref(formDataExamenVista.conCorreccionCercanaInterpretacion ? 'Si' : 'No');
+const ojoIzquierdoCercanaConCorreccion = ref(
+  ciegaOI.value ? undefined : (formDataExamenVista.ojoIzquierdoCercanaConCorreccion ?? 20)
+);
+const ojoDerechoCercanaConCorreccion = ref(
+  ciegaOD.value ? undefined : (formDataExamenVista.ojoDerechoCercanaConCorreccion ?? 20)
+);
+const conCorreccionCercanaInterpretacion = ref(formDataExamenVista.conCorreccionCercanaInterpretacion ?? 'Visión normal');
+
 const mensajeErrorOjoIzquierdo = computed(() => {
-  if (usaLentes.value === 'No') return '';
-  return ojoIzquierdoCercanaConCorreccion.value < 10 
-    ? 'Debe ser mínimo 10' 
-    : ojoIzquierdoCercanaConCorreccion.value > 200 
-      ? 'Debe ser máximo 200' 
-      : '';
+  if (usaLentes.value === 'No' || ciegaOI.value) return '';
+  const v = ojoIzquierdoCercanaConCorreccion.value;
+  if (v == null || v === '') return 'Debe capturar el valor';
+  const n = Number(v);
+  if (n < 5) return 'Debe ser mínimo 5';
+  if (n > 400) return 'Debe ser máximo 400';
+  return '';
 });
 
 const mensajeErrorOjoDerecho = computed(() => {
-  if (usaLentes.value === 'No') return '';
-  return ojoDerechoCercanaConCorreccion.value < 10 
-    ? 'Debe ser mínimo 10' 
-    : ojoDerechoCercanaConCorreccion.value > 200 
-      ? 'Debe ser máximo 200' 
-      : '';
+  if (usaLentes.value === 'No' || ciegaOD.value) return '';
+  const v = ojoDerechoCercanaConCorreccion.value;
+  if (v == null || v === '') return 'Debe capturar el valor';
+  const n = Number(v);
+  if (n < 5) return 'Debe ser mínimo 5';
+  if (n > 400) return 'Debe ser máximo 400';
+  return '';
+});
+
+const interpretacionParaMostrar = computed(() => {
+  const v = conCorreccionCercanaInterpretacion.value || '';
+  return v.includes(' OD: ') ? v.replace(' OD: ', '\nOD: ') : v;
 });
 
 // Computed property para determinar el color de semaforización de la interpretación
 const colorInterpretacion = computed(() => {
   if (usaLentes.value === 'No') return 'bg-gray-50 text-gray-800';
   
-  const interpretacion = conCorreccionCercanaInterpretacion.value;
+  let interpretacion = conCorreccionCercanaInterpretacion.value || '';
+  if (interpretacion.startsWith('OI: ')) interpretacion = interpretacion.slice(4);
+  else if (interpretacion.startsWith('OD: ')) interpretacion = interpretacion.slice(4);
   
   if (interpretacion === 'Visión excepcional' || interpretacion === 'Visión normal') {
     return 'bg-emerald-50 text-emerald-800';
@@ -42,21 +58,26 @@ const colorInterpretacion = computed(() => {
     return 'bg-yellow-50 text-yellow-800';
   } else if (interpretacion === 'Visión moderadamente reducida' || interpretacion === 'Visión significativamente reducida') {
     return 'bg-orange-50 text-orange-800';
-  } else if (interpretacion === 'Visión muy reducida') {
+  } else if (interpretacion === 'Visión muy reducida' || interpretacion.startsWith('Ceguera')) {
     return 'bg-red-100 text-red-900';
-  } else {
-    return 'bg-gray-50 text-gray-800';
   }
+  return 'bg-gray-50 text-gray-800';
 });
 
 onMounted(() => {
-  if (documentos.currentDocument) {
-    if (documentos.currentDocument.conCorreccionCercanaInterpretacion) {
-      ojoIzquierdoCercanaConCorreccion.value = documentos.currentDocument.ojoIzquierdoCercanaConCorreccion;
-      ojoDerechoCercanaConCorreccion.value = documentos.currentDocument.ojoDerechoCercanaConCorreccion;
-      conCorreccionCercanaInterpretacion.value = documentos.currentDocument.conCorreccionCercanaInterpretacion;
-      usaLentes.value = 'Si';
-    }
+  if (documentos.currentDocument?.conCorreccionCercanaInterpretacion) {
+    const doc = documentos.currentDocument;
+    usaLentes.value = 'Si';
+    const ciegaOIDoc = doc.ojoIzquierdoCegueraTotal ?? doc.ojoIzquierdoLejanaCegueraTotal ?? doc.ojoIzquierdoCercanaCegueraTotal ?? false;
+    const ciegaODDoc = doc.ojoDerechoCegueraTotal ?? doc.ojoDerechoLejanaCegueraTotal ?? doc.ojoDerechoCercanaCegueraTotal ?? false;
+    ojoIzquierdoCercanaConCorreccion.value = ciegaOIDoc ? undefined : (doc.ojoIzquierdoCercanaConCorreccion ?? 20);
+    ojoDerechoCercanaConCorreccion.value = ciegaODDoc ? undefined : (doc.ojoDerechoCercanaConCorreccion ?? 20);
+    conCorreccionCercanaInterpretacion.value = doc.conCorreccionCercanaInterpretacion ?? 'Visión normal';
+  } else {
+    usaLentes.value = formDataExamenVista.conCorreccionCercanaInterpretacion ? 'Si' : 'No';
+    ojoIzquierdoCercanaConCorreccion.value = ciegaOI.value ? undefined : (formDataExamenVista.ojoIzquierdoCercanaConCorreccion ?? 20);
+    ojoDerechoCercanaConCorreccion.value = ciegaOD.value ? undefined : (formDataExamenVista.ojoDerechoCercanaConCorreccion ?? 20);
+    conCorreccionCercanaInterpretacion.value = formDataExamenVista.conCorreccionCercanaInterpretacion ?? 'Visión normal';
   }
 });
 
@@ -66,8 +87,8 @@ onUnmounted(() => {
     formDataExamenVista.ojoDerechoCercanaConCorreccion = undefined;
     formDataExamenVista.conCorreccionCercanaInterpretacion = undefined;
   } else {
-    formDataExamenVista.ojoIzquierdoCercanaConCorreccion = ojoIzquierdoCercanaConCorreccion.value;
-    formDataExamenVista.ojoDerechoCercanaConCorreccion = ojoDerechoCercanaConCorreccion.value;
+    formDataExamenVista.ojoIzquierdoCercanaConCorreccion = ciegaOI.value ? undefined : ojoIzquierdoCercanaConCorreccion.value;
+    formDataExamenVista.ojoDerechoCercanaConCorreccion = ciegaOD.value ? undefined : ojoDerechoCercanaConCorreccion.value;
     formDataExamenVista.conCorreccionCercanaInterpretacion = conCorreccionCercanaInterpretacion.value;
   }
 });
@@ -75,13 +96,12 @@ onUnmounted(() => {
 // Observa el cambio de usaLentes
 watch(usaLentes, (newVal) => {
   if (newVal === 'Si') {
-    // Sincroniza los valores del formulario
-    formDataExamenVista.ojoIzquierdoCercanaConCorreccion = ojoIzquierdoCercanaConCorreccion.value;
-    formDataExamenVista.ojoDerechoCercanaConCorreccion = ojoDerechoCercanaConCorreccion.value;
-    formDataExamenVista.conCorreccionCercanaInterpretacion = conCorreccionCercanaInterpretacion.value;
-    ojoIzquierdoCercanaConCorreccion.value = formDataExamenVista.ojoIzquierdoCercanaConCorreccion || 20;
-    ojoDerechoCercanaConCorreccion.value = formDataExamenVista.ojoDerechoCercanaConCorreccion || 20;
-    conCorreccionCercanaInterpretacion.value = formDataExamenVista.conCorreccionCercanaInterpretacion || 'Visión Normal';
+    ojoIzquierdoCercanaConCorreccion.value = ciegaOI.value ? undefined : (formDataExamenVista.ojoIzquierdoCercanaConCorreccion ?? 20);
+    ojoDerechoCercanaConCorreccion.value = ciegaOD.value ? undefined : (formDataExamenVista.ojoDerechoCercanaConCorreccion ?? 20);
+    formDataExamenVista.ojoIzquierdoCercanaConCorreccion = ciegaOI.value ? undefined : ojoIzquierdoCercanaConCorreccion.value;
+    formDataExamenVista.ojoDerechoCercanaConCorreccion = ciegaOD.value ? undefined : ojoDerechoCercanaConCorreccion.value;
+    conCorreccionCercanaInterpretacion.value = formDataExamenVista.conCorreccionCercanaInterpretacion || 'Visión normal';
+    interpretarAgudezaVisualCercana();
   } else {
     // Limpia los valores si no usa lentes
     ojoIzquierdoCercanaConCorreccion.value = undefined;
@@ -93,42 +113,43 @@ watch(usaLentes, (newVal) => {
   }
 });
 
-// Observa los cambios y actualiza el store y los campos relacionados
 watch([ojoIzquierdoCercanaConCorreccion, ojoDerechoCercanaConCorreccion], () => {
-  formDataExamenVista.ojoIzquierdoCercanaConCorreccion = ojoIzquierdoCercanaConCorreccion.value;
-  formDataExamenVista.ojoDerechoCercanaConCorreccion = ojoDerechoCercanaConCorreccion.value;
+  formDataExamenVista.ojoIzquierdoCercanaConCorreccion = ciegaOI.value ? undefined : ojoIzquierdoCercanaConCorreccion.value;
+  formDataExamenVista.ojoDerechoCercanaConCorreccion = ciegaOD.value ? undefined : ojoDerechoCercanaConCorreccion.value;
   interpretarAgudezaVisualCercana();
 });
 
-// Función para interpretar la agudeza visual
-function interpretarAgudezaVisualCercana() {
-  const interpretacionOjoIzquierdo = obtenerInterpretacion(ojoIzquierdoCercanaConCorreccion.value);
-  const interpretacionOjoDerecho = obtenerInterpretacion(ojoDerechoCercanaConCorreccion.value);
-
-  // Actualiza la interpretación basada en el peor valor
-  conCorreccionCercanaInterpretacion.value = ojoIzquierdoCercanaConCorreccion.value > ojoDerechoCercanaConCorreccion.value
-    ? interpretacionOjoIzquierdo
-    : interpretacionOjoDerecho;
-
-  formDataExamenVista.conCorreccionCercanaInterpretacion = conCorreccionCercanaInterpretacion.value;
+function obtenerInterpretacion(valor) {
+  if (valor == null || valor === '') return null;
+  const v = Number(valor);
+  if (v >= 5 && v <= 15) return "Visión excepcional";
+  if (v >= 16 && v <= 25) return "Visión normal";
+  if (v >= 26 && v <= 35) return "Visión ligeramente reducida";
+  if (v >= 36 && v <= 45) return "Visión moderadamente reducida";
+  if (v >= 46 && v <= 55) return "Visión significativamente reducida";
+  if (v >= 56) return "Visión muy reducida";
+  return "NA";
 }
 
-// Función auxiliar para obtener la interpretación
-function obtenerInterpretacion(valor) {
-  if (valor >= 10 && valor <= 15) {
-    return "Visión excepcional";
-  } else if (valor >= 16 && valor <= 25) {
-    return "Visión normal";
-  } else if (valor >= 26 && valor <= 35) {
-    return "Visión ligeramente reducida";
-  } else if (valor >= 36 && valor <= 45) {
-    return "Visión moderadamente reducida";
-  } else if (valor >= 46 && valor <= 55) {
-    return "Visión significativamente reducida";
-  } else if (valor >= 56) {
-    return "Visión muy reducida";
+function interpretarAgudezaVisualCercana() {
+  const oiCiega = ciegaOI.value;
+  const odCiega = ciegaOD.value;
+  if (oiCiega && odCiega) {
+    conCorreccionCercanaInterpretacion.value = "Ceguera total";
+  } else if (oiCiega) {
+    const interpOD = obtenerInterpretacion(ojoDerechoCercanaConCorreccion.value);
+    conCorreccionCercanaInterpretacion.value = interpOD ? `OD: ${interpOD}` : "OD: NA";
+  } else if (odCiega) {
+    const interpOI = obtenerInterpretacion(ojoIzquierdoCercanaConCorreccion.value);
+    conCorreccionCercanaInterpretacion.value = interpOI ? `OI: ${interpOI}` : "OI: NA";
+  } else {
+    const interpOI = obtenerInterpretacion(ojoIzquierdoCercanaConCorreccion.value);
+    const interpOD = obtenerInterpretacion(ojoDerechoCercanaConCorreccion.value);
+    const valOI = ojoIzquierdoCercanaConCorreccion.value != null ? Number(ojoIzquierdoCercanaConCorreccion.value) : 0;
+    const valOD = ojoDerechoCercanaConCorreccion.value != null ? Number(ojoDerechoCercanaConCorreccion.value) : 0;
+    conCorreccionCercanaInterpretacion.value = valOI > valOD ? (interpOI ?? 'NA') : (interpOD ?? 'NA');
   }
-  return "NA";
+  formDataExamenVista.conCorreccionCercanaInterpretacion = conCorreccionCercanaInterpretacion.value;
 }
 </script>
 
@@ -251,30 +272,16 @@ function obtenerInterpretacion(valor) {
           <label for="ojoIzquierdoCercanaConCorreccion" class="block text-lg font-normal text-gray-800 mb-3">
             Ojo Izquierdo
           </label>
-          <div class="flex space-x-4 mt-1 mb-4">
+          <div class="flex space-x-4 mt-1 mb-4 items-center" v-if="ciegaOI">
+            <span class="px-3 py-2 rounded-lg bg-red-100 text-red-900 font-medium">Ceguera Total</span>
+          </div>
+          <div class="flex space-x-4 mt-1 mb-4" v-else>
             <div class="flex flex-col space-y-1">
-              <input 
-                type="number"
-                class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
-                value="20" 
-                step="5" 
-                min="10" 
-                max="200" 
-                readonly 
-                title="Medida base de agudeza visual. No editable."
-              />
+              <input type="number" class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 bg-gray-100 cursor-default" value="20" step="5" min="5" max="400" readonly title="Medida base. No editable." />
             </div>
             <p class="text-3xl">/</p>
             <div class="flex flex-col space-y-1">
-              <input 
-                type="number"
-                class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                v-model="ojoIzquierdoCercanaConCorreccion" 
-                step="5" 
-                min="10" 
-                max="200"
-                placeholder="20"
-              />
+              <input type="number" class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" v-model="ojoIzquierdoCercanaConCorreccion" step="5" min="5" max="400" placeholder="" />
             </div>
           </div>
           <transition
@@ -296,30 +303,16 @@ function obtenerInterpretacion(valor) {
           <label for="ojoDerechoCercanaConCorreccion" class="block text-lg font-normal text-gray-800 mb-3">
             Ojo Derecho
           </label>
-          <div class="flex space-x-4 mt-1 mb-4">
+          <div class="flex space-x-4 mt-1 mb-4 items-center" v-if="ciegaOD">
+            <span class="px-3 py-2 rounded-lg bg-red-100 text-red-900 font-medium">Ceguera Total</span>
+          </div>
+          <div class="flex space-x-4 mt-1 mb-4" v-else>
             <div class="flex flex-col space-y-1">
-              <input 
-                type="number"
-                class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 bg-gray-100 cursor-default"
-                value="20" 
-                step="5" 
-                min="10" 
-                max="200" 
-                readonly 
-                title="Medida base de agudeza visual. No editable."
-              />
+              <input type="number" class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 bg-gray-100 cursor-default" value="20" step="5" min="5" max="400" readonly title="Medida base. No editable." />
             </div>
             <p class="text-3xl">/</p>
             <div class="flex flex-col space-y-1">
-              <input 
-                type="number"
-                class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                v-model="ojoDerechoCercanaConCorreccion" 
-                step="5" 
-                min="10" 
-                max="200"
-                placeholder="20"
-              />
+              <input type="number" class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" v-model="ojoDerechoCercanaConCorreccion" step="5" min="5" max="400" placeholder="" />
             </div>
           </div>
           <transition
@@ -341,17 +334,14 @@ function obtenerInterpretacion(valor) {
           <label class="block text-lg font-normal text-gray-800 mb-3">
             Interpretación
           </label>
-          <div class="relative">
-            <input 
-              type="text"
-              :class="[
-                'w-full p-3 text-center border-2 border-gray-200 rounded-lg cursor-not-allowed font-semibold',
-                colorInterpretacion
-              ]"
-              v-model="conCorreccionCercanaInterpretacion"
-              readonly
-              title="Se determina automáticamente en función a la agudeza visual."
-            />
+          <div
+            :class="[
+              'w-full p-3 text-center border-2 border-gray-200 rounded-lg cursor-not-allowed font-semibold min-h-[3rem] flex items-center justify-center',
+              colorInterpretacion
+            ]"
+            :title="conCorreccionCercanaInterpretacion"
+          >
+            <span class="break-words whitespace-pre-line">{{ interpretacionParaMostrar }}</span>
           </div>
         </div>
       </div>

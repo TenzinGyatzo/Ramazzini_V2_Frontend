@@ -28,7 +28,22 @@ const proveedorSalud = computed(() => {
 const paisProveedor = computed(() => proveedorSalud.value?.pais || '');
 const esGuatemala = computed(() => paisProveedor.value === 'GT');
 
-// console.log('Datos del store en VisualizadorExamenVista:', formData.formDataExamenVista);
+function formatearAgudezaVisual(valor, cegueraTotal) {
+  if (cegueraTotal) return 'Ceguera Total';
+  if (valor == null || valor === '') return 'NA';
+  return `20/${valor}`;
+}
+
+const ciegaOI = computed(() => formData.formDataExamenVista.ojoIzquierdoCegueraTotal ?? formData.formDataExamenVista.ojoIzquierdoLejanaCegueraTotal ?? formData.formDataExamenVista.ojoIzquierdoCercanaCegueraTotal ?? false);
+const ciegaOD = computed(() => formData.formDataExamenVista.ojoDerechoCegueraTotal ?? formData.formDataExamenVista.ojoDerechoLejanaCegueraTotal ?? formData.formDataExamenVista.ojoDerechoCercanaCegueraTotal ?? false);
+const avLejanaOI = computed(() => formatearAgudezaVisual(formData.formDataExamenVista.ojoIzquierdoLejanaSinCorreccion, ciegaOI.value));
+const avLejanaOD = computed(() => formatearAgudezaVisual(formData.formDataExamenVista.ojoDerechoLejanaSinCorreccion, ciegaOD.value));
+const avCercanaOI = computed(() => formatearAgudezaVisual(formData.formDataExamenVista.ojoIzquierdoCercanaSinCorreccion, ciegaOI.value));
+const avCercanaOD = computed(() => formatearAgudezaVisual(formData.formDataExamenVista.ojoDerechoCercanaSinCorreccion, ciegaOD.value));
+const avLejanaConOI = computed(() => formatearAgudezaVisual(formData.formDataExamenVista.ojoIzquierdoLejanaConCorreccion, ciegaOI.value));
+const avLejanaConOD = computed(() => formatearAgudezaVisual(formData.formDataExamenVista.ojoDerechoLejanaConCorreccion, ciegaOD.value));
+const avCercanaConOI = computed(() => formatearAgudezaVisual(formData.formDataExamenVista.ojoIzquierdoCercanaConCorreccion, ciegaOI.value));
+const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataExamenVista.ojoDerechoCercanaConCorreccion, ciegaOD.value));
 
 </script>
 
@@ -120,12 +135,10 @@ const esGuatemala = computed(() => paisProveedor.value === 'GT');
             :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }">
             <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">LEJANA</td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataExamenVista.ojoIzquierdoLejanaSinCorreccion ?
-                '20/' + formData.formDataExamenVista.ojoIzquierdoLejanaSinCorreccion : '' }}
+              {{ avLejanaOI }}
             </td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataExamenVista.ojoDerechoLejanaSinCorreccion ?
-                '20/' + formData.formDataExamenVista.ojoDerechoLejanaSinCorreccion : '' }}
+              {{ avLejanaOD }}
             </td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ formData.formDataExamenVista.sinCorreccionLejanaInterpretacion }}
@@ -135,12 +148,10 @@ const esGuatemala = computed(() => paisProveedor.value === 'GT');
           :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 3 }">
             <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">CERCANA</td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataExamenVista.ojoIzquierdoCercanaSinCorreccion ?
-                '20/' + formData.formDataExamenVista.ojoIzquierdoCercanaSinCorreccion : '' }}
+              {{ avCercanaOI }}
             </td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataExamenVista.ojoDerechoCercanaSinCorreccion ?
-                '20/' + formData.formDataExamenVista.ojoDerechoCercanaSinCorreccion : '' }}
+              {{ avCercanaOD }}
             </td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ formData.formDataExamenVista.sinCorreccionCercanaInterpretacion }}
@@ -181,12 +192,10 @@ const esGuatemala = computed(() => paisProveedor.value === 'GT');
             :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 4 }">
             <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">LEJANA</td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataExamenVista.ojoIzquierdoLejanaConCorreccion ?
-                '20/' + formData.formDataExamenVista.ojoIzquierdoLejanaConCorreccion : 'NA' }}
+              {{ avLejanaConOI }}
             </td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataExamenVista.ojoDerechoLejanaConCorreccion ?
-                '20/' + formData.formDataExamenVista.ojoDerechoLejanaConCorreccion : 'NA' }}
+              {{ avLejanaConOD }}
             </td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ formData.formDataExamenVista.conCorreccionLejanaInterpretacion ? 
@@ -197,12 +206,10 @@ const esGuatemala = computed(() => paisProveedor.value === 'GT');
             :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 5 }">
             <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">CERCANA</td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataExamenVista.ojoIzquierdoCercanaConCorreccion ?
-                '20/' + formData.formDataExamenVista.ojoIzquierdoCercanaConCorreccion : 'NA' }}
+              {{ avCercanaConOI }}
             </td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
-              {{ formData.formDataExamenVista.ojoDerechoCercanaConCorreccion  ?
-                '20/' + formData.formDataExamenVista.ojoDerechoCercanaConCorreccion : 'NA' }}
+              {{ avCercanaConOD }}
             </td>
             <td class="text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ formData.formDataExamenVista.conCorreccionCercanaInterpretacion ?
