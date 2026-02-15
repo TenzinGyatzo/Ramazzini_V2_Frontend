@@ -213,12 +213,21 @@ export const categoriasVisionOrdenadas = [
   'Visión muy reducida'
 ];
 
+function extraerCategoriaInterpretacion(interpretacion: string | undefined): string | null {
+  const v = interpretacion?.trim() || '';
+  if (!v) return null;
+  if (v.startsWith('OI: ')) return v.slice(4).trim();
+  if (v.startsWith('OD: ')) return v.slice(4).trim();
+  return v;
+}
+
 export function contarVisionSinCorreccion(examenes: any[]): [string, number, number][] {
   const total = examenes.length;
   const conteo: Record<string, number> = {};
 
   for (const examen of examenes) {
-    const categoria = examen.sinCorreccionLejanaInterpretacion?.trim();
+    const raw = examen.sinCorreccionLejanaInterpretacion?.trim();
+    const categoria = extraerCategoriaInterpretacion(raw);
     if (categoria && categoriasVisionOrdenadas.includes(categoria)) {
       conteo[categoria] = (conteo[categoria] || 0) + 1;
     }
@@ -237,8 +246,8 @@ export function calcularVistaCorregida(examenes: any[]) {
   let usan = 0;
 
   for (const examen of examenes) {
-    const interpretacion = examen.sinCorreccionLejanaInterpretacion?.trim();
-
+    const raw = examen.sinCorreccionLejanaInterpretacion?.trim();
+    const interpretacion = extraerCategoriaInterpretacion(raw);
     const requiereLentes = interpretacion !== 'Visión normal' && interpretacion !== 'Visión excepcional';
 
     if (requiereLentes) {
