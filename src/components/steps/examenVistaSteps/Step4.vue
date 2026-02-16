@@ -34,6 +34,15 @@ onMounted(() => {
     ojoDerechoLejanaConCorreccion.value = ciegaOD.value ? undefined : (formDataExamenVista.ojoDerechoLejanaConCorreccion ?? 20);
     conCorreccionLejanaInterpretacion.value = formDataExamenVista.conCorreccionLejanaInterpretacion ?? 'Visión normal';
   }
+  // Guatemala: si utilizaAnteojos es Si, pre-cargar usaLentes automáticamente
+  const proveedorSalud = JSON.parse(localStorage.getItem('proveedorSalud')) || null;
+  if (proveedorSalud?.pais === 'GT' && formDataExamenVista.utilizaAnteojos === 'Si') {
+    usaLentes.value = 'Si';
+    ojoIzquierdoLejanaConCorreccion.value = ciegaOI.value ? undefined : (formDataExamenVista.ojoIzquierdoLejanaConCorreccion ?? 20);
+    ojoDerechoLejanaConCorreccion.value = ciegaOD.value ? undefined : (formDataExamenVista.ojoDerechoLejanaConCorreccion ?? 20);
+    conCorreccionLejanaInterpretacion.value = formDataExamenVista.conCorreccionLejanaInterpretacion || 'Visión normal';
+    interpretarAgudezaVisualLejana();
+  }
 });
 
 onUnmounted(() => {

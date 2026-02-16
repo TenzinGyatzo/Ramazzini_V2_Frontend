@@ -45,6 +45,19 @@ const avLejanaConOD = computed(() => formatearAgudezaVisual(formData.formDataExa
 const avCercanaConOI = computed(() => formatearAgudezaVisual(formData.formDataExamenVista.ojoIzquierdoCercanaConCorreccion, ciegaOI.value));
 const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataExamenVista.ojoDerechoCercanaConCorreccion, ciegaOD.value));
 
+// Mapping de steps según país: Guatemala tiene Fecha primero, luego 3 steps GT, luego el resto
+const stepFecha = computed(() => 1);
+const stepAntecedentes = computed(() => 2);
+const stepAnamnesis = computed(() => 3);
+const stepUtilizaAnteojos = computed(() => 4);
+const stepAVLejana = computed(() => (esGuatemala.value ? 5 : 2));
+const stepAVCercana = computed(() => (esGuatemala.value ? 6 : 3));
+const stepAVConLejana = computed(() => (esGuatemala.value ? 7 : 4));
+const stepAVConCercana = computed(() => (esGuatemala.value ? 8 : 5));
+const stepIshihara = computed(() => (esGuatemala.value ? 9 : 6));
+const stepFuncionOcular = computed(() => 10);
+const stepReceta = computed(() => 11);
+const stepDiagnostico = computed(() => 12);
 </script>
 
 <template>
@@ -62,7 +75,7 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
 
       <!-- Fecha -->
       <div class="w-full md:w-[calc(25%-0.5rem)] flex flex-wrap gap-2 justify-end text-sm sm:text-base cursor-pointer"
-      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 1 }"  @click="goToStep(1)">
+      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepFecha }"  @click="goToStep(stepFecha)">
         <p class="w-full md:w-auto">Fecha: <span class="font-medium">{{
           formatDateDDMMYYYY(formData.formDataExamenVista.fechaExamenVista) }}</span></p>
       </div>
@@ -118,6 +131,41 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
       </table>
     </div>
 
+    <!-- Secciones Guatemala (después de Trabajador) -->
+    <template v-if="esGuatemala">
+      <!-- Antecedentes y Anamnesis: misma fila, dos columnas (siempre visibles para GT) -->
+      <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="w-full">
+          <h2 class="text-lg font-medium mb-1 text-center">Antecedentes</h2>
+          <div class="border border-gray-200 rounded-md p-3 cursor-pointer min-h-[3rem]"
+            @click="goToStep(stepAntecedentes)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepAntecedentes }">
+            <p class="text-xs sm:text-sm text-gray-700 whitespace-pre-wrap">
+              {{ formData.formDataExamenVista.antecedentes || ' ' }}
+            </p>
+          </div>
+        </div>
+        <div class="w-full">
+          <h2 class="text-lg font-medium mb-1 text-center">Anamnesis</h2>
+          <div class="border border-gray-200 rounded-md p-3 cursor-pointer min-h-[3rem]"
+            @click="goToStep(stepAnamnesis)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepAnamnesis }">
+            <p class="text-xs sm:text-sm text-gray-700 whitespace-pre-wrap">
+              {{ formData.formDataExamenVista.anamnesis || ' ' }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <!-- Utiliza anteojos: siempre visible para GT -->
+      <div class="w-full flex flex-wrap gap-0 md:gap-8 justify-start xl:justify-evenly text-sm sm:text-base">
+        <p class="w-full md:w-auto cursor-pointer" @click="goToStep(stepUtilizaAnteojos)"
+          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepUtilizaAnteojos }">
+          Utiliza Lentes: (
+          <span class="font-medium">{{ formData.formDataExamenVista.utilizaAnteojos || 'No' }}</span> )
+        </p>
+      </div>
+    </template>
+
     <!-- Agudeza Visual Sin Corrección -->
     <div class="w-full">
       <h2 class="text-lg font-medium mb-1 text-center">Agudeza Visual Sin Corrección</h2>
@@ -131,8 +179,8 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
           </tr>
         </thead>
         <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(2)"
-            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(stepAVLejana)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepAVLejana }">
             <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">LEJANA</td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ avLejanaOI }}
@@ -144,8 +192,8 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
               {{ formData.formDataExamenVista.sinCorreccionLejanaInterpretacion }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(3)"
-          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 3 }">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(stepAVCercana)"
+          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepAVCercana }">
             <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">CERCANA</td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ avCercanaOI }}
@@ -163,13 +211,13 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
 
     <!-- Requiere Lentes -->
     <div class="w-full flex flex-wrap gap-0 md:gap-8 justify-start xl:justify-evenly text-sm sm:text-base">
-      <p class="w-full md:w-auto cursor-pointer" @click="goToStep(2)"
-        :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 2 }">
+      <p class="w-full md:w-auto cursor-pointer" @click="goToStep(stepAVLejana)"
+        :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepAVLejana }">
         Requiere Lentes para Uso General: (
         <span class="font-medium">{{ formData.formDataExamenVista.requiereLentesUsoGeneral }}</span> )
       </p>
-      <p class="w-full md:w-auto cursor-pointer" @click="goToStep(3)"
-        :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 3 }">
+      <p class="w-full md:w-auto cursor-pointer" @click="goToStep(stepAVCercana)"
+        :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepAVCercana }">
         Requiere Lentes para Lectura: (
         <span class="font-medium">{{ formData.formDataExamenVista.requiereLentesParaLectura }}</span> )
       </p>
@@ -188,8 +236,8 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
           </tr>
         </thead>
         <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(4)"
-            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 4 }">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(stepAVConLejana)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepAVConLejana }">
             <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">LEJANA</td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ avLejanaConOI }}
@@ -202,8 +250,8 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
                 formData.formDataExamenVista.conCorreccionLejanaInterpretacion : 'NA' }}
             </td>
           </tr>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(5)"
-            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 5 }">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(stepAVConCercana)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepAVConCercana }">
             <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">CERCANA</td>
             <td class="w-1/6 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
               {{ avCercanaConOI }}
@@ -232,8 +280,8 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
           </tr>
         </thead>
         <tbody>
-          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(6)"
-            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 6 }">
+          <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(stepIshihara)"
+            :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepIshihara }">
             <td class="w-1/3 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">
               {{ formData.formDataExamenVista.placasCorrectas ?
                 formData.formDataExamenVista.placasCorrectas + ' de 14': '&nbsp;' }}
@@ -253,10 +301,9 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
     <!-- Secciones adicionales solo para Guatemala -->
     <template v-if="esGuatemala">
       <!-- Pruebas de función ocular -->
-      <div class="w-full"
-      :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 7 }">
+      <div class="w-full">
         <h2 class="text-lg font-medium mb-1 text-center">Pruebas de Función Ocular</h2>
-        <table class="table-auto w-full border-collapse border border-gray-200" @click="goToStep(7)">
+        <table class="table-auto w-full border-collapse border border-gray-200">
           <thead>
             <tr class="bg-gray-200">
               <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">TEST DE ESTEREOPSIS</th>
@@ -265,15 +312,16 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
             </tr>
           </thead>
           <tbody>
-            <tr class="odd:bg-white even:bg-gray-50">
-              <td class="w-1/3 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 cursor-pointer">
-                {{ formData.formDataExamenVista.testEstereopsis || ' ' }}
+            <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(stepFuncionOcular)"
+              :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepFuncionOcular }">
+              <td class="w-1/3 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300">
+                {{ formData.formDataExamenVista.testEstereopsis || '\u00A0' }}
               </td>
-              <td class="w-1/3 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 cursor-pointer">
-                {{ formData.formDataExamenVista.testCampoVisual || ' ' }}
+              <td class="w-1/3 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300">
+                {{ formData.formDataExamenVista.testCampoVisual || '\u00A0' }}
               </td>
-              <td class="w-1/3 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 cursor-pointer">
-                {{ formData.formDataExamenVista.coverTest || ' ' }}
+              <td class="w-1/3 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300">
+                {{ formData.formDataExamenVista.coverTest || '\u00A0' }}
               </td>
             </tr>
           </tbody>
@@ -284,8 +332,8 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
       <div class="w-full">
         <h2 class="text-lg font-medium mb-1 text-center">Receta Final</h2>
         <table class="table-auto w-full border-collapse border border-gray-200"
-        @click="goToStep(8)"
-        :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 8 }">
+        @click="goToStep(stepReceta)"
+        :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepReceta }">
           <thead>
             <tr class="bg-gray-200">
               <th class="text-xs sm:text-sm px-2 py-0 border border-gray-300 text-center">-</th>
@@ -294,7 +342,7 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
             </tr>
           </thead>
           <tbody>
-            <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(8)">
+            <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(stepReceta)">
               <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">ESFERA</td>
               <td class="w-1/3 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
                 {{ formData.formDataExamenVista.esferaOjoIzquierdo || ' ' }}
@@ -303,7 +351,7 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
                 {{ formData.formDataExamenVista.esferaOjoDerecho || ' ' }}
               </td>
             </tr>
-            <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(8)">
+            <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(stepReceta)">
               <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">CILINDRO</td>
               <td class="w-1/3 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
                 {{ formData.formDataExamenVista.cilindroOjoIzquierdo || ' ' }}
@@ -312,7 +360,7 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
                 {{ formData.formDataExamenVista.cilindroOjoDerecho || ' ' }}
               </td>
             </tr>
-            <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(8)">
+            <tr class="odd:bg-white even:bg-gray-50 cursor-pointer" @click="goToStep(stepReceta)">
               <td class="w-1/6 text-xs sm:text-sm px-2 py-0 text-center border border-gray-300 font-medium">ADICIÓN</td>
               <td class="w-1/3 text-xs sm:text-sm text-center px-2 py-0 border border-gray-300">
                 {{ formData.formDataExamenVista.adicionOjoIzquierdo || ' ' }}
@@ -328,8 +376,8 @@ const avCercanaConOD = computed(() => formatearAgudezaVisual(formData.formDataEx
       <!-- Diagnóstico y Recomendaciones -->
       <div class="w-full">
         <h2 class="text-lg font-medium mb-1 text-center">Diagnóstico y Recomendaciones</h2>
-        <div class="border border-gray-200 rounded-md p-3 cursor-pointer" @click="goToStep(9)"
-          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === 9 }">
+        <div class="border border-gray-200 rounded-md p-3 cursor-pointer" @click="goToStep(stepDiagnostico)"
+          :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepDiagnostico }">
           <p class="text-xs sm:text-sm text-center text-gray-700 whitespace-pre-wrap">
             {{ formData.formDataExamenVista.diagnosticoRecomendaciones || ' ' }}
           </p>

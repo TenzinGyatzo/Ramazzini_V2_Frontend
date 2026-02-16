@@ -39,6 +39,9 @@ import Step5CertificadoExpedito from '../steps/certificadoExpeditoSteps/Step5.vu
 import Step6CertificadoExpedito from '../steps/certificadoExpeditoSteps/Step6.vue';
 import Step7CertificadoExpedito from '../steps/certificadoExpeditoSteps/Step7.vue';
 import Step8CertificadoExpedito from '../steps/certificadoExpeditoSteps/Step8.vue';
+import StepAntecedentesGT from '../steps/examenVistaSteps/StepAntecedentesGT.vue';
+import StepAnamnesisGT from '../steps/examenVistaSteps/StepAnamnesisGT.vue';
+import StepUtilizaAnteojosGT from '../steps/examenVistaSteps/StepUtilizaAnteojosGT.vue';
 import Step1ExamenVista from '../steps/examenVistaSteps/Step1.vue';
 import Step2ExamenVista from '../steps/examenVistaSteps/Step2.vue';
 import Step3ExamenVista from '../steps/examenVistaSteps/Step3.vue';
@@ -364,8 +367,8 @@ export default {
         const proveedorSalud = JSON.parse(localStorage.getItem('proveedorSalud')) || null;
         const paisProveedor = proveedorSalud?.pais || '';
         
-        // Steps base para todos los países
-        const examenVistaSteps = [
+        // Steps base (Fecha, AV Lejana, AV Cercana, AV Con Lejana, AV Con Cercana, Ishihara)
+        const stepsBase = [
           { component: Step1ExamenVista, name: 'Paso 1' },
           { component: Step2ExamenVista, name: 'Paso 2' },
           { component: Step3ExamenVista, name: 'Paso 3' },
@@ -374,13 +377,25 @@ export default {
           { component: Step6ExamenVista, name: 'Paso 6' },
         ];
         
-        // Agregar steps adicionales solo para Guatemala
+        let examenVistaSteps;
         if (paisProveedor === 'GT') {
-          examenVistaSteps.push(
-            { component: Step7ExamenVista, name: 'Paso 7' },
-            { component: Step8ExamenVista, name: 'Paso 8' },
-            { component: Step9ExamenVista, name: 'Paso 9' }
-          );
+          // Guatemala: Fecha primero; luego Antecedentes, Anamnesis, Utiliza anteojos; luego AV e Ishihara; luego 7, 8, 9
+          examenVistaSteps = [
+            { component: Step1ExamenVista, name: 'Paso 1' },
+            { component: StepAntecedentesGT, name: 'Paso 2' },
+            { component: StepAnamnesisGT, name: 'Paso 3' },
+            { component: StepUtilizaAnteojosGT, name: 'Paso 4' },
+            { component: Step2ExamenVista, name: 'Paso 5' },
+            { component: Step3ExamenVista, name: 'Paso 6' },
+            { component: Step4ExamenVista, name: 'Paso 7' },
+            { component: Step5ExamenVista, name: 'Paso 8' },
+            { component: Step6ExamenVista, name: 'Paso 9' },
+            { component: Step7ExamenVista, name: 'Paso 10' },
+            { component: Step8ExamenVista, name: 'Paso 11' },
+            { component: Step9ExamenVista, name: 'Paso 12' }
+          ];
+        } else {
+          examenVistaSteps = stepsBase;
         }
         
         stepsStore.setSteps(examenVistaSteps);
