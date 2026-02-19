@@ -39,7 +39,8 @@ const getTipoDocumentoNombre = (tipo: string) => {
     'notaMedica': 'Nota Médica',
     'controlPrenatal': 'Control Prenatal',
     'historiaOtologica': 'Historia Otológica',
-    'previoEspirometria': 'Previo Espirometría'
+    'previoEspirometria': 'Previo Espirometría',
+    'lesion': 'Lesión'
   };
   return nombres[tipo] || tipo;
 };
@@ -52,7 +53,10 @@ const getIconoTipo = (tipo: string) => {
     'numero': 'fa-hashtag',
     'seleccion': 'fa-list',
     'medida': 'fa-ruler',
-    'general': 'fa-circle-exclamation'
+    'lista': 'fa-list-ol',
+    'booleano': 'fa-toggle-on',
+    'general': 'fa-circle-exclamation',
+    'hora': 'fa-clock'
   };
   return iconos[tipo] || 'fa-circle-exclamation';
 };
@@ -60,14 +64,17 @@ const getIconoTipo = (tipo: string) => {
 // Función para obtener el color según el tipo de campo
 const getColorTipo = (tipo: string) => {
   const colores: Record<string, string> = {
-    'fecha': 'text-blue-600 bg-blue-50',
-    'texto': 'text-green-600 bg-green-50',
-    'numero': 'text-purple-600 bg-purple-50',
-    'seleccion': 'text-indigo-600 bg-indigo-50',
-    'medida': 'text-orange-600 bg-orange-50',
-    'general': 'text-gray-600 bg-gray-50'
-  };
-  return colores[tipo] || 'text-gray-600 bg-gray-50';
+    'fecha': 'text-blue-600 bg-blue-50 border border-blue-200',
+    'texto': 'text-green-600 bg-green-50 border border-green-200',
+    'numero': 'text-purple-600 bg-purple-50 border border-purple-200',
+    'seleccion': 'text-indigo-600 bg-indigo-50 border border-indigo-200',
+    'medida': 'text-orange-600 bg-orange-50 border border-orange-200',
+    'lista': 'text-teal-600 bg-teal-50 border border-teal-200',
+    'booleano': 'text-amber-600 bg-amber-50 border border-amber-200',   
+    'general': 'text-gray-600 bg-gray-50 border border-gray-200',
+    'hora': 'text-yellow-600 bg-yellow-50 border border-yellow-200',
+  };  
+  return colores[tipo] || 'text-gray-600 bg-gray-50 border border-gray-200';
 };
 </script>
 

@@ -15,8 +15,11 @@ import EstadoDocumentoBadge from './badges/EstadoDocumentoBadge.vue';
 import BadgeNotaAclaratoria from './badges/BadgeNotaAclaratoria.vue';
 import { useUserPermissions } from '@/composables/useUserPermissions';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
+import { useLesionCatalogLabels } from '@/composables/useLesionCatalogLabels';
 
 const router = useRouter();
+
+const { loadIfNeeded: loadLesionCatalogs, getSitioLabel, getAreaLabel, getIntencionalidadLabel } = useLesionCatalogLabels();
 
 // Función para obtener el color según el resultado del cuestionario
 const getResultadoCuestionarioColor = (resultado, resultadoPersonalizado) => {
@@ -104,6 +107,7 @@ const obtenerNombreTipoDocumento = (tipo) => {
     'constanciaAptitud': 'Constancia de Aptitud',
     'documentoExterno': 'Documento Externo',
     'notaAclaratoria': 'Nota Aclaratoria',
+    'lesion': 'Lesión',
     // Plural
     'antidopings': 'Antidoping',
     'aptitudes': 'Aptitud',
@@ -121,6 +125,7 @@ const obtenerNombreTipoDocumento = (tipo) => {
     'constanciasAptitud': 'Constancia de Aptitud',
     'documentosExternos': 'Documento Externo',
     'notasAclaratorias': 'Nota Aclaratoria',
+    'lesiones': 'Lesión',
     // Variantes con espacios
     'Documento Externo': 'Documento Externo',
     'Nota Aclaratoria': 'Nota Aclaratoria',
@@ -132,7 +137,8 @@ const obtenerNombreTipoDocumento = (tipo) => {
     'Nota Medica': 'Nota Médica',
     'Control Prenatal': 'Control Prenatal',
     'Certificado Expedito': 'Certificado Expedito',
-    'Constancia de Aptitud': 'Constancia de Aptitud'
+    'Constancia de Aptitud': 'Constancia de Aptitud',
+    'Lesión': 'Lesión'
   };
   
   return nombres[tipo] || tipo;
@@ -782,6 +788,10 @@ const descargarPdfActual = async () => {
                     documento = props.notaMedica;
                     tipoDocumento = 'Nota Medica';
                     break;
+                case 'lesion':
+                    documento = props.lesion;
+                    tipoDocumento = 'Lesion';
+                    break;
                 case 'controlprenatal':
                     documento = props.controlPrenatal;
                     tipoDocumento = 'Control Prenatal';
@@ -921,13 +931,14 @@ const props = defineProps({
     controlPrenatal: [Object, String],
     historiaOtologica: [Object, String],
     previoEspirometria: [Object, String],
+    lesion: [Object, String],
 });
 
 const currentDocumentData = computed(() => {
     return props.antidoping || props.aptitud || props.audiometria || props.constanciaAptitud || 
            props.certificado || props.certificadoExpedito || props.receta || props.documentoExterno || 
            props.examenVista || props.exploracionFisica || props.historiaClinica || props.notaMedica || 
-           props.notaAclaratoria || props.controlPrenatal || props.historiaOtologica || props.previoEspirometria;
+           props.notaAclaratoria || props.controlPrenatal || props.historiaOtologica || props.previoEspirometria || props.lesion;
 });
 
 // Mapeo de campos de fecha para buscar documentos origen
@@ -946,7 +957,8 @@ const fechaCamposOrigen = {
     'historiaOtologica': 'fechaHistoriaOtologica',
     'previoEspirometria': 'fechaPrevioEspirometria',
     'recetas': 'fechaReceta',
-    'constanciasAptitud': 'fechaConstanciaAptitud'
+    'constanciasAptitud': 'fechaConstanciaAptitud',
+    'lesiones': 'fechaReporteLesion'
 };
 
 // Mapeo de tipos singulares a plurales para buscar en el store
@@ -965,7 +977,8 @@ const tipoSingularAPlural = {
     'historiaOtologica': 'historiaOtologica',
     'previoEspirometria': 'previoEspirometria',
     'receta': 'recetas',
-    'constanciaAptitud': 'constanciasAptitud'
+    'constanciaAptitud': 'constanciasAptitud',
+    'lesion': 'lesiones'
 };
 
 // Función para normalizar tipo de documento a plural
@@ -1150,6 +1163,7 @@ const documentoNombre = computed(() => {
     if (props.exploracionFisica) return 'Exploración Física';
     if (props.historiaClinica) return 'Historia Clínica';
     if (props.notaMedica) return 'Nota Médica';
+    if (props.lesion) return 'Lesión';
     if (props.notaAclaratoria) return 'Nota Aclaratoria';
     if (props.controlPrenatal) return 'Control Prenatal';
     if (props.historiaOtologica) return 'Historia Otológica';
@@ -1361,6 +1375,7 @@ const construirRutaYNombrePDF = () => {
     'exploracionfisica': props.exploracionFisica,
     'historiaclinica': props.historiaClinica,
     'notamedica': props.notaMedica,
+    'lesion': props.lesion,
     'notaaclaratoria': props.notaAclaratoria,
     'controlprenatal': props.controlPrenatal,
     'historiaotologica': props.historiaOtologica,
@@ -1373,7 +1388,7 @@ const construirRutaYNombrePDF = () => {
     return { ruta: null, nombre: null, updatedAt: null };
   }
 
-  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaConstanciaAptitud || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaReceta || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaNotaAclaratoria || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria;
+  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaConstanciaAptitud || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaReceta || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaNotaAclaratoria || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria || doc?.fechaReporteLesion;
 
   // Nombres de documentos (DEBEN coincidir con los del backend para construir rutas correctas)
   const tiposDocumentos = {
@@ -1388,6 +1403,7 @@ const construirRutaYNombrePDF = () => {
     'exploracionfisica': 'Exploracion Fisica',
     'historiaclinica': 'Historia Clinica',
     'notamedica': 'Nota Medica',
+    'lesion': 'Lesion',
     'notaaclaratoria': 'Nota Aclaratoria',
     'controlprenatal': 'Control Prenatal',
     'historiaotologica': 'Historia Otologica',
@@ -1398,9 +1414,12 @@ const construirRutaYNombrePDF = () => {
   const fechaFormateada = fecha ? convertirFechaISOaDDMMYYYY(fecha).replace(/\//g, '-') : '';
   
   // Para Nota Aclaratoria, usar la función obtenerNombreArchivo que ya tiene la lógica completa
+  // Para Lesión, usar "Reporte Lesion {fechaAtencion} {folio}.pdf" (formato del backend)
   let nombreArchivo;
   if (tipoSinEspacios === 'notaaclaratoria' && doc) {
     nombreArchivo = obtenerNombreArchivo(doc, 'Nota Aclaratoria', fechaFormateada, documentos);
+  } else if (tipoSinEspacios === 'lesion' && doc) {
+    nombreArchivo = obtenerNombreArchivo(doc, 'Lesion', fechaFormateada, documentos);
   } else {
     nombreArchivo = fecha ? `${tipoDocumentoFormateado} ${fechaFormateada}.pdf` : `${tipoDocumentoFormateado}.pdf`;
   }
@@ -1522,9 +1541,14 @@ onMounted(() => {
 });
 
 // Watcher para verificar disponibilidad cuando cambien las props
-watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanciaAptitud, props.certificado, props.certificadoExpedito, props.receta, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.notaAclaratoria, props.controlPrenatal, props.historiaOtologica, props.previoEspirometria], () => {
+watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanciaAptitud, props.certificado, props.certificadoExpedito, props.receta, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.lesion, props.notaAclaratoria, props.controlPrenatal, props.historiaOtologica, props.previoEspirometria], () => {
   verificarDisponibilidadPDF();
 }, { deep: true });
+
+// Cargar catálogos de lesión cuando se muestra un reporte de lesión (para información adicional)
+watch(() => props.lesion, (lesion) => {
+  if (lesion && typeof lesion === 'object') loadLesionCatalogs();
+}, { immediate: true });
 
 </script>
 
@@ -2531,6 +2555,102 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                 </div>
 
+                <!-- Lesión -->
+                <div v-if="typeof lesion === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, lesion, 'Lesion')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3" @click="lesion.rutaPDF ? abrirPdf(
+                        lesion.rutaPDF,
+                        obtenerNombreArchivo(lesion, 'Lesion', obtenerFechaDocumento(lesion) || ''),
+                        lesion.updatedAt ? new Date(lesion.updatedAt).getTime() : null) : abrirDocumentoCorrespondiente()">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-red-100 rounded-lg mr-4 group-hover:bg-red-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fa-solid fa-user-injured text-red-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
+                                    Lesión
+                                </h3>
+                                <BadgeNotaAclaratoria 
+                                    v-if="tieneNotasAclaratorias"
+                                    :documentoId="documentoId"
+                                    :documentoTipo="documentoTipo"
+                                    class="hidden sm:flex ml-2"
+                                />
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <p class="text-sm text-gray-500 flex items-center">
+                                    <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                    {{ convertirFechaISOaDDMMYYYY(lesion.fechaReporteLesion) }}
+                                </p>
+                                <EstadoDocumentoBadge 
+                                    v-if="isMX && documentImmutabilityEnabled"
+                                    :estado="lesion.estado" 
+                                    :fechaFinalizacion="lesion.fechaFinalizacion" 
+                                    :finalizadoPor="lesion.finalizadoPor"
+                                    :fechaAnulacion="lesion.fechaAnulacion"
+                                    :anuladoPor="lesion.anuladoPor"
+                                    :razonAnulacion="lesion.razonAnulacion"
+                                />
+                            </div>
+                        </div>
+                        
+                        <!-- Información adicional (pantallas grandes) -->
+                        <div v-if="lesion.folio" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Folio</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ lesion.folio }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="lesion.fechaEvento" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Fecha evento</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ convertirFechaISOaDDMMYYYY(lesion.fechaEvento) }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="lesion.sitioOcurrencia != null && lesion.sitioOcurrencia !== ''" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Sitio ocurrencia</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ getSitioLabel(lesion.sitioOcurrencia) }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="lesion.intencionalidad != null && lesion.intencionalidad !== ''" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Intencionalidad</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ getIntencionalidadLabel(lesion.intencionalidad) }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="lesion.areaAnatomica != null && lesion.areaAnatomica !== ''" class="hidden xl:block mr-4 flex-shrink-0 min-w-0">
+                            <div class="text-sm">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit max-w-dynamic-base">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Área anatómica</p>
+                                    <p class="font-medium text-gray-800 text-sm truncate max-w-full">{{ getAreaLabel(lesion.areaAnatomica) }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Receta Médica -->
                 <div v-if="typeof receta === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
@@ -2937,6 +3057,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     'Exploracion Fisica': exploracionFisica,
                     'Historia Clinica': historiaClinica,
                     'Nota Medica': notaMedica,
+                    'Lesion': lesion,
                     'Nota Aclaratoria': notaAclaratoria,
                     'Control Prenatal': controlPrenatal,
                     'Historia Otologica': historiaOtologica,

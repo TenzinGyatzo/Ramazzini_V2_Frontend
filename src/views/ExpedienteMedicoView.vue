@@ -276,6 +276,7 @@ const documentTypeLabels = {
   certificado: "Certificado",
   documentoExterno: "Documento Externo",
   notaMedica: "Nota Médica",
+  lesion: "Reporte de Lesión",
   historiaOtologica: "Historia Otologica",
   previoEspirometria: "Previo Espirometria",
 };
@@ -536,6 +537,17 @@ const handleDeleteSelected = async () => {
                 }
             });
 
+            // Reportes de Lesión
+            yearData.lesiones?.forEach(lesion => {
+                const rutaBase = obtenerRutaDocumento(lesion, 'Lesion');
+                const fecha = obtenerFechaDocumento(lesion) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(lesion, 'Lesion', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: lesion._id, tipo: 'lesion' });
+                }
+            });
+
             // Recetas Médicas
             yearData.recetas?.forEach(receta => {
                 const rutaBase = obtenerRutaDocumento(receta, 'Receta');
@@ -645,6 +657,7 @@ const totalDocumentosCreados = computed(() => {
       (yearData.certificados?.length || 0) +
       (yearData.certificadosExpedito?.length || 0) +
       (yearData.notasMedicas?.length || 0) +
+      (yearData.lesiones?.length || 0) +
       (yearData.controlPrenatal?.length || 0) +
       (yearData.historiaOtologica?.length || 0) +
       (yearData.previoEspirometria?.length || 0)
@@ -1005,6 +1018,7 @@ const añoMasReciente = computed(() => {
                   <p class="text-xs text-gray-600">Consultas</p>
                 </div>
               </button>
+
             </div>
 
             <div class="flex flex-col md:flex-row justify-center gap-4">

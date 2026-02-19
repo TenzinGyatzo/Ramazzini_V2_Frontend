@@ -71,5 +71,9 @@ export enum CatalogType {
   SERVICIOS_DET = 'cat_servicios_det',
   AFILIACION = 'cat_afiliacion',
   PAIS = 'cat_pais',
+
+  // GIIS Lesión catalogs (2) - Optional
+  TIPO_VIALIDAD = 'cat_tipo_vialidad',
+  TIPO_ASENTAMIENTO = 'cat_tipo_asentamiento',
 }
 

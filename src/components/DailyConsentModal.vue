@@ -7,7 +7,7 @@ import type { ConsentimientoCreated, ConsentMethod } from '@/types/consentimient
 import { ConsentMethod as ConsentMethodEnum } from '@/types/consentimiento-diario';
 
 // Props
-interface Props {
+export interface DailyConsentModalProps {
   trabajadorId: string;
   trabajadorNombre: string;
   trabajadorSexo?: string; // 'Masculino' | 'Femenino' para determinar género en el texto
@@ -15,7 +15,7 @@ interface Props {
   dateKey?: string; // Opcional, backend lo calcula si no se envía
 }
 
-const props = defineProps<Props>();
+const props = defineProps<DailyConsentModalProps>();
 
 // Emits
 const emit = defineEmits<{

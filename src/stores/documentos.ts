@@ -18,6 +18,7 @@ import type {
   PrevioEspirometria,
   Receta,
   ConstanciaAptitud,
+  Lesion,
 } from "@/interfaces/documentos.inteface";
 
 export type DocumentsByYear = {
@@ -38,6 +39,7 @@ export type DocumentsByYear = {
     previoEspirometria?: PrevioEspirometria[];
     recetas?: Receta[];
     constanciasAptitud?: ConstanciaAptitud[];
+    lesiones?: Lesion[];
   };
 };
 
@@ -81,7 +83,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
         historiaOtologica,
         previoEspirometria,
         recetas,
-        constanciasAptitud
+        constanciasAptitud,
+        lesiones
       ] = await Promise.all([
         DocumentosAPI.getAntidopings(trabajadorId).catch(error => {
           console.error("Error al obtener antidopings", error);
@@ -146,6 +149,10 @@ export const useDocumentosStore = defineStore("documentos", () => {
         DocumentosAPI.getConstanciasAptitud(trabajadorId).catch(error => {
           console.error("Error al obtener constanciasAptitud", error);
           return { data: [] };
+        }),
+        DocumentosAPI.getLesiones(trabajadorId).catch(error => {
+          console.error("Error al obtener lesiones", error);
+          return { data: [] };
         })
       ]);
 
@@ -167,6 +174,7 @@ export const useDocumentosStore = defineStore("documentos", () => {
         previoEspirometria: Array.isArray(previoEspirometria.data) ? previoEspirometria.data : [],
         recetas: Array.isArray(recetas.data) ? recetas.data : [],
         constanciasAptitud: Array.isArray(constanciasAptitud.data) ? constanciasAptitud.data : [],
+        lesiones: Array.isArray(lesiones.data) ? lesiones.data : [],
       };
 
       // Procesar documentos y agrupar por año
@@ -214,7 +222,8 @@ export const useDocumentosStore = defineStore("documentos", () => {
       historiaOtologica: "fechaHistoriaOtologica",
       previoEspirometria: "fechaPrevioEspirometria",
       recetas: "fechaReceta",
-      constanciasAptitud: "fechaConstanciaAptitud"
+      constanciasAptitud: "fechaConstanciaAptitud",
+      lesiones: "fechaReporteLesion"
     };
 
     return documento?.[fechaCampos[tipoDocumento]] || "";

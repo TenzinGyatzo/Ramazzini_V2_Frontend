@@ -64,7 +64,7 @@ const goToStep = (stepNumber) => {
               NOMBRE
             </td>
             <td class="w-1/4 text-xs sm:text-sm px-2 py-0 border border-gray-300 font-medium">
-                              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
+              {{ formatNombreCompleto(trabajadores.currentTrabajador) }}
             </td>
             <td class="text-xs sm:text-sm px-2 py-0 border border-gray-300 font-light">
               EDAD

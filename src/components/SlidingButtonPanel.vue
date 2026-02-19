@@ -25,11 +25,13 @@ const documentOrder = {
   "Previo Espirometria": 11,
   "Documento Externo": 12,
   "Nota Medica": 13,
-  "Control Prenatal": 14,
-  "Certificado Expedito": 15,
-  "Receta": 16,
+  "Lesion": 14,
+  "Control Prenatal": 15,
+  "Certificado Expedito": 16,
+  "Receta": 17,
 };
 
+// Importante: verificar tipos más específicos ANTES que los genéricos (ej. Certificado Expedito antes de Certificado)
 const getDocumentType = (route) => {
   if (route.includes("Nota Aclaratoria")) return "Nota Aclaratoria";
   if (route.includes("Constancia de Aptitud")) return "Constancia de Aptitud";
@@ -40,11 +42,12 @@ const getDocumentType = (route) => {
   if (route.includes("Historia Otologica")) return "Historia Otologica";
   if (route.includes("Audiometria")) return "Audiometria";
   if (route.includes("Antidoping")) return "Antidoping";
+  if (route.includes("Certificado Expedito")) return "Certificado Expedito";
   if (route.includes("Certificado")) return "Certificado";
   if (route.includes("Previo Espirometria")) return "Previo Espirometria";
   if (route.includes("Nota Medica")) return "Nota Medica";
+  if (route.includes("Lesion")) return "Lesion";
   if (route.includes("Control Prenatal")) return "Control Prenatal";
-  if (route.includes("Certificado Expedito")) return "Certificado Expedito";
   if (route.includes("Receta")) return "Receta";
   return "Documento Externo"; // Para cualquier otro caso
 };

@@ -27,7 +27,8 @@ const fechaCamposOrigen = {
     'historiaOtologica': 'fechaHistoriaOtologica',
     'previoEspirometria': 'fechaPrevioEspirometria',
     'recetas': 'fechaReceta',
-    'constanciasAptitud': 'fechaConstanciaAptitud'
+    'constanciasAptitud': 'fechaConstanciaAptitud',
+    'lesiones': 'fechaReporteLesion'
 };
 
 // Mapeo de nombres de documentos (DEBEN coincidir con los del backend para Nota Aclaratoria)
@@ -59,7 +60,8 @@ const documentoNombres = {
     'receta': 'Receta',
     'recetas': 'Receta',
     'constanciaAptitud': 'Constancia de Aptitud',
-    'constanciasAptitud': 'Constancia de Aptitud'
+    'constanciasAptitud': 'Constancia de Aptitud',
+    'lesion': 'Lesión'
 };
 
 // Mapeo de tipos singulares a plurales para buscar en el store
@@ -79,7 +81,8 @@ const tipoSingularAPlural: Record<string, string> = {
     'historiaOtologica': 'historiaOtologica',
     'previoEspirometria': 'previoEspirometria',
     'receta': 'recetas',
-    'constanciaAptitud': 'constanciasAptitud'
+    'constanciaAptitud': 'constanciasAptitud',
+    'lesion': 'lesiones'
 };
 
 // Función para normalizar tipo de documento a plural
@@ -168,6 +171,15 @@ export const obtenerNombreArchivo = (documento, tipoDocumento, fecha, documentos
         
         return `Nota Aclaratoria ${fecha} (${documentoQueAclara}).pdf`;
     }
+
+    // Lesión (GIIS-B013): formato "Reporte Lesion dd-mm-aaaa folio.pdf" (fechaAtencion + folio)
+    if (tipoDocumento === 'Lesion') {
+        const fechaAtencion = documento?.fechaAtencion
+            ? convertirFechaISOaDDMMYYYY(documento.fechaAtencion).replace(/\//g, '-')
+            : fecha?.replace(/\//g, '-') || 'SinFecha';
+        const folio = documento?.folio || '';
+        return `Reporte Lesion ${fechaAtencion} ${folio}.pdf`;
+    }
     
     return `${tipoDocumento} ${fecha}.pdf`;
 };
@@ -190,6 +202,7 @@ export const obtenerFechaDocumento = (documento) => {
         'fechaPrevioEspirometria',
         'fechaReceta',
         'fechaConstanciaAptitud',
+        'fechaReporteLesion',
     ];
 
     for (const campo of camposFecha) {

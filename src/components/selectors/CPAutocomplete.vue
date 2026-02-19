@@ -18,6 +18,11 @@ const props = defineProps({
   required: {
     type: Boolean,
     default: false
+  },
+  /** Estilo compacto para formularios con menos espacio (ej. Step2 Lesión) */
+  compact: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -119,11 +124,16 @@ const toTitleCase = (str) => {
 
 <template>
   <div class="relative">
-    <label class="block font-medium text-lg text-gray-700 mb-1">
+    <label
+      :class="[
+        'block font-medium text-gray-700 mb-1',
+        compact ? 'text-xs' : 'text-lg'
+      ]"
+    >
       {{ label }}
       <span v-if="required" class="text-red-500">*</span>
     </label>
-    
+
     <div class="relative">
       <input
         type="text"
@@ -131,13 +141,27 @@ const toTitleCase = (str) => {
         @input="onInput"
         @focus="showResults = results.length > 0"
         @blur="hideResults"
-        class="w-full h-12 p-2.5 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+        :class="[
+          'w-full border border-gray-300 rounded text-gray-700 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500',
+          compact ? 'py-1.5 px-2 text-sm' : 'h-12 p-2.5 rounded-lg'
+        ]"
         :placeholder="placeholder"
         autocomplete="off"
       />
-      
-      <div v-if="loading" class="absolute right-3 top-3.5">
-        <svg class="animate-spin h-5 w-5 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+
+      <div
+        v-if="loading"
+        :class="[
+          'absolute text-emerald-500',
+          compact ? 'right-2 top-1.5' : 'right-3 top-3.5'
+        ]"
+      >
+        <svg
+          :class="['animate-spin text-emerald-500', compact ? 'h-4 w-4' : 'h-5 w-5']"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
@@ -145,28 +169,51 @@ const toTitleCase = (str) => {
     </div>
 
     <!-- Resultados -->
-    <ul v-if="showResults && results.length > 0" 
-        class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-      <li 
-        v-for="result in results" 
+    <ul
+      v-if="showResults && results.length > 0"
+      :class="[
+        'absolute z-50 w-full mt-1 bg-white border border-gray-300 shadow-xl overflow-y-auto',
+        compact ? 'rounded max-h-40' : 'rounded-lg max-h-60'
+      ]"
+    >
+      <li
+        v-for="result in results"
         :key="result.code"
         @click="selectResult(result)"
-        class="p-3 hover:bg-emerald-50 cursor-pointer border-b last:border-b-0 transition-colors"
+        :class="[
+          'hover:bg-emerald-50 cursor-pointer border-b last:border-b-0 transition-colors',
+          compact ? 'p-2' : 'p-3'
+        ]"
       >
-        <div class="flex flex-col">
+        <div class="flex flex-col" :class="compact ? 'gap-0.5' : ''">
           <div class="flex items-center gap-2">
-            <span class="font-bold text-emerald-700">{{ result.cp }}</span>
-            <span class="text-gray-800 font-medium">{{ toTitleCase(result.asentamiento) }}</span>
+            <span
+              :class="[
+                'font-bold text-emerald-700',
+                compact ? 'text-sm' : ''
+              ]"
+            >{{ result.cp }}</span>
+            <span
+              :class="[
+                'text-gray-800 font-medium',
+                compact ? 'text-sm' : ''
+              ]"
+            >{{ toTitleCase(result.asentamiento) }}</span>
           </div>
-          <p class="text-xs text-gray-500 mt-1">
+          <p :class="['text-gray-500', compact ? 'text-xs' : 'text-xs mt-1']">
             {{ toTitleCase(result.municipio) }}, {{ toTitleCase(result.estado) }}
           </p>
         </div>
       </li>
     </ul>
 
-    <div v-else-if="showResults && query.length >= 3 && !loading" 
-         class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-xl p-3 text-gray-500 text-center text-sm italic">
+    <div
+      v-else-if="showResults && query.length >= 3 && !loading"
+      :class="[
+        'absolute z-50 w-full mt-1 bg-white border border-gray-300 shadow-xl text-gray-500 text-center italic',
+        compact ? 'rounded p-2 text-xs' : 'rounded-lg p-3 text-sm'
+      ]"
+    >
       No se encontraron resultados para "{{ query }}"
     </div>
   </div>

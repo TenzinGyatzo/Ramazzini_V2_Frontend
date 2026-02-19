@@ -25,6 +25,33 @@ export default {
     },
 
     /**
+     * Search CIE-10 GIIS catalog (diagnosticos.csv) for lesion/violence reports.
+     * Includes V01-Y98 (external causes).
+     * @param query Search term
+     * @param limit Optional limit
+     * @param sexo Optional sex filter (1=Hombre, 2=Mujer)
+     * @param edad Optional age filter
+     * @param solo4Caracteres If true, return only 4-character codes
+     * @param filterVariant 'afeccion' = Cap V,XIX,O | 'causaExterna' = V01-Y98
+     */
+    searchCIE10GIIS(query, limit?, sexo?, edad?, solo4Caracteres?, filterVariant?) {
+        const params = { q: query };
+        if (limit !== undefined) params.limit = limit;
+        if (sexo !== undefined) params.sexo = sexo;
+        if (edad !== undefined) params.edad = edad;
+        if (solo4Caracteres !== undefined) params.solo4Caracteres = solo4Caracteres;
+        if (filterVariant) params.filterVariant = filterVariant;
+        return api.get('/catalogs/cie10-giis/search', { params });
+    },
+
+    /**
+     * Get a single CIE-10 GIIS entry by code (from diagnosticos.csv).
+     */
+    getCIE10GIISByCode(code) {
+        return api.get(`/catalogs/cie10-giis/${encodeURIComponent(code)}`);
+    },
+
+    /**
      * Search CLUES establishments by query string
      * @param query Search term (code or name)
      */
@@ -143,6 +170,16 @@ export default {
      */
     getNacionalidadByCode(code: string) {
         return api.get(`/catalogs/nacionalidades/${code}`);
+    },
+
+    /**
+     * List all entries from a GIIS catalog (for populating selectors)
+     * @param catalogType Catalog type key (e.g. 'cat_sitio_ocurrencia', 'cat_tipo_vialidad')
+     * @param limit Optional limit (default 500)
+     */
+    listCatalog(catalogType: string, limit?: number) {
+        const params = limit !== undefined ? { limit } : {};
+        return api.get(`/catalogs/giis/${catalogType}/list`, { params });
     }
 }
 

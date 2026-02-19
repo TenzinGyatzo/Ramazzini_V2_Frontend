@@ -10,12 +10,17 @@ interface Props {
   placeholder?: string;
   trabajadorId?: string; // Para obtener datos del paciente
   fechaConsulta?: Date | string; // Para calcular edad
+  catalogVariant?: 'sis' | 'giis'; // sis = diagnosticos_sis (notaMedica), giis = diagnosticos (lesion)
+  solo4Caracteres?: boolean; // Para giis: filtrar solo códigos de 4 caracteres
+  filterVariant?: 'afeccion' | 'causaExterna'; // Para giis: afeccion=Cap V,XIX,O | causaExterna=V01-Y98
 }
 
 const props = withDefaults(defineProps<Props>(), {
   required: false,
   label: 'Diagnóstico CIE-10',
-  placeholder: 'Buscar por código o descripción...'
+  placeholder: 'Buscar por código o descripción...',
+  catalogVariant: 'sis',
+  solo4Caracteres: false,
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -93,14 +98,26 @@ const performSearch = async (query: string) => {
       // Nota: Esto requiere que el componente padre pase el trabajadorId correctamente
     }
 
-    // Enviar parámetros al backend con filtros si están disponibles
-    const { data } = await CatalogsAPI.searchCIE10(
-      query,
-      50,
-      sexoNumeric.value,
-      edad.value
-    );
-    results.value = data || [];
+    const limit = 50;
+    if (props.catalogVariant === 'giis') {
+      const { data } = await CatalogsAPI.searchCIE10GIIS(
+        query,
+        limit,
+        sexoNumeric.value,
+        edad.value,
+        props.solo4Caracteres,
+        props.filterVariant
+      );
+      results.value = data || [];
+    } else {
+      const { data } = await CatalogsAPI.searchCIE10(
+        query,
+        limit,
+        sexoNumeric.value,
+        edad.value
+      );
+      results.value = data || [];
+    }
     showDropdown.value = true;
     selectedIndex.value = -1;
   } catch (error) {
@@ -174,14 +191,15 @@ onMounted(async () => {
   
   // If modelValue is provided initially
   if (props.modelValue) {
-    // If it's already in format "CODE - DESCRIPTION", use it directly
     if (props.modelValue.includes(' - ')) {
       searchTerm.value = props.modelValue;
     } else {
-      // If it's just a code, fetch the full description
       try {
         isLoading.value = true;
-        const { data } = await CatalogsAPI.getCIE10ByCode(props.modelValue);
+        const apiFn = props.catalogVariant === 'giis'
+          ? CatalogsAPI.getCIE10GIISByCode
+          : CatalogsAPI.getCIE10ByCode;
+        const { data } = await apiFn(props.modelValue);
         if (data) {
           searchTerm.value = `${data.code} - ${data.description}`;
         }
@@ -217,9 +235,11 @@ watch(() => props.modelValue, async (newVal) => {
     if (newVal.includes(' - ')) {
       searchTerm.value = newVal;
     } else if (!searchTerm.value.startsWith(newVal)) {
-      // If it's just a code, fetch the full description
       try {
-        const { data } = await CatalogsAPI.getCIE10ByCode(newVal);
+        const apiFn = props.catalogVariant === 'giis'
+          ? CatalogsAPI.getCIE10GIISByCode
+          : CatalogsAPI.getCIE10ByCode;
+        const { data } = await apiFn(newVal);
         if (data) {
           searchTerm.value = `${data.code} - ${data.description}`;
         }

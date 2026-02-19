@@ -41,7 +41,8 @@ const tipoNombres = {
   'historiaOtologica': 'Historia Otológica',
   'previoEspirometria': 'Previo Espirometría',
   'recetas': 'Receta',
-  'constanciasAptitud': 'Constancia de Aptitud'
+  'constanciasAptitud': 'Constancia de Aptitud',
+  'lesiones': 'Lesión'
 };
 
 // Función para cargar información del documento origen

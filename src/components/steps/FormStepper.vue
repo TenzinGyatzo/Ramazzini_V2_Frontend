@@ -290,17 +290,23 @@ import Step2Receta from '../steps/recetaSteps/Step2.vue';
 import Step3Receta from '../steps/recetaSteps/Step3.vue';
 import Step4Receta from '../steps/recetaSteps/Step4.vue';
 import Step1ConstanciaAptitud from '../steps/constanciaAptitudSteps/Step1.vue';
+import Step1Lesion from '../steps/lesionSteps/Step1.vue';
+import Step2Lesion from '../steps/lesionSteps/Step2.vue';
+import Step3Lesion from '../steps/lesionSteps/Step3.vue';
+import Step4Lesion from '../steps/lesionSteps/Step4.vue';
+import Step5Lesion from '../steps/lesionSteps/Step5.vue';
+import Step6Lesion from '../steps/lesionSteps/Step6.vue';
 import ModalFaltanCampos from '../ModalFaltanCampos.vue';
 import ModalCamposFaltantes from '../ModalCamposFaltantes.vue';
 import DailyConsentModal from '../DailyConsentModal.vue';
-import { validarCamposRequeridos } from '@/helpers/validacionCampos';
-import { validateCIE10Duplicates, generateBlockingToastMessage, validateCIE10SexAge } from '@/helpers/cie10';
+import { validarCamposRequeridos, validarFormatoHoraHHMM, validarFormatoTiempoTrasladoUH, validarHoraAtencionPosteriorEvento, validarLesionPreSubmit, validarNotaMedicaCIEExact4Chars } from '@/helpers/validacionCampos';
+import { validateCIE10Duplicates, generateBlockingToastMessage, validateCIE10SexAge, normalizeCIE10Code } from '@/helpers/cie10';
 import { useNom024Fields } from '@/composables/useNom024Fields';
 import { useDailyConsentGate } from '@/composables/useDailyConsentGate';
 import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
 
 export default {
-  components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Audiometria, Step2Audiometria, Step3Audiometria, Step4Audiometria, Step5Audiometria, Step6Audiometria, Step7Audiometria, Step1Certificado, Step2Certificado, Step1CertificadoExpedito, Step2CertificadoExpedito, Step3CertificadoExpedito, Step4CertificadoExpedito, Step5CertificadoExpedito, Step6CertificadoExpedito, Step7CertificadoExpedito, Step8CertificadoExpedito, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step7ExamenVista, Step8ExamenVista, Step9ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica, Step1NotaMedica, Step2NotaMedica, Step3NotaMedica, Step4NotaMedica, Step5NotaMedica, Step6NotaMedica, Step7NotaMedica, Step8NotaMedica, Step9NotaMedica, Step10NotaMedica, Step1NotaAclaratoria, Step1ControlPrenatal, Step2ControlPrenatal, Step3ControlPrenatal, Step4ControlPrenatal, Step5ControlPrenatal, Step6ControlPrenatal, Step7ControlPrenatal, Step8ControlPrenatal, Step9ControlPrenatal, Step10ControlPrenatal, Step11ControlPrenatal, Step12ControlPrenatal, Step13ControlPrenatal, Step14ControlPrenatal, Step15ControlPrenatal, Step16ControlPrenatal, Step17ControlPrenatal, Step18ControlPrenatal, Step19ControlPrenatal, Step20ControlPrenatal, Step21ControlPrenatal, Step22ControlPrenatal, Step23ControlPrenatal, Step24ControlPrenatal, Step25ControlPrenatal, Step26ControlPrenatal, Step27ControlPrenatal, Step28ControlPrenatal, Step29ControlPrenatal, Step30ControlPrenatal, Step31ControlPrenatal, Step32ControlPrenatal, Step33ControlPrenatal, Step34ControlPrenatal, Step35ControlPrenatal, Step36ControlPrenatal, Step37ControlPrenatal, Step38ControlPrenatal, Step39ControlPrenatal, Step40ControlPrenatal, Step41ControlPrenatal, Step42ControlPrenatal, Step43ControlPrenatal, Step44ControlPrenatal, Step45ControlPrenatal, Step46ControlPrenatal, Step47ControlPrenatal, Step48ControlPrenatal, Step49ControlPrenatal, Step50ControlPrenatal, Step51ControlPrenatal, Step52ControlPrenatal, Step53ControlPrenatal, Step54ControlPrenatal, Step55ControlPrenatal, Step56ControlPrenatal, Step57ControlPrenatal, Step58ControlPrenatal, Step59ControlPrenatal, Step60ControlPrenatal, Step61ControlPrenatal, Step62ControlPrenatal, Step63ControlPrenatal, Step64ControlPrenatal, Step65ControlPrenatal, Step66ControlPrenatal, Step67ControlPrenatal, Step68ControlPrenatal, Step69ControlPrenatal, Step70ControlPrenatal, Step71ControlPrenatal, Step72ControlPrenatal, Step73ControlPrenatal, Step74ControlPrenatal, Step75ControlPrenatal, Step76ControlPrenatal, Step77ControlPrenatal, Step78ControlPrenatal, Step79ControlPrenatal, Step80ControlPrenatal, Step81ControlPrenatal, Step82ControlPrenatal, Step83ControlPrenatal, Step84ControlPrenatal, Step85ControlPrenatal, Step86ControlPrenatal, Step87ControlPrenatal, Step88ControlPrenatal, Step89ControlPrenatal, Step1HistoriaOtologica, Step2HistoriaOtologica, Step3HistoriaOtologica, Step4HistoriaOtologica, Step5HistoriaOtologica, Step6HistoriaOtologica, Step7HistoriaOtologica, Step8HistoriaOtologica, Step9HistoriaOtologica, Step10HistoriaOtologica, Step11HistoriaOtologica, Step12HistoriaOtologica, Step13HistoriaOtologica, Step14HistoriaOtologica, Step15HistoriaOtologica, Step16HistoriaOtologica, Step17HistoriaOtologica, Step18HistoriaOtologica, Step19HistoriaOtologica, Step20HistoriaOtologica, Step21HistoriaOtologica, Step22HistoriaOtologica, Step23HistoriaOtologica, Step24HistoriaOtologica, Step25HistoriaOtologica, Step1PrevioEspirometria, Step2PrevioEspirometria, Step3PrevioEspirometria, Step4PrevioEspirometria, Step5PrevioEspirometria, Step6PrevioEspirometria, Step7PrevioEspirometria, Step8PrevioEspirometria, Step9PrevioEspirometria, Step10PrevioEspirometria, Step11PrevioEspirometria, Step12PrevioEspirometria, Step13PrevioEspirometria, Step14PrevioEspirometria, Step15PrevioEspirometria, Step16PrevioEspirometria, Step17PrevioEspirometria, Step18PrevioEspirometria, Step19PrevioEspirometria, Step20PrevioEspirometria, Step21PrevioEspirometria, Step22PrevioEspirometria, Step23PrevioEspirometria, Step24PrevioEspirometria, Step25PrevioEspirometria, Step26PrevioEspirometria, Step27PrevioEspirometria, Step28PrevioEspirometria, Step1Receta, Step2Receta, Step3Receta, Step4Receta, Step1ConstanciaAptitud, ModalFaltanCampos, ModalCamposFaltantes, DailyConsentModal },
+  components: { Step1Antidoping, Step2Antidoping, Step1Aptitud, Step2Aptitud, Step3Aptitud, Step4Aptitud, Step5Aptitud, Step6Aptitud, Step7Aptitud, Step8Aptitud, Step9Aptitud, Step10Aptitud, Step11Aptitud, Step1Audiometria, Step2Audiometria, Step3Audiometria, Step4Audiometria, Step5Audiometria, Step6Audiometria, Step7Audiometria, Step1Certificado, Step2Certificado, Step1CertificadoExpedito, Step2CertificadoExpedito, Step3CertificadoExpedito, Step4CertificadoExpedito, Step5CertificadoExpedito, Step6CertificadoExpedito, Step7CertificadoExpedito, Step8CertificadoExpedito, Step1ExamenVista, Step2ExamenVista, Step3ExamenVista, Step4ExamenVista, Step5ExamenVista, Step6ExamenVista, Step7ExamenVista, Step8ExamenVista, Step9ExamenVista, Step1ExploracionFisica, Step2ExploracionFisica, Step3ExploracionFisica, Step4ExploracionFisica, Step5ExploracionFisica, Step6ExploracionFisica, Step7ExploracionFisica, Step8ExploracionFisica, Step9ExploracionFisica, Step10ExploracionFisica, Step11ExploracionFisica, Step12ExploracionFisica, Step13ExploracionFisica, Step14ExploracionFisica, Step15ExploracionFisica, Step16ExploracionFisica, Step17ExploracionFisica, Step18ExploracionFisica, Step19ExploracionFisica, Step20ExploracionFisica, Step21ExploracionFisica, Step22ExploracionFisica, Step23ExploracionFisica, Step24ExploracionFisica, Step25ExploracionFisica, Step26ExploracionFisica, Step27ExploracionFisica, Step28ExploracionFisica, Step29ExploracionFisica, Step30ExploracionFisica, Step31ExploracionFisica, Step1HistoriaClinica, Step2HistoriaClinica, Step3HistoriaClinica, Step4HistoriaClinica, Step5HistoriaClinica, Step6HistoriaClinica, Step7HistoriaClinica, Step8HistoriaClinica, Step9HistoriaClinica, Step10HistoriaClinica, Step11HistoriaClinica, Step12HistoriaClinica, Step13HistoriaClinica, Step14HistoriaClinica, Step15HistoriaClinica, Step16HistoriaClinica, Step17HistoriaClinica, Step18HistoriaClinica, Step19HistoriaClinica, Step20HistoriaClinica, Step21HistoriaClinica, Step22HistoriaClinica, Step23HistoriaClinica, Step24HistoriaClinica, Step25HistoriaClinica, Step26HistoriaClinica, Step27HistoriaClinica, Step28HistoriaClinica, Step29HistoriaClinica, Step30HistoriaClinica, Step31HistoriaClinica, Step32HistoriaClinica, Step33HistoriaClinica, Step34HistoriaClinica, Step35HistoriaClinica, Step36HistoriaClinica, Step37HistoriaClinica, Step38HistoriaClinica, Step39HistoriaClinica, Step40HistoriaClinica, Step41HistoriaClinica, Step42HistoriaClinica, Step43HistoriaClinica, Step44HistoriaClinica, Step45HistoriaClinica, Step46HistoriaClinica, Step1NotaMedica, Step2NotaMedica, Step3NotaMedica, Step4NotaMedica, Step5NotaMedica, Step6NotaMedica, Step7NotaMedica, Step8NotaMedica, Step9NotaMedica, Step10NotaMedica, Step1NotaAclaratoria, Step1ControlPrenatal, Step2ControlPrenatal, Step3ControlPrenatal, Step4ControlPrenatal, Step5ControlPrenatal, Step6ControlPrenatal, Step7ControlPrenatal, Step8ControlPrenatal, Step9ControlPrenatal, Step10ControlPrenatal, Step11ControlPrenatal, Step12ControlPrenatal, Step13ControlPrenatal, Step14ControlPrenatal, Step15ControlPrenatal, Step16ControlPrenatal, Step17ControlPrenatal, Step18ControlPrenatal, Step19ControlPrenatal, Step20ControlPrenatal, Step21ControlPrenatal, Step22ControlPrenatal, Step23ControlPrenatal, Step24ControlPrenatal, Step25ControlPrenatal, Step26ControlPrenatal, Step27ControlPrenatal, Step28ControlPrenatal, Step29ControlPrenatal, Step30ControlPrenatal, Step31ControlPrenatal, Step32ControlPrenatal, Step33ControlPrenatal, Step34ControlPrenatal, Step35ControlPrenatal, Step36ControlPrenatal, Step37ControlPrenatal, Step38ControlPrenatal, Step39ControlPrenatal, Step40ControlPrenatal, Step41ControlPrenatal, Step42ControlPrenatal, Step43ControlPrenatal, Step44ControlPrenatal, Step45ControlPrenatal, Step46ControlPrenatal, Step47ControlPrenatal, Step48ControlPrenatal, Step49ControlPrenatal, Step50ControlPrenatal, Step51ControlPrenatal, Step52ControlPrenatal, Step53ControlPrenatal, Step54ControlPrenatal, Step55ControlPrenatal, Step56ControlPrenatal, Step57ControlPrenatal, Step58ControlPrenatal, Step59ControlPrenatal, Step60ControlPrenatal, Step61ControlPrenatal, Step62ControlPrenatal, Step63ControlPrenatal, Step64ControlPrenatal, Step65ControlPrenatal, Step66ControlPrenatal, Step67ControlPrenatal, Step68ControlPrenatal, Step69ControlPrenatal, Step70ControlPrenatal, Step71ControlPrenatal, Step72ControlPrenatal, Step73ControlPrenatal, Step74ControlPrenatal, Step75ControlPrenatal, Step76ControlPrenatal, Step77ControlPrenatal, Step78ControlPrenatal, Step79ControlPrenatal, Step80ControlPrenatal, Step81ControlPrenatal, Step82ControlPrenatal, Step83ControlPrenatal, Step84ControlPrenatal, Step85ControlPrenatal, Step86ControlPrenatal, Step87ControlPrenatal, Step88ControlPrenatal, Step89ControlPrenatal, Step1HistoriaOtologica, Step2HistoriaOtologica, Step3HistoriaOtologica, Step4HistoriaOtologica, Step5HistoriaOtologica, Step6HistoriaOtologica, Step7HistoriaOtologica, Step8HistoriaOtologica, Step9HistoriaOtologica, Step10HistoriaOtologica, Step11HistoriaOtologica, Step12HistoriaOtologica, Step13HistoriaOtologica, Step14HistoriaOtologica, Step15HistoriaOtologica, Step16HistoriaOtologica, Step17HistoriaOtologica, Step18HistoriaOtologica, Step19HistoriaOtologica, Step20HistoriaOtologica, Step21HistoriaOtologica, Step22HistoriaOtologica, Step23HistoriaOtologica, Step24HistoriaOtologica, Step25HistoriaOtologica, Step1PrevioEspirometria, Step2PrevioEspirometria, Step3PrevioEspirometria, Step4PrevioEspirometria, Step5PrevioEspirometria, Step6PrevioEspirometria, Step7PrevioEspirometria, Step8PrevioEspirometria, Step9PrevioEspirometria, Step10PrevioEspirometria, Step11PrevioEspirometria, Step12PrevioEspirometria, Step13PrevioEspirometria, Step14PrevioEspirometria, Step15PrevioEspirometria, Step16PrevioEspirometria, Step17PrevioEspirometria, Step18PrevioEspirometria, Step19PrevioEspirometria, Step20PrevioEspirometria, Step21PrevioEspirometria, Step22PrevioEspirometria, Step23PrevioEspirometria, Step24PrevioEspirometria, Step25PrevioEspirometria, Step26PrevioEspirometria, Step27PrevioEspirometria, Step28PrevioEspirometria, Step1Receta, Step2Receta, Step3Receta, Step4Receta, Step1ConstanciaAptitud, Step1Lesion, Step2Lesion, Step3Lesion, Step4Lesion, Step5Lesion, Step6Lesion, ModalFaltanCampos, ModalCamposFaltantes, DailyConsentModal },
   setup() {
     const empresas = useEmpresasStore();
     const trabajadores = useTrabajadoresStore();
@@ -359,7 +365,8 @@ export default {
         'historiaOtologica': 'historiaOtologica',
         'previoEspirometria': 'previoEspirometria',
         'receta': 'recetas',
-        'constanciaAptitud': 'constanciasAptitud'
+        'constanciaAptitud': 'constanciasAptitud',
+        'lesion': 'lesiones'
     };
 
     const normalizarTipoAPlural = (tipo) => {
@@ -808,6 +815,15 @@ export default {
         stepsStore.setSteps([
           { component: Step1ConstanciaAptitud, name: 'Paso 1' },
         ]);
+      } else if (documentos.currentTypeOfDocument === 'lesion') {
+        stepsStore.setSteps([
+          { component: Step1Lesion, name: 'Paso 1' },
+          { component: Step2Lesion, name: 'Paso 2' },
+          { component: Step3Lesion, name: 'Paso 3' },
+          { component: Step4Lesion, name: 'Paso 4' },
+          { component: Step5Lesion, name: 'Paso 5' },
+          { component: Step6Lesion, name: 'Paso 6' },
+        ]);
       } else {
         console.error(`Tipo de documento no reconocido: ${documentos.currentTypeOfDocument}`);
       }
@@ -889,6 +905,31 @@ export default {
       );
     }
 
+    // Normalizar códigos CIE de lesión antes de enviar (extraer código, mayúsculas)
+    function normalizarCIEsLesion(obj) {
+      if (!obj) return;
+      if (obj.codigoCIEAfeccionPrincipal) {
+        const n = normalizeCIE10Code(obj.codigoCIEAfeccionPrincipal);
+        if (n) obj.codigoCIEAfeccionPrincipal = n;
+      }
+      if (obj.codigoCIECausaExterna) {
+        const n = normalizeCIE10Code(obj.codigoCIECausaExterna);
+        if (n) obj.codigoCIECausaExterna = n;
+      }
+      if (obj.afeccionPrincipalReseleccionada) {
+        const n = normalizeCIE10Code(obj.afeccionPrincipalReseleccionada);
+        if (n) obj.afeccionPrincipalReseleccionada = n;
+      }
+      if (Array.isArray(obj.afeccionesTratadas)) {
+        obj.afeccionesTratadas = obj.afeccionesTratadas.map((s) => {
+          if (typeof s !== 'string' || !s.includes('#')) return s;
+          const [num, desc, cie] = s.split('#');
+          const n = normalizeCIE10Code(cie);
+          return `${num}#${desc}#${n || cie || ''}`;
+        });
+      }
+    }
+
     // Función para convertir todas las fechas al formato ISO
     function convertirFechasAISO(obj) {
       const result = { ...obj }; // Clonar el objeto para evitar modificar el original
@@ -949,6 +990,10 @@ export default {
         datosLimpios = limpiarValoresUndefined(formData.formDataReceta);
       } else if (documentos.currentTypeOfDocument === 'constanciaAptitud') {
         datosLimpios = limpiarValoresUndefined(formData.formDataConstanciaAptitud);
+      } else if (documentos.currentTypeOfDocument === 'lesion') {
+        const lesionData = { ...formData.formDataLesion };
+        normalizarCIEsLesion(lesionData);
+        datosLimpios = limpiarValoresUndefined(lesionData);
       } else {
         console.error(`Tipo de documento no reconocido: ${documentos.currentTypeOfDocument}`);
         return; // Salir si el tipo de documento no es válido
@@ -1003,6 +1048,61 @@ export default {
             type: 'error' 
           });
           return; // No continuar con el envío
+        }
+
+        // VALIDACIÓN CIE-10: Códigos deben tener exactamente 4 caracteres
+        const cie4CharsNota = validarNotaMedicaCIEExact4Chars(formData.formDataNotaMedica);
+        if (!cie4CharsNota.valido) {
+          if (cie4CharsNota.paso) stepsStore.goToStep(cie4CharsNota.paso);
+          toast.open({
+            message: cie4CharsNota.mensaje,
+            type: 'error'
+          });
+          return;
+        }
+      }
+
+      // VALIDACIÓN FORMATO HORA (lesion): horaEvento y horaAtencion deben ser HH:mm válido o 99:99
+      if (documentos.currentTypeOfDocument === 'lesion') {
+        const les = formData.formDataLesion;
+        if (!validarFormatoHoraHHMM(les?.horaEvento)) {
+          toast.open({
+            message: 'La hora del evento tiene formato inválido. Use HH:mm (00-23:00-59) o marque "Se desconoce".',
+            type: 'error'
+          });
+          return;
+        }
+        if (!validarFormatoHoraHHMM(les?.horaAtencion)) {
+          toast.open({
+            message: 'La hora de atención tiene formato inválido. Use HH:mm (00-23:00-59) o marque "Se desconoce".',
+            type: 'error'
+          });
+          return;
+        }
+        if (!validarFormatoTiempoTrasladoUH(les?.tiempoTrasladoUH, les)) {
+          toast.open({
+            message: 'El tiempo de traslado debe ser HH:mm (00:01-48:00) o marque "Se desconoce".',
+            type: 'error'
+          });
+          return;
+        }
+        const validacionHora = validarHoraAtencionPosteriorEvento(les);
+        if (!validacionHora.valido) {
+          stepsStore.goToStep(4);
+          toast.open({
+            message: validacionHora.mensaje,
+            type: 'error'
+          });
+          return;
+        }
+        const validacionLesion = validarLesionPreSubmit(les, trabajadores.currentTrabajador);
+        if (!validacionLesion.valido) {
+          if (validacionLesion.paso) stepsStore.goToStep(validacionLesion.paso);
+          toast.open({
+            message: validacionLesion.mensaje,
+            type: 'error'
+          });
+          return;
         }
       }
 

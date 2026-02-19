@@ -756,34 +756,93 @@ export interface ConstanciaAptitud {
     finalizadoPor?: string;
 }
 
+/**
+ * GIIS-B013 Reporte de Lesión y/o Violencia
+ * Alineado con el schema del backend (lesion.schema.ts)
+ */
 export interface Lesion {
     _id: string;
-    clues: string;
     folio: string;
-    curpPaciente: string;
-    fechaNacimiento: string;
-    sexo: number;
+    fechaReporteLesion?: string;
+
+    // Evento
     fechaEvento: string;
     horaEvento?: string;
+    diaFestivo?: number;
+    eventoRepetido?: number;
     sitioOcurrencia: number;
+
+    // Lugar
+    entidadOcurrencia?: string;
+    municipioOcurrencia?: string;
+    localidadOcurrencia?: string;
+    otraLocalidad?: string;
+    codigoPostal?: string;
+    tipoVialidad?: number;
+    nombreVialidad?: string;
+    numeroExterior?: string;
+    tipoAsentamiento?: number;
+    nombreAsentamiento?: string;
+
+    // Circunstancias
     intencionalidad: number;
     agenteLesion?: number;
+    especifique?: string;
     tipoViolencia?: number[];
+    numeroAgresores?: number;
+    parentescoAfectado?: number;
+    sexoAgresor?: number;
+    edadAgresor?: number;
+    agresorBajoEfectos?: string;
+    lesionadoVehiculoMotor?: number;
+    usoEquipoSeguridad?: number;
+    equipoUtilizado?: number;
+    especifiqueEquipo?: string;
+    sospechaBajoEfectosDe?: string;
+    atencionPreHospitalaria?: number;
+    tiempoTrasladoUH?: string;
+
+    // Atención
     fechaAtencion: string;
     horaAtencion?: string;
+    servicioAtencion?: number;
+    especifiqueServicio?: string;
     tipoAtencion: number[];
+
+    // Diagnóstico
     areaAnatomica: number;
+    especifiqueArea?: string;
     consecuenciaGravedad: number;
+    especifiqueConsecuencia?: string;
     codigoCIEAfeccionPrincipal: string;
+    descripcionAfeccionPrincipal?: string;
     codigoCIECausaExterna: string;
+    causaExterna?: string;
     afeccionesTratadas?: string[];
-    responsableAtencion: number;
-    curpResponsable: string;
+    descripcionAfeccion?: string;
+    afeccionPrincipalReseleccionada?: string;
+
+    // Destino y seguimiento
+    despuesAtencion?: number;
+    especifiqueDestino?: string;
+    ministerioPublico?: number;
+    folioCertificadoDefuncion?: string;
+
+    // Responsable (DTO/Creación - puede no estar en schema)
+    responsableAtencion?: number;
+    curpResponsable?: string;
+
+    // Referencias
     idTrabajador: string;
+    idProveedorSalud?: string;
     createdBy: string;
     updatedBy: string;
+
     // NOM-024 Fields
     estado?: DocumentoEstado;
     fechaFinalizacion?: string;
     finalizadoPor?: string;
+    fechaAnulacion?: string;
+    anuladoPor?: string;
+    razonAnulacion?: string;
 }
