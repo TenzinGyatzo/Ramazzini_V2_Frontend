@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed, watch, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import AuthAPI from "@/api/AuthAPI";
 import axios from "axios";
@@ -10,14 +10,63 @@ const password = ref("");
 const errorMessage = ref("");
 const showPassword = ref(false);
 
+const lockoutRetrySeconds = ref(0);
+const lockoutMessage = ref("");
+let lockoutIntervalId: ReturnType<typeof setInterval> | null = null;
+
+const lockoutCountdownText = computed(() => {
+  const s = lockoutRetrySeconds.value;
+  if (s <= 0) return "";
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `Podrás intentar de nuevo en ${m}:${sec.toString().padStart(2, "0")}`;
+});
+
+function clearLockoutState() {
+  if (lockoutIntervalId) {
+    clearInterval(lockoutIntervalId);
+    lockoutIntervalId = null;
+  }
+  lockoutRetrySeconds.value = 0;
+  lockoutMessage.value = "";
+}
+
+function startLockoutCountdown(retryAfterSeconds: number) {
+  lockoutRetrySeconds.value = retryAfterSeconds;
+  lockoutMessage.value = "Demasiados intentos fallidos. Debes esperar antes de volver a intentar.";
+  if (lockoutIntervalId) clearInterval(lockoutIntervalId);
+  lockoutIntervalId = setInterval(() => {
+    lockoutRetrySeconds.value -= 1;
+    if (lockoutRetrySeconds.value <= 0 && lockoutIntervalId) {
+      clearInterval(lockoutIntervalId);
+      lockoutIntervalId = null;
+      lockoutMessage.value = "";
+    }
+  }, 1000);
+}
+
+// El bloqueo es por email: al cambiar el correo se quita el feedback y se habilita el botón
+watch(email, () => {
+  if (lockoutRetrySeconds.value > 0 || lockoutMessage.value) {
+    clearLockoutState();
+  }
+});
+
+onUnmounted(() => {
+  if (lockoutIntervalId) {
+    clearInterval(lockoutIntervalId);
+    lockoutIntervalId = null;
+  }
+});
+
 const handleLogin = async () => {
+  if (lockoutRetrySeconds.value > 0) return;
   try {
     const response = await AuthAPI.login(email.value, password.value, {
       loginContext: "PRIMARY_LOGIN",
     });
     const token = response.data.token;
     if (response.status === 200 || response.status === 201) {
-      // Manejar autenticación y redirección
       localStorage.setItem("AUTH_TOKEN", token);
       if (response.data.sid) {
         localStorage.setItem("AUTH_SID", response.data.sid);
@@ -25,8 +74,19 @@ const handleLogin = async () => {
       router.push("/");
     }
   } catch (error) {
-    // Verificar que error es un objeto con la propiedad `response`
     if (axios.isAxiosError(error) && error.response) {
+      if (error.response.status === 429) {
+        errorMessage.value = "";
+        const msg = error.response.data?.message;
+        const retry = error.response.data?.retryAfterSeconds;
+        lockoutMessage.value = msg ?? "Demasiados intentos fallidos. Debes esperar antes de volver a intentar.";
+        if (typeof retry === "number" && retry > 0) {
+          startLockoutCountdown(retry);
+        } else {
+          lockoutRetrySeconds.value = 0;
+        }
+        return;
+      }
       console.log(error.response.data.message);
       if (error.response.data.message === 'El email ingresado no es válido') {
         errorMessage.value = "El email ingresado no es válido";
@@ -91,12 +151,25 @@ const handleLogin = async () => {
       </div>
       <button
         type="submit"
-        class="w-full sm:text-xl md:text-2xl bg-emerald-600 hover:bg-emerald-700 text-white uppercase rounded-lg px-8 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200"
+        :disabled="lockoutRetrySeconds > 0"
+        class="w-full sm:text-xl md:text-2xl bg-emerald-600 hover:bg-emerald-700 text-white uppercase rounded-lg px-8 py-1 transition-all duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg hover:text-gray-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
       >
-        Entrar
+        {{ lockoutRetrySeconds > 0 ? 'Espera...' : 'Entrar' }}
       </button>
+      <!-- Mensaje de bloqueo por demasiados intentos (429) -->
+      <div v-if="lockoutRetrySeconds > 0 || lockoutMessage" 
+           class="mt-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-clock text-amber-500 text-lg"></i>
+          <div>
+            <p class="text-amber-800 font-medium text-sm">Demasiados intentos</p>
+            <p class="text-amber-700 text-sm">{{ lockoutMessage }}</p>
+            <p v-if="lockoutCountdownText" class="text-amber-600 text-sm mt-1 font-medium">{{ lockoutCountdownText }}</p>
+          </div>
+        </div>
+      </div>
       <!-- Mensaje de error general -->
-      <div v-if="errorMessage && errorMessage !== 'Tu cuenta ha sido suspendida temporalmente. Contacta al administrador para reactivarla.'" 
+      <div v-if="errorMessage && errorMessage !== 'Tu cuenta ha sido suspendida temporalmente. Contacta al administrador para reactivarla.' && lockoutRetrySeconds <= 0" 
            class="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
         <p class="text-red-600 text-sm">{{ errorMessage }}</p>
       </div>

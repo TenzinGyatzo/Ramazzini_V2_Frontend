@@ -14,7 +14,7 @@ import CatalogsAPI from '@/api/CatalogsAPI';
 import CPAutocomplete from '@/components/selectors/CPAutocomplete.vue';
 import { CatalogType } from '@/interfaces/catalogos.interface';
 
-const { formDataLesion } = useFormDataStore();
+const formDataStore = useFormDataStore();
 const documentos = useDocumentosStore();
 
 // Catálogos GIIS (cargados dinámicamente)
@@ -40,6 +40,9 @@ const estados = ref([]);
 const municipios = ref([]);
 const localidades = ref([]);
 const loadingGeo = ref({ estados: false, municipios: false, localidades: false });
+
+// Evitar que los watchers de cascada limpien valores durante la restauración inicial
+const isHydrating = ref(false);
 
 const loadEstados = async () => {
   loadingGeo.value.estados = true;
@@ -152,17 +155,18 @@ const handleCPSelect = async (data) => {
 };
 
 const syncToFormData = () => {
-  formDataLesion.sitioOcurrencia = sitioOcurrencia.value;
-  formDataLesion.entidadOcurrencia = entidadOcurrencia.value || undefined;
-  formDataLesion.municipioOcurrencia = municipioOcurrencia.value || undefined;
-  formDataLesion.localidadOcurrencia = localidadOcurrencia.value || undefined;
-  formDataLesion.otraLocalidad = otraLocalidad.value?.trim() || undefined;
-  formDataLesion.codigoPostal = codigoPostal.value?.trim() || undefined;
-  formDataLesion.tipoVialidad = tipoVialidad.value;
-  formDataLesion.nombreVialidad = nombreVialidad.value?.trim() || undefined;
-  formDataLesion.numeroExterior = numeroExterior.value?.trim() || undefined;
-  formDataLesion.tipoAsentamiento = tipoAsentamiento.value;
-  formDataLesion.nombreAsentamiento = nombreAsentamiento.value?.trim() || undefined;
+  const fd = formDataStore.formDataLesion;
+  fd.sitioOcurrencia = sitioOcurrencia.value;
+  fd.entidadOcurrencia = entidadOcurrencia.value || undefined;
+  fd.municipioOcurrencia = municipioOcurrencia.value || undefined;
+  fd.localidadOcurrencia = localidadOcurrencia.value || undefined;
+  fd.otraLocalidad = otraLocalidad.value?.trim() || undefined;
+  fd.codigoPostal = codigoPostal.value?.trim() || undefined;
+  fd.tipoVialidad = tipoVialidad.value;
+  fd.nombreVialidad = nombreVialidad.value?.trim() || undefined;
+  fd.numeroExterior = numeroExterior.value?.trim() || undefined;
+  fd.tipoAsentamiento = tipoAsentamiento.value;
+  fd.nombreAsentamiento = nombreAsentamiento.value?.trim() || undefined;
 };
 
 const loadGIISCatalogs = async () => {
@@ -196,8 +200,12 @@ const loadGIISCatalogs = async () => {
 };
 
 onMounted(async () => {
+  isHydrating.value = true;
   await Promise.all([loadEstados(), loadGIISCatalogs()]);
-  const doc = documentos.currentDocument || formDataLesion;
+  // Preferir formDataLesion cuando tiene datos locales (navegación entre steps); si no, usar documento cargado
+  const fd = formDataStore.formDataLesion;
+  const hasLocalData = fd.sitioOcurrencia != null || fd.entidadOcurrencia || fd.municipioOcurrencia || fd.codigoPostal;
+  const doc = hasLocalData ? fd : (documentos.currentDocument || fd);
   if (doc?.sitioOcurrencia != null) sitioOcurrencia.value = doc.sitioOcurrencia;
   if (doc?.entidadOcurrencia) {
     entidadOcurrencia.value = doc.entidadOcurrencia;
@@ -217,6 +225,10 @@ onMounted(async () => {
   if (doc?.tipoAsentamiento != null) tipoAsentamiento.value = doc.tipoAsentamiento;
   if (doc?.nombreAsentamiento) nombreAsentamiento.value = (doc.nombreAsentamiento || '').toUpperCase();
   syncToFormData();
+  await nextTick();
+  await nextTick();
+  // Retrasar para que todos los watchers terminen antes de desproteger
+  setTimeout(() => { isHydrating.value = false; }, 50);
 });
 
 onUnmounted(() => {
@@ -237,23 +249,33 @@ watch(
     tipoAsentamiento,
     nombreAsentamiento,
   ],
-  () => syncToFormData(),
+  () => {
+    if (!isHydrating.value) syncToFormData();
+  },
   { deep: true }
 );
 
 watch(entidadOcurrencia, async (code) => {
+  if (isHydrating.value) {
+    if (code) await loadMunicipios(code);
+    return;
+  }
   municipioOcurrencia.value = '';
   localidadOcurrencia.value = '';
   localidades.value = [];
   if (code) await loadMunicipios(code);
   else municipios.value = [];
-});
+}, { flush: 'sync' });
 
 watch(municipioOcurrencia, async (code) => {
+  if (isHydrating.value) {
+    if (code && entidadOcurrencia.value) await loadLocalidades(entidadOcurrencia.value, code);
+    return;
+  }
   localidadOcurrencia.value = '';
   if (code && entidadOcurrencia.value) await loadLocalidades(entidadOcurrencia.value, code);
   else localidades.value = [];
-});
+}, { flush: 'sync' });
 
 const inputClass = 'w-full py-1.5 px-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500';
 const selectClass = 'w-full py-1 px-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500';

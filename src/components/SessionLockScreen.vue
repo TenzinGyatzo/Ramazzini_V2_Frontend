@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useUserStore } from "@/stores/user";
 import AuthAPI from "@/api/AuthAPI";
 import axios from "axios";
@@ -19,6 +19,32 @@ const errorMessage = ref("");
 const showPassword = ref(false);
 const isSubmitting = ref(false);
 
+const lockoutRetrySeconds = ref(0);
+const lockoutMessage = ref("");
+let lockoutIntervalId: ReturnType<typeof setInterval> | null = null;
+
+const lockoutCountdownText = computed(() => {
+  const s = lockoutRetrySeconds.value;
+  if (s <= 0) return "";
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `Podrás intentar de nuevo en ${m}:${sec.toString().padStart(2, "0")}`;
+});
+
+function startLockoutCountdown(retryAfterSeconds: number) {
+  lockoutRetrySeconds.value = retryAfterSeconds;
+  lockoutMessage.value = "Demasiados intentos fallidos. Debes esperar antes de volver a intentar.";
+  if (lockoutIntervalId) clearInterval(lockoutIntervalId);
+  lockoutIntervalId = setInterval(() => {
+    lockoutRetrySeconds.value -= 1;
+    if (lockoutRetrySeconds.value <= 0 && lockoutIntervalId) {
+      clearInterval(lockoutIntervalId);
+      lockoutIntervalId = null;
+      lockoutMessage.value = "";
+    }
+  }, 1000);
+}
+
 // Controlar el overflow del body cuando el componente está visible
 onMounted(() => {
   document.body.style.overflow = 'hidden';
@@ -26,6 +52,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.body.style.overflow = '';
+  if (lockoutIntervalId) {
+    clearInterval(lockoutIntervalId);
+    lockoutIntervalId = null;
+  }
 });
 
 const handleUnlock = async () => {
@@ -33,9 +63,11 @@ const handleUnlock = async () => {
     errorMessage.value = "Error: No se pudo identificar al usuario.";
     return;
   }
+  if (lockoutRetrySeconds.value > 0) return;
 
   isSubmitting.value = true;
   errorMessage.value = "";
+  lockoutMessage.value = "";
 
   try {
     const response = await AuthAPI.login(userStore.user.email, password.value, {
@@ -46,12 +78,23 @@ const handleUnlock = async () => {
       unlockedAt: new Date().toISOString(),
     });
     if (response.status === 200 || response.status === 201) {
-      // Si la contraseña es correcta, desbloqueamos
       password.value = "";
       emit('unlock');
     }
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
+      if (error.response.status === 429) {
+        errorMessage.value = "";
+        const msg = error.response.data?.message;
+        const retry = error.response.data?.retryAfterSeconds;
+        lockoutMessage.value = msg ?? "Demasiados intentos fallidos. Debes esperar antes de volver a intentar.";
+        if (typeof retry === "number" && retry > 0) {
+          startLockoutCountdown(retry);
+        } else {
+          lockoutRetrySeconds.value = 0;
+        }
+        return;
+      }
       if (error.response.data.message === 'Contraseña incorrecta') {
         errorMessage.value = "Contraseña incorrecta. Inténtalo de nuevo.";
       } else {
@@ -102,17 +145,28 @@ const handleUnlock = async () => {
           </div>
         </div>
 
-        <div v-if="errorMessage" class="p-3 bg-red-50 border border-red-100 rounded-lg">
+        <div v-if="lockoutRetrySeconds > 0 || lockoutMessage" class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div class="flex items-center space-x-2">
+            <i class="fas fa-clock text-amber-500 text-lg"></i>
+            <div>
+              <p class="text-amber-800 font-medium text-sm">Demasiados intentos</p>
+              <p class="text-amber-700 text-sm">{{ lockoutMessage }}</p>
+              <p v-if="lockoutCountdownText" class="text-amber-600 text-sm mt-1 font-medium">{{ lockoutCountdownText }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="errorMessage && lockoutRetrySeconds <= 0" class="p-3 bg-red-50 border border-red-100 rounded-lg">
           <p class="text-red-600 text-sm text-center font-medium">{{ errorMessage }}</p>
         </div>
 
         <button
           type="submit"
-          class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition-all duration-300 transform active:scale-95 shadow-lg flex items-center justify-center space-x-2"
-          :disabled="isSubmitting"
+          class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition-all duration-300 transform active:scale-95 shadow-lg flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          :disabled="isSubmitting || lockoutRetrySeconds > 0"
         >
           <i v-if="isSubmitting" class="fas fa-spinner fa-spin mr-2"></i>
-          <span>{{ isSubmitting ? 'Verificando...' : 'Desbloquear' }}</span>
+          <span>{{ lockoutRetrySeconds > 0 ? 'Espera...' : isSubmitting ? 'Verificando...' : 'Desbloquear' }}</span>
         </button>
       </form>
 
