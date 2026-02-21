@@ -222,14 +222,15 @@ export const useResultadosClinicosStore = defineStore("resultadosClinicos", () =
         const docActualizado = response.data.idDocumentoExterno;
         const year = new Date(docActualizado.fechaDocumento).getFullYear();
         
-        if (documentosStore.documentsByYear[year]?.documentosExternos) {
-          const docIndex = documentosStore.documentsByYear[year].documentosExternos.findIndex(
+        const yearDocs = documentosStore.documentsByYear[year];
+        if (yearDocs?.documentosExternos) {
+          const docIndex = yearDocs.documentosExternos.findIndex(
             d => d._id === docActualizado._id
           );
           if (docIndex !== -1) {
             // Actualizar solo los campos necesarios o el objeto completo
-            documentosStore.documentsByYear[year].documentosExternos[docIndex] = {
-              ...documentosStore.documentsByYear[year].documentosExternos[docIndex],
+            yearDocs.documentosExternos[docIndex] = {
+              ...yearDocs.documentosExternos[docIndex],
               ...docActualizado,
               idResultadoClinico: resultadoId // Asegurar que tenga la vinculación
             };

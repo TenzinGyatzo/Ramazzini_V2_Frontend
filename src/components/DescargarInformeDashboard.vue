@@ -1731,7 +1731,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 filas: filasEkg,
                 colores: coloresEkg
             } : null
-        ].filter((bloque) => bloque !== null);
+        ].filter((bloque): bloque is NonNullable<typeof bloque> => bloque !== null);
 
         let subIndex = 0;
         for (const bloque of bloquesGabinete) {
