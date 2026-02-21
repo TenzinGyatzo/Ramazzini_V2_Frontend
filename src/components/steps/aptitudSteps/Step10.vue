@@ -23,8 +23,8 @@ const getGuiaRecomendada = () => {
     // Para mujeres: guiaAptaSinRestricciones, para hombres: guiaAptoSinRestricciones
     const mapeoGuias = {
         'Apto Sin Restricciones': trabajadores.currentTrabajador.sexo === 'Femenino' ? 'guiaAptaSinRestricciones' : 'guiaAptoSinRestricciones',
-        'Apto Con Precaución': 'guiaAptoConPrecaucion', 
-        'Apto Con Restricciones': 'guiaAptoConRestricciones',
+        'Apto Con Precaución': trabajadores.currentTrabajador.sexo === 'Femenino' ? 'guiaAptaConPrecaucion' : 'guiaAptoConPrecaucion', 
+        'Apto Con Restricciones': trabajadores.currentTrabajador.sexo === 'Femenino' ? 'guiaAptaConRestricciones' : 'guiaAptoConRestricciones',
         'No Apto': trabajadores.currentTrabajador.sexo === 'Femenino' ? 'guiaNoApta' : 'guiaNoApto',
         'Evaluación No Completada': 'guiaEvaluacionNoCompletada'
     };
@@ -476,7 +476,7 @@ const generarTextoPrecargado = async () => {
                 </div>
             </div>
             <!-- Apta Con Precauciones -->
-            <div v-if="shouldShowSection('guiaAptoConPrecaucion')" class="space-y-2">
+            <div v-if="shouldShowSection('guiaAptaConPrecaucion')" class="space-y-2">
                 <!-- Ejemplos -->
                 <button
                     class="bg-white text-yellow-600 border border-yellow-600 hover:bg-yellow-600 hover:text-white font-medium py-2 px-4 rounded-lg block mt-2"
@@ -545,8 +545,8 @@ const generarTextoPrecargado = async () => {
                 </button>
                 <div v-if="isOpen('herniaAbdominal')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
                     <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
-                        @click="copiarTexto('El individuo presenta una hernia abdominal, por lo que debe ser valorado por un cirujano. Se recomienda uso en todo momento de faja lumbosacra y asignarle tareas que no impliquen esfuerzo físico excesivo. Asimismo, debe proporcionarse asistencia o equipo adecuado para el manejo de carga.')">
-                        El individuo presenta una hernia abdominal, por lo que debe ser valorado por un
+                        @click="copiarTexto('La trabajadora presenta una hernia abdominal, por lo que debe ser valorado por un cirujano. Se recomienda uso en todo momento de faja lumbosacra y asignarle tareas que no impliquen esfuerzo físico excesivo. Asimismo, debe proporcionarse asistencia o equipo adecuado para el manejo de carga.')">
+                        La trabajadora presenta una hernia abdominal, por lo que debe ser valorado por un
                         cirujano. Se recomienda uso en todo momento de faja lumbosacra y asignarle tareas que no
                         impliquen esfuerzo físico excesivo. Asimismo, debe proporcionarse asistencia o equipo
                         adecuado para el manejo de carga.
@@ -560,8 +560,8 @@ const generarTextoPrecargado = async () => {
                 </button>
                 <div v-if="isOpen('problemaEspalda')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
                     <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
-                        @click="copiarTexto('El individuo debe evitar levantar objetos pesados debido a la condición de su espalda baja, por lo que se recomienda asignar tareas que no impliquen esfuerzo físico excesivo y proporcionar asistencia o equipo adecuado para el manejo de carga.')">
-                        El individuo debe evitar levantar objetos pesados debido a la condición de su espalda
+                        @click="copiarTexto('La trabajadora debe evitar levantar objetos pesados debido a la condición de su espalda baja, por lo que se recomienda asignar tareas que no impliquen esfuerzo físico excesivo y proporcionar asistencia o equipo adecuado para el manejo de carga.')">
+                        La trabajadora debe evitar levantar objetos pesados debido a la condición de su espalda
                         baja, por lo que se recomienda asignar tareas que no impliquen esfuerzo físico excesivo
                         y proporcionar asistencia o equipo adecuado para el manejo de carga.
                     </p>
@@ -588,11 +588,11 @@ const generarTextoPrecargado = async () => {
                 </button>
                 <div v-if="isOpen('malformacionMano')" class="p-4 border-l-4 border-orange-500 bg-gray-100">
                     <p class="italic text-sm font-light mb-4 text-gray-700 hover:text-orange-700 cursor-pointer text-justify"
-                        @click="copiarTexto('Dada a la malformación congénita de la mano izquierda, se recomienda la implementación de tecnologías de asistencia, como dispositivos de ayuda para la manipulación de objetos, así como la adaptación de las tareas laborales para optimizar la funcionalidad y la independencia del individuo en el entorno de trabajo.')">
+                        @click="copiarTexto('Dada a la malformación congénita de la mano izquierda, se recomienda la implementación de tecnologías de asistencia, como dispositivos de ayuda para la manipulación de objetos, así como la adaptación de las tareas laborales para optimizar la funcionalidad y la independencia de la trabajadora en el entorno de trabajo.')">
                         Dada a la malformación congénita de la mano izquierda, se recomienda la implementación
                         de tecnologías de asistencia, como dispositivos de ayuda para la manipulación de
                         objetos, así como la adaptación de las tareas laborales para optimizar la funcionalidad
-                        y la independencia del individuo en el entorno de trabajo.
+                        y la independencia de la trabajadora en el entorno de trabajo.
                     </p>
                 </div>
 
