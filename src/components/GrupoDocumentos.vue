@@ -7,8 +7,18 @@ import type { PropType } from 'vue';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento } from '@/helpers/rutas';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 import { useDocumentosStore } from '@/stores/documentos';
+import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 
 const documentosStore = useDocumentosStore();
+const proveedorSaludStore = useProveedorSaludStore();
+
+const documentImmutabilityEnabled = computed(() => proveedorSaludStore.documentImmutabilityEnabled);
+
+const isDocumentoInmutable = (doc: { estado?: string }) => {
+    if (!documentImmutabilityEnabled.value) return false;
+    const estado = doc?.estado?.toLowerCase();
+    return estado === 'finalizado' || estado === 'anulado';
+};
 
 const props = defineProps({
     documents: {
@@ -269,19 +279,188 @@ const rutasDelGrupo = computed(() => {
     return rutas;
 });
 
+// Rutas de documentos eliminables (excluye FINALIZADO/ANULADO cuando documentImmutabilityEnabled)
+const rutasDeletablesDelGrupo = computed(() => {
+    if (!props.isDeletionMode || !documentImmutabilityEnabled.value) {
+        return rutasDelGrupo.value;
+    }
+    const rutas: string[] = [];
+    const pushIfDeletable = (doc: { estado?: string }, ruta: string) => {
+        if (!isDocumentoInmutable(doc)) {
+            rutas.push(ruta);
+        }
+    };
+
+    if (props.documents.notasAclaratorias) {
+        props.documents.notasAclaratorias.forEach(notaAclaratoria => {
+            const rutaBase = obtenerRutaDocumento(notaAclaratoria, 'Nota Aclaratoria');
+            const fecha = obtenerFechaDocumento(notaAclaratoria) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(notaAclaratoria, 'Nota Aclaratoria', fecha, documentosStore);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(notaAclaratoria, ruta);
+        });
+    }
+    if (props.documents.constanciasAptitud) {
+        props.documents.constanciasAptitud.forEach(constanciaAptitud => {
+            const rutaBase = obtenerRutaDocumento(constanciaAptitud, 'Constancia de Aptitud');
+            const fecha = obtenerFechaDocumento(constanciaAptitud) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(constanciaAptitud, 'Constancia de Aptitud', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(constanciaAptitud, ruta);
+        });
+    }
+    if (props.documents.aptitudes) {
+        props.documents.aptitudes.forEach(aptitud => {
+            const rutaBase = obtenerRutaDocumento(aptitud, 'Aptitud');
+            const fecha = obtenerFechaDocumento(aptitud) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(aptitud, 'Aptitud', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(aptitud, ruta);
+        });
+    }
+    if (props.documents.historiasClinicas) {
+        props.documents.historiasClinicas.forEach(historiaClinica => {
+            const rutaBase = obtenerRutaDocumento(historiaClinica, 'Historia Clinica');
+            const fecha = obtenerFechaDocumento(historiaClinica) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(historiaClinica, 'Historia Clinica', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(historiaClinica, ruta);
+        });
+    }
+    if (props.documents.exploracionesFisicas) {
+        props.documents.exploracionesFisicas.forEach(exploracionFisica => {
+            const rutaBase = obtenerRutaDocumento(exploracionFisica, 'Exploracion Fisica');
+            const fecha = obtenerFechaDocumento(exploracionFisica) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(exploracionFisica, 'Exploracion Fisica', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(exploracionFisica, ruta);
+        });
+    }
+    if (props.documents.examenesVista) {
+        props.documents.examenesVista.forEach(examenVista => {
+            const rutaBase = obtenerRutaDocumento(examenVista, 'Examen Vista');
+            const fecha = obtenerFechaDocumento(examenVista) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(examenVista, 'Examen Vista', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(examenVista, ruta);
+        });
+    }
+    if (props.documents.audiometrias) {
+        props.documents.audiometrias.forEach(audiometria => {
+            const rutaBase = obtenerRutaDocumento(audiometria, 'Audiometria');
+            const fecha = obtenerFechaDocumento(audiometria) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(audiometria, 'Audiometria', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(audiometria, ruta);
+        });
+    }
+    if (props.documents.antidopings) {
+        props.documents.antidopings.forEach(antidoping => {
+            const rutaBase = obtenerRutaDocumento(antidoping, 'Antidoping');
+            const fecha = obtenerFechaDocumento(antidoping) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(antidoping, 'Antidoping', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(antidoping, ruta);
+        });
+    }
+    if (props.documents.certificados) {
+        props.documents.certificados.forEach(certificado => {
+            const rutaBase = obtenerRutaDocumento(certificado, 'Certificado');
+            const fecha = obtenerFechaDocumento(certificado) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(certificado, 'Certificado', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(certificado, ruta);
+        });
+    }
+    if (props.documents.certificadosExpedito) {
+        props.documents.certificadosExpedito.forEach(certificadoExpedito => {
+            const rutaBase = obtenerRutaDocumento(certificadoExpedito, 'Certificado Expedito');
+            const fecha = obtenerFechaDocumento(certificadoExpedito) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(certificadoExpedito, 'Certificado Expedito', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(certificadoExpedito, ruta);
+        });
+    }
+    if (props.documents.documentosExternos) {
+        props.documents.documentosExternos.forEach(documentoExterno => {
+            const rutaBase = obtenerRutaDocumento(documentoExterno, 'Documento Externo');
+            const fecha = obtenerFechaDocumento(documentoExterno) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(documentoExterno, 'Documento Externo', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(documentoExterno, ruta);
+        });
+    }
+    if (props.documents.notasMedicas) {
+        props.documents.notasMedicas.forEach(notaMedica => {
+            const rutaBase = obtenerRutaDocumento(notaMedica, 'Nota Medica');
+            const fecha = obtenerFechaDocumento(notaMedica) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(notaMedica, 'Nota Medica', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(notaMedica, ruta);
+        });
+    }
+    if (props.documents.lesiones) {
+        props.documents.lesiones.forEach(lesion => {
+            const rutaBase = obtenerRutaDocumento(lesion, 'Lesion');
+            const fecha = obtenerFechaDocumento(lesion) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(lesion, 'Lesion', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(lesion, ruta);
+        });
+    }
+    if (props.documents.controlPrenatal) {
+        props.documents.controlPrenatal.forEach(controlPrenatal => {
+            const rutaBase = obtenerRutaDocumento(controlPrenatal, 'Control Prenatal');
+            const fecha = obtenerFechaDocumento(controlPrenatal) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(controlPrenatal, 'Control Prenatal', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(controlPrenatal, ruta);
+        });
+    }
+    if (props.documents.historiaOtologica) {
+        props.documents.historiaOtologica.forEach(historiaOtologica => {
+            const rutaBase = obtenerRutaDocumento(historiaOtologica, 'Historia Otologica');
+            const fecha = obtenerFechaDocumento(historiaOtologica) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(historiaOtologica, 'Historia Otologica', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(historiaOtologica, ruta);
+        });
+    }
+    if (props.documents.previoEspirometria) {
+        props.documents.previoEspirometria.forEach(previoEspirometria => {
+            const rutaBase = obtenerRutaDocumento(previoEspirometria, 'Previo Espirometria');
+            const fecha = obtenerFechaDocumento(previoEspirometria) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(previoEspirometria, 'Previo Espirometria', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(previoEspirometria, ruta);
+        });
+    }
+    if (props.documents.recetas) {
+        props.documents.recetas.forEach(receta => {
+            const rutaBase = obtenerRutaDocumento(receta, 'Receta');
+            const fecha = obtenerFechaDocumento(receta) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(receta, 'Receta', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            pushIfDeletable(receta, ruta);
+        });
+    }
+    return rutas;
+});
+
 // Calcular cuántos documentos de este grupo están seleccionados
 const documentosSeleccionadosDelGrupo = computed(() => {
     return rutasDelGrupo.value.filter(ruta => props.selectedRoutes.includes(ruta)).length;
 });
 
-// Determinar si todos los documentos de este grupo están seleccionados
+// Determinar si todos los documentos eliminables están seleccionados (en modo eliminación usa rutasDeletablesDelGrupo)
 const selectAll = computed({
     get: () => {
-        return totalDocumentos.value > 0 && documentosSeleccionadosDelGrupo.value === totalDocumentos.value;
+        const rutasRelevantes = props.isDeletionMode ? rutasDeletablesDelGrupo.value : rutasDelGrupo.value;
+        return rutasRelevantes.length > 0 && rutasRelevantes.every(ruta => props.selectedRoutes.includes(ruta));
     },
     set: (value: boolean) => {
-        // Aplicar la selección solo a los documentos de este grupo
-        rutasDelGrupo.value.forEach(ruta => {
+        const rutasAplicar = props.isDeletionMode ? rutasDeletablesDelGrupo.value : rutasDelGrupo.value;
+        rutasAplicar.forEach(ruta => {
             props.toggleRouteSelection(ruta, value);
         });
     }
@@ -290,6 +469,12 @@ const selectAll = computed({
 const toggleSelectAll = () => {
     selectAll.value = !selectAll.value;
 };
+
+// Total de documentos eliminables (para mostrar en modo eliminación cuando hay inmutables)
+const totalDeletables = computed(() => rutasDeletablesDelGrupo.value.length);
+const hayDocumentosNoEliminables = computed(() =>
+    props.isDeletionMode && documentImmutabilityEnabled.value && totalDeletables.value < totalDocumentos.value
+);
 </script>
 
 <template>
@@ -377,7 +562,7 @@ const toggleSelectAll = () => {
                     </label>
                     <span class="text-xs ml-0.5"
                           :class="isDeletionMode ? 'text-red-500' : 'text-gray-500'">
-                        {{ documentosSeleccionadosDelGrupo }} de {{ totalDocumentos }} documentos
+                        {{ documentosSeleccionadosDelGrupo }} de {{ hayDocumentosNoEliminables ? totalDeletables : totalDocumentos }}{{ hayDocumentosNoEliminables ? ' eliminables' : ' documentos' }}
                     </span>
                 </div>
             </div>

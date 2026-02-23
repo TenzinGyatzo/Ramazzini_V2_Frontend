@@ -384,22 +384,63 @@ const toggleRouteSelection = (route: string, isSelected: boolean) => {
     }
 };
 
+const documentImmutabilityEnabled = computed(() => proveedorSaludStore.documentImmutabilityEnabled);
+
+const isDocumentoInmutable = (doc: { estado?: string }) => {
+    if (!documentImmutabilityEnabled.value) return false;
+    const estado = doc?.estado?.toLowerCase();
+    return estado === 'finalizado' || estado === 'anulado';
+};
+
 const toggleDeletionMode = () => {
     isDeletionMode.value = !isDeletionMode.value;
-    // Ya no limpiamos la selección al cambiar de modo
-    // Los checkboxes mantienen su estado
+    // Al activar modo eliminación, quitar de selectedRoutes los documentos inmutables
+    if (isDeletionMode.value && documentImmutabilityEnabled.value) {
+        const rutasInmutables: string[] = [];
+        Object.values(documentos.documentsByYear).forEach(yearData => {
+            const checkDoc = (doc: { estado?: string }, tipo: string, tipoLabel: string) => {
+                if (isDocumentoInmutable(doc)) {
+                    const rutaBase = obtenerRutaDocumento(doc as any, tipoLabel);
+                    const fecha = obtenerFechaDocumento(doc as any) || 'SinFecha';
+                    const nombreArchivo = obtenerNombreArchivo(doc as any, tipoLabel, fecha, documentos);
+                    rutasInmutables.push(`${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/'));
+                }
+            };
+            yearData.notasAclaratorias?.forEach(d => checkDoc(d, 'notaAclaratoria', 'Nota Aclaratoria'));
+            yearData.constanciasAptitud?.forEach(d => checkDoc(d, 'constanciaAptitud', 'Constancia Aptitud'));
+            yearData.aptitudes?.forEach(d => checkDoc(d, 'aptitud', 'Aptitud'));
+            yearData.historiasClinicas?.forEach(d => checkDoc(d, 'historiaClinica', 'Historia Clinica'));
+            yearData.exploracionesFisicas?.forEach(d => checkDoc(d, 'exploracionFisica', 'Exploracion Fisica'));
+            yearData.examenesVista?.forEach(d => checkDoc(d, 'examenVista', 'Examen Vista'));
+            yearData.audiometrias?.forEach(d => checkDoc(d, 'audiometria', 'Audiometria'));
+            yearData.antidopings?.forEach(d => checkDoc(d, 'antidoping', 'Antidoping'));
+            yearData.certificados?.forEach(d => checkDoc(d, 'certificado', 'Certificado'));
+            yearData.certificadosExpedito?.forEach(d => checkDoc(d, 'certificadoExpedito', 'Certificado Expedito'));
+            yearData.documentosExternos?.forEach(d => checkDoc(d, 'documentoExterno', 'Documento Externo'));
+            yearData.notasMedicas?.forEach(d => checkDoc(d, 'notaMedica', 'Nota Medica'));
+            yearData.lesiones?.forEach(d => checkDoc(d, 'lesion', 'Lesion'));
+            yearData.recetas?.forEach(d => checkDoc(d, 'receta', 'Receta'));
+            yearData.controlPrenatal?.forEach(d => checkDoc(d, 'controlPrenatal', 'Control Prenatal'));
+            yearData.historiaOtologica?.forEach(d => checkDoc(d, 'historiaOtologica', 'Historia Otologica'));
+            yearData.previoEspirometria?.forEach(d => checkDoc(d, 'previoEspirometria', 'Previo Espirometria'));
+        });
+        if (rutasInmutables.length > 0) {
+            selectedRoutes.value = selectedRoutes.value.filter(r => !rutasInmutables.includes(r));
+        }
+    }
 };
 
 const handleDeleteSelected = async () => {
     if (selectedRoutes.value.length === 0) return;
         
     try {
+        const totalSeleccionados = selectedRoutes.value.length;
         toast.open({ 
-            message: `Eliminando ${selectedRoutes.value.length} documento${selectedRoutes.value.length !== 1 ? 's' : ''}...`, 
+            message: `Eliminando ${totalSeleccionados} documento${totalSeleccionados !== 1 ? 's' : ''}...`, 
             type: "info" 
         });
         
-        // Mapear rutas a documentos para eliminación
+        // Mapear rutas a documentos para eliminación (excluyendo FINALIZADO/ANULADO)
         const documentosAEliminar: Array<{id: string, tipo: string}> = [];
         
         // Recorrer todos los documentos por año para encontrar los que coinciden con las rutas seleccionadas
@@ -411,7 +452,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(notaAclaratoria) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(notaAclaratoria, 'Nota Aclaratoria', fecha, documentos);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(notaAclaratoria)) {
                     documentosAEliminar.push({ id: notaAclaratoria._id, tipo: 'notaAclaratoria' });
                 }
             });
@@ -422,7 +463,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(constanciaAptitud) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(constanciaAptitud, 'Constancia Aptitud', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(constanciaAptitud)) {
                     documentosAEliminar.push({ id: constanciaAptitud._id, tipo: 'constanciaAptitud' });
                 }
             });
@@ -433,7 +474,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(aptitud) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(aptitud, 'Aptitud', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(aptitud)) {
                     documentosAEliminar.push({ id: aptitud._id, tipo: 'aptitud' });
                 }
             });
@@ -444,7 +485,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(historiaClinica) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(historiaClinica, 'Historia Clinica', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(historiaClinica)) {
                     documentosAEliminar.push({ id: historiaClinica._id, tipo: 'historiaClinica' });
                 }
             });
@@ -455,7 +496,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(exploracionFisica) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(exploracionFisica, 'Exploracion Fisica', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(exploracionFisica)) {
                     documentosAEliminar.push({ id: exploracionFisica._id, tipo: 'exploracionFisica' });
                 }
             });
@@ -466,7 +507,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(examenVista) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(examenVista, 'Examen Vista', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(examenVista)) {
                     documentosAEliminar.push({ id: examenVista._id, tipo: 'examenVista' });
                 }
             });
@@ -477,7 +518,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(audiometria) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(audiometria, 'Audiometria', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(audiometria)) {
                     documentosAEliminar.push({ id: audiometria._id, tipo: 'audiometria' });
                 }
             });
@@ -488,7 +529,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(antidoping) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(antidoping, 'Antidoping', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(antidoping)) {
                     documentosAEliminar.push({ id: antidoping._id, tipo: 'antidoping' });
                 }
             });
@@ -499,7 +540,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(certificado) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(certificado, 'Certificado', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(certificado)) {
                     documentosAEliminar.push({ id: certificado._id, tipo: 'certificado' });
                 }
             });
@@ -510,7 +551,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(certificado) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(certificado, 'Certificado Expedito', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(certificado)) {
                     documentosAEliminar.push({ id: certificado._id, tipo: 'certificadoExpedito' });
                 }
             });
@@ -521,7 +562,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(documentoExterno) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(documentoExterno, 'Documento Externo', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(documentoExterno)) {
                     documentosAEliminar.push({ id: documentoExterno._id, tipo: 'documentoExterno' });
                 }
             });
@@ -532,7 +573,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(notaMedica) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(notaMedica, 'Nota Medica', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(notaMedica)) {
                     documentosAEliminar.push({ id: notaMedica._id, tipo: 'notaMedica' });
                 }
             });
@@ -543,7 +584,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(lesion) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(lesion, 'Lesion', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(lesion)) {
                     documentosAEliminar.push({ id: lesion._id, tipo: 'lesion' });
                 }
             });
@@ -554,7 +595,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(receta) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(receta, 'Receta', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(receta)) {
                     documentosAEliminar.push({ id: receta._id, tipo: 'receta' });
                 }
             });
@@ -565,7 +606,7 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(controlPrenatal) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(controlPrenatal, 'Control Prenatal', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
-                if (selectedRoutes.value.includes(ruta)) {
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(controlPrenatal)) {
                     documentosAEliminar.push({ id: controlPrenatal._id, tipo: 'controlPrenatal' });
                 }
             });
@@ -576,6 +617,9 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(historiaOtologica) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(historiaOtologica, 'Historia Otologica', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(historiaOtologica)) {
+                    documentosAEliminar.push({ id: historiaOtologica._id, tipo: 'historiaOtologica' });
+                }
             });
 
             // Previo Espirometria
@@ -584,8 +628,21 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(previoEspirometria) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(previoEspirometria, 'Previo Espirometria', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta) && !isDocumentoInmutable(previoEspirometria)) {
+                    documentosAEliminar.push({ id: previoEspirometria._id, tipo: 'previoEspirometria' });
+                }
             });
         });
+
+        const excluidosPorInmutables = totalSeleccionados - documentosAEliminar.length;
+        if (excluidosPorInmutables > 0) {
+            toast.open({
+                message: `${excluidosPorInmutables} documento${excluidosPorInmutables !== 1 ? 's' : ''} no se pueden eliminar por estar finalizados o anulados.`,
+                type: "warning"
+            });
+        }
+
+        if (documentosAEliminar.length === 0) return;
                 
         // Eliminar documentos uno por uno
         const eliminacionesExitosas: Array<{id: string, tipo: string}> = [];

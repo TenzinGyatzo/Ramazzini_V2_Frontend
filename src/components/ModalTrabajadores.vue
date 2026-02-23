@@ -356,6 +356,18 @@ const handleSubmit = async (data) => {
     }
   }
 
+  // Validar edad mínima: no permitir menores de 15 años
+  if (data.fechaNacimiento) {
+    const edad = calcularEdad(data.fechaNacimiento);
+    if (edad < 15) {
+      toast.open({
+        message: 'No se puede registrar un menor de edad. El trabajador debe tener al menos 15 años cumplidos.',
+        type: 'error'
+      });
+      return;
+    }
+  }
+
   const trabajadorData = {
     primerApellido: data.primerApellido,
     segundoApellido: data.segundoApellido,

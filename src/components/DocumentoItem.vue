@@ -889,6 +889,11 @@ const handleCheckboxChange = (event, documento, tipoDocumento) => {
     const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
 
     if (ruta) {
+        // Documentos FINALIZADO/ANULADO no se pueden seleccionar para eliminación
+        if (!isDeletableInBulkMode.value && isChecked) {
+            props.toggleRouteSelection(ruta, false);
+            return;
+        }
         props.toggleRouteSelection(ruta, isChecked);
     }
 };
@@ -1144,6 +1149,13 @@ const showSiresUI = computed(() => {
 // y la inmutabilidad está habilitada (SIRES_NOM024)
 const isAnulacion = computed(() => {
     return documentImmutabilityEnabled.value && isFinalized.value && !isAnulado.value;
+});
+
+// En modo eliminación masiva: documentos FINALIZADO/ANULADO no son seleccionables
+const isDeletableInBulkMode = computed(() => {
+    if (!props.isDeletionMode) return true;
+    if (!documentImmutabilityEnabled.value) return true;
+    return !isFinalized.value && !isAnulado.value;
 });
 
 const canEditFinalized = computed(() => {
@@ -1591,12 +1603,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Nota Aclaratoria -->
                 <div v-if="typeof notaAclaratoria === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, notaAclaratoria, 'Nota Aclaratoria')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -1686,12 +1703,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Antidoping -->
                 <div v-if="typeof antidoping === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, antidoping, 'Antidoping')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -1757,12 +1779,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Constancia de Aptitud -->
                 <div v-if="typeof constanciaAptitud === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, constanciaAptitud, 'Constancia de Aptitud')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -1805,12 +1832,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Aptitud al Puesto -->
                 <div v-if="typeof aptitud === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, aptitud, 'Aptitud')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -1883,12 +1915,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Audiometría -->
                 <div v-if="typeof audiometria === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, audiometria, 'Audiometria')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -1964,12 +2001,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Certificado -->
                 <div v-if="typeof certificado === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, certificado, 'Certificado')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -2035,12 +2077,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Certificado Expedito -->
                 <div v-if="typeof certificadoExpedito === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, certificadoExpedito, 'Certificado Expedito')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -2113,12 +2160,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Documento Externo -->
                 <div v-if="typeof documentoExterno === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, documentoExterno, 'Documento Externo')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -2198,12 +2250,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Examen de la Vista -->
                 <div v-if="typeof examenVista === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, examenVista, 'Examen Vista')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -2295,12 +2352,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Exploracion Fisica -->
                 <div v-if="typeof exploracionFisica === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, exploracionFisica, 'Exploracion Fisica')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -2397,12 +2459,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Historia Clínica -->
                 <div v-if="typeof historiaClinica === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, historiaClinica, 'Historia Clinica')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -2483,12 +2550,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Nota Medica -->
                 <div v-if="typeof notaMedica === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, notaMedica, 'Nota Medica')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -2558,12 +2630,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Lesión -->
                 <div v-if="typeof lesion === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, lesion, 'Lesion')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -2654,12 +2731,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Receta Médica -->
                 <div v-if="typeof receta === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, receta, 'Receta')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -2723,12 +2805,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Control Prenatal -->   
                 <div v-if="typeof controlPrenatal === 'object'" class="flex itemsats-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, controlPrenatal, 'Control Prenatal')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -2878,12 +2965,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Historia Otologica -->
                 <div v-if="typeof historiaOtologica === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, historiaOtologica, 'Historia Otologica')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
@@ -2960,12 +3052,17 @@ watch(() => props.lesion, (lesion) => {
                 <!-- Previo Espirometria -->
                 <div v-if="typeof previoEspirometria === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
                     <!-- Checkbox mejorado -->
-                    <div class="mr-4 flex-shrink-0">
+                    <div class="mr-4 flex-shrink-0 flex items-center gap-1">
                         <input
-                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
-                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110"
+                            :class="[
+                                isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500',
+                                isDeletableInBulkMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                            ]"
                             type="checkbox" :checked="isSelected"
+                            :disabled="!isDeletableInBulkMode"
                             @change="(event) => handleCheckboxChange(event, previoEspirometria, 'Previo Espirometria')">
+                        <i v-if="isDeletionMode && !isDeletableInBulkMode" class="fas fa-lock text-gray-400 text-xs" title="Documento finalizado o anulado - no eliminable"></i>
                     </div>
                     
                     <!-- Contenido principal -->
