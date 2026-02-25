@@ -106,13 +106,16 @@ const guardarTodosLosCambios = async () => {
     );
   });
 
-  // Forzar permisos a false para administrativos antes de guardar
+  // Forzar permisos a false para administrativos y técnicos antes de guardar
   usuariosConCambios.forEach(usuario => {
     if (usuario.role === 'Administrativo') {
       usuario.permisos.gestionarDocumentosDiagnostico = false;
       usuario.permisos.gestionarDocumentosEvaluacion = false;
       usuario.permisos.gestionarDocumentosExternos = false;
-      usuario.permisos.gestionarCuestionariosAdicionales = false;
+      usuario.permisos.gestionarOtrosDocumentos = false;
+    }
+    if (usuario.role === 'Técnico Evaluador') {
+      usuario.permisos.gestionarDocumentosDiagnostico = false;
     }
   });
 
@@ -423,17 +426,23 @@ onBeforeRouteLeave((to, from, next) => {
               <span>Los usuarios administrativos no tienen permitido gestionar documentos médicos por políticas de seguridad.</span>
             </div>
 
+            <!-- Mensaje informativo para técnicos evaluadores -->
+            <div v-if="usuario.role === 'Técnico Evaluador'" class="mb-3 p-2 bg-amber-50 border border-amber-200 rounded text-[10px] sm:text-xs text-amber-700 flex items-start gap-2">
+              <i class="fas fa-info-circle mt-0.5"></i>
+              <span>Los usuarios técnicos no tienen permitido gestionar documentos de Diagnóstico y Certificación.</span>
+            </div>
+
             <div class="space-y-3 pl-4 sm:pl-6">
               <label 
                 :class="[
                   'flex items-center space-x-2 sm:space-x-3',
-                  usuario.role === 'Administrativo' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                  (usuario.role === 'Administrativo' || usuario.role === 'Técnico Evaluador') ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
                 ]"
               >
                 <input 
                   type="checkbox" 
                   v-model="usuario.permisos.gestionarDocumentosDiagnostico"
-                  :disabled="usuario.role === 'Administrativo'"
+                  :disabled="usuario.role === 'Administrativo' || usuario.role === 'Técnico Evaluador'"
                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 disabled:opacity-50"
                 >
                 <i class="fas fa-stethoscope text-gray-600 text-sm sm:text-base"></i>
@@ -480,7 +489,7 @@ onBeforeRouteLeave((to, from, next) => {
               >
                 <input 
                   type="checkbox" 
-                  v-model="usuario.permisos.gestionarCuestionariosAdicionales"
+                  v-model="usuario.permisos.gestionarOtrosDocumentos"
                   :disabled="usuario.role === 'Administrativo'"
                   class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 disabled:opacity-50"
                 >

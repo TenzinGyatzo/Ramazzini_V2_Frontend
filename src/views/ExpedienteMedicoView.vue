@@ -25,7 +25,6 @@ import ModalDatosProfesionales from '@/components/modals/ModalDatosProfesionales
 import DailyConsentModal from '@/components/DailyConsentModal.vue';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
-import { useUserPermissions } from '@/composables/useUserPermissions';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 import { useProfessionalDataValidation } from '@/composables/useProfessionalDataValidation';
 import { useNavigateWithDailyConsent } from '@/composables/useNavigateWithDailyConsent';
@@ -41,8 +40,7 @@ const documentos = useDocumentosStore();
 const formData = useFormDataStore();
 const proveedorSaludStore = useProveedorSaludStore();
 const medicoFirmanteStore = useMedicoFirmanteStore();
-const { canCreateDocument, getRestrictionMessage } = useUserPermissions();
-const { executeIfCanManageDocumentosExternos } = usePermissionRestrictions();
+const { canCreateDocument, getRestrictionMessage, executeIfCanManageDocumentosExternos } = usePermissionRestrictions();
 const { validationResult, loadFirmanteData } = useProfessionalDataValidation();
 const {
   navigateWithDailyConsent,

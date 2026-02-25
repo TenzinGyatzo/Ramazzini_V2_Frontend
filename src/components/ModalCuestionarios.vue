@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
-import { useUserPermissions } from '@/composables/useUserPermissions';
 import { usePermissionRestrictions } from '@/composables/usePermissionRestrictions';
 import { useProfessionalDataValidation } from '@/composables/useProfessionalDataValidation';
 import { useNavigateWithDailyConsent } from '@/composables/useNavigateWithDailyConsent';
@@ -19,8 +18,7 @@ const router = useRouter();
 const empresas = useEmpresasStore();
 const trabajadores = useTrabajadoresStore();
 const proveedorSaludStore = useProveedorSaludStore();
-const { canCreateDocument, getRestrictionMessage } = useUserPermissions();
-const { executeIfCanManageCuestionariosAdicionales } = usePermissionRestrictions();
+const { validateDocumentCreation } = usePermissionRestrictions();
 const { validationResult, loadFirmanteData } = useProfessionalDataValidation();
 const {
   navigateWithDailyConsent,
@@ -50,152 +48,157 @@ const closeModal = () => {
   emit('closeModal');
 };
 
+const questionnaireToDocumentType = {
+  'control-prenatal': 'controlPrenatal',
+  'constancia-aptitud': 'constanciaAptitud',
+  'receta': 'receta',
+  'certificado-expedito': 'certificadoExpedito',
+  'historia-otologica': 'historiaOtologica',
+  'previo-espirometria': 'previoEspirometria',
+  'nota-aclaratoria': 'notaAclaratoria',
+  'lesion': 'lesion',
+};
+
 // Función para manejar la selección de cuestionarios
 const handleQuestionnaireSelect = async (questionnaireType) => {
-  // Validar datos profesionales antes de navegar
+  const documentType = questionnaireToDocumentType[questionnaireType];
+  if (documentType && !validateDocumentCreation(documentType)) {
+    return;
+  }
+
   if (!validationResult.value.isValid) {
     showProfessionalDataModal.value = true;
     return;
   }
 
-  // Validar permisos para cuestionarios adicionales
-  executeIfCanManageCuestionariosAdicionales(async () => {
-    // Solo permitir cuestionarios habilitados
-    if (questionnaireType === 'control-prenatal') {
-      
-      // Validar que el trabajador sea de sexo femenino
-      if (trabajadores.currentTrabajador?.sexo === 'Masculino') {
-        toast.open({
-          message: `No puedes hacer control prenatal al sexo masculino.`,
-          type: 'error',
-        });
-        return; // No avanzar si es masculino
-      }
-      
-      // Si es femenino, navegar a la vista crear-documento con el tipo controlPrenatal
-      await navigateWithDailyConsent({
-        trabajadorId: trabajadores.currentTrabajadorId,
-        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
-        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
-        to: {
-          name: 'crear-documento',
-          params: {
-            idEmpresa: empresas.currentEmpresaId,
-            idTrabajador: trabajadores.currentTrabajadorId,
-            tipoDocumento: 'controlPrenatal'
-          }
-        },
+  if (questionnaireType === 'control-prenatal') {
+    if (trabajadores.currentTrabajador?.sexo === 'Masculino') {
+      toast.open({
+        message: `No puedes hacer control prenatal al sexo masculino.`,
+        type: 'error',
       });
-      
-      // Cerrar el modal después de navegar
-      closeModal();
-    } else if (questionnaireType === 'constancia-aptitud') {
-      await navigateWithDailyConsent({
-        trabajadorId: trabajadores.currentTrabajadorId,
-        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
-        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
-        to: {
-          name: 'crear-documento',
-          params: {
-            idEmpresa: empresas.currentEmpresaId,
-            idTrabajador: trabajadores.currentTrabajadorId,
-            tipoDocumento: 'constanciaAptitud'
-          }
-        },
-      });
-      closeModal();
-    } else if (questionnaireType === 'receta') {
-      await navigateWithDailyConsent({
-        trabajadorId: trabajadores.currentTrabajadorId,
-        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
-        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
-        to: {
-          name: 'crear-documento',
-          params: {
-            idEmpresa: empresas.currentEmpresaId,
-            idTrabajador: trabajadores.currentTrabajadorId,
-            tipoDocumento: 'receta'
-          }
-        },
-      });
-      closeModal();
-    } else if (questionnaireType === 'certificado-expedito') {
-      await navigateWithDailyConsent({
-        trabajadorId: trabajadores.currentTrabajadorId,
-        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
-        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
-        to: {
-          name: 'crear-documento',
-          params: {
-            idEmpresa: empresas.currentEmpresaId,
-            idTrabajador: trabajadores.currentTrabajadorId,
-            tipoDocumento: 'certificadoExpedito'
-          }
-        },
-      });
-      closeModal();
-    } else if (questionnaireType === 'historia-otologica') {
-      await navigateWithDailyConsent({
-        trabajadorId: trabajadores.currentTrabajadorId,
-        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
-        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
-        to: {
-          name: 'crear-documento',
-          params: {
-            idEmpresa: empresas.currentEmpresaId,
-            idTrabajador: trabajadores.currentTrabajadorId,
-            tipoDocumento: 'historiaOtologica'
-          }
-        },
-      });
-      closeModal();
-    } else if (questionnaireType === 'previo-espirometria') {
-      await navigateWithDailyConsent({
-        trabajadorId: trabajadores.currentTrabajadorId,
-        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
-        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
-        to: {
-          name: 'crear-documento',
-          params: {
-            idEmpresa: empresas.currentEmpresaId,
-            idTrabajador: trabajadores.currentTrabajadorId,
-            tipoDocumento: 'previoEspirometria'
-          }
-        },
-      });
-      closeModal();
-    } else if (questionnaireType === 'nota-aclaratoria') {
-      await navigateWithDailyConsent({
-        trabajadorId: trabajadores.currentTrabajadorId,
-        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
-        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
-        to: {
-          name: 'crear-documento',
-          params: {
-            idEmpresa: empresas.currentEmpresaId,
-            idTrabajador: trabajadores.currentTrabajadorId,
-            tipoDocumento: 'notaAclaratoria'
-          }
-        },
-      });
-      closeModal();
-    } else if (questionnaireType === 'lesion') {
-      await navigateWithDailyConsent({
-        trabajadorId: trabajadores.currentTrabajadorId,
-        trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
-        trabajadorSexo: trabajadores.currentTrabajador?.sexo,
-        to: {
-          name: 'crear-documento',
-          params: {
-            idEmpresa: empresas.currentEmpresaId,
-            idTrabajador: trabajadores.currentTrabajadorId,
-            tipoDocumento: 'lesion'
-          }
-        },
-      });
-      closeModal();
+      return;
     }
-  }, 'acceder a cuestionarios adicionales');
+    await navigateWithDailyConsent({
+      trabajadorId: trabajadores.currentTrabajadorId,
+      trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+      trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+      to: {
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'controlPrenatal'
+        }
+      },
+    });
+    closeModal();
+  } else if (questionnaireType === 'constancia-aptitud') {
+    await navigateWithDailyConsent({
+      trabajadorId: trabajadores.currentTrabajadorId,
+      trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+      trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+      to: {
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'constanciaAptitud'
+        }
+      },
+    });
+    closeModal();
+  } else if (questionnaireType === 'receta') {
+    await navigateWithDailyConsent({
+      trabajadorId: trabajadores.currentTrabajadorId,
+      trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+      trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+      to: {
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'receta'
+        }
+      },
+    });
+    closeModal();
+  } else if (questionnaireType === 'certificado-expedito') {
+    await navigateWithDailyConsent({
+      trabajadorId: trabajadores.currentTrabajadorId,
+      trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+      trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+      to: {
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'certificadoExpedito'
+        }
+      },
+    });
+    closeModal();
+  } else if (questionnaireType === 'historia-otologica') {
+    await navigateWithDailyConsent({
+      trabajadorId: trabajadores.currentTrabajadorId,
+      trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+      trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+      to: {
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'historiaOtologica'
+        }
+      },
+    });
+    closeModal();
+  } else if (questionnaireType === 'previo-espirometria') {
+    await navigateWithDailyConsent({
+      trabajadorId: trabajadores.currentTrabajadorId,
+      trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+      trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+      to: {
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'previoEspirometria'
+        }
+      },
+    });
+    closeModal();
+  } else if (questionnaireType === 'nota-aclaratoria') {
+    await navigateWithDailyConsent({
+      trabajadorId: trabajadores.currentTrabajadorId,
+      trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+      trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+      to: {
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'notaAclaratoria'
+        }
+      },
+    });
+    closeModal();
+  } else if (questionnaireType === 'lesion') {
+    await navigateWithDailyConsent({
+      trabajadorId: trabajadores.currentTrabajadorId,
+      trabajadorNombre: formatNombreCompleto(trabajadores.currentTrabajador),
+      trabajadorSexo: trabajadores.currentTrabajador?.sexo,
+      to: {
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'lesion'
+        }
+      },
+    });
+    closeModal();
+  }
 };
 </script>
 

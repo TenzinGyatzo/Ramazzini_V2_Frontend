@@ -111,19 +111,19 @@
         </div>
       </div>
 
-      <!-- Permiso: Cuestionarios Adicionales -->
+      <!-- Permiso: Otros Documentos -->
       <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
         <div class="flex items-center gap-3">
           <i class="fas fa-clipboard-list text-gray-600"></i>
-          <span class="text-sm font-medium text-gray-700">Cuestionarios Adicionales</span>
+          <span class="text-sm font-medium text-gray-700">Otros Documentos</span>
         </div>
         <div :class="[
           'w-6 h-6 rounded-full flex items-center justify-center',
-          canManageCuestionariosAdicionales ? 'bg-green-100' : 'bg-red-100'
+          canManageOtrosDocumentos ? 'bg-green-100' : 'bg-red-100'
         ]">
           <i :class="[
             'text-xs',
-            canManageCuestionariosAdicionales ? 'fas fa-check text-green-600' : 'fas fa-times text-red-600'
+            canManageOtrosDocumentos ? 'fas fa-check text-green-600' : 'fas fa-times text-red-600'
           ]"></i>
         </div>
       </div>
@@ -157,6 +157,6 @@ const {
   canManageDocumentosDiagnostico,
   canManageDocumentosEvaluacion,
   canManageDocumentosExternos,
-  canManageCuestionariosAdicionales
+  canManageOtrosDocumentos
 } = usePermissionRestrictions();
 </script>

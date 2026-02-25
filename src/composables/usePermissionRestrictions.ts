@@ -60,10 +60,11 @@ export function usePermissionRestrictions() {
     return userStore.user?.permisos?.gestionarDocumentosExternos || false;
   });
 
-  const canManageCuestionariosAdicionales = computed(() => {
+  const canManageOtrosDocumentos = computed(() => {
     if (!userRole.value) return false;
     if (userRole.value === 'Principal' || userRole.value === 'Administrador') return true;
-    return userStore.user?.permisos?.gestionarCuestionariosAdicionales || false;
+    const permisos = userStore.user?.permisos as Record<string, boolean> | undefined;
+    return permisos?.gestionarOtrosDocumentos ?? permisos?.gestionarCuestionariosAdicionales ?? false;
   });
 
   // Función para verificar si un usuario puede acceder a una empresa específica
@@ -80,23 +81,30 @@ export function usePermissionRestrictions() {
     return userStore.hasAccessToCentro(centroId);
   };
 
-  // Tipos de documentos de diagnóstico y certificación
-  const documentosDiagnostico = ['aptitud', 'certificado'];
-  
-  // Tipos de cuestionarios adicionales
-  const cuestionariosAdicionales = ['controlPrenatal', 'historiaOtologica', 'previoEspirometria', 'certificadoExpedito'];
+  // Tipos de documentos por categoría de permiso
+  const documentosDiagnostico = ['aptitud', 'constanciaAptitud', 'certificado', 'certificadoExpedito', 'receta', 'notaMedica', 'lesion'];
+  const documentosEvaluacion = ['historiaClinica', 'exploracionFisica', 'examenVista', 'audiometria', 'antidoping', 'deteccion'];
+  const documentosExternos = ['documentoExterno'];
+  const otrosDocumentos = ['controlPrenatal', 'historiaOtologica', 'previoEspirometria', 'notaAclaratoria'];
 
   // Función para verificar si un usuario puede crear un tipo específico de documento
   const canCreateDocument = (documentType: string): boolean => {
     if (!userRole.value) return false;
-    
-    // Verificar si es un documento de diagnóstico
+
     if (documentosDiagnostico.includes(documentType)) {
       return canManageDocumentosDiagnostico.value;
     }
-    
-    // Para otros documentos, verificar permiso de evaluación
-    return canManageDocumentosEvaluacion.value;
+    if (documentosEvaluacion.includes(documentType)) {
+      return canManageDocumentosEvaluacion.value;
+    }
+    if (documentosExternos.includes(documentType)) {
+      return canManageDocumentosExternos.value;
+    }
+    if (otrosDocumentos.includes(documentType)) {
+      return canManageOtrosDocumentos.value;
+    }
+
+    return false;
   };
 
   // Función para verificar si un documento específico está restringido para el usuario actual
@@ -106,26 +114,43 @@ export function usePermissionRestrictions() {
 
   // Función para obtener el mensaje de restricción apropiado
   const getRestrictionMessage = (documentType: string): string => {
-    const documentNames = {
+    const documentNames: Record<string, string> = {
       'aptitud': 'Aptitud para el Puesto',
+      'constanciaAptitud': 'Constancia de Aptitud',
       'certificado': 'Certificado Médico',
       'certificadoExpedito': 'Certificado Expedito',
+      'receta': 'Receta',
+      'notaMedica': 'Nota Médica',
+      'lesion': 'Reporte de Lesión',
       'historiaClinica': 'Historia Clínica',
       'exploracionFisica': 'Exploración Física',
       'examenVista': 'Examen de la Vista',
       'antidoping': 'Antidoping',
       'audiometria': 'Audiometría',
+      'deteccion': 'Detección',
       'documentoExterno': 'Documento Externo',
-      'notaMedica': 'Nota Médica',
+      'controlPrenatal': 'Control Prenatal',
+      'historiaOtologica': 'Historia Otológica',
+      'previoEspirometria': 'Previo a Espirometría',
+      'notaAclaratoria': 'Nota Aclaratoria',
     };
-    
+
     const documentName = documentNames[documentType] || documentType;
-    
+
     if (documentosDiagnostico.includes(documentType)) {
       return `No tienes permisos para gestionar documentos de diagnóstico y certificación.`;
-    } else {
+    }
+    if (documentosEvaluacion.includes(documentType)) {
       return `No tienes permisos para gestionar documentos de evaluación como ${documentName}.`;
     }
+    if (documentosExternos.includes(documentType)) {
+      return `No tienes permisos para gestionar documentos externos.`;
+    }
+    if (otrosDocumentos.includes(documentType)) {
+      return `No tienes permisos para gestionar otros documentos como ${documentName}.`;
+    }
+
+    return `No tienes permisos para gestionar este tipo de documento.`;
   };
 
 
@@ -188,7 +213,7 @@ export function usePermissionRestrictions() {
     if (!canCreateDocument(documentType)) {
       toast?.open({
         message: getRestrictionMessage(documentType),
-        type: 'warning',
+        type: 'error',
         position: 'top-right'
       });
       return false;
@@ -201,7 +226,7 @@ export function usePermissionRestrictions() {
     if (!canManageDocumentosExternos.value) {
       toast?.open({
         message: `No tienes permisos para gestionar documentos externos.`,
-        type: 'warning',
+        type: 'error',
         position: 'top-right'
       });
       return false;
@@ -209,11 +234,11 @@ export function usePermissionRestrictions() {
     return true;
   };
 
-  // Validar gestión de cuestionarios adicionales con toast
-  const validateCuestionariosAdicionales = (action: string = 'acceder a cuestionarios adicionales'): boolean => {
-    if (!canManageCuestionariosAdicionales.value) {
+  // Validar gestión de otros documentos con toast
+  const validateOtrosDocumentos = (action: string = 'gestionar otros documentos'): boolean => {
+    if (!canManageOtrosDocumentos.value) {
       toast?.open({
-        message: `No tienes permisos para gestionar cuestionarios adicionales.`,
+        message: `No tienes permisos para gestionar otros documentos.`,
         type: 'warning',
         position: 'top-right'
       });
@@ -266,9 +291,9 @@ export function usePermissionRestrictions() {
     }
   };
 
-  // Ejecutar acción solo si puede gestionar cuestionarios adicionales
-  const executeIfCanManageCuestionariosAdicionales = (callback: () => void, action: string = 'acceder a cuestionarios adicionales') => {
-    if (validateCuestionariosAdicionales(action)) {
+  // Ejecutar acción solo si puede gestionar otros documentos
+  const executeIfCanManageOtrosDocumentos = (callback: () => void, action: string = 'gestionar otros documentos') => {
+    if (validateOtrosDocumentos(action)) {
       callback();
     }
   };
@@ -308,8 +333,8 @@ export function usePermissionRestrictions() {
     canManageDocumentosDiagnostico,
     canManageDocumentosEvaluacion,
     canManageDocumentosExternos,
-    canManageCuestionariosAdicionales,
-    
+    canManageOtrosDocumentos,
+
     // Funciones de verificación
     canCreateDocument,
     isDocumentRestricted,
@@ -324,8 +349,8 @@ export function usePermissionRestrictions() {
     validateRiesgosTrabajo,
     validateDocumentCreation,
     validateDocumentosExternos,
-    validateCuestionariosAdicionales,
-    
+    validateOtrosDocumentos,
+
     // Funciones de acción condicional
     executeIfCanManageEmpresas,
     executeIfCanManageCentrosTrabajo,
@@ -333,7 +358,7 @@ export function usePermissionRestrictions() {
     executeIfCanAccessRiesgosTrabajo,
     executeIfCanCreateDocument,
     executeIfCanManageDocumentosExternos,
-    executeIfCanManageCuestionariosAdicionales,
+    executeIfCanManageOtrosDocumentos,
     executeIfCanManageDocumentosDiagnostico,
     executeIfCanManageDocumentosEvaluacion
   };
