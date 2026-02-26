@@ -84,12 +84,19 @@ async function handleGenerate() {
   }
 }
 
-async function handleDownload(batchId: string, guide: string, yearMonth: string) {
+async function handleDownloadTxt(batchId: string, guide: string) {
   try {
-    const filename = `${guide}_${yearMonth}.txt`;
-    await giisExportAPI.downloadFile(batchId, guide, filename);
+    await giisExportAPI.downloadFile(batchId, guide);
   } catch {
-    errorMessage.value = `No se pudo descargar ${guide}.`;
+    errorMessage.value = `No se pudo descargar ${guide}.txt.`;
+  }
+}
+
+async function handleDownloadCifrado(batchId: string, guide: string) {
+  try {
+    await giisExportAPI.downloadDeliverable(batchId, guide);
+  } catch {
+    errorMessage.value = `No se pudo descargar ${guide} Cifrado.`;
   }
 }
 
@@ -206,15 +213,24 @@ watch(
                 <td class="px-4 py-3 text-sm">
                   <template v-if="b.status === 'completed'">
                     <div class="flex flex-wrap gap-2">
-                      <button
-                        v-for="art in b.artifacts"
-                        :key="art.guide"
-                        type="button"
-                        @click="handleDownload(b.batchId, art.guide, b.yearMonth)"
-                        class="text-blue-600 hover:underline text-sm"
-                      >
-                        Descargar {{ art.guide }}
-                      </button>
+                      <template v-for="art in (b.artifacts || []).filter((a) => ['CEX', 'LES'].includes(a.guide))" :key="art.guide">
+                        <button
+                          v-if="art.zipPath"
+                          type="button"
+                          @click="handleDownloadCifrado(b.batchId, art.guide)"
+                          class="text-blue-600 hover:underline text-sm"
+                        >
+                          {{ art.guide }} Cifrado
+                        </button>
+                        <button
+                          v-if="art.path"
+                          type="button"
+                          @click="handleDownloadTxt(b.batchId, art.guide)"
+                          class="text-blue-600 hover:underline text-sm"
+                        >
+                          {{ art.guide }}.txt
+                        </button>
+                      </template>
                     </div>
                     <p
                       v-if="b.excludedReport?.totalExcluded"

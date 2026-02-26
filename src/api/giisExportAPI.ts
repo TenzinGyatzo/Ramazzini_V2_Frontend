@@ -11,7 +11,7 @@ export interface BatchListItem {
   establecimientoClues: string;
   errorMessage?: string;
   excludedReport?: { totalExcluded: number };
-  artifacts: { guide: string }[];
+  artifacts: { guide: string; path?: string; zipPath?: string }[];
 }
 
 export interface BatchDetail {
@@ -19,7 +19,7 @@ export interface BatchDetail {
   status: string;
   yearMonth: string;
   establecimientoClues: string;
-  artifacts: { guide: string; path?: string }[];
+  artifacts: { guide: string; path?: string; zipPath?: string }[];
   errorMessage?: string;
   completedAt?: string;
   validationStatus?: string;
@@ -38,7 +38,7 @@ export default {
     return api.get(`${BASE}/batches/${batchId}`).then((r) => r.data);
   },
 
-  /** Triggers browser download for one guide (CEX, LES). Uses blob + link to avoid new tab. */
+  /** Triggers browser download for TXT artifact (CEX, LES). Uses blob + link to avoid new tab. */
   async downloadFile(batchId: string, guide: string, _filename?: string): Promise<void> {
     const res = await api.get(`${BASE}/batches/${batchId}/download/${guide}`, {
       responseType: "blob",
@@ -52,6 +52,29 @@ export default {
       (/filename\s*=\s*"([^"]+)"/i.exec(contentDisposition) ??
         /filename\*?=(?:UTF-8'')?([^;\s]+)/i.exec(contentDisposition));
     const filename = (match && match[1]?.trim()) || `${guide}_export.txt`;
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  },
+
+  /** Triggers browser download for ZIP deliverable (CEX, LES). Uses blob + link to avoid new tab. */
+  async downloadDeliverable(batchId: string, guide: string): Promise<void> {
+    const res = await api.get(`${BASE}/batches/${batchId}/download-deliverable/${guide}`, {
+      responseType: "blob",
+    });
+    const blob = res.data as Blob;
+    const contentDisposition =
+      res.headers["content-disposition"] ?? (res.headers as Record<string, string>)["Content-Disposition"];
+    const match =
+      contentDisposition &&
+      (/filename\s*=\s*"([^"]+)"/i.exec(contentDisposition) ??
+        /filename\*?=(?:UTF-8'')?([^;\s]+)/i.exec(contentDisposition));
+    const filename = (match && match[1]?.trim()) || `${guide}_export.zip`;
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
