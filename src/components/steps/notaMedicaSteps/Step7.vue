@@ -17,9 +17,10 @@ const extractCode = (value) => {
   return value.split(' - ')[0].trim();
 };
 
-// NOM-024 GIIS-B015: Campos para segundo diagnóstico (análogos al principal)
-// primeraVezDiagnostico2: 0=No, 1=Si (similar a relacionTemporal pero con opciones No/Si)
-const primeraVezDiagnostico2 = ref(null); // number | null
+// Pregunta inicial: ¿Registrar una comorbilidad? (0=No por defecto, 1=Sí)
+const registrarComorbilidad = ref(0);
+// NOM-024 GIIS-B015: Campos para segundo diagnóstico
+const primeraVezDiagnostico2 = ref(null); // number | null (0=No, 1=Si)
 const codigoCIEDiagnostico2 = ref(
   formDataNotaMedica.codigoCIEDiagnostico2 ||
   documentos.currentDocument?.codigoCIEDiagnostico2 ||
@@ -56,13 +57,20 @@ const fechaNotaMedica = computed(() => {
 });
 
 onMounted(() => {
+  const doc = documentos.currentDocument || formDataNotaMedica;
+  const tieneComorbilidad = !!(doc?.codigoCIEDiagnostico2 || (doc?.primeraVezDiagnostico2 !== undefined && doc?.primeraVezDiagnostico2 !== null));
+  if (tieneComorbilidad) {
+    registrarComorbilidad.value = 1;
+  }
   if (documentos.currentDocument) {
-    const doc = documentos.currentDocument;
-    primeraVezDiagnostico2.value = doc.primeraVezDiagnostico2 ?? null;
-    confirmacionDiagnostica2.value = doc.confirmacionDiagnostica2 ?? false;
+    const d = documentos.currentDocument;
+    const pv = d.primeraVezDiagnostico2;
+    primeraVezDiagnostico2.value = pv === 0 || pv === 1 ? pv : null;
+    confirmacionDiagnostica2.value = d.confirmacionDiagnostica2 ?? false;
   }
   if (formDataNotaMedica.primeraVezDiagnostico2 !== undefined && formDataNotaMedica.primeraVezDiagnostico2 !== null) {
-    primeraVezDiagnostico2.value = formDataNotaMedica.primeraVezDiagnostico2;
+    const pv = formDataNotaMedica.primeraVezDiagnostico2;
+    primeraVezDiagnostico2.value = pv === 0 || pv === 1 ? pv : null;
   }
   if (formDataNotaMedica.confirmacionDiagnostica2 !== undefined) {
     confirmacionDiagnostica2.value = formDataNotaMedica.confirmacionDiagnostica2;
@@ -76,14 +84,31 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  formDataNotaMedica.primeraVezDiagnostico2 = primeraVezDiagnostico2.value ?? undefined;
-  formDataNotaMedica.codigoCIEDiagnostico2 = codigoCIEDiagnostico2.value || '';
-  if (requiereConfirmacionDiagnostica2.value) {
-    formDataNotaMedica.confirmacionDiagnostica2 = confirmacionDiagnostica2.value;
-  } else {
+  if (registrarComorbilidad.value === 0) {
+    formDataNotaMedica.primeraVezDiagnostico2 = undefined;
+    formDataNotaMedica.codigoCIEDiagnostico2 = '';
     formDataNotaMedica.confirmacionDiagnostica2 = undefined;
+    formDataNotaMedica.diagnosticoTexto = '';
+  } else {
+    const pv = primeraVezDiagnostico2.value;
+    formDataNotaMedica.primeraVezDiagnostico2 = pv ?? undefined;
+    formDataNotaMedica.codigoCIEDiagnostico2 = codigoCIEDiagnostico2.value || '';
+    if (requiereConfirmacionDiagnostica2.value) {
+      formDataNotaMedica.confirmacionDiagnostica2 = confirmacionDiagnostica2.value;
+    } else {
+      formDataNotaMedica.confirmacionDiagnostica2 = undefined;
+    }
+    formDataNotaMedica.diagnosticoTexto = diagnosticoTexto.value || '';
   }
-  formDataNotaMedica.diagnosticoTexto = diagnosticoTexto.value || '';
+});
+
+watch(registrarComorbilidad, (val) => {
+  if (val === 0) {
+    primeraVezDiagnostico2.value = null;
+    codigoCIEDiagnostico2.value = '';
+    confirmacionDiagnostica2.value = false;
+    diagnosticoTexto.value = '';
+  }
 });
 
 watch(primeraVezDiagnostico2, (newValue) => {
@@ -171,25 +196,25 @@ watch(() => trabajadores.currentTrabajador?.fechaNacimiento, validateSexAge);
   <div class="space-y-6">
     <h2 class="text-2xl font-bold text-gray-900">DIAGNÓSTICO SECUNDARIO</h2>
 
-    <!-- 1. Primera vez diagnóstico 2 (0=No, 1=Si) - antes del código -->
+    <!-- 0. Pregunta inicial: ¿Registrar una comorbilidad? (No por defecto) -->
     <div>
       <h3 class="text-base font-medium text-gray-700 mb-2">
-        Primera vez diagnóstico 2
+        ¿Registrar una comorbilidad?
       </h3>
       <div class="grid grid-cols-2 gap-3 mb-1">
         <label
           :class="[
             'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
-            primeraVezDiagnostico2 === 0
+            registrarComorbilidad === 0
               ? 'border-emerald-600 bg-emerald-50 shadow-md'
               : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
           ]"
         >
-          <input type="radio" :value="0" v-model="primeraVezDiagnostico2" class="sr-only" />
-          <span :class="['text-sm transition-colors duration-200', primeraVezDiagnostico2 === 0 ? 'text-emerald-700 font-semibold' : 'text-gray-700']">
+          <input type="radio" :value="0" v-model="registrarComorbilidad" class="sr-only" />
+          <span :class="['text-sm transition-colors duration-200', registrarComorbilidad === 0 ? 'text-emerald-700 font-semibold' : 'text-gray-700']">
             No
           </span>
-          <div v-if="primeraVezDiagnostico2 === 0" class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center">
+          <div v-if="registrarComorbilidad === 0" class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
             </svg>
@@ -198,16 +223,16 @@ watch(() => trabajadores.currentTrabajador?.fechaNacimiento, validateSexAge);
         <label
           :class="[
             'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
-            primeraVezDiagnostico2 === 1
+            registrarComorbilidad === 1
               ? 'border-emerald-600 bg-emerald-50 shadow-md'
               : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
           ]"
         >
-          <input type="radio" :value="1" v-model="primeraVezDiagnostico2" class="sr-only" />
-          <span :class="['text-sm transition-colors duration-200', primeraVezDiagnostico2 === 1 ? 'text-emerald-700 font-semibold' : 'text-gray-700']">
+          <input type="radio" :value="1" v-model="registrarComorbilidad" class="sr-only" />
+          <span :class="['text-sm transition-colors duration-200', registrarComorbilidad === 1 ? 'text-emerald-700 font-semibold' : 'text-gray-700']">
             Sí
           </span>
-          <div v-if="primeraVezDiagnostico2 === 1" class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center">
+          <div v-if="registrarComorbilidad === 1" class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
             </svg>
@@ -216,12 +241,59 @@ watch(() => trabajadores.currentTrabajador?.fechaNacimiento, validateSexAge);
       </div>
     </div>
 
-    <!-- 2. Código CIE-10 Diagnóstico 2 -->
-    <div class="space-y-4">
+    <!-- Bloques visibles solo cuando registrarComorbilidad === Sí -->
+    <div v-if="registrarComorbilidad === 1" class="space-y-6">
+      <!-- 1. Primera vez diagnóstico 2 (0=No, 1=Si) -->
+      <div>
+        <h3 class="text-base font-medium text-gray-700 mb-2">
+          Primera vez diagnóstico 2 <span class="text-red-500">*</span>
+        </h3>
+        <div class="grid grid-cols-2 gap-3 mb-1">
+          <label
+            :class="[
+              'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+              primeraVezDiagnostico2 === 0
+                ? 'border-emerald-600 bg-emerald-50 shadow-md'
+                : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+            ]"
+          >
+            <input type="radio" :value="0" v-model="primeraVezDiagnostico2" class="sr-only" />
+            <span :class="['text-sm transition-colors duration-200', primeraVezDiagnostico2 === 0 ? 'text-emerald-700 font-semibold' : 'text-gray-700']">
+              No
+            </span>
+            <div v-if="primeraVezDiagnostico2 === 0" class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </label>
+          <label
+            :class="[
+              'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
+              primeraVezDiagnostico2 === 1
+                ? 'border-emerald-600 bg-emerald-50 shadow-md'
+                : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
+            ]"
+          >
+            <input type="radio" :value="1" v-model="primeraVezDiagnostico2" class="sr-only" />
+            <span :class="['text-sm transition-colors duration-200', primeraVezDiagnostico2 === 1 ? 'text-emerald-700 font-semibold' : 'text-gray-700']">
+              Sí
+            </span>
+            <div v-if="primeraVezDiagnostico2 === 1" class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- 2. Código CIE-10 Diagnóstico 2 (obligatorio cuando comorbilidad=Sí, independiente de primeraVez) -->
       <div>
         <CIE10Autocomplete
           v-model="codigoCIEDiagnostico2"
           label="Código CIE-10 Diagnóstico 2"
+          :required="true"
           :trabajadorId="trabajadores.currentTrabajadorId"
           :fechaConsulta="fechaNotaMedica"
           placeholder="Buscar segundo diagnóstico..."
@@ -252,10 +324,9 @@ watch(() => trabajadores.currentTrabajador?.fechaNacimiento, validateSexAge);
           </Transition>
         </div>
       </div>
-    </div>
 
-    <!-- 3. Confirmación diagnóstica 2 (condicional crónicos/cáncer) -->
-    <div v-if="requiereConfirmacionDiagnostica2" class="space-y-2 border border-amber-200 rounded-xl p-4 bg-amber-50/30">
+      <!-- 3. Confirmación diagnóstica 2 (condicional crónicos/cáncer) -->
+      <div v-if="requiereConfirmacionDiagnostica2" class="space-y-2 border border-amber-200 rounded-xl p-4 bg-amber-50/30">
       <div class="flex items-center gap-2">
         <input
           type="checkbox"
@@ -264,29 +335,30 @@ watch(() => trabajadores.currentTrabajador?.fechaNacimiento, validateSexAge);
           class="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
         />
         <label for="confirmacionDiagnostica2" class="text-sm font-medium text-gray-700">
-          Confirmación Diagnóstica 2
+          Confirmación Diagnóstica 2 <span class="text-red-500">*</span>
         </label>
       </div>
       <p class="text-xs text-amber-700">
         <i class="fas fa-exclamation-triangle"></i>
         Requerida para diagnósticos crónicos (Diabetes, HTA) o Cáncer en menores de 18 años
       </p>
-    </div>
+      </div>
 
-    <!-- 4. Descripción complementaria -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">
-        Descripción complementaria
-      </label>
-      <input
-        class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-        v-model="diagnosticoTexto"
-        placeholder="Descripción del diagnóstico..."
-        data-skip-validation
-      />
-      <p class="mt-1 text-xs text-gray-500">
-        Puede complementar el diagnóstico codificado con texto libre adicional
-      </p>
+      <!-- 4. Descripción complementaria -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Descripción complementaria
+        </label>
+        <input
+          class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+          v-model="diagnosticoTexto"
+          placeholder="Descripción del diagnóstico..."
+          data-skip-validation
+        />
+        <p class="mt-1 text-xs text-gray-500">
+          Puede complementar el diagnóstico codificado con texto libre adicional
+        </p>
+      </div>
     </div>
   </div>
 </template>

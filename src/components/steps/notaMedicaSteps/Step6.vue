@@ -356,7 +356,7 @@ watch(
             <h2 class="text-2xl font-bold text-gray-900 mb-4 uppercase">Diagnóstico Principal</h2>
             <div class="flex items-center gap-2 mb-2">
                 <h3 class="text-base font-medium text-gray-700">
-                    Relación Temporal <span v-if="cie10Required" class="text-rose-500">*</span>
+                    Relación Temporal <span v-if="cie10Required" class="text-red-500">*</span>
                 </h3>
                 <button
                     ref="relacionTemporalIconRef"
@@ -587,6 +587,7 @@ watch(
                 <CIE10Autocomplete
                     v-model="codigoCIECausaExterna"
                     label="Código CIE-10 Causa Externa (V01-Y98)"
+                    :required="true"
                     :trabajadorId="trabajadores.currentTrabajadorId"
                     :fechaConsulta="fechaNotaMedica"
                     placeholder="Buscar causa externa..."

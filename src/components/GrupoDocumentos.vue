@@ -67,7 +67,7 @@ const {
   canManageDocumentosDiagnostico,
   canManageDocumentosEvaluacion,
   canManageDocumentosExternos,
-  canManageCuestionariosAdicionales
+  canManageOtrosDocumentos
 } = usePermissionRestrictions();
 
 // Verificar si el usuario tiene todos los permisos necesarios para eliminar documentos
@@ -75,7 +75,7 @@ const canDeleteAnyDocument = computed(() => {
   return canManageDocumentosDiagnostico.value &&
          canManageDocumentosEvaluacion.value &&
          canManageDocumentosExternos.value &&
-         canManageCuestionariosAdicionales.value;
+         canManageOtrosDocumentos.value;
 });
 
 // Calcular el total de documentos para mostrar en el header

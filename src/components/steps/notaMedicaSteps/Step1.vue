@@ -70,7 +70,7 @@ watch(fechaNotaMedica, (newValue) => {
     
     <!-- Pregunta principal con mejor jerarquía -->
     <div class="mb-8">
-      <p class="text-lg font-medium mb-4 text-gray-800">¿Tipo de consulta?</p>
+      <p class="text-lg font-medium mb-4 text-gray-800">¿Tipo de consulta? <span class="text-red-500">*</span></p>
       
       <!-- Diseño de Radio Buttons más Visual tipo Card -->
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -180,7 +180,7 @@ watch(fechaNotaMedica, (newValue) => {
 
     <!-- Sección de fecha con mejor espaciado -->
     <div class="mt-8">
-      <h2 class="text-lg font-medium mb-3 text-gray-800">Fecha de Consulta</h2>
+      <h2 class="text-lg font-medium mb-3 text-gray-800">Fecha de Consulta <span class="text-red-500">*</span></h2>
       <FormKit 
         type="date" 
         name="fechaNotaMedica" 

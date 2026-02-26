@@ -288,7 +288,7 @@ const labelClass = 'block text-xs font-medium text-gray-700 mb-1';
 
     <!-- Fila 1: Sitio ocurrencia -->
     <div class="mb-2">
-      <label :class="labelClass">Sitio de ocurrencia *</label>
+      <label :class="labelClass">Sitio de ocurrencia <span class="text-red-500">*</span></label>
       <select
         v-model="sitioOcurrencia"
         :class="selectClass"

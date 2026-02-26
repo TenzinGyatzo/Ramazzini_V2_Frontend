@@ -37,7 +37,7 @@ watch(motivoConsulta, (newValue) => {
         <!-- Campo de textarea mejorado -->
         <div class="mb-4">
             <label class="block text-base font-medium leading-5 text-gray-800 mb-3">
-                Describa el motivo de la consulta médica:
+                Describa el motivo de la consulta médica: <span class="text-red-500">*</span>
             </label>
             <div class="relative">
                 <textarea

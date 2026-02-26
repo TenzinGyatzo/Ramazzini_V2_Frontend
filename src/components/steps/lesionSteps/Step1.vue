@@ -144,7 +144,7 @@ const fechaEventoError = computed(() => {
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
       <div>
-        <label :class="labelClass">Fecha de reporte *</label>
+        <label :class="labelClass">Fecha de reporte <span class="text-red-500">*</span></label>
         <input
           v-model="fechaReporteLesion"
           type="date"
@@ -154,7 +154,7 @@ const fechaEventoError = computed(() => {
       </div>
 
       <div>
-        <label :class="labelClass">Fecha del evento *</label>
+        <label :class="labelClass">Fecha del evento <span class="text-red-500">*</span></label>
         <input
           v-model="fechaEvento"
           type="date"

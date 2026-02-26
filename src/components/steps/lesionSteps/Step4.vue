@@ -163,7 +163,7 @@ const horaAtencionErrorFinal = computed(() => horaAtencionFormatoError.value || 
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
       <div>
-        <label :class="labelClass">Fecha de atención *</label>
+        <label :class="labelClass">Fecha de atención <span class="text-red-500">*</span></label>
         <input
           v-model="fechaAtencion"
           type="date"
@@ -229,7 +229,7 @@ const horaAtencionErrorFinal = computed(() => horaAtencionFormatoError.value || 
     </transition>
 
     <div class="mt-4">
-      <label :class="labelClass">Tipo de atención (seleccione hasta 5)*</label>
+      <label :class="labelClass">Tipo de atención (seleccione hasta 5) <span class="text-red-500">*</span></label>
       <div class="flex flex-wrap gap-2">
         <label
           v-for="opt in TIPO_ATENCION_OPTS"

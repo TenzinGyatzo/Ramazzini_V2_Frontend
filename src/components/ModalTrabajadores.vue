@@ -186,13 +186,9 @@ const nom024FieldValidation = computed(() => {
 });
 
 // Valores reactivos para campos NOM-024 (fuera de FormKit)
-// Nacionalidad por defecto: MEX (MEXICANA) para proveedores MX
+// Nacionalidad: sin valor por defecto, el usuario debe seleccionar en el autocomplete
 const getDefaultNacionalidad = () => {
-  if (trabajadores.currentTrabajador?.nacionalidad) {
-    return trabajadores.currentTrabajador.nacionalidad;
-  }
-  // Si es MX y es requerido, establecer MEX como default
-  return paisProveedor.value === 'MX' ? 'MEX' : '';
+  return trabajadores.currentTrabajador?.nacionalidad || '';
 };
 
 const entidadNacimientoValue = ref(trabajadores.currentTrabajador?.entidadNacimiento || '');
@@ -217,18 +213,19 @@ const insertGenericCURP = () => {
 // Watch para sincronizar valores cuando cambia el trabajador actual
 watch(() => trabajadores.currentTrabajador, (trabajador) => {
   entidadNacimientoValue.value = trabajador?.entidadNacimiento || '';
-  // Solo actualizar nacionalidad si el trabajador tiene un valor, de lo contrario mantener el default
-  if (trabajador?.nacionalidad) {
-    nacionalidadValue.value = trabajador.nacionalidad;
-  } else if (paisProveedor.value === 'MX') {
-    nacionalidadValue.value = 'MEX'; // Default MEXICANA para MX
-  } else {
-    nacionalidadValue.value = '';
-  }
+  nacionalidadValue.value = trabajador?.nacionalidad || '';
   entidadResidenciaValue.value = trabajador?.entidadResidencia || '';
   municipioResidenciaValue.value = trabajador?.municipioResidencia || '';
   localidadResidenciaValue.value = trabajador?.localidadResidencia || '';
 }, { immediate: true });
+
+// Al seleccionar un estado mexicano (no NE ni 00), auto-setear nacionalidad MEXICANA
+const ENTIDADES_SIN_AUTO_NACIONALIDAD = ['NE', '00']; // Extranjero, No disponible
+watch(entidadNacimientoValue, (entidad) => {
+  if (!entidad) return;
+  if (ENTIDADES_SIN_AUTO_NACIONALIDAD.includes(entidad)) return;
+  nacionalidadValue.value = 'MEX';
+});
 
 // Variables para contar trabajadores por centro
 const trabajadoresPorCentro = ref({});

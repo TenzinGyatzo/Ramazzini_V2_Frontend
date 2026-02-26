@@ -69,19 +69,8 @@ onMounted(async () => {
     } finally {
       loading.value = false;
     }
-  } else if (props.required) {
-    // Si es requerido y no hay valor, establecer MEXICANA (MEX) como default según NOM-024
-    try {
-      const { data } = await CatalogsAPI.getNacionalidadByCode('MEX');
-      if (data) {
-        selectedEntry.value = data;
-        query.value = `${data.description} (${data.code})`;
-        emit('update:modelValue', data.code);
-      }
-    } catch (err) {
-      console.warn('No se pudo establecer nacionalidad por defecto:', err);
-    }
   }
+  // Sin valor por defecto: el usuario debe hacer clic y buscar (ej. México, etc.)
 });
 
 // Sincronizar query cuando cambia modelValue externamente

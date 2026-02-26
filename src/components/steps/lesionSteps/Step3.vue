@@ -402,7 +402,7 @@ const sillaInfantilError = computed(() => {
 
     <!-- Intencionalidad (siempre visible) -->
     <div class="mb-2">
-      <label :class="labelClass">Intencionalidad *</label>
+      <label :class="labelClass">Intencionalidad <span class="text-red-500">*</span></label>
       <select v-model="intencionalidad" :class="selectClass" required>
         <option :value="null">Seleccione...</option>
         <option v-for="opt in INTENCIONALIDAD_OPTS" :key="opt.value" :value="opt.value">
@@ -413,7 +413,7 @@ const sillaInfantilError = computed(() => {
 
     <!-- Evento repetido (siempre visible) -->
     <div class="mb-2">
-      <label :class="labelClass">Evento repetido *</label>
+      <label :class="labelClass">Evento repetido <span class="text-red-500">*</span></label>
       <select v-model="eventoRepetido" :class="selectClass" required>
         <option :value="null">Seleccione...</option>
         <option v-for="opt in EVENTO_REPETIDO_OPTS" :key="opt.value" :value="opt.value">

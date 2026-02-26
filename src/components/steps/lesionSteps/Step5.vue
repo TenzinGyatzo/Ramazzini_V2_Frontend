@@ -184,7 +184,7 @@ const causaExternaError = computed(() => {
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
       <div>
-        <label :class="labelClass">Área anatómica de mayor gravedad *</label>
+        <label :class="labelClass">Área anatómica de mayor gravedad <span class="text-red-500">*</span></label>
         <select v-model="areaAnatomica" :class="selectClass" required>
           <option :value="null">Seleccione...</option>
           <option v-for="opt in areaAnatomicaOpts" :key="opt.value" :value="opt.value">
@@ -194,7 +194,7 @@ const causaExternaError = computed(() => {
       </div>
 
       <div>
-        <label :class="labelClass">Consecuencia resultante de mayor gravedad *</label>
+        <label :class="labelClass">Consecuencia resultante de mayor gravedad <span class="text-red-500">*</span></label>
         <select v-model="consecuenciaGravedad" :class="selectClass" required>
           <option :value="null">Seleccione...</option>
           <option v-for="opt in consecuenciaOpts" :key="opt.value" :value="opt.value">
@@ -250,7 +250,7 @@ const causaExternaError = computed(() => {
         catalog-variant="giis"
         :solo4Caracteres="true"
         filter-variant="afeccion"
-        label="Código CIE-10 afección principal (Cap V: F00-F99, CapXIX: S00-T98 y O04-O07, O20, O267, O429, O468-O469, O68, O710-O719) *"
+        label="Código CIE-10 afección principal (Cap V: F00-F99, CapXIX: S00-T98 y O04-O07, O20, O267, O429, O468-O469, O68, O710-O719)"
         placeholder="Buscar por código o descripción..."
         :required="true"
         :trabajadorId="trabajadores.currentTrabajadorId"

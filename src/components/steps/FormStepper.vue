@@ -299,7 +299,7 @@ import Step6Lesion from '../steps/lesionSteps/Step6.vue';
 import ModalFaltanCampos from '../ModalFaltanCampos.vue';
 import ModalCamposFaltantes from '../ModalCamposFaltantes.vue';
 import DailyConsentModal from '../DailyConsentModal.vue';
-import { validarCamposRequeridos, validarFormatoHoraHHMM, validarFormatoTiempoTrasladoUH, validarHoraAtencionPosteriorEvento, validarLesionPreSubmit, validarNotaMedicaCIEExact4Chars } from '@/helpers/validacionCampos';
+import { validarCamposRequeridos, validarFormatoHoraHHMM, validarFormatoTiempoTrasladoUH, validarHoraAtencionPosteriorEvento, validarLesionPreSubmit, validarNotaMedicaCIEExact4Chars, validarNotaMedicaPreSubmit } from '@/helpers/validacionCampos';
 import { validateCIE10Duplicates, generateBlockingToastMessage, validateCIE10SexAge, normalizeCIE10Code } from '@/helpers/cie10';
 import { useNom024Fields } from '@/composables/useNom024Fields';
 import { useDailyConsentGate } from '@/composables/useDailyConsentGate';
@@ -1056,6 +1056,20 @@ export default {
           if (cie4CharsNota.paso) stepsStore.goToStep(cie4CharsNota.paso);
           toast.open({
             message: cie4CharsNota.mensaje,
+            type: 'error'
+          });
+          return;
+        }
+
+        // VALIDACIÓN PRE-SUBMIT NOTA MÉDICA: fechas, edad, sistólica/diastólica (CEX NOM-024)
+        const validacionNotaMedica = validarNotaMedicaPreSubmit(
+          formData.formDataNotaMedica,
+          trabajadores.currentTrabajador
+        );
+        if (!validacionNotaMedica.valido) {
+          if (validacionNotaMedica.paso) stepsStore.goToStep(validacionNotaMedica.paso);
+          toast.open({
+            message: validacionNotaMedica.mensaje,
             type: 'error'
           });
           return;

@@ -662,6 +662,74 @@ export function validarLesionPreSubmit(
   return { valido: true };
 }
 
+/** Calcula edad en años entre fecha nacimiento y fecha referencia. */
+function calcularEdad(fechaNacimiento: Date, fechaReferencia: Date): number {
+  if (isNaN(fechaNacimiento.getTime()) || isNaN(fechaReferencia.getTime())) return 0;
+  let edad = fechaReferencia.getFullYear() - fechaNacimiento.getFullYear();
+  const monthDiff = fechaReferencia.getMonth() - fechaNacimiento.getMonth();
+  const dayDiff = fechaReferencia.getDate() - fechaNacimiento.getDate();
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) edad--;
+  return Math.max(0, edad);
+}
+
+/** Valida reglas pre-submit de nota médica (CEX NOM-024). Fechas, edad, sistólica/diastólica. */
+export function validarNotaMedicaPreSubmit(
+  datosFormulario: any,
+  trabajador?: { fechaNacimiento?: string | Date } | null
+): { valido: boolean; mensaje?: string; paso?: number } {
+  if (!datosFormulario) return { valido: true };
+
+  const df = datosFormulario;
+  const hoy = new Date();
+  hoy.setHours(23, 59, 59, 999);
+
+  const fechaNotaMedica = df.fechaNotaMedica ? new Date(df.fechaNotaMedica) : null;
+  const fn = trabajador?.fechaNacimiento ? new Date(trabajador.fechaNacimiento) : null;
+
+  // 1. fechaNotaMedica no puede ser anterior a fechaNacimiento
+  if (fn && fechaNotaMedica && fechaNotaMedica < fn) {
+    return {
+      valido: false,
+      mensaje: 'La fecha de consulta no puede ser anterior a la fecha de nacimiento del paciente',
+      paso: 1,
+    };
+  }
+
+  // 2. Edad <= 120 años (CEX)
+  if (fn && fechaNotaMedica) {
+    const edad = calcularEdad(fn, fechaNotaMedica);
+    if (edad > 120) {
+      return {
+        valido: false,
+        mensaje: 'La edad del paciente no debe ser mayor a 120 años',
+        paso: 1,
+      };
+    }
+  }
+
+  // 3. fechaNotaMedica no puede ser futura
+  if (fechaNotaMedica && fechaNotaMedica > hoy) {
+    return {
+      valido: false,
+      mensaje: 'La fecha de consulta no puede ser posterior al día de hoy',
+      paso: 1,
+    };
+  }
+
+  // 4. sistolica >= diastolica cuando ambas > 0
+  const sistolica = Number(df.tensionArterialSistolica);
+  const diastolica = Number(df.tensionArterialDiastolica);
+  if (sistolica > 0 && diastolica > 0 && sistolica < diastolica) {
+    return {
+      valido: false,
+      mensaje: 'La presión sistólica debe ser mayor o igual a la diastólica',
+      paso: 5,
+    };
+  }
+
+  return { valido: true };
+}
+
 /** Valida que todos los códigos CIE-10 de nota médica tengan exactamente 4 caracteres (sin punto). */
 export function validarNotaMedicaCIEExact4Chars(datosFormulario: any): { valido: boolean; mensaje?: string; paso?: number } {
   if (!datosFormulario) return { valido: true };

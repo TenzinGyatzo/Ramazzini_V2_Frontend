@@ -252,7 +252,7 @@ watch(() => props.modelValue, async (newVal) => {
 <template>
   <div class="relative w-full" ref="containerRef">
     <label v-if="label" class="block text-sm font-semibold text-gray-700 mb-1">
-      {{ label }} <span v-if="required" class="text-rose-500">*</span>
+      {{ label }} <span v-if="required" class="text-red-500">*</span>
     </label>
     
     <div class="relative group">
