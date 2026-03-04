@@ -49,7 +49,7 @@ export function normalizeCIE10Code(value: string | null | undefined): string | n
  * Tipo para los issues de validación
  */
 export interface CIE10ValidationIssue {
-  type: 'principal_in_complementaries' | 'complementaries_duplicate' | 'diagnostico2_equals_principal' | 'diagnostico2_equals_complementary';
+  type: 'principal_in_complementaries' | 'complementaries_duplicate' | 'diagnostico2_equals_principal' | 'diagnostico2_equals_complementary' | 'diagnostico3_equals_principal' | 'diagnostico3_equals_complementary' | 'diagnostico3_equals_diagnostico2';
   code: string;
   message: string;
 }
@@ -69,6 +69,7 @@ export interface CIE10ValidationPayload {
   codigoCIE10Principal?: string | null;
   codigosCIE10Complementarios?: (string | null)[] | null;
   codigoCIEDiagnostico2?: string | null;
+  codigoCIEDiagnostico3?: string | null;
 }
 
 /**
@@ -77,7 +78,10 @@ export interface CIE10ValidationPayload {
  * 2. Los complementarios no pueden repetirse entre sí
  * 3. El diagnóstico 2 no puede ser igual al principal
  * 4. El diagnóstico 2 no puede ser igual a ningún complementario
- * 
+ * 5. El diagnóstico 3 no puede ser igual al principal
+ * 6. El diagnóstico 3 no puede ser igual a ningún complementario
+ * 7. El diagnóstico 3 no puede ser igual al diagnóstico 2
+ *
  * @param payload - Objeto con los códigos CIE-10 a validar
  * @returns Resultado de la validación con issues encontrados
  */
@@ -87,6 +91,7 @@ export function validateCIE10Duplicates(payload: CIE10ValidationPayload): CIE10V
   // Normalizar códigos
   const codigoPrincipal = normalizeCIE10Code(payload.codigoCIE10Principal);
   const codigoDiagnostico2 = normalizeCIE10Code(payload.codigoCIEDiagnostico2);
+  const codigoDiagnostico3 = normalizeCIE10Code(payload.codigoCIEDiagnostico3);
   
   // Normalizar array de complementarios, filtrando valores vacíos
   const codigosComplementarios = (payload.codigosCIE10Complementarios || [])
@@ -157,6 +162,43 @@ export function validateCIE10Duplicates(payload: CIE10ValidationPayload): CIE10V
     }
   }
   
+  // Regla 5: Verificar si diagnóstico 3 es igual al principal
+  if (codigoDiagnostico3 && codigoPrincipal) {
+    if (codigoDiagnostico3 === codigoPrincipal) {
+      issues.push({
+        type: 'diagnostico3_equals_principal',
+        code: codigoDiagnostico3,
+        message: 'El diagnóstico 3 debe ser diferente al diagnóstico principal.'
+      });
+    }
+  }
+  
+  // Regla 6: Verificar si diagnóstico 3 es igual a algún complementario
+  if (codigoDiagnostico3) {
+    const diagnostico3EnComplementarios = codigosComplementarios.some(
+      comp => comp === codigoDiagnostico3
+    );
+    
+    if (diagnostico3EnComplementarios) {
+      issues.push({
+        type: 'diagnostico3_equals_complementary',
+        code: codigoDiagnostico3,
+        message: 'El diagnóstico 3 debe ser diferente a los diagnósticos complementarios.'
+      });
+    }
+  }
+  
+  // Regla 7: Verificar si diagnóstico 3 es igual al diagnóstico 2
+  if (codigoDiagnostico3 && codigoDiagnostico2) {
+    if (codigoDiagnostico3 === codigoDiagnostico2) {
+      issues.push({
+        type: 'diagnostico3_equals_diagnostico2',
+        code: codigoDiagnostico3,
+        message: 'El diagnóstico 3 debe ser diferente al diagnóstico 2.'
+      });
+    }
+  }
+  
   return {
     ok: issues.length === 0,
     issues: issues
@@ -180,6 +222,12 @@ export function generateBlockingToastMessage(issue: CIE10ValidationIssue): strin
       return `No puedes continuar: el código ${code} del diagnóstico 2 es igual al diagnóstico principal.`;
     case 'diagnostico2_equals_complementary':
       return `No puedes continuar: el código ${code} del diagnóstico 2 es igual a un diagnóstico complementario.`;
+    case 'diagnostico3_equals_principal':
+      return `No puedes continuar: el código ${code} del diagnóstico 3 es igual al diagnóstico principal.`;
+    case 'diagnostico3_equals_complementary':
+      return `No puedes continuar: el código ${code} del diagnóstico 3 es igual a un diagnóstico complementario.`;
+    case 'diagnostico3_equals_diagnostico2':
+      return `No puedes continuar: el código ${code} del diagnóstico 3 es igual al diagnóstico 2.`;
     default:
       return `No puedes continuar: hay un problema con el código CIE-10 ${code}.`;
   }
@@ -194,7 +242,7 @@ export function generateBlockingToastMessage(issue: CIE10ValidationIssue): strin
  */
 export interface CIE10SexAgeIssue {
   type: 'CIE10_SEX' | 'CIE10_AGE';
-  field: 'codigoCIE10Principal' | 'codigosCIE10Complementarios' | 'codigoCIEDiagnostico2';
+  field: 'codigoCIE10Principal' | 'codigosCIE10Complementarios' | 'codigoCIEDiagnostico2' | 'codigoCIEDiagnostico3';
   code: string;
   catalogKeyUsed: string;
   messageInline: string;
@@ -409,6 +457,7 @@ export interface CIE10SexAgeValidationParams {
   codigoCIE10Principal?: string | null;
   codigosCIE10Complementarios?: (string | null)[] | null;
   codigoCIEDiagnostico2?: string | null;
+  codigoCIEDiagnostico3?: string | null;
   trabajadorSexo: string;
   trabajadorFechaNacimiento: Date;
   fechaNotaMedica: Date;
@@ -437,7 +486,7 @@ export async function validateCIE10SexAge(
   // Función helper para validar un código
   const validateCode = async (
     code: string | null | undefined,
-    field: 'codigoCIE10Principal' | 'codigosCIE10Complementarios' | 'codigoCIEDiagnostico2'
+    field: 'codigoCIE10Principal' | 'codigosCIE10Complementarios' | 'codigoCIEDiagnostico2' | 'codigoCIEDiagnostico3'
   ): Promise<void> => {
     if (!code) return;
 
@@ -519,6 +568,9 @@ export async function validateCIE10SexAge(
 
   // Validar diagnóstico 2
   await validateCode(params.codigoCIEDiagnostico2, 'codigoCIEDiagnostico2');
+
+  // Validar diagnóstico 3
+  await validateCode(params.codigoCIEDiagnostico3, 'codigoCIEDiagnostico3');
 
   return issues;
 }

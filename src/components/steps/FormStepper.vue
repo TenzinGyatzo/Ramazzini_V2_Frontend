@@ -137,6 +137,7 @@ import Step7NotaMedica from '../steps/notaMedicaSteps/Step7.vue';
 import Step8NotaMedica from '../steps/notaMedicaSteps/Step8.vue';
 import Step9NotaMedica from '../steps/notaMedicaSteps/Step9.vue';
 import Step10NotaMedica from '../steps/notaMedicaSteps/Step10.vue';
+import Step11NotaMedica from '../steps/notaMedicaSteps/Step11.vue';
 import Step1NotaAclaratoria from '../steps/notaAclaratoriaSteps/Step1.vue';
 import Step2NotaAclaratoria from '../steps/notaAclaratoriaSteps/Step2.vue';
 import Step3NotaAclaratoria from '../steps/notaAclaratoriaSteps/Step3.vue';
@@ -634,6 +635,7 @@ export default {
           { component: Step8NotaMedica, name: 'Paso 8' },
           { component: Step9NotaMedica, name: 'Paso 9' },
           { component: Step10NotaMedica, name: 'Paso 10' },
+          { component: Step11NotaMedica, name: 'Paso 11' },
         ]);
       } else if (documentos.currentTypeOfDocument === 'notaAclaratoria') {
         stepsStore.setSteps([

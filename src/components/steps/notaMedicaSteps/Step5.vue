@@ -13,7 +13,7 @@ const frecuenciaRespiratoria = ref(17);
 const temperatura = ref(36.5);
 const saturacionOxigeno = ref(97);
 
-// CEX NOM-024: "Se desconoce" por campo (valor 0 en export)
+// CEX NOM-024: "Se desconoce" por campo (null en payload, 999 en CEX)
 const seDesconoceSistolica = ref(false);
 const seDesconoceDiastolica = ref(false);
 const seDesconoceFrecuenciaCardiaca = ref(false);
@@ -21,39 +21,54 @@ const seDesconoceFrecuenciaRespiratoria = ref(false);
 const seDesconoceTemperatura = ref(false);
 const seDesconoceSaturacionOxigeno = ref(false);
 
+function isDesconocido(val) {
+  return val == null || val === 0;
+}
+
+function getValFromSource(field, defaults) {
+  const formVal = formDataNotaMedica[field];
+  const docVal = documentos.currentDocument?.[field];
+  if (formVal !== undefined) return formVal;
+  if (docVal !== undefined) return docVal;
+  if (documentos.currentDocument) return undefined; // documento sin campo = desconocido
+  return defaults;
+}
+
 onMounted(() => {
-  // Prioridad: formData > documentos.currentDocument > valores por defecto
-  if (formDataNotaMedica.tensionArterialSistolica !== undefined) {
-    tensionArterialSistolica.value = formDataNotaMedica.tensionArterialSistolica ?? 120;
-    tensionArterialDiastolica.value = formDataNotaMedica.tensionArterialDiastolica ?? 80;
-    frecuenciaCardiaca.value = formDataNotaMedica.frecuenciaCardiaca ?? 80;
-    frecuenciaRespiratoria.value = formDataNotaMedica.frecuenciaRespiratoria ?? 17;
-    saturacionOxigeno.value = formDataNotaMedica.saturacionOxigeno ?? 97;
-    temperatura.value = formDataNotaMedica.temperatura ?? 36.5;
-  } else if (documentos.currentDocument) {
-    tensionArterialSistolica.value = documentos.currentDocument.tensionArterialSistolica ?? 120;
-    tensionArterialDiastolica.value = documentos.currentDocument.tensionArterialDiastolica ?? 80;
-    frecuenciaCardiaca.value = documentos.currentDocument.frecuenciaCardiaca ?? 80;
-    frecuenciaRespiratoria.value = documentos.currentDocument.frecuenciaRespiratoria ?? 17;
-    saturacionOxigeno.value = documentos.currentDocument.saturacionOxigeno ?? 97;
-    temperatura.value = documentos.currentDocument.temperatura ?? 36.5;
+  const fields = [
+    { key: 'tensionArterialSistolica', ref: tensionArterialSistolica, seDesconoce: seDesconoceSistolica, default: 120 },
+    { key: 'tensionArterialDiastolica', ref: tensionArterialDiastolica, seDesconoce: seDesconoceDiastolica, default: 80 },
+    { key: 'frecuenciaCardiaca', ref: frecuenciaCardiaca, seDesconoce: seDesconoceFrecuenciaCardiaca, default: 80 },
+    { key: 'frecuenciaRespiratoria', ref: frecuenciaRespiratoria, seDesconoce: seDesconoceFrecuenciaRespiratoria, default: 17 },
+    { key: 'temperatura', ref: temperatura, seDesconoce: seDesconoceTemperatura, default: 36.5 },
+    { key: 'saturacionOxigeno', ref: saturacionOxigeno, seDesconoce: seDesconoceSaturacionOxigeno, default: 97 },
+  ];
+  for (const { key, ref, seDesconoce, default: def } of fields) {
+    const val = getValFromSource(key, def);
+    const desconocido = val === undefined ? !!documentos.currentDocument : isDesconocido(val);
+    seDesconoce.value = desconocido;
+    ref.value = desconocido ? 0 : (val ?? def);
   }
-  // Detectar "se desconoce" si valor es 0
-  seDesconoceSistolica.value = tensionArterialSistolica.value === 0;
-  seDesconoceDiastolica.value = tensionArterialDiastolica.value === 0;
-  seDesconoceFrecuenciaCardiaca.value = frecuenciaCardiaca.value === 0;
-  seDesconoceFrecuenciaRespiratoria.value = frecuenciaRespiratoria.value === 0;
-  seDesconoceTemperatura.value = temperatura.value === 0;
-  seDesconoceSaturacionOxigeno.value = saturacionOxigeno.value === 0;
+  // TA: si uno es desconocido, ambos deben serlo (CEX)
+  if (seDesconoceSistolica.value || seDesconoceDiastolica.value) {
+    seDesconoceSistolica.value = true;
+    seDesconoceDiastolica.value = true;
+    tensionArterialSistolica.value = 0;
+    tensionArterialDiastolica.value = 0;
+  }
 });
 
+function syncFormData() {
+  formDataNotaMedica.tensionArterialSistolica = seDesconoceSistolica.value ? null : tensionArterialSistolica.value;
+  formDataNotaMedica.tensionArterialDiastolica = seDesconoceDiastolica.value ? null : tensionArterialDiastolica.value;
+  formDataNotaMedica.frecuenciaCardiaca = seDesconoceFrecuenciaCardiaca.value ? null : frecuenciaCardiaca.value;
+  formDataNotaMedica.frecuenciaRespiratoria = seDesconoceFrecuenciaRespiratoria.value ? null : frecuenciaRespiratoria.value;
+  formDataNotaMedica.temperatura = seDesconoceTemperatura.value ? null : temperatura.value;
+  formDataNotaMedica.saturacionOxigeno = seDesconoceSaturacionOxigeno.value ? null : saturacionOxigeno.value;
+}
+
 onUnmounted(() => {
-  formDataNotaMedica.tensionArterialSistolica = tensionArterialSistolica.value;
-  formDataNotaMedica.tensionArterialDiastolica = tensionArterialDiastolica.value;
-  formDataNotaMedica.frecuenciaCardiaca = frecuenciaCardiaca.value;
-  formDataNotaMedica.frecuenciaRespiratoria = frecuenciaRespiratoria.value;
-  formDataNotaMedica.saturacionOxigeno = saturacionOxigeno.value;
-  formDataNotaMedica.temperatura = temperatura.value;
+  syncFormData();
 });
 
 // CEX: si diastolica=0, sistolica debe ser 0; si sistolica=0, diastolica debe ser 0
@@ -87,6 +102,11 @@ watch(seDesconoceFrecuenciaCardiaca, (v) => { if (v) frecuenciaCardiaca.value = 
 watch(seDesconoceFrecuenciaRespiratoria, (v) => { if (v) frecuenciaRespiratoria.value = 0; else frecuenciaRespiratoria.value = 17; });
 watch(seDesconoceTemperatura, (v) => { if (v) temperatura.value = 0; else temperatura.value = 36.5; });
 watch(seDesconoceSaturacionOxigeno, (v) => { if (v) saturacionOxigeno.value = 0; else saturacionOxigeno.value = 97; });
+
+// Sincronizar formData reactivamente para que submit tenga datos correctos
+watch([seDesconoceSistolica, seDesconoceDiastolica, tensionArterialSistolica, tensionArterialDiastolica], syncFormData, { deep: true });
+watch([seDesconoceFrecuenciaCardiaca, seDesconoceFrecuenciaRespiratoria, frecuenciaCardiaca, frecuenciaRespiratoria], syncFormData, { deep: true });
+watch([seDesconoceTemperatura, seDesconoceSaturacionOxigeno, temperatura, saturacionOxigeno], syncFormData, { deep: true });
 
 // Rangos CEX NOM-024. Si valor=0 (desconoce), no mostrar error
 const mensajeErrorTensionSistolica = computed(() => {

@@ -729,6 +729,7 @@ export function validarNotaMedicaCIEExact4Chars(datosFormulario: any): { valido:
   const campos: Array<{ valor: any; nombre: string; paso: number }> = [
     { valor: datosFormulario.codigoCIE10Principal, nombre: 'Diagnóstico principal', paso: 6 },
     { valor: datosFormulario.codigoCIEDiagnostico2, nombre: 'Diagnóstico 2', paso: 6 },
+    { valor: datosFormulario.codigoCIEDiagnostico3, nombre: 'Diagnóstico 3', paso: 8 },
     { valor: datosFormulario.codigoCIECausaExterna, nombre: 'Causa externa', paso: 6 },
   ];
 

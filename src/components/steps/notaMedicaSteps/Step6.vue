@@ -298,7 +298,8 @@ const cie10Validation = computed(() => {
   return validateCIE10Duplicates({
     codigoCIE10Principal: codigoCIE10Principal.value,
     codigosCIE10Complementarios: codigosCIE10Complementarios.value,
-    codigoCIEDiagnostico2: null // En Step6 no validamos diagnóstico 2
+    codigoCIEDiagnostico2: null, // En Step6 no validamos diagnóstico 2
+    codigoCIEDiagnostico3: null // En Step6 no validamos diagnóstico 3
   });
 });
 
@@ -336,6 +337,7 @@ const validateSexAge = async () => {
       codigoCIE10Principal: codigoCIE10Principal.value,
       codigosCIE10Complementarios: codigosCIE10Complementarios.value,
       codigoCIEDiagnostico2: null, // En Step6 no validamos diagnóstico 2
+      codigoCIEDiagnostico3: null, // En Step6 no validamos diagnóstico 3
       trabajadorSexo: trabajador.sexo,
       trabajadorFechaNacimiento: new Date(trabajador.fechaNacimiento),
       fechaNotaMedica: fechaNotaMedica.value
