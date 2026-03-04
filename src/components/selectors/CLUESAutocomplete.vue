@@ -199,7 +199,7 @@ const hideResults = () => {
       <i class="fas fa-info-circle mr-1"></i>
       Código de 11 caracteres (ej. DFSSA012345). Aplica únicamente para establecimientos de salud registrados en México (CLUES – NOM-024).
       <br>
-      <span class="italic">No requerido para servicios médicos internos empresariales.</span>
+      <span class="italic">De no contar con un CLUES válido, se debe utilizar el valor 9998 - SERVICIOS MEDICOS PRIVADOS.</span>
     </p>
   </div>
 </template>

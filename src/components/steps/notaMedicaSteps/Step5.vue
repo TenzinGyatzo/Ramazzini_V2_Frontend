@@ -153,14 +153,14 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
     <div class="flex gap-4 mb-4 flex-wrap">
       <div class="w-full sm:w-[calc(50%-0.5rem)]">
         <label for="tensionArterialSistolica">Sistólica (mmHg)</label>
-        <div class="flex items-center gap-2 mt-1">
+        <div class="mt-1">
           <input type="number"
             class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             v-model="tensionArterialSistolica"
             :min="0"
             :max="300"
             :disabled="seDesconoceSistolica">
-          <label class="flex items-center gap-1.5 text-sm whitespace-nowrap">
+          <label class="flex items-center gap-1.5 text-sm mt-1">
             <input type="checkbox" v-model="seDesconoceSistolica" class="rounded">
             Se desconoce
           </label>
@@ -171,14 +171,14 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
       </div>
       <div class="w-full sm:w-[calc(50%-0.5rem)]">
         <label for="tensionArterialDiastolica">Diastólica (mmHg)</label>
-        <div class="flex items-center gap-2 mt-1">
+        <div class="mt-1">
           <input type="number"
             class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             v-model="tensionArterialDiastolica"
             :min="0"
             :max="200"
             :disabled="seDesconoceDiastolica">
-          <label class="flex items-center gap-1.5 text-sm whitespace-nowrap">
+          <label class="flex items-center gap-1.5 text-sm mt-1">
             <input type="checkbox" v-model="seDesconoceDiastolica" class="rounded">
             Se desconoce
           </label>
@@ -192,14 +192,14 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
     <div class="flex gap-4 mb-4 flex-wrap">
       <div class="w-full sm:w-[calc(50%-0.5rem)]">
         <label for="frecuenciaCardiaca">F. Cardíaca (lpm)</label>
-        <div class="flex items-center gap-2 mt-1">
+        <div class="mt-1">
           <input type="number"
             class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             v-model="frecuenciaCardiaca"
             :min="0"
             :max="220"
             :disabled="seDesconoceFrecuenciaCardiaca">
-          <label class="flex items-center gap-1.5 text-sm whitespace-nowrap">
+          <label class="flex items-center gap-1.5 text-sm mt-1">
             <input type="checkbox" v-model="seDesconoceFrecuenciaCardiaca" class="rounded">
             Se desconoce
           </label>
@@ -210,14 +210,14 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
       </div>
       <div class="w-full sm:w-[calc(50%-0.5rem)]">
         <label for="frecuenciaRespiratoria">F. Respiratoria (rpm)</label>
-        <div class="flex items-center gap-2 mt-1">
+        <div class="mt-1">
           <input type="number"
             class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             v-model="frecuenciaRespiratoria"
             :min="0"
             :max="99"
             :disabled="seDesconoceFrecuenciaRespiratoria">
-          <label class="flex items-center gap-1.5 text-sm whitespace-nowrap">
+          <label class="flex items-center gap-1.5 text-sm mt-1">
             <input type="checkbox" v-model="seDesconoceFrecuenciaRespiratoria" class="rounded">
             Se desconoce
           </label>
@@ -231,7 +231,7 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
     <div class="flex gap-4 mb-4 flex-wrap">
       <div class="w-full sm:w-[calc(50%-0.5rem)]">
         <label for="temperatura">Temperatura (°C)</label>
-        <div class="flex items-center gap-2 mt-1">
+        <div class="mt-1">
           <input type="number"
             class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             v-model="temperatura"
@@ -239,7 +239,7 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
             :min="0"
             :max="44"
             :disabled="seDesconoceTemperatura">
-          <label class="flex items-center gap-1.5 text-sm whitespace-nowrap">
+          <label class="flex items-center gap-1.5 text-sm mt-1">
             <input type="checkbox" v-model="seDesconoceTemperatura" class="rounded">
             Se desconoce
           </label>
@@ -250,14 +250,14 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
       </div>
       <div class="w-full sm:w-[calc(50%-0.5rem)]">
         <label for="saturacionOxigeno">Sat. Oxígeno (%)</label>
-        <div class="flex items-center gap-2 mt-1">
+        <div class="mt-1">
           <input type="number"
             class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             v-model="saturacionOxigeno"
             :min="0"
             :max="100"
             :disabled="seDesconoceSaturacionOxigeno">
-          <label class="flex items-center gap-1.5 text-sm whitespace-nowrap">
+          <label class="flex items-center gap-1.5 text-sm mt-1">
             <input type="checkbox" v-model="seDesconoceSaturacionOxigeno" class="rounded">
             Se desconoce
           </label>

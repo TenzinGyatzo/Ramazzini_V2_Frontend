@@ -70,16 +70,45 @@ const requiereCausaExterna = computed(() => {
   return primeraLetra === 'S' || primeraLetra === 'T' || (primeraLetra >= 'V' && primeraLetra <= 'Y');
 });
 
-// Computed: Determinar si requiere confirmación diagnóstica (crónicos/cáncer <18)
+// Computed: Determinar si requiere confirmación diagnóstica (crónicos/cáncer)
 const requiereConfirmacionDiagnostica = computed(() => {
-  // Lógica simplificada: si el código es de diabetes (E11), HTA (I10-I16), o cáncer (C00-C97) en menores de 18
   if (!codigoCIE10Principal.value) return false;
   const codigo = extractCode(codigoCIE10Principal.value).toUpperCase();
-  const esCronico = codigo.startsWith('E11') || codigo.startsWith('I1');
+  const esCronico = codigo.startsWith('E11') || codigo.startsWith('I1') || codigo.startsWith('E78');
   const esCancer = codigo.startsWith('C');
-  
-  // Para cáncer, verificar edad (requeriría cálculo de edad, por ahora solo verificar código)
   return esCronico || esCancer;
+});
+
+// Computed: Edad del trabajador en años (fechaNacimiento vs fechaNotaMedica)
+const edadTrabajador = computed(() => {
+  const trabajador = trabajadores.currentTrabajador;
+  if (!trabajador?.fechaNacimiento) return null;
+  try {
+    const fn = new Date(trabajador.fechaNacimiento);
+    const fc = fechaNotaMedica.value;
+    if (isNaN(fn.getTime()) || isNaN(fc.getTime())) return null;
+    let edad = fc.getFullYear() - fn.getFullYear();
+    const m = fc.getMonth() - fn.getMonth();
+    if (m < 0 || (m === 0 && fc.getDate() < fn.getDate())) edad--;
+    return edad;
+  } catch {
+    return null;
+  }
+});
+
+// Fe de Erratas: mostrar confirmación diagnóstica 1 solo cuando aplica
+// - edad < 18 y código cáncer (DIA_CAINFANTIL), o
+// - edad >= 20, relacionTemporal=0 y código crónico (DIA_CRONICOS)
+const muestraConfirmacionDiagnostica1 = computed(() => {
+  if (!requiereConfirmacionDiagnostica.value) return false;
+  const codigo = extractCode(codigoCIE10Principal.value).toUpperCase();
+  const esCronico = codigo.startsWith('E11') || codigo.startsWith('I1') || codigo.startsWith('E78');
+  const esCancer = codigo.startsWith('C');
+  const edad = edadTrabajador.value;
+  if (edad === null) return false;
+  if (edad < 18) return esCancer;
+  if (edad >= 20) return relacionTemporal.value === 0 && esCronico;
+  return false; // 18-19 años: no aplica
 });
 
 onMounted(() => {
@@ -144,8 +173,8 @@ onUnmounted(() => {
     formDataNotaMedica.codigoCIE10Principal = codigoCIE10Principal.value || '';
     formDataNotaMedica.codigosCIE10Complementarios = codigosCIE10Complementarios.value || [];
     formDataNotaMedica.relacionTemporal = relacionTemporal.value ?? undefined;
-    // Guardar confirmacionDiagnostica solo si se requiere, explícitamente true o false
-    if (requiereConfirmacionDiagnostica.value) {
+    // Guardar confirmacionDiagnostica solo si aplica (Fe de Erratas)
+    if (muestraConfirmacionDiagnostica1.value) {
         formDataNotaMedica.confirmacionDiagnostica = confirmacionDiagnostica.value;
     } else {
         formDataNotaMedica.confirmacionDiagnostica = undefined;
@@ -176,28 +205,26 @@ watch(relacionTemporal, (newValue) => {
 });
 
 watch(confirmacionDiagnostica, (newValue) => {
-    // Guardar confirmacionDiagnostica solo si se requiere
-    if (requiereConfirmacionDiagnostica.value) {
+    if (muestraConfirmacionDiagnostica1.value) {
         formDataNotaMedica.confirmacionDiagnostica = newValue;
     } else {
         formDataNotaMedica.confirmacionDiagnostica = undefined;
     }
 });
 
-// Watch para limpiar confirmacionDiagnostica cuando ya no se requiere
-watch(requiereConfirmacionDiagnostica, (newValue) => {
+// Watch para limpiar confirmacionDiagnostica cuando ya no aplica
+watch(muestraConfirmacionDiagnostica1, (newValue) => {
     if (!newValue) {
-        // Si ya no se requiere, limpiar el valor
         confirmacionDiagnostica.value = false;
         formDataNotaMedica.confirmacionDiagnostica = undefined;
     } else {
-        // Si ahora se requiere y no hay valor, inicializar como false
         if (confirmacionDiagnostica.value === undefined || confirmacionDiagnostica.value === null) {
             confirmacionDiagnostica.value = false;
         }
         formDataNotaMedica.confirmacionDiagnostica = confirmacionDiagnostica.value;
     }
 });
+
 
 watch(codigoCIECausaExterna, (newValue) => {
     formDataNotaMedica.codigoCIECausaExterna = newValue;
@@ -508,8 +535,8 @@ watch(
             </div>
         </div>
 
-        <!-- Confirmación Diagnóstica (NOM-024 GIIS-B015) -->
-        <div v-if="requiereConfirmacionDiagnostica" class="space-y-2 border border-amber-200 rounded-xl p-4 bg-amber-50/30">
+        <!-- Confirmación Diagnóstica (NOM-024 GIIS-B015) - Fe de Erratas: solo cuando aplica -->
+        <div v-if="muestraConfirmacionDiagnostica1" class="space-y-2 border border-amber-200 rounded-xl p-4 bg-amber-50/30">
             <div class="flex items-center gap-2">
                 <input
                     type="checkbox"

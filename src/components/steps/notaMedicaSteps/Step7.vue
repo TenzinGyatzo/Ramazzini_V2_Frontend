@@ -34,15 +34,6 @@ const diagnosticoTexto = ref(
   ''
 );
 
-// Computed: ¿Requiere confirmación diagnóstica 2? (crónicos/cáncer, misma lógica que principal)
-const requiereConfirmacionDiagnostica2 = computed(() => {
-  if (!codigoCIEDiagnostico2.value) return false;
-  const codigo = extractCode(codigoCIEDiagnostico2.value).toUpperCase();
-  const esCronico = codigo.startsWith('E11') || codigo.startsWith('I1');
-  const esCancer = codigo.startsWith('C');
-  return esCronico || esCancer;
-});
-
 // Computed: fechaNotaMedica para calcular edad
 const fechaNotaMedica = computed(() => {
   const fecha = formDataNotaMedica.fechaNotaMedica || documentos.currentDocument?.fechaNotaMedica;
@@ -54,6 +45,47 @@ const fechaNotaMedica = computed(() => {
     }
   }
   return new Date();
+});
+
+// Computed: ¿Requiere confirmación diagnóstica 2? (crónicos/cáncer)
+const requiereConfirmacionDiagnostica2 = computed(() => {
+  if (!codigoCIEDiagnostico2.value) return false;
+  const codigo = extractCode(codigoCIEDiagnostico2.value).toUpperCase();
+  const esCronico = codigo.startsWith('E11') || codigo.startsWith('I1') || codigo.startsWith('E78');
+  const esCancer = codigo.startsWith('C');
+  return esCronico || esCancer;
+});
+
+// Computed: Edad del trabajador en años
+const edadTrabajador = computed(() => {
+  const trabajador = trabajadores.currentTrabajador;
+  if (!trabajador?.fechaNacimiento) return null;
+  try {
+    const fn = new Date(trabajador.fechaNacimiento);
+    const fc = fechaNotaMedica.value;
+    if (isNaN(fn.getTime()) || isNaN(fc.getTime())) return null;
+    let edad = fc.getFullYear() - fn.getFullYear();
+    const m = fc.getMonth() - fn.getMonth();
+    if (m < 0 || (m === 0 && fc.getDate() < fn.getDate())) edad--;
+    return edad;
+  } catch {
+    return null;
+  }
+});
+
+// Fe de Erratas: mostrar confirmación diagnóstica 2 solo cuando aplica
+// - edad < 18 y código cáncer (DIA_CAINFANTIL), o
+// - edad >= 20, primeraVezDiagnostico2=1 y código crónico (DIA_CRONICOS)
+const muestraConfirmacionDiagnostica2 = computed(() => {
+  if (!requiereConfirmacionDiagnostica2.value) return false;
+  const codigo = extractCode(codigoCIEDiagnostico2.value).toUpperCase();
+  const esCronico = codigo.startsWith('E11') || codigo.startsWith('I1') || codigo.startsWith('E78');
+  const esCancer = codigo.startsWith('C');
+  const edad = edadTrabajador.value;
+  if (edad === null) return false;
+  if (edad < 18) return esCancer;
+  if (edad >= 20) return primeraVezDiagnostico2.value === 1 && esCronico;
+  return false;
 });
 
 onMounted(() => {
@@ -93,7 +125,7 @@ onUnmounted(() => {
     const pv = primeraVezDiagnostico2.value;
     formDataNotaMedica.primeraVezDiagnostico2 = pv ?? undefined;
     formDataNotaMedica.codigoCIEDiagnostico2 = codigoCIEDiagnostico2.value || '';
-    if (requiereConfirmacionDiagnostica2.value) {
+    if (muestraConfirmacionDiagnostica2.value) {
       formDataNotaMedica.confirmacionDiagnostica2 = confirmacionDiagnostica2.value;
     } else {
       formDataNotaMedica.confirmacionDiagnostica2 = undefined;
@@ -111,28 +143,33 @@ watch(registrarComorbilidad, (val) => {
   }
 });
 
-watch(primeraVezDiagnostico2, (newValue) => {
-  formDataNotaMedica.primeraVezDiagnostico2 = newValue ?? undefined;
-});
 
 watch(codigoCIEDiagnostico2, (newValue) => {
   formDataNotaMedica.codigoCIEDiagnostico2 = newValue || '';
 });
 
 watch(confirmacionDiagnostica2, (newValue) => {
-  if (requiereConfirmacionDiagnostica2.value) {
+  if (muestraConfirmacionDiagnostica2.value) {
     formDataNotaMedica.confirmacionDiagnostica2 = newValue;
   } else {
     formDataNotaMedica.confirmacionDiagnostica2 = undefined;
   }
 });
 
-watch(requiereConfirmacionDiagnostica2, (newValue) => {
+watch(muestraConfirmacionDiagnostica2, (newValue) => {
   if (!newValue) {
     confirmacionDiagnostica2.value = false;
     formDataNotaMedica.confirmacionDiagnostica2 = undefined;
   } else if (confirmacionDiagnostica2.value !== undefined && confirmacionDiagnostica2.value !== null) {
     formDataNotaMedica.confirmacionDiagnostica2 = confirmacionDiagnostica2.value;
+  }
+});
+
+watch(primeraVezDiagnostico2, (newValue) => {
+  formDataNotaMedica.primeraVezDiagnostico2 = newValue ?? undefined;
+  if (newValue === 0 && !muestraConfirmacionDiagnostica2.value) {
+    confirmacionDiagnostica2.value = false;
+    formDataNotaMedica.confirmacionDiagnostica2 = undefined;
   }
 });
 
@@ -325,8 +362,8 @@ watch(() => trabajadores.currentTrabajador?.fechaNacimiento, validateSexAge);
         </div>
       </div>
 
-      <!-- 3. Confirmación diagnóstica 2 (condicional crónicos/cáncer) -->
-      <div v-if="requiereConfirmacionDiagnostica2" class="space-y-2 border border-amber-200 rounded-xl p-4 bg-amber-50/30">
+      <!-- 3. Confirmación diagnóstica 2 (Fe de Erratas: solo cuando aplica) -->
+      <div v-if="muestraConfirmacionDiagnostica2" class="space-y-2 border border-amber-200 rounded-xl p-4 bg-amber-50/30">
       <div class="flex items-center gap-2">
         <input
           type="checkbox"

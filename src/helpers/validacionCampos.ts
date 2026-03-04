@@ -348,14 +348,6 @@ const camposRequeridosPorTipo: Record<string, Array<{
     { campo: 'codigoCIE10Principal', nombre: 'Diagnóstico principal', tipo: 'seleccion', paso: 6, validacion: validarSeleccion },
     { campo: 'relacionTemporal', nombre: 'Relación temporal', tipo: 'seleccion', paso: 6, validacion: validarRelacionTemporal },
     { 
-      campo: 'confirmacionDiagnostica', 
-      nombre: 'Confirmación diagnóstica', 
-      tipo: 'booleano', 
-      paso: 6, 
-      validacion: (valor: any, datosFormulario: any) => validarConfirmacionDiagnostica(valor, datosFormulario),
-      condicional: true
-    },
-    { 
       campo: 'codigoCIECausaExterna', 
       nombre: 'Causa externa', 
       tipo: 'seleccion', 
