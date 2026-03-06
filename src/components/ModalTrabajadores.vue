@@ -723,6 +723,14 @@ const cancelarTransferencia = () => {
                   }"
                   maxlength="30" :value="trabajadores.currentTrabajador?.nss || ''" />
               </div>
+              <!-- Folio NOM-024: solo lectura, generado por el sistema para trabajadores nuevos -->
+              <div v-if="trabajadores.currentTrabajador?.folio" class="lg:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Folio (Identificador en la UM)</label>
+                <div class="px-3 py-2 bg-gray-50 border border-gray-200 rounded-md text-gray-700 font-mono text-sm">
+                  {{ trabajadores.currentTrabajador.folio }}
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Identificador único de 18 caracteres. Generado automáticamente al registrar.</p>
+              </div>
 
               <!-- NOM-024 Identification Fields (solo visible para SIRES_NOM024) -->
               <div v-if="isSIRES" class="lg:col-span-2 mt-4">
