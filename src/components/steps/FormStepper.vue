@@ -1,12 +1,13 @@
 <script>
 import axios from 'axios';
-import { ref, onMounted, onUnmounted, inject, computed } from 'vue';
+import { ref, onMounted, onUnmounted, inject, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
 import { useStepsStore } from '@/stores/steps';
+import { useUserStore } from '@/stores/user';
 import DocumentosAPI from '@/api/DocumentosAPI';
 
 import Step1Antidoping from '../steps/antidopingSteps/Step1.vue';
@@ -296,6 +297,7 @@ export default {
     const formData = useFormDataStore();
     const documentos = useDocumentosStore();
     const stepsStore = useStepsStore();
+    const userStore = useUserStore();
     const router = useRouter();
     const route = useRoute();
 
@@ -312,6 +314,44 @@ export default {
     const currentStepDisplay = computed(() => {
       return Math.min(stepsStore.currentStep, stepsStore.steps.length);
     });
+
+    // Info de auditoría del documento (creado por / actualizado por) - solo en modo edición
+    const documentAuditInfo = computed(() => {
+      const doc = documentos.currentDocument;
+      if (!doc) return null;
+
+      const createdBy = doc.createdBy;
+      const updatedBy = doc.updatedBy;
+
+      const createdByUsername = typeof createdBy === 'object' && createdBy?.username
+        ? createdBy.username
+        : null;
+      const updatedByUsername = typeof updatedBy === 'object' && updatedBy?.username
+        ? updatedBy.username
+        : null;
+
+      // Si no hay username (backend sin populate o usuario eliminado), no mostrar
+      if (!createdByUsername && !updatedByUsername) return null;
+
+      const createdById = typeof createdBy === 'object' ? createdBy?._id : createdBy;
+      const updatedById = typeof updatedBy === 'object' ? updatedBy?._id : updatedBy;
+      const isSameUser = createdById && updatedById && String(createdById) === String(updatedById);
+
+      return {
+        createdByUsername: createdByUsername || 'Usuario desconocido',
+        updatedByUsername: updatedByUsername || 'Usuario desconocido',
+        createdById,
+        updatedById,
+        isSameUser,
+      };
+    });
+
+    const formatUsername = (username, userId) => {
+      if (!username || username === 'Usuario desconocido') return username;
+      const currentUserId = userStore.user?._id;
+      if (!currentUserId || !userId) return username;
+      return String(userId) === String(currentUserId) ? username + ' (Yo)' : username;
+    };
 
     // Establece los pasos al montar el componente
     onMounted(() => {
@@ -678,6 +718,17 @@ export default {
       }
     });
 
+    // Reaccionar cuando currentDocument se cargue (evita race condition al cambiar de documento)
+    watch(
+      () => documentos.currentDocument,
+      (newDoc) => {
+        if (newDoc && stepsStore.steps.length > 0) {
+          stepsStore.currentStep = stepsStore.steps.length + 1;
+        }
+      },
+      { immediate: true }
+    );
+
     // Manejo de eventos de teclado
     const handleKeyDown = (event) => {
       const activeElement = document.activeElement;
@@ -925,6 +976,8 @@ export default {
       showCamposFaltantesModal,
       camposFaltantes,
       documentos,
+      documentAuditInfo,
+      formatUsername,
     };
   },
 };
@@ -999,7 +1052,16 @@ export default {
           <p class="text-center text-sm font-medium text-gray-500 mb-6">
             Todos los pasos se han completado correctamente. Puedes guardar el PDF o revisar nuevamente.
           </p>
-          <div class="flex justify-between">
+          <div v-if="documentos.currentDocument && documentAuditInfo"
+            class="-my-2 pt-3 pb-4 border-t border-gray-200 text-xs text-gray-400 space-y-1">
+            <p v-if="documentAuditInfo.createdByUsername">
+              Creado por: <span class="font-medium text-gray-500">{{ formatUsername(documentAuditInfo.createdByUsername, documentAuditInfo.createdById) }}</span>
+            </p>
+            <p v-if="documentAuditInfo.updatedByUsername && !documentAuditInfo.isSameUser">
+              Última actualización: <span class="font-medium text-gray-500">{{ formatUsername(documentAuditInfo.updatedByUsername, documentAuditInfo.updatedById) }}</span>
+            </p>
+          </div>
+          <div :class="['flex justify-between', documentAuditInfo && 'mt-4']">
             <button @click="stepsStore.previousStep"
               class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-gray-500 hover:bg-gray-600 transition-all duration-300 shadow-md">
               &lt; Anterior

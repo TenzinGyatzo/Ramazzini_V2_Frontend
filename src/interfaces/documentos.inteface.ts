@@ -1,3 +1,9 @@
+/** Usuario poblado desde el backend (findDocument con populate) */
+export interface UserRef {
+  _id: string;
+  username: string;
+}
+
 export interface Antidoping {
     _id: string;
     fechaAntidoping: string;
@@ -8,8 +14,8 @@ export interface Antidoping {
     opiaceos: string;
     idTrabajador: string;
     rutaPDF: string;
-    createdBy: string;
-    updatedBy: string;
+    createdBy: string | UserRef;
+    updatedBy: string | UserRef;
     metilendioximetanfetamina?: string;
     ketamina?: string;
 }
@@ -41,8 +47,8 @@ export interface Aptitud {
     medidasPreventivas?: string;
     idTrabajador: string;
     rutaPDF: string;
-    createdBy: string;
-    updatedBy: string;
+    createdBy: string | UserRef;
+    updatedBy: string | UserRef;
 }
 
 export interface Audiometria {
@@ -75,8 +81,8 @@ export interface Audiometria {
     recomendacionesAudiometria?: string[];
     idTrabajador: string;
     rutaPDF: string;
-    createdBy: string;
-    updatedBy: string;
+    createdBy: string | UserRef;
+    updatedBy: string | UserRef;
 }
 
 export interface Certificado {
@@ -84,8 +90,8 @@ export interface Certificado {
     fechaCertificado: string;
     idTrabajador: string;
     rutaPDF: string;
-    createdBy: string;
-    updatedBy: string;
+    createdBy: string | UserRef;
+    updatedBy: string | UserRef;
 }
 
 export interface CertificadoExpedito {
@@ -107,8 +113,8 @@ export interface CertificadoExpedito {
     observaciones: string;
     idTrabajador: string;
     rutaPDF: string;
-    createdBy: string;
-    updatedBy: string;
+    createdBy: string | UserRef;
+    updatedBy: string | UserRef;
 }
 
 export interface DocumentoExterno {
@@ -119,8 +125,8 @@ export interface DocumentoExterno {
     extension: string;
     idTrabajador: string;
     rutaDocumento: string;
-    createdBy: string;
-    updatedBy: string;
+    createdBy: string | UserRef;
+    updatedBy: string | UserRef;
     idResultadoClinico?: string;
     resultadoClinico?: {
         _id: string;
@@ -152,8 +158,8 @@ export interface ExamenVista {
     interpretacionIshihara: string;
     idTrabajador: string;
     rutaPDF: string;
-    createdBy: string;
-    updatedBy: string;
+    createdBy: string | UserRef;
+    updatedBy: string | UserRef;
 }
 
 export interface ExploracionFisica {
@@ -204,8 +210,8 @@ export interface ExploracionFisica {
     resumenExploracionFisica?: string;
     idTrabajador: string;
     rutaPDF: string;
-    createdBy: string;
-    updatedBy: string;
+    createdBy: string | UserRef;
+    updatedBy: string | UserRef;
 }
 
 export interface HistoriaClinica {
@@ -296,8 +302,8 @@ export interface HistoriaClinica {
     resumenHistoriaClinica?: string;
     idTrabajador: string;
     rutaPDF: string;
-    createdBy: string;
-    updatedBy: string;
+    createdBy: string | UserRef;
+    updatedBy: string | UserRef;
 }
 
 export interface NotaMedica {
@@ -318,8 +324,8 @@ export interface NotaMedica {
     observaciones?: string;
     idTrabajador: string;
     rutaPDF: string;
-    createdBy: string;
-    updatedBy: string;
+    createdBy: string | UserRef;
+    updatedBy: string | UserRef;
 }
 
 export interface ControlPrenatal {
@@ -428,8 +434,8 @@ export interface ControlPrenatal {
     observacionesFondoUterino?: string;
     idTrabajador: string;
     rutaPDF: string;
-    createdBy: string;
-    updatedBy: string;
+    createdBy: string | UserRef;
+    updatedBy: string | UserRef;
 }
 
 export interface HistoriaOtologica {

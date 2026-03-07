@@ -140,9 +140,15 @@ watchEffect(async () => {
     const documentoForm = documentoMap[tipoDocumento.value];
 
     if (documentoForm) {
-      documentoForm.createdBy = currentUserId;
       documentoForm.updatedBy = currentUserId;
       documentoForm.rutaPDF = rutaBase;
+      if (!documentoId.value) {
+        documentoForm.createdBy = currentUserId;
+      } else {
+        // Al editar, conservar createdBy original como ID string (el backend devuelve objeto poblado)
+        const existing = documentoForm.createdBy;
+        documentoForm.createdBy = typeof existing === 'object' && existing?._id ? existing._id : existing;
+      }
     } else {
       console.error(`Tipo de documento no reconocido: ${tipoDocumento.value}`);
     }
