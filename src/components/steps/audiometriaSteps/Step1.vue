@@ -15,7 +15,7 @@ const { formDataAudiometria } = useFormDataStore();
 const documentos = useDocumentosStore();
 
 // Valor local para el método de audiometría
-const metodoAudiometria = ref('AMA');
+const metodoAudiometria = ref('LFT');
 const today = format(new Date(), 'yyyy-MM-dd');
 
 // Inicializar la referencia local sincronizada con formData
@@ -24,11 +24,11 @@ const fechaAudiometria = ref(today);
 onMounted(() => {
   if (documentos.currentDocument) {
     // Si se está editando un documento, usa los valores existentes
-    metodoAudiometria.value = documentos.currentDocument.metodoAudiometria || 'AMA';
+    metodoAudiometria.value = documentos.currentDocument.metodoAudiometria || 'LFT';
     fechaAudiometria.value = formatDateYYYYMMDD(documentos.currentDocument.fechaAudiometria || today);
   } else {
     // Si es un documento nuevo, usa valores predeterminados o lo que ya exista en formData
-    metodoAudiometria.value = formDataAudiometria.metodoAudiometria || 'AMA';
+    metodoAudiometria.value = formDataAudiometria.metodoAudiometria || 'LFT';
     fechaAudiometria.value = formatDateYYYYMMDD(formDataAudiometria.fechaAudiometria || today);
 
     // Configurar valores iniciales en formData si no existen
