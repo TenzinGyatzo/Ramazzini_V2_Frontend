@@ -1,402 +1,281 @@
 <script setup>
-import { watch, ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
-import { useTrabajadoresStore } from '@/stores/trabajadores';
-import CIE10Autocomplete from '@/components/selectors/CIE10Autocomplete.vue';
-import { validateCIE10Duplicates, validateCIE10SexAge } from '@/helpers/cie10';
 
 const { formDataNotaMedica } = useFormDataStore();
 const documentos = useDocumentosStore();
-const trabajadores = useTrabajadoresStore();
 
-// Helper para extraer código CIE-10 del formato "CODE - DESCRIPTION"
-const extractCode = (value) => {
-  if (!value) return '';
-  if (!value.includes(' - ')) return value;
-  return value.split(' - ')[0].trim();
-};
+const peso = ref(70);
+const talla = ref(170);
+const circunferenciaCintura = ref(80);
+const indiceMasaCorporal = ref(null);
+const categoriaIMC = ref('');
+const categoriaCircunferenciaCintura = ref('');
 
-// Pregunta inicial: ¿Registrar una comorbilidad? (0=No por defecto, 1=Sí)
-const registrarComorbilidad = ref(0);
-// NOM-024 GIIS-B015: Campos para segundo diagnóstico
-const primeraVezDiagnostico2 = ref(null); // number | null (0=No, 1=Si)
-const codigoCIEDiagnostico2 = ref(
-  formDataNotaMedica.codigoCIEDiagnostico2 ||
-  documentos.currentDocument?.codigoCIEDiagnostico2 ||
-  ''
-);
-const confirmacionDiagnostica2 = ref(false);
-const diagnosticoTexto = ref(
-  formDataNotaMedica.diagnosticoTexto ||
-  documentos.currentDocument?.diagnosticoTexto ||
-  documentos.currentDocument?.diagnostico ||
-  ''
-);
+const seDesconocePeso = ref(false);
+const seDesconoceTalla = ref(false);
+const seDesconoceCircunferencia = ref(false);
 
-// Computed: fechaNotaMedica para calcular edad
-const fechaNotaMedica = computed(() => {
-  const fecha = formDataNotaMedica.fechaNotaMedica || documentos.currentDocument?.fechaNotaMedica;
-  if (fecha) {
-    try {
-      return new Date(fecha);
-    } catch {
-      return new Date();
-    }
+function getValFromSource(field, defaultVal) {
+  const formVal = formDataNotaMedica[field];
+  const docVal = documentos.currentDocument?.[field];
+  if (formVal !== undefined) return formVal;
+  if (docVal !== undefined) return docVal;
+  return defaultVal;
+}
+
+function calcularIMC() {
+  if (seDesconocePeso.value || seDesconoceTalla.value) {
+    indiceMasaCorporal.value = null;
+    categoriaIMC.value = '';
+    return;
   }
-  return new Date();
-});
-
-// Computed: ¿Requiere confirmación diagnóstica 2? (crónicos/cáncer)
-const requiereConfirmacionDiagnostica2 = computed(() => {
-  if (!codigoCIEDiagnostico2.value) return false;
-  const codigo = extractCode(codigoCIEDiagnostico2.value).toUpperCase();
-  const esCronico = codigo.startsWith('E11') || codigo.startsWith('I1') || codigo.startsWith('E78');
-  const esCancer = codigo.startsWith('C');
-  return esCronico || esCancer;
-});
-
-// Computed: Edad del trabajador en años
-const edadTrabajador = computed(() => {
-  const trabajador = trabajadores.currentTrabajador;
-  if (!trabajador?.fechaNacimiento) return null;
-  try {
-    const fn = new Date(trabajador.fechaNacimiento);
-    const fc = fechaNotaMedica.value;
-    if (isNaN(fn.getTime()) || isNaN(fc.getTime())) return null;
-    let edad = fc.getFullYear() - fn.getFullYear();
-    const m = fc.getMonth() - fn.getMonth();
-    if (m < 0 || (m === 0 && fc.getDate() < fn.getDate())) edad--;
-    return edad;
-  } catch {
-    return null;
+  const p = Number(peso.value);
+  const t = Number(talla.value);
+  if (p > 0 && t > 0) {
+    const tallaMt = t / 100;
+    const imc = p / (tallaMt ** 2);
+    indiceMasaCorporal.value = Math.round(imc * 100) / 100;
+    setCategoriaIMC(indiceMasaCorporal.value);
+  } else {
+    indiceMasaCorporal.value = null;
+    categoriaIMC.value = '';
   }
-});
+}
 
-// Fe de Erratas: mostrar confirmación diagnóstica 2 solo cuando aplica
-// - edad < 18 y código cáncer (DIA_CAINFANTIL), o
-// - edad >= 20, primeraVezDiagnostico2=1 y código crónico (DIA_CRONICOS)
-const muestraConfirmacionDiagnostica2 = computed(() => {
-  if (!requiereConfirmacionDiagnostica2.value) return false;
-  const codigo = extractCode(codigoCIEDiagnostico2.value).toUpperCase();
-  const esCronico = codigo.startsWith('E11') || codigo.startsWith('I1') || codigo.startsWith('E78');
-  const esCancer = codigo.startsWith('C');
-  const edad = edadTrabajador.value;
-  if (edad === null) return false;
-  if (edad < 18) return esCancer;
-  if (edad >= 20) return primeraVezDiagnostico2.value === 1 && esCronico;
-  return false;
-});
+function setCategoriaIMC(imc) {
+  if (imc == null) { categoriaIMC.value = ''; return; }
+  if (imc < 18.5) categoriaIMC.value = 'Bajo peso';
+  else if (imc <= 24.99) categoriaIMC.value = 'Normal';
+  else if (imc <= 29.99) categoriaIMC.value = 'Sobrepeso';
+  else if (imc <= 34.99) categoriaIMC.value = 'Obesidad clase I';
+  else if (imc <= 39.99) categoriaIMC.value = 'Obesidad clase II';
+  else categoriaIMC.value = 'Obesidad clase III';
+}
+
+function setCategoriaCircunferencia() {
+  if (seDesconoceCircunferencia.value) { categoriaCircunferenciaCintura.value = ''; return; }
+  const c = Number(circunferenciaCintura.value);
+  const genero = formDataNotaMedica.genero;
+  if (genero === 2) {
+    if (c <= 80) categoriaCircunferenciaCintura.value = 'Normal';
+    else if (c <= 88) categoriaCircunferenciaCintura.value = 'Riesgo elevado';
+    else categoriaCircunferenciaCintura.value = 'Riesgo muy elevado';
+  } else if (genero === 1) {
+    if (c <= 90) categoriaCircunferenciaCintura.value = 'Normal';
+    else if (c <= 100) categoriaCircunferenciaCintura.value = 'Riesgo elevado';
+    else categoriaCircunferenciaCintura.value = 'Riesgo muy elevado';
+  } else {
+    categoriaCircunferenciaCintura.value = '';
+  }
+}
+
+function syncFormData() {
+  formDataNotaMedica.peso = seDesconocePeso.value ? 999 : peso.value;
+  formDataNotaMedica.talla = seDesconoceTalla.value ? 999 : talla.value;
+  formDataNotaMedica.circunferenciaCintura = seDesconoceCircunferencia.value ? 0 : circunferenciaCintura.value;
+  formDataNotaMedica.indiceMasaCorporal = indiceMasaCorporal.value;
+  formDataNotaMedica.categoriaIMC = categoriaIMC.value;
+  formDataNotaMedica.categoriaCircunferenciaCintura = categoriaCircunferenciaCintura.value;
+}
 
 onMounted(() => {
-  const doc = documentos.currentDocument || formDataNotaMedica;
-  const tieneComorbilidad = !!(doc?.codigoCIEDiagnostico2 || (doc?.primeraVezDiagnostico2 !== undefined && doc?.primeraVezDiagnostico2 !== null));
-  if (tieneComorbilidad) {
-    registrarComorbilidad.value = 1;
+  const savedPeso = getValFromSource('peso', 70);
+  const savedTalla = getValFromSource('talla', 170);
+  const savedCintura = getValFromSource('circunferenciaCintura', 80);
+
+  seDesconocePeso.value = savedPeso === 999;
+  seDesconoceTalla.value = savedTalla === 999;
+  seDesconoceCircunferencia.value = savedCintura === 0;
+
+  peso.value = savedPeso === 999 ? 70 : savedPeso;
+  talla.value = savedTalla === 999 ? 170 : savedTalla;
+  circunferenciaCintura.value = savedCintura === 0 ? 80 : savedCintura;
+
+  const savedIMC = getValFromSource('indiceMasaCorporal', null);
+  const savedCatIMC = getValFromSource('categoriaIMC', '');
+  const savedCatCintura = getValFromSource('categoriaCircunferenciaCintura', '');
+
+  if (savedIMC != null) {
+    indiceMasaCorporal.value = savedIMC;
+    categoriaIMC.value = savedCatIMC;
+    categoriaCircunferenciaCintura.value = savedCatCintura;
+  } else {
+    calcularIMC();
+    setCategoriaCircunferencia();
   }
-  if (documentos.currentDocument) {
-    const d = documentos.currentDocument;
-    const pv = d.primeraVezDiagnostico2;
-    primeraVezDiagnostico2.value = pv === 0 || pv === 1 ? pv : null;
-    confirmacionDiagnostica2.value = d.confirmacionDiagnostica2 ?? false;
-  }
-  if (formDataNotaMedica.primeraVezDiagnostico2 !== undefined && formDataNotaMedica.primeraVezDiagnostico2 !== null) {
-    const pv = formDataNotaMedica.primeraVezDiagnostico2;
-    primeraVezDiagnostico2.value = pv === 0 || pv === 1 ? pv : null;
-  }
-  if (formDataNotaMedica.confirmacionDiagnostica2 !== undefined) {
-    confirmacionDiagnostica2.value = formDataNotaMedica.confirmacionDiagnostica2;
-  }
-  if (codigoCIEDiagnostico2.value && !formDataNotaMedica.codigoCIEDiagnostico2) {
-    formDataNotaMedica.codigoCIEDiagnostico2 = codigoCIEDiagnostico2.value;
-  }
-  if (diagnosticoTexto.value && !formDataNotaMedica.diagnosticoTexto) {
-    formDataNotaMedica.diagnosticoTexto = diagnosticoTexto.value;
-  }
+
+  syncFormData();
+});
+
+watch(seDesconocePeso, (v) => {
+  if (v) peso.value = 70;
+  calcularIMC();
+  syncFormData();
+});
+watch(seDesconoceTalla, (v) => {
+  if (v) talla.value = 170;
+  calcularIMC();
+  syncFormData();
+});
+watch(seDesconoceCircunferencia, (v) => {
+  if (v) circunferenciaCintura.value = 80;
+  setCategoriaCircunferencia();
+  syncFormData();
+});
+
+watch([peso, talla], () => {
+  calcularIMC();
+  syncFormData();
+});
+
+watch(circunferenciaCintura, () => {
+  setCategoriaCircunferencia();
+  syncFormData();
 });
 
 onUnmounted(() => {
-  if (registrarComorbilidad.value === 0) {
-    formDataNotaMedica.primeraVezDiagnostico2 = undefined;
-    formDataNotaMedica.codigoCIEDiagnostico2 = '';
-    formDataNotaMedica.confirmacionDiagnostica2 = undefined;
-    formDataNotaMedica.diagnosticoTexto = '';
-  } else {
-    const pv = primeraVezDiagnostico2.value;
-    formDataNotaMedica.primeraVezDiagnostico2 = pv ?? undefined;
-    formDataNotaMedica.codigoCIEDiagnostico2 = codigoCIEDiagnostico2.value || '';
-    if (muestraConfirmacionDiagnostica2.value) {
-      formDataNotaMedica.confirmacionDiagnostica2 = confirmacionDiagnostica2.value;
-    } else {
-      formDataNotaMedica.confirmacionDiagnostica2 = undefined;
-    }
-    formDataNotaMedica.diagnosticoTexto = diagnosticoTexto.value || '';
-  }
+  syncFormData();
 });
 
-watch(registrarComorbilidad, (val) => {
-  if (val === 0) {
-    primeraVezDiagnostico2.value = null;
-    codigoCIEDiagnostico2.value = '';
-    confirmacionDiagnostica2.value = false;
-    diagnosticoTexto.value = '';
-  }
+const mensajeErrorPeso = computed(() => {
+  if (seDesconocePeso.value) return '';
+  const v = Number(peso.value);
+  if (v < 1) return 'CEX: mínimo 1 kg';
+  if (v > 400) return 'CEX: máximo 400 kg';
+  return '';
 });
 
-
-watch(codigoCIEDiagnostico2, (newValue) => {
-  formDataNotaMedica.codigoCIEDiagnostico2 = newValue || '';
+const mensajeErrorTalla = computed(() => {
+  if (seDesconoceTalla.value) return '';
+  const v = Number(talla.value);
+  if (v < 30) return 'CEX: mínimo 30 cm';
+  if (v > 220) return 'CEX: máximo 220 cm';
+  return '';
 });
 
-watch(confirmacionDiagnostica2, (newValue) => {
-  if (muestraConfirmacionDiagnostica2.value) {
-    formDataNotaMedica.confirmacionDiagnostica2 = newValue;
-  } else {
-    formDataNotaMedica.confirmacionDiagnostica2 = undefined;
-  }
+const mensajeErrorCircunferencia = computed(() => {
+  if (seDesconoceCircunferencia.value) return '';
+  const v = Number(circunferenciaCintura.value);
+  if (v < 20) return 'CEX: mínimo 20 cm';
+  if (v > 300) return 'CEX: máximo 300 cm';
+  return '';
 });
-
-watch(muestraConfirmacionDiagnostica2, (newValue) => {
-  if (!newValue) {
-    confirmacionDiagnostica2.value = false;
-    formDataNotaMedica.confirmacionDiagnostica2 = undefined;
-  } else if (confirmacionDiagnostica2.value !== undefined && confirmacionDiagnostica2.value !== null) {
-    formDataNotaMedica.confirmacionDiagnostica2 = confirmacionDiagnostica2.value;
-  }
-});
-
-watch(primeraVezDiagnostico2, (newValue) => {
-  formDataNotaMedica.primeraVezDiagnostico2 = newValue ?? undefined;
-  if (newValue === 0 && !muestraConfirmacionDiagnostica2.value) {
-    confirmacionDiagnostica2.value = false;
-    formDataNotaMedica.confirmacionDiagnostica2 = undefined;
-  }
-});
-
-watch(diagnosticoTexto, (newValue) => {
-  formDataNotaMedica.diagnosticoTexto = newValue || '';
-});
-
-// Validación de duplicidades CIE-10 para diagnóstico 2
-const cie10Validation = computed(() => {
-  return validateCIE10Duplicates({
-    codigoCIE10Principal: formDataNotaMedica.codigoCIE10Principal,
-    codigosCIE10Complementarios: formDataNotaMedica.codigosCIE10Complementarios,
-    codigoCIEDiagnostico2: codigoCIEDiagnostico2.value,
-    codigoCIEDiagnostico3: null // En Step7 no validamos diagnóstico 3
-  });
-});
-
-const diagnostico2EqualsPrincipalError = computed(() => {
-  return cie10Validation.value.issues.find(
-    issue => issue.type === 'diagnostico2_equals_principal'
-  )?.message || null;
-});
-
-const diagnostico2EqualsComplementaryError = computed(() => {
-  return cie10Validation.value.issues.find(
-    issue => issue.type === 'diagnostico2_equals_complementary'
-  )?.message || null;
-});
-
-const diagnostico2SexAgeError = ref('');
-
-const validateSexAge = async () => {
-  diagnostico2SexAgeError.value = '';
-  const trabajador = trabajadores.currentTrabajador;
-  if (!trabajador || !trabajador.sexo || !trabajador.fechaNacimiento) return;
-  try {
-    const issues = await validateCIE10SexAge({
-      codigoCIE10Principal: formDataNotaMedica.codigoCIE10Principal,
-      codigosCIE10Complementarios: formDataNotaMedica.codigosCIE10Complementarios,
-      codigoCIEDiagnostico2: codigoCIEDiagnostico2.value,
-      codigoCIEDiagnostico3: null, // En Step7 no validamos diagnóstico 3
-      trabajadorSexo: trabajador.sexo,
-      trabajadorFechaNacimiento: new Date(trabajador.fechaNacimiento),
-      fechaNotaMedica: fechaNotaMedica.value
-    });
-    const diagnostico2Issue = issues.find(issue => issue.field === 'codigoCIEDiagnostico2');
-    if (diagnostico2Issue) {
-      diagnostico2SexAgeError.value = diagnostico2Issue.messageInline;
-    }
-  } catch (error) {
-    console.error('Error validando sexo/edad CIE-10:', error);
-  }
-};
-
-watch([codigoCIEDiagnostico2, fechaNotaMedica], validateSexAge);
-watch(() => formDataNotaMedica.codigoCIE10Principal, validateSexAge);
-watch(() => formDataNotaMedica.codigosCIE10Complementarios, validateSexAge, { deep: true });
-watch(() => trabajadores.currentTrabajador?.sexo, validateSexAge);
-watch(() => trabajadores.currentTrabajador?.fechaNacimiento, validateSexAge);
 </script>
 
 <template>
-  <div class="space-y-6">
-    <h2 class="text-2xl font-bold text-gray-900">DIAGNÓSTICO SECUNDARIO</h2>
+  <div>
+    <h2 class="text-2xl font-bold text-gray-900 mb-4 uppercase">Somatometría</h2>
+    <p class="text-sm text-gray-600 mb-4">Marque "Se desconoce" si no se registró el dato.</p>
 
-    <!-- 0. Pregunta inicial: ¿Registrar una comorbilidad? (No por defecto) -->
-    <div>
-      <h3 class="text-base font-medium text-gray-700 mb-2">
-        ¿Registrar una comorbilidad?
-      </h3>
-      <div class="grid grid-cols-2 gap-3 mb-1">
-        <label
-          :class="[
-            'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
-            registrarComorbilidad === 0
-              ? 'border-emerald-600 bg-emerald-50 shadow-md'
-              : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
-          ]"
-        >
-          <input type="radio" :value="0" v-model="registrarComorbilidad" class="sr-only" />
-          <span :class="['text-sm transition-colors duration-200', registrarComorbilidad === 0 ? 'text-emerald-700 font-semibold' : 'text-gray-700']">
-            No
-          </span>
-          <div v-if="registrarComorbilidad === 0" class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-            </svg>
-          </div>
-        </label>
-        <label
-          :class="[
-            'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
-            registrarComorbilidad === 1
-              ? 'border-emerald-600 bg-emerald-50 shadow-md'
-              : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
-          ]"
-        >
-          <input type="radio" :value="1" v-model="registrarComorbilidad" class="sr-only" />
-          <span :class="['text-sm transition-colors duration-200', registrarComorbilidad === 1 ? 'text-emerald-700 font-semibold' : 'text-gray-700']">
-            Sí
-          </span>
-          <div v-if="registrarComorbilidad === 1" class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-            </svg>
-          </div>
-        </label>
+    <div class="flex gap-4 mb-4 flex-wrap">
+      <!-- Peso -->
+      <div class="w-full sm:w-[calc(50%-0.5rem)]">
+        <label for="peso">Peso (kg)</label>
+        <div class="mt-1">
+          <input
+            type="number"
+            id="peso"
+            class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            v-model.number="peso"
+            :min="1"
+            :max="400"
+            step="0.001"
+            placeholder="1-400"
+            :disabled="seDesconocePeso"
+          />
+          <label class="flex items-center gap-1.5 text-sm mt-1">
+            <input type="checkbox" v-model="seDesconocePeso" class="rounded" />
+            Se desconoce
+          </label>
+        </div>
+        <p v-if="mensajeErrorPeso" class="text-red-500 text-sm mt-1">{{ mensajeErrorPeso }}</p>
+      </div>
+
+      <!-- Talla -->
+      <div class="w-full sm:w-[calc(50%-0.5rem)]">
+        <label for="talla">Talla (cm)</label>
+        <div class="mt-1">
+          <input
+            type="number"
+            id="talla"
+            class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            v-model.number="talla"
+            :min="30"
+            :max="220"
+            step="1"
+            placeholder="30-220"
+            :disabled="seDesconoceTalla"
+          />
+          <label class="flex items-center gap-1.5 text-sm mt-1">
+            <input type="checkbox" v-model="seDesconoceTalla" class="rounded" />
+            Se desconoce
+          </label>
+        </div>
+        <p v-if="mensajeErrorTalla" class="text-red-500 text-sm mt-1">{{ mensajeErrorTalla }}</p>
       </div>
     </div>
 
-    <!-- Bloques visibles solo cuando registrarComorbilidad === Sí -->
-    <div v-if="registrarComorbilidad === 1" class="space-y-6">
-      <!-- 1. Primera vez diagnóstico 2 (0=No, 1=Si) -->
-      <div>
-        <h3 class="text-base font-medium text-gray-700 mb-2">
-          Primera vez diagnóstico 2 <span class="text-red-500">*</span>
-        </h3>
-        <div class="grid grid-cols-2 gap-3 mb-1">
-          <label
-            :class="[
-              'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
-              primeraVezDiagnostico2 === 0
-                ? 'border-emerald-600 bg-emerald-50 shadow-md'
-                : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
-            ]"
-          >
-            <input type="radio" :value="0" v-model="primeraVezDiagnostico2" class="sr-only" />
-            <span :class="['text-sm transition-colors duration-200', primeraVezDiagnostico2 === 0 ? 'text-emerald-700 font-semibold' : 'text-gray-700']">
-              No
-            </span>
-            <div v-if="primeraVezDiagnostico2 === 0" class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-              </svg>
-            </div>
-          </label>
-          <label
-            :class="[
-              'relative flex items-center justify-center py-2.5 px-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ease-in-out',
-              primeraVezDiagnostico2 === 1
-                ? 'border-emerald-600 bg-emerald-50 shadow-md'
-                : 'border-gray-300 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 hover:shadow-sm'
-            ]"
-          >
-            <input type="radio" :value="1" v-model="primeraVezDiagnostico2" class="sr-only" />
-            <span :class="['text-sm transition-colors duration-200', primeraVezDiagnostico2 === 1 ? 'text-emerald-700 font-semibold' : 'text-gray-700']">
-              Sí
-            </span>
-            <div v-if="primeraVezDiagnostico2 === 1" class="absolute top-2 right-2 w-4 h-4 bg-emerald-600 rounded-full flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-              </svg>
-            </div>
-          </label>
-        </div>
-      </div>
-
-      <!-- 2. Código CIE-10 Diagnóstico 2 (obligatorio cuando comorbilidad=Sí, independiente de primeraVez) -->
-      <div>
-        <CIE10Autocomplete
-          v-model="codigoCIEDiagnostico2"
-          label="Código CIE-10 Diagnóstico 2"
-          :required="true"
-          :trabajadorId="trabajadores.currentTrabajadorId"
-          :fechaConsulta="fechaNotaMedica"
-          placeholder="Buscar segundo diagnóstico..."
-        />
-        <p class="mt-1 text-xs text-gray-600">
-          Padecimiento distinto al diagnóstico principal que también está presente.
-        </p>
-        <Transition name="fade">
-          <div v-if="diagnostico2SexAgeError" class="mt-2">
-            <div class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
-              <i class="fas fa-exclamation-triangle mt-0.5"></i>
-              <span class="flex-1 font-medium">{{ diagnostico2SexAgeError }}</span>
-            </div>
-          </div>
-        </Transition>
-        <div v-if="diagnostico2EqualsPrincipalError || diagnostico2EqualsComplementaryError" class="mt-2 space-y-2">
-          <Transition name="fade">
-            <div v-if="diagnostico2EqualsPrincipalError" class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
-              <i class="fas fa-exclamation-triangle mt-0.5"></i>
-              <span class="flex-1 font-medium">{{ diagnostico2EqualsPrincipalError }}</span>
-            </div>
-          </Transition>
-          <Transition name="fade">
-            <div v-if="diagnostico2EqualsComplementaryError" class="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2 shadow-sm">
-              <i class="fas fa-exclamation-triangle mt-0.5"></i>
-              <span class="flex-1 font-medium">{{ diagnostico2EqualsComplementaryError }}</span>
-            </div>
-          </Transition>
-        </div>
-      </div>
-
-      <!-- 3. Confirmación diagnóstica 2 (Fe de Erratas: solo cuando aplica) -->
-      <div v-if="muestraConfirmacionDiagnostica2" class="space-y-2 border border-amber-200 rounded-xl p-4 bg-amber-50/30">
-      <div class="flex items-center gap-2">
+    <!-- IMC -->
+    <div class="mb-4">
+      <label class="block text-base font-medium text-gray-800 mb-2">Índice de Masa Corporal</label>
+      <div class="grid grid-cols-2 gap-4">
         <input
-          type="checkbox"
-          id="confirmacionDiagnostica2"
-          v-model="confirmacionDiagnostica2"
-          class="w-4 h-4 text-amber-600 border-gray-300 rounded focus:ring-amber-500"
+          type="number"
+          class="w-full p-2 text-center border border-gray-200 rounded-lg text-gray-700 bg-gray-50 cursor-not-allowed font-semibold"
+          :value="indiceMasaCorporal"
+          readonly
+          title="Calculado automáticamente"
         />
-        <label for="confirmacionDiagnostica2" class="text-sm font-medium text-gray-700">
-          Confirmación Diagnóstica 2 <span class="text-red-500">*</span>
-        </label>
-      </div>
-      <p class="text-xs text-amber-700">
-        <i class="fas fa-exclamation-triangle"></i>
-        Requerida para diagnósticos crónicos (Diabetes, HTA) o Cáncer en menores de 18 años
-      </p>
-      </div>
-
-      <!-- 4. Descripción complementaria -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Descripción complementaria
-        </label>
         <input
-          class="w-full p-3 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-          v-model="diagnosticoTexto"
-          placeholder="Descripción del diagnóstico..."
-          data-skip-validation
+          type="text"
+          :class="[
+            'w-full py-2 px-2 text-center border border-gray-200 rounded-lg cursor-not-allowed font-semibold',
+            categoriaIMC === 'Normal' ? 'bg-emerald-50 text-emerald-800' : '',
+            categoriaIMC === 'Bajo peso' ? 'bg-yellow-50 text-yellow-800' : '',
+            categoriaIMC === 'Sobrepeso' ? 'bg-yellow-50 text-yellow-800' : '',
+            categoriaIMC === 'Obesidad clase I' ? 'bg-red-50 text-red-900' : '',
+            categoriaIMC === 'Obesidad clase II' ? 'bg-red-100 text-red-900' : '',
+            categoriaIMC === 'Obesidad clase III' ? 'bg-red-200 text-red-950' : '',
+          ]"
+          :value="categoriaIMC"
+          readonly
         />
-        <p class="mt-1 text-xs text-gray-500">
-          Puede complementar el diagnóstico codificado con texto libre adicional
-        </p>
+      </div>
+    </div>
+
+    <!-- Circunferencia de Cintura -->
+    <div class="mb-4">
+      <label>Circunferencia de Cintura (cm)</label>
+      <div class="grid grid-cols-2 gap-4 mt-1">
+        <div>
+          <input
+            type="number"
+            class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            v-model.number="circunferenciaCintura"
+            :min="20"
+            :max="300"
+            placeholder="20-300"
+            :disabled="seDesconoceCircunferencia"
+          />
+          <label class="flex items-center gap-1.5 text-sm mt-1">
+            <input type="checkbox" v-model="seDesconoceCircunferencia" class="rounded" />
+            Se desconoce
+          </label>
+          <p v-if="mensajeErrorCircunferencia" class="text-red-500 text-sm mt-1">{{ mensajeErrorCircunferencia }}</p>
+        </div>
+        <input
+          type="text"
+          :class="[
+            'w-full py-1.5 px-2 text-center border border-gray-200 rounded-lg cursor-not-allowed font-semibold',
+            categoriaCircunferenciaCintura === 'Normal' ? 'bg-emerald-50 text-emerald-800' : '',
+            categoriaCircunferenciaCintura === 'Riesgo elevado' ? 'bg-yellow-50 text-yellow-800' : '',
+            categoriaCircunferenciaCintura === 'Riesgo muy elevado' ? 'bg-red-100 text-red-900' : '',
+          ]"
+          :value="categoriaCircunferenciaCintura"
+          readonly
+        />
       </div>
     </div>
   </div>
