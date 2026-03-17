@@ -173,6 +173,25 @@ export default {
     },
 
     /**
+     * Search paises (cat_pais) by query string (CATALOG_KEY or description)
+     * @param query Search term
+     * @param limit Optional result limit (default 50, max 100)
+     */
+    searchPaises(query: string, limit?: number) {
+        return api.get(`/catalogs/paises/search`, {
+            params: { q: query, limit }
+        });
+    },
+
+    /**
+     * Get a single pais entry by its CATALOG_KEY
+     * @param catalogKey The cat_pais CATALOG_KEY (e.g., 142 for México)
+     */
+    getPaisByCatalogKey(catalogKey: string | number) {
+        return api.get(`/catalogs/paises/${catalogKey}`);
+    },
+
+    /**
      * List all entries from a GIIS catalog (for populating selectors)
      * @param catalogType Catalog type key (e.g. 'cat_sitio_ocurrencia', 'cat_tipo_vialidad')
      * @param limit Optional limit (default 500)

@@ -4,6 +4,7 @@ import { useTecnicoFirmanteStore } from '@/stores/tecnicoFirmante';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useRouter } from 'vue-router';
 import { useCurpPolicy } from '@/composables/useCurpPolicy';
+import PaisNacimientoAutocomplete from '@/components/selectors/PaisNacimientoAutocomplete.vue';
 
 const tecnicoFirmante = useTecnicoFirmanteStore();
 const proveedorSaludStore = useProveedorSaludStore();
@@ -21,7 +22,8 @@ const formularioTecnicoFirmante = ref({
   tituloProfesional: "",
   numeroCedulaProfesional: "",
   nombreCredencialAdicional: "",
-  numeroCredencialAdicional: ""
+  numeroCredencialAdicional: "",
+  paisNacimiento: ""
 });
 
 // Mantener isMX solo para lógica no-regulatoria (ej: mostrar "Cédula Profesional" vs "Registro Profesional")
@@ -36,7 +38,8 @@ watchEffect(() => {
       tituloProfesional: tecnicoFirmante.tecnicoFirmante.tituloProfesional || "",
       numeroCedulaProfesional: tecnicoFirmante.tecnicoFirmante.numeroCedulaProfesional || "",
       nombreCredencialAdicional: tecnicoFirmante.tecnicoFirmante.nombreCredencialAdicional || "",
-      numeroCredencialAdicional: tecnicoFirmante.tecnicoFirmante.numeroCredencialAdicional || ""
+      numeroCredencialAdicional: tecnicoFirmante.tecnicoFirmante.numeroCredencialAdicional || "",
+      paisNacimiento: tecnicoFirmante.tecnicoFirmante.paisNacimiento ?? ""
     });
   }
 });
@@ -107,7 +110,9 @@ const handleSubmit = async (data) => {
   }
 
   const formData = new FormData();
-  Object.entries(data).forEach(([key, value]) => { if (value !== undefined && value !== null && value !== "") { formData.append(key, value); } });
+  const submitData = { ...data, paisNacimiento: formularioTecnicoFirmante.value.paisNacimiento };
+  if (submitData.paisNacimiento === "" || submitData.paisNacimiento == null) delete submitData.paisNacimiento;
+  Object.entries(submitData).forEach(([key, value]) => { if (value !== undefined && value !== null && value !== "") { formData.append(key, value); } });
   formData.append('idUser', user.value._id);
   if (firmaArchivo.value) { formData.append('firma', firmaArchivo.value); }
   try {
@@ -182,6 +187,13 @@ const firmaSrc = computed(() => `${baseURL}/assets/signatories/${tecnicoFirmante
               <FormKit type="text" :label="proveedorSaludStore.proveedorSalud?.pais === 'MX' ? 'Cédula Profesional' : 'Registro Profesional'" name="numeroCedulaProfesional" placeholder="Ej. 142988, REG-123456, CRM 123456" validation="cedulaProfesionalValidation" v-model="formularioTecnicoFirmante.numeroCedulaProfesional" :validation-messages="{ cedulaProfesionalValidation: 'El registro debe tener entre 3 y 20 caracteres (letras, números, guiones o espacios).' }" />
               <FormKit type="text" label="Credencial/Certificación Adicional" name="nombreCredencialAdicional" placeholder="Ej. Certificado ante el CNMMT" v-model="formularioTecnicoFirmante.nombreCredencialAdicional" />
               <FormKit type="text" label="Número de Credencial Adicional" name="numeroCredencialAdicional" placeholder="Ej. 924" v-model="formularioTecnicoFirmante.numeroCredencialAdicional" />
+              <div class="sm:col-span-2">
+                <PaisNacimientoAutocomplete
+                  v-model="formularioTecnicoFirmante.paisNacimiento"
+                  label="País de nacimiento"
+                  placeholder="Buscar por nombre de país..."
+                />
+              </div>
             </div>
 
             <!-- Área de arrastrar y soltar para la firma -->

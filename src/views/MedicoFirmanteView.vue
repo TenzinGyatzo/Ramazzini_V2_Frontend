@@ -4,6 +4,7 @@ import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { useRouter } from 'vue-router';
 import { useCurpPolicy } from '@/composables/useCurpPolicy';
+import PaisNacimientoAutocomplete from '@/components/selectors/PaisNacimientoAutocomplete.vue';
 
 const medicoFirmante = useMedicoFirmanteStore();
 const proveedorSaludStore = useProveedorSaludStore();
@@ -24,7 +25,8 @@ const formularioMedicoFirmante = ref({
   especialistaSaludTrabajo: "No",
   numeroCedulaEspecialista: "",
   nombreCredencialAdicional: "",
-  numeroCredencialAdicional: ""
+  numeroCredencialAdicional: "",
+  paisNacimiento: ""
 });
 
 // Mantener isMX solo para lógica no-regulatoria (ej: mostrar "Cédula Profesional" vs "Registro Profesional")
@@ -42,7 +44,8 @@ watchEffect(() => {
       especialistaSaludTrabajo: medicoFirmante.medicoFirmante.especialistaSaludTrabajo || "No",
       numeroCedulaEspecialista: medicoFirmante.medicoFirmante.numeroCedulaEspecialista || "",
       nombreCredencialAdicional: medicoFirmante.medicoFirmante.nombreCredencialAdicional || "",
-      numeroCredencialAdicional: medicoFirmante.medicoFirmante.numeroCredencialAdicional || ""
+      numeroCredencialAdicional: medicoFirmante.medicoFirmante.numeroCredencialAdicional || "",
+      paisNacimiento: medicoFirmante.medicoFirmante.paisNacimiento ?? ""
     });
   }
 });
@@ -166,8 +169,12 @@ const handleSubmit = async (data) => {
 
     const formData = new FormData();
 
+    // Incluir paisNacimiento del selector (no capturado por FormKit)
+    const submitData = { ...data, paisNacimiento: formularioMedicoFirmante.value.paisNacimiento };
+    if (submitData.paisNacimiento === "" || submitData.paisNacimiento == null) delete submitData.paisNacimiento;
+
     // Agregar solo los campos con valores definidos
-    Object.entries(data).forEach(([key, value]) => {
+    Object.entries(submitData).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== "") {
             formData.append(key, value);
         }
@@ -322,6 +329,14 @@ const firmaSrc = computed(() => {
                             <FormKit type="text" label="Número de Credencial Adicional" name="numeroCredencialAdicional"
                                 placeholder="Ej. 924"
                                 v-model="formularioMedicoFirmante.numeroCredencialAdicional" />
+
+                            <div class="sm:col-span-2">
+                                <PaisNacimientoAutocomplete
+                                    v-model="formularioMedicoFirmante.paisNacimiento"
+                                    label="País de nacimiento"
+                                    placeholder="Buscar por nombre de país..."
+                                />
+                            </div>
                         </div>
 
                         <!-- Área de arrastrar y soltar para la firma -->
