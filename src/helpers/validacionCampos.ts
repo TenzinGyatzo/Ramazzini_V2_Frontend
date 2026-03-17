@@ -667,7 +667,8 @@ function calcularEdad(fechaNacimiento: Date, fechaReferencia: Date): number {
 /** Valida reglas pre-submit de nota médica (CEX NOM-024). Fechas, edad, sistólica/diastólica. */
 export function validarNotaMedicaPreSubmit(
   datosFormulario: any,
-  trabajador?: { fechaNacimiento?: string | Date } | null
+  trabajador?: { fechaNacimiento?: string | Date } | null,
+  isSIRES: boolean = false
 ): { valido: boolean; mensaje?: string; paso?: number } {
   if (!datosFormulario) return { valido: true };
 
@@ -715,7 +716,7 @@ export function validarNotaMedicaPreSubmit(
     return {
       valido: false,
       mensaje: 'La presión sistólica debe ser mayor o igual a la diastólica',
-      paso: 5,
+      paso: isSIRES ? 6 : 5,
     };
   }
 
@@ -723,14 +724,17 @@ export function validarNotaMedicaPreSubmit(
 }
 
 /** Valida que todos los códigos CIE-10 de nota médica tengan exactamente 4 caracteres (sin punto). */
-export function validarNotaMedicaCIEExact4Chars(datosFormulario: any): { valido: boolean; mensaje?: string; paso?: number } {
+export function validarNotaMedicaCIEExact4Chars(datosFormulario: any, isSIRES: boolean = false): { valido: boolean; mensaje?: string; paso?: number } {
   if (!datosFormulario) return { valido: true };
 
+  const pasoDiagPrincipal = isSIRES ? 9 : 6;
+  const pasoDiag3 = isSIRES ? 11 : 8;
+
   const campos: Array<{ valor: any; nombre: string; paso: number }> = [
-    { valor: datosFormulario.codigoCIE10Principal, nombre: 'Diagnóstico principal', paso: 6 },
-    { valor: datosFormulario.codigoCIEDiagnostico2, nombre: 'Diagnóstico 2', paso: 6 },
-    { valor: datosFormulario.codigoCIEDiagnostico3, nombre: 'Diagnóstico 3', paso: 8 },
-    { valor: datosFormulario.codigoCIECausaExterna, nombre: 'Causa externa', paso: 6 },
+    { valor: datosFormulario.codigoCIE10Principal, nombre: 'Diagnóstico principal', paso: pasoDiagPrincipal },
+    { valor: datosFormulario.codigoCIEDiagnostico2, nombre: 'Diagnóstico 2', paso: pasoDiagPrincipal },
+    { valor: datosFormulario.codigoCIEDiagnostico3, nombre: 'Diagnóstico 3', paso: pasoDiag3 },
+    { valor: datosFormulario.codigoCIECausaExterna, nombre: 'Causa externa', paso: pasoDiagPrincipal },
   ];
 
   for (const { valor, nombre, paso } of campos) {
@@ -748,7 +752,7 @@ export function validarNotaMedicaCIEExact4Chars(datosFormulario: any): { valido:
       if (!c) continue;
       const code = typeof c === 'string' ? extractCode(c) : extractCode(String(c));
       if (code && code.trim() && !hasCIE10Exact4Chars(code)) {
-        return { valido: false, mensaje: `Código CIE complementario ${i + 1} debe tener exactamente 4 caracteres`, paso: 6 };
+        return { valido: false, mensaje: `Código CIE complementario ${i + 1} debe tener exactamente 4 caracteres`, paso: pasoDiagPrincipal };
       }
     }
   }
