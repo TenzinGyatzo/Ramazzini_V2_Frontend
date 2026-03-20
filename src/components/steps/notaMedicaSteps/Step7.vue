@@ -2,9 +2,11 @@
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
+import { useTrabajadoresStore } from '@/stores/trabajadores';
 
 const { formDataNotaMedica } = useFormDataStore();
 const documentos = useDocumentosStore();
+const trabajadores = useTrabajadoresStore();
 
 const peso = ref(70);
 const talla = ref(170);
@@ -54,15 +56,25 @@ function setCategoriaIMC(imc) {
   else categoriaIMC.value = 'Obesidad clase III';
 }
 
+function esFemenino() {
+  const genero = formDataNotaMedica.genero;
+  if (genero === 2) return true;
+  if (genero === 1) return false;
+  const sexo = trabajadores.currentTrabajador?.sexo;
+  if (sexo === 'Femenino') return true;
+  if (sexo === 'Masculino') return false;
+  return null;
+}
+
 function setCategoriaCircunferencia() {
   if (seDesconoceCircunferencia.value) { categoriaCircunferenciaCintura.value = ''; return; }
   const c = Number(circunferenciaCintura.value);
-  const genero = formDataNotaMedica.genero;
-  if (genero === 2) {
+  const fem = esFemenino();
+  if (fem === true) {
     if (c <= 80) categoriaCircunferenciaCintura.value = 'Normal';
     else if (c <= 88) categoriaCircunferenciaCintura.value = 'Riesgo elevado';
     else categoriaCircunferenciaCintura.value = 'Riesgo muy elevado';
-  } else if (genero === 1) {
+  } else if (fem === false) {
     if (c <= 90) categoriaCircunferenciaCintura.value = 'Normal';
     else if (c <= 100) categoriaCircunferenciaCintura.value = 'Riesgo elevado';
     else categoriaCircunferenciaCintura.value = 'Riesgo muy elevado';
@@ -72,9 +84,10 @@ function setCategoriaCircunferencia() {
 }
 
 function syncFormData() {
-  formDataNotaMedica.peso = seDesconocePeso.value ? 999 : peso.value;
-  formDataNotaMedica.talla = seDesconoceTalla.value ? 999 : talla.value;
-  formDataNotaMedica.circunferenciaCintura = seDesconoceCircunferencia.value ? 0 : circunferenciaCintura.value;
+  // CEX: "Se desconoce" → null (validador skipea; transformer mapea peso/talla→999, circunferencia→0)
+  formDataNotaMedica.peso = seDesconocePeso.value ? null : peso.value;
+  formDataNotaMedica.talla = seDesconoceTalla.value ? null : talla.value;
+  formDataNotaMedica.circunferenciaCintura = seDesconoceCircunferencia.value ? null : circunferenciaCintura.value;
   formDataNotaMedica.indiceMasaCorporal = indiceMasaCorporal.value;
   formDataNotaMedica.categoriaIMC = categoriaIMC.value;
   formDataNotaMedica.categoriaCircunferenciaCintura = categoriaCircunferenciaCintura.value;
@@ -85,13 +98,15 @@ onMounted(() => {
   const savedTalla = getValFromSource('talla', 170);
   const savedCintura = getValFromSource('circunferenciaCintura', 80);
 
-  seDesconocePeso.value = savedPeso === 999;
-  seDesconoceTalla.value = savedTalla === 999;
-  seDesconoceCircunferencia.value = savedCintura === 0;
+  // null/999/0 = "Se desconoce" (retrocompatibilidad con docs guardados antes)
+  seDesconocePeso.value = savedPeso == null || savedPeso === 999;
+  seDesconoceTalla.value = savedTalla == null || savedTalla === 999;
+  seDesconoceCircunferencia.value = savedCintura == null || savedCintura === 0;
 
-  peso.value = savedPeso === 999 ? 70 : savedPeso;
-  talla.value = savedTalla === 999 ? 170 : savedTalla;
-  circunferenciaCintura.value = savedCintura === 0 ? 80 : savedCintura;
+  // Input muestra 0 cuando "Se desconoce"
+  peso.value = seDesconocePeso.value ? 0 : savedPeso;
+  talla.value = seDesconoceTalla.value ? 0 : savedTalla;
+  circunferenciaCintura.value = seDesconoceCircunferencia.value ? 0 : savedCintura;
 
   const savedIMC = getValFromSource('indiceMasaCorporal', null);
   const savedCatIMC = getValFromSource('categoriaIMC', '');
@@ -110,17 +125,20 @@ onMounted(() => {
 });
 
 watch(seDesconocePeso, (v) => {
-  if (v) peso.value = 70;
+  if (v) peso.value = 0;
+  else peso.value = peso.value || 70;
   calcularIMC();
   syncFormData();
 });
 watch(seDesconoceTalla, (v) => {
-  if (v) talla.value = 170;
+  if (v) talla.value = 0;
+  else talla.value = talla.value || 170;
   calcularIMC();
   syncFormData();
 });
 watch(seDesconoceCircunferencia, (v) => {
-  if (v) circunferenciaCintura.value = 80;
+  if (v) circunferenciaCintura.value = 0;
+  else circunferenciaCintura.value = circunferenciaCintura.value || 80;
   setCategoriaCircunferencia();
   syncFormData();
 });
@@ -268,7 +286,7 @@ const mensajeErrorCircunferencia = computed(() => {
         <input
           type="text"
           :class="[
-            'w-full py-1.5 px-2 text-center border border-gray-200 rounded-lg cursor-not-allowed font-semibold',
+            'h-10 w-full py-1.5 px-2 text-center border border-gray-200 rounded-lg cursor-not-allowed font-semibold',
             categoriaCircunferenciaCintura === 'Normal' ? 'bg-emerald-50 text-emerald-800' : '',
             categoriaCircunferenciaCintura === 'Riesgo elevado' ? 'bg-yellow-50 text-yellow-800' : '',
             categoriaCircunferenciaCintura === 'Riesgo muy elevado' ? 'bg-red-100 text-red-900' : '',

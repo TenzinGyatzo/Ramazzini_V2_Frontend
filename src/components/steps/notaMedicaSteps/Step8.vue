@@ -21,7 +21,8 @@ function getValFromSource(field, defaultVal) {
 
 function syncFormData() {
   if (seDesconoceGlucemia.value) {
-    formDataNotaMedica.glucemia = 0;
+    // CEX: "Se desconoce" → null (validador skipea; transformer mapea a 0 en GIIS)
+    formDataNotaMedica.glucemia = null;
     formDataNotaMedica.tipoMedicion = -1;
     formDataNotaMedica.resultadoObtenidoaTravesde = -1;
   } else {
@@ -36,8 +37,9 @@ onMounted(() => {
   const savedTipo = getValFromSource('tipoMedicion', -1);
   const savedResultado = getValFromSource('resultadoObtenidoaTravesde', -1);
 
-  seDesconoceGlucemia.value = savedGlucemia === 0;
-  glucemia.value = savedGlucemia === 0 ? 80 : savedGlucemia;
+  // null/0 = "Se desconoce" (retrocompatibilidad)
+  seDesconoceGlucemia.value = savedGlucemia == null || savedGlucemia === 0;
+  glucemia.value = seDesconoceGlucemia.value ? 0 : savedGlucemia;
   tipoMedicion.value = savedTipo;
   resultadoObtenidoaTravesde.value = savedResultado;
 
@@ -46,9 +48,11 @@ onMounted(() => {
 
 watch(seDesconoceGlucemia, (v) => {
   if (v) {
-    glucemia.value = 80;
+    glucemia.value = 0;
     tipoMedicion.value = -1;
     resultadoObtenidoaTravesde.value = -1;
+  } else {
+    glucemia.value = glucemia.value || 80;
   }
   syncFormData();
 });
@@ -79,11 +83,11 @@ const showConditionalFields = computed(() => !seDesconoceGlucemia.value);
 
     <div class="mb-6">
       <label for="glucemia">Glucemia (mg/dl)</label>
-      <div class="mt-1">
+      <div class="mt-1 flex items-center gap-4">
         <input
           type="number"
           id="glucemia"
-          class="w-full p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          class="w-1/2 p-1.5 text-center border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
           v-model.number="glucemia"
           :min="20"
           :max="999"
@@ -91,7 +95,7 @@ const showConditionalFields = computed(() => !seDesconoceGlucemia.value);
           placeholder="20-999"
           :disabled="seDesconoceGlucemia"
         />
-        <label class="flex items-center gap-1.5 text-sm mt-1">
+        <label class="w-1/2 flex items-center gap-1.5 text-sm">
           <input type="checkbox" v-model="seDesconoceGlucemia" class="rounded" />
           Se desconoce
         </label>

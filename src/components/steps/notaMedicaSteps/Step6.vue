@@ -59,6 +59,7 @@ onMounted(() => {
 });
 
 function syncFormData() {
+  // CEX: "Se desconoce" → null (validador skipea; transformer mapea a 0 en GIIS)
   formDataNotaMedica.tensionArterialSistolica = seDesconoceSistolica.value ? null : tensionArterialSistolica.value;
   formDataNotaMedica.tensionArterialDiastolica = seDesconoceDiastolica.value ? null : tensionArterialDiastolica.value;
   formDataNotaMedica.frecuenciaCardiaca = seDesconoceFrecuenciaCardiaca.value ? null : frecuenciaCardiaca.value;

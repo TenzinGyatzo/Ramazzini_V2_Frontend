@@ -25,6 +25,22 @@ const stepMap = computed(() => {
   return { antecedentes: 3, exploracion: 4, signos: 5, diagnostico: 6, comorbilidad2: 7, comorbilidad3: 8, tratamiento: 9, recomendaciones: 10, observaciones: 11 };
 });
 
+const etiquetasGenero = {
+  0:'No especificado', 1: 'Masculino', 2: 'Femenino', 3: 'Transgénero',
+  4: 'Transexual', 5: 'Travesti', 6: 'Intersexual', 88: 'Otro',
+};
+
+const catalogoDerechohabiencia = {
+  '0': 'No especificado', '1': 'Ninguna', '2': 'IMSS', '3': 'ISSSTE',
+  '4': 'PEMEX', '5': 'SEDENA', '6': 'SEMAR', '8': 'Otra',
+  '10': 'IMSS Bienestar', '11': 'ISSFAM', '14': 'OPD IMSS BIENESTAR', '99': 'Se ignora',
+};
+
+function formatDerechohabiencia(valor) {
+  if (!valor || valor === '0' || valor === '99') return catalogoDerechohabiencia[valor] || valor;
+  return valor.split('&').map(v => catalogoDerechohabiencia[v] || v).join(', ');
+}
+
 const goToStep = (stepNumber) => {
   steps.goToStep(stepNumber);
 };
@@ -152,14 +168,14 @@ const requiereConfirmacionDiagnostica3 = computed(() => {
       :class="{ 'outline outline-2 outline-offset-2 outline-yellow-500 rounded-md': steps.currentStep === stepMap.genero }"
       @click="goToStep(stepMap.genero)">
       <p class="text-justify font-medium">
-        <template v-if="formData.formDataNotaMedica.genero !== undefined && formData.formDataNotaMedica.genero !== 0">
-          Género: <span class="font-light">{{ formData.formDataNotaMedica.genero === 1 ? 'Masculino' : formData.formDataNotaMedica.genero === 2 ? 'Femenino' : formData.formDataNotaMedica.genero }}</span>
+        <template v-if="formData.formDataNotaMedica.genero !== undefined">
+          Género: <span class="font-light">{{ etiquetasGenero[formData.formDataNotaMedica.genero] || formData.formDataNotaMedica.genero }}</span>
         </template>
         <template v-else>
           <span class="text-gray-500 italic font-normal">+ Género</span>
         </template>
         <template v-if="formData.formDataNotaMedica.derechohabiencia && formData.formDataNotaMedica.derechohabiencia !== '0'">
-          &nbsp;&nbsp;| Derechohabiencia: <span class="font-light">{{ formData.formDataNotaMedica.derechohabiencia }}</span>
+          &nbsp;&nbsp;| &nbsp;&nbsp;Derechohabiencia: <span class="font-light">{{ formatDerechohabiencia(formData.formDataNotaMedica.derechohabiencia) }}</span>
         </template>
       </p>
     </div>
@@ -223,7 +239,7 @@ const requiereConfirmacionDiagnostica3 = computed(() => {
         <template v-if="formData.formDataNotaMedica.circunferenciaCintura && formData.formDataNotaMedica.circunferenciaCintura !== 0">
           &nbsp;Cintura: <span class="font-light">{{ formData.formDataNotaMedica.circunferenciaCintura }} cm</span>
         </template>
-        <template v-if="!formData.formDataNotaMedica.peso && !formData.formDataNotaMedica.talla">
+        <template v-if="(!formData.formDataNotaMedica.peso || formData.formDataNotaMedica.peso === 999) && (!formData.formDataNotaMedica.talla || formData.formDataNotaMedica.talla === 999) && (!formData.formDataNotaMedica.circunferenciaCintura || formData.formDataNotaMedica.circunferenciaCintura === 0)">
           <span class="text-gray-500 italic font-normal">+ Somatometría</span>
         </template>
       </p>
