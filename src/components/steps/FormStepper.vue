@@ -304,7 +304,10 @@ import ModalFaltanCampos from '../ModalFaltanCampos.vue';
 import ModalCamposFaltantes from '../ModalCamposFaltantes.vue';
 import DailyConsentModal from '../DailyConsentModal.vue';
 import { validarCamposRequeridos, validarFormatoHoraHHMM, validarFormatoTiempoTrasladoUH, validarHoraAtencionPosteriorEvento, validarLesionPreSubmit, validarNotaMedicaCIEExact4Chars, validarNotaMedicaPreSubmit } from '@/helpers/validacionCampos';
-import { validateCIE10Duplicates, generateBlockingToastMessage, validateCIE10SexAge, normalizeCIE10Code } from '@/helpers/cie10';
+import { validateCIE10Duplicates, generateBlockingToastMessage, normalizeCIE10Code } from '@/helpers/cie10';
+import { validateNotaMedicaDiagnosticos2Y3 } from '@/helpers/notaMedicaDiagnosticosSis';
+import MedicoFirmanteAPI from '@/api/MedicoFirmanteAPI';
+import EnfermeraFirmanteAPI from '@/api/EnfermeraFirmanteAPI';
 import { useNom024Fields } from '@/composables/useNom024Fields';
 import { useDailyConsentGate } from '@/composables/useDailyConsentGate';
 import { formatNombreCompleto } from '@/helpers/formatNombreCompleto';
@@ -1023,45 +1026,13 @@ export default {
         return; // Salir si el tipo de documento no es válido
       }
 
-      // VALIDACIÓN CIE-10: Verificar restricciones de sexo/edad para notaMedica (ANTES de otras validaciones)
-      if (documentos.currentTypeOfDocument === 'notaMedica') {
-        const trabajador = trabajadores.currentTrabajador;
-        if (trabajador && trabajador.sexo && trabajador.fechaNacimiento) {
-          const fechaNotaMedica = formData.formDataNotaMedica.fechaNotaMedica 
-            ? new Date(formData.formDataNotaMedica.fechaNotaMedica)
-            : new Date();
-
-          try {
-            const sexAgeIssues = await validateCIE10SexAge({
-              codigoCIE10Principal: formData.formDataNotaMedica.codigoCIE10Principal,
-              codigosCIE10Complementarios: formData.formDataNotaMedica.codigosCIE10Complementarios,
-              codigoCIEDiagnostico2: formData.formDataNotaMedica.codigoCIEDiagnostico2,
-              trabajadorSexo: trabajador.sexo,
-              trabajadorFechaNacimiento: new Date(trabajador.fechaNacimiento),
-              fechaNotaMedica: fechaNotaMedica
-            });
-
-            if (sexAgeIssues.length > 0) {
-              // Mostrar toast con el primer issue encontrado
-              toast.open({ 
-                message: sexAgeIssues[0].messageToast, 
-                type: 'error' 
-              });
-              return; // NO continuar con el envío
-            }
-          } catch (error) {
-            console.error('Error validando restricciones de sexo/edad CIE-10:', error);
-            // En caso de error, continuar (no bloquear por error de red)
-          }
-        }
-      }
-
       // VALIDACIÓN CIE-10: Verificar duplicidades para notaMedica
       if (documentos.currentTypeOfDocument === 'notaMedica') {
         const cie10Validation = validateCIE10Duplicates({
           codigoCIE10Principal: formData.formDataNotaMedica.codigoCIE10Principal,
           codigosCIE10Complementarios: formData.formDataNotaMedica.codigosCIE10Complementarios,
-          codigoCIEDiagnostico2: formData.formDataNotaMedica.codigoCIEDiagnostico2
+          codigoCIEDiagnostico2: formData.formDataNotaMedica.codigoCIEDiagnostico2,
+          codigoCIEDiagnostico3: formData.formDataNotaMedica.codigoCIEDiagnostico3
         });
         
         if (!cie10Validation.ok && cie10Validation.issues.length > 0) {
@@ -1083,6 +1054,56 @@ export default {
             type: 'error'
           });
           return;
+        }
+
+        // DIAGNOSTICO_SIS: primeraVez -1, catálogo, LETRA MT/CP, sexo/edad diag2/diag3
+        const trabajadorNm = trabajadores.currentTrabajador;
+        let medicoFirmante = null;
+        let enfermeraFirmante = null;
+        if (user.value?._id) {
+          const normalizeFirmanteApi = (body) => {
+            if (!body) return null;
+            if (body._id) return body;
+            if (body.data && body.data._id) return body.data;
+            return null;
+          };
+          try {
+            const { data: medicoBody } = await MedicoFirmanteAPI.getMedicoFirmanteByUserId(user.value._id);
+            medicoFirmante = normalizeFirmanteApi(medicoBody);
+          } catch {
+            medicoFirmante = null;
+          }
+          if (!medicoFirmante) {
+            try {
+              const { data: enfBody } = await EnfermeraFirmanteAPI.getEnfermeraFirmanteByUserId(user.value._id);
+              enfermeraFirmante = normalizeFirmanteApi(enfBody);
+            } catch {
+              enfermeraFirmante = null;
+            }
+          }
+        }
+        const fechaNotaMedicaSis = formData.formDataNotaMedica.fechaNotaMedica
+          ? new Date(formData.formDataNotaMedica.fechaNotaMedica)
+          : new Date();
+        try {
+          const sis = await validateNotaMedicaDiagnosticos2Y3({
+            formData: formData.formDataNotaMedica,
+            trabajadorSexo: trabajadorNm?.sexo || '',
+            trabajadorFechaNacimiento: trabajadorNm?.fechaNacimiento
+              ? new Date(trabajadorNm.fechaNacimiento)
+              : fechaNotaMedicaSis,
+            fechaNotaMedica: fechaNotaMedicaSis,
+            medicoFirmante,
+            enfermeraFirmante,
+            showSiresUI: showSiresUI.value,
+          });
+          if (!sis.ok) {
+            if (sis.paso) stepsStore.goToStep(sis.paso);
+            toast.open({ message: sis.messageToast || 'Validación de diagnósticos no superada.', type: 'error' });
+            return;
+          }
+        } catch (err) {
+          console.error('validateNotaMedicaDiagnosticos2Y3:', err);
         }
 
         // VALIDACIÓN PRE-SUBMIT NOTA MÉDICA: fechas, edad, sistólica/diastólica (CEX NOM-024)

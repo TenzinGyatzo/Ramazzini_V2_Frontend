@@ -85,6 +85,15 @@ export interface CIE10ValidationPayload {
  * @param payload - Objeto con los códigos CIE-10 a validar
  * @returns Resultado de la validación con issues encontrados
  */
+/** Familia R69 (no especificado): permite repetir diag2/diag3 respecto al principal (DIAGNOSTICO_SIS). */
+function principalIsR69Family(code: string | null | undefined): boolean {
+  if (!code) return false;
+  const n = normalizeCIE10Code(code);
+  if (!n) return false;
+  const w = n.replace(/\./g, '').toUpperCase();
+  return w.startsWith('R69');
+}
+
 export function validateCIE10Duplicates(payload: CIE10ValidationPayload): CIE10ValidationResult {
   const issues: CIE10ValidationIssue[] = [];
   
@@ -136,9 +145,12 @@ export function validateCIE10Duplicates(payload: CIE10ValidationPayload): CIE10V
     });
   }
   
-  // Regla 3: Verificar si diagnóstico 2 es igual al principal
+  // Regla 3: Verificar si diagnóstico 2 es igual al principal (excepción: principal familia R69)
   if (codigoDiagnostico2 && codigoPrincipal) {
-    if (codigoDiagnostico2 === codigoPrincipal) {
+    if (
+      codigoDiagnostico2 === codigoPrincipal &&
+      !principalIsR69Family(payload.codigoCIE10Principal)
+    ) {
       issues.push({
         type: 'diagnostico2_equals_principal',
         code: codigoDiagnostico2,
@@ -162,9 +174,12 @@ export function validateCIE10Duplicates(payload: CIE10ValidationPayload): CIE10V
     }
   }
   
-  // Regla 5: Verificar si diagnóstico 3 es igual al principal
+  // Regla 5: Verificar si diagnóstico 3 es igual al principal (excepción: principal familia R69)
   if (codigoDiagnostico3 && codigoPrincipal) {
-    if (codigoDiagnostico3 === codigoPrincipal) {
+    if (
+      codigoDiagnostico3 === codigoPrincipal &&
+      !principalIsR69Family(payload.codigoCIE10Principal)
+    ) {
       issues.push({
         type: 'diagnostico3_equals_principal',
         code: codigoDiagnostico3,
@@ -250,13 +265,15 @@ export interface CIE10SexAgeIssue {
 }
 
 /**
- * Regla del catálogo CIE-10
+ * Regla del catálogo CIE-10 (DIAGNOSTICO_SIS)
  */
-interface CIE10Rule {
+export interface CIE10Rule {
   key: string;
   lsex: string;
   linf: string | null;
   lsup: string | null;
+  /** MT / CP — tipo de personal requerido (cat DGIS) */
+  letra?: string | null;
 }
 
 /**
@@ -418,6 +435,7 @@ export async function findCIE10Rule(code: string): Promise<CIE10Rule | null> {
           lsex: entry.lsex || 'NO',
           linf: entry.linfRaw || null,
           lsup: entry.lsupRaw || null,
+          letra: entry.letra ?? null,
         };
       }
     } catch (error) {
@@ -436,6 +454,7 @@ export async function findCIE10Rule(code: string): Promise<CIE10Rule | null> {
             lsex: entry.lsex || 'NO',
             linf: entry.linfRaw || null,
             lsup: entry.lsupRaw || null,
+            letra: entry.letra ?? null,
           };
         }
       } catch (error) {

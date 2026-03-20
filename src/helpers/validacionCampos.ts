@@ -728,11 +728,12 @@ export function validarNotaMedicaCIEExact4Chars(datosFormulario: any, isSIRES: b
   if (!datosFormulario) return { valido: true };
 
   const pasoDiagPrincipal = isSIRES ? 9 : 6;
+  const pasoDiag2 = isSIRES ? 10 : 7;
   const pasoDiag3 = isSIRES ? 11 : 8;
 
   const campos: Array<{ valor: any; nombre: string; paso: number }> = [
     { valor: datosFormulario.codigoCIE10Principal, nombre: 'Diagnóstico principal', paso: pasoDiagPrincipal },
-    { valor: datosFormulario.codigoCIEDiagnostico2, nombre: 'Diagnóstico 2', paso: pasoDiagPrincipal },
+    { valor: datosFormulario.codigoCIEDiagnostico2, nombre: 'Diagnóstico 2', paso: pasoDiag2 },
     { valor: datosFormulario.codigoCIEDiagnostico3, nombre: 'Diagnóstico 3', paso: pasoDiag3 },
     { valor: datosFormulario.codigoCIECausaExterna, nombre: 'Causa externa', paso: pasoDiagPrincipal },
   ];

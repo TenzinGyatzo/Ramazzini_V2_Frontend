@@ -9,8 +9,11 @@ interface MedicoFirmante {
     curp?: string; // NOM-024: CURP del profesional de salud
     tituloProfesional?: string;
     numeroCedulaProfesional?: string;
-    especialistaSaludTrabajo?: boolean;
+    /** API puede devolver "Si" | "No" o boolean */
+    especialistaSaludTrabajo?: boolean | string;
     numeroCedulaEspecialista?: string;
+    /** Código numérico oficial DGIS (GIIS / nota médica) */
+    tipoPersonalId?: number;
     nombreCredencialAdicional?: string;
     numeroCredencialAdicional?: string;
     firma?: {
