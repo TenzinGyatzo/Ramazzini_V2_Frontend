@@ -82,7 +82,7 @@ const showConditionalFields = computed(() => !seDesconoceGlucemia.value);
     <p class="text-sm text-gray-600 mb-4">Marque "Se desconoce" si no se registró el dato.</p>
 
     <div class="mb-6">
-      <label for="glucemia">Glucemia (mg/dl)</label>
+      <label for="glucemia">Glucemia (mg/dl) <span class="text-red-500">*</span></label>
       <div class="mt-1 flex items-center gap-4">
         <input
           type="number"
@@ -113,7 +113,7 @@ const showConditionalFields = computed(() => !seDesconoceGlucemia.value);
     >
       <div v-if="showConditionalFields" class="space-y-6">
         <div>
-          <label class="block text-base font-medium text-gray-800 mb-2">¿La medición fue en ayunas?</label>
+          <label class="block text-base font-medium text-gray-800 mb-2">¿La medición fue en ayunas? <span class="text-red-500">*</span></label>
           <div class="flex gap-6">
             <label class="flex items-center gap-2 cursor-pointer">
               <input type="radio" :value="0" v-model="tipoMedicion" class="text-emerald-600 focus:ring-emerald-500" />
@@ -127,7 +127,7 @@ const showConditionalFields = computed(() => !seDesconoceGlucemia.value);
         </div>
 
         <div>
-          <label class="block text-base font-medium text-gray-800 mb-2">Resultado obtenido a través de</label>
+          <label class="block text-base font-medium text-gray-800 mb-2">Resultado obtenido a través de <span class="text-red-500">*</span></label>
           <div class="flex gap-6">
             <label class="flex items-center gap-2 cursor-pointer">
               <input type="radio" :value="1" v-model="resultadoObtenidoaTravesde" class="text-emerald-600 focus:ring-emerald-500" />

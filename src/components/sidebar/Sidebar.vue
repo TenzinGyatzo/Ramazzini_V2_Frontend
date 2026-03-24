@@ -109,6 +109,8 @@ const showDocumentoSection = computed(() => documentos.currentTypeOfDocument && 
 const showAnalyticsSection = computed(() => empresas.currentEmpresaId && hasVisitedDashboard.value);
 const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisitedRiesgosTrabajo.value);
 
+const appVersion = __APP_VERSION__;
+
 </script>
 
 <template>
@@ -348,14 +350,20 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
 
     <!-- Footer del Sidebar -->
     <div class="sidebar-footer">
-      <button 
-        class="collapse-button" 
+      <button
+        class="collapse-button"
         :class="{ 'collapsed': sidebar.collapsed }"
         @click.stop="sidebar.toggleSidebar()"
         :title="sidebar.collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'"
         :aria-label="sidebar.collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'">
         <i class="fas fa-angle-double-left"></i>
       </button>
+      <p
+        class="sidebar-version"
+        :title="`Versión ${appVersion}`"
+      >
+        {{ appVersion }}
+      </p>
     </div>
   </div>
 </template>
@@ -581,6 +589,17 @@ const showRiesgosSection = computed(() => empresas.currentEmpresaId && hasVisite
 
 .collapse-button.collapsed:hover i {
   transform: rotate(180deg);
+}
+
+.sidebar-version {
+  margin: 0.5rem 0 0;
+  text-align: center;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Responsive - Mantener funcionalidad original en pantallas pequeñas */

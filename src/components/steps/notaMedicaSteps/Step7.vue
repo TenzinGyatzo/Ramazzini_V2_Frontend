@@ -190,7 +190,7 @@ const mensajeErrorCircunferencia = computed(() => {
     <div class="flex gap-4 mb-4 flex-wrap">
       <!-- Peso -->
       <div class="w-full sm:w-[calc(50%-0.5rem)]">
-        <label for="peso">Peso (kg)</label>
+        <label for="peso">Peso (kg) <span class="text-red-500">*</span></label>
         <div class="mt-1">
           <input
             type="number"
@@ -213,7 +213,7 @@ const mensajeErrorCircunferencia = computed(() => {
 
       <!-- Talla -->
       <div class="w-full sm:w-[calc(50%-0.5rem)]">
-        <label for="talla">Talla (cm)</label>
+        <label for="talla">Talla (cm) <span class="text-red-500">*</span></label>
         <div class="mt-1">
           <input
             type="number"
@@ -265,7 +265,7 @@ const mensajeErrorCircunferencia = computed(() => {
 
     <!-- Circunferencia de Cintura -->
     <div class="mb-4">
-      <label>Circunferencia de Cintura (cm)</label>
+      <label>Circunferencia de Cintura (cm) <span class="text-red-500">*</span></label>
       <div class="grid grid-cols-2 gap-4 mt-1">
         <div>
           <input

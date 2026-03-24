@@ -2,6 +2,8 @@
 import { RouterView } from 'vue-router';
 import { ref, onMounted } from 'vue';
 
+const appVersion = __APP_VERSION__;
+
 const randomNumber = ref(0);
 
 const changeRandomNumber = () => {
@@ -38,8 +40,14 @@ const contents = [
 <template>
   <div class="min-h-screen grid grid-cols-1 lg:grid-cols-2">
     <!-- Mitad izquierda (blanca) -->
-    <div class="bg-white p-8 flex items-center justify-center">
+    <div class="bg-white p-8 flex items-center justify-center relative">
       <RouterView />
+      <p
+        class="absolute bottom-4 left-4 text-xs text-gray-400"
+        :title="`Versión ${appVersion}`"
+      >
+        {{ appVersion }}
+      </p>
     </div>
 
     <!-- Mitad derecha (gradiente) -->

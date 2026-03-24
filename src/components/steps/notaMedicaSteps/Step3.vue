@@ -101,7 +101,7 @@ onUnmounted(() => {
 
     <div class="mb-6">
       <label for="genero" class="block text-base font-medium text-gray-800 mb-2">
-        Género
+        Género <span class="text-red-500">*</span>
       </label>
       <select
         id="genero"
@@ -116,7 +116,7 @@ onUnmounted(() => {
 
     <div class="mb-4">
       <label class="block text-base font-medium text-gray-800 mb-2">
-        Derechohabiencia
+        Derechohabiencia <span class="text-red-500">*</span>
       </label>
       <p class="text-sm text-gray-600 mb-3">Seleccione una o más opciones (máx. 9). "No especificado", "Ninguna" y "Se ignora" son exclusivas.</p>
       <div class="grid grid-cols-2 gap-2">
