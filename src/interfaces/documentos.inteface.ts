@@ -1,4 +1,9 @@
 import { DocumentoEstado } from './nom024.interface';
+/** Usuario poblado desde el backend (findDocument con populate) */
+export interface UserRef {
+  _id: string;
+  username: string;
+}
 
 export interface Antidoping {
     _id: string;
@@ -10,8 +15,8 @@ export interface Antidoping {
     opiaceos: string;
     idTrabajador: string;
     rutaPDF: string;
-    createdBy: string;
-    updatedBy: string;
+    createdBy: string | UserRef;
+    updatedBy: string | UserRef;
     metilendioximetanfetamina?: string;
     ketamina?: string;
     // NOM-024 Fields
@@ -201,6 +206,13 @@ export interface DocumentoExterno {
             username?: string;
             nombre?: string;
         };
+    };
+    idResultadoClinico?: string;
+    resultadoClinico?: {
+        _id: string;
+        tipoEstudio: string;
+        fechaEstudio: string;
+        resultadoGlobal?: string;
     };
 }
 

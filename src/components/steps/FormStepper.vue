@@ -9,6 +9,7 @@ import { useFormDataStore } from '@/stores/formDataStore';
 import { useDocumentosStore } from '@/stores/documentos';
 import { useStepsStore } from '@/stores/steps';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
+import { useUserStore } from '@/stores/user';
 import DocumentosAPI from '@/api/DocumentosAPI';
 
 import Step1Antidoping from '../steps/antidopingSteps/Step1.vue';
@@ -41,6 +42,9 @@ import Step5CertificadoExpedito from '../steps/certificadoExpeditoSteps/Step5.vu
 import Step6CertificadoExpedito from '../steps/certificadoExpeditoSteps/Step6.vue';
 import Step7CertificadoExpedito from '../steps/certificadoExpeditoSteps/Step7.vue';
 import Step8CertificadoExpedito from '../steps/certificadoExpeditoSteps/Step8.vue';
+import StepAntecedentesGT from '../steps/examenVistaSteps/StepAntecedentesGT.vue';
+import StepAnamnesisGT from '../steps/examenVistaSteps/StepAnamnesisGT.vue';
+import StepUtilizaAnteojosGT from '../steps/examenVistaSteps/StepUtilizaAnteojosGT.vue';
 import Step1ExamenVista from '../steps/examenVistaSteps/Step1.vue';
 import Step2ExamenVista from '../steps/examenVistaSteps/Step2.vue';
 import Step3ExamenVista from '../steps/examenVistaSteps/Step3.vue';
@@ -322,6 +326,7 @@ export default {
     const documentos = useDocumentosStore();
     const stepsStore = useStepsStore();
     const proveedorSaludStore = useProveedorSaludStore();
+    const userStore = useUserStore();
     const router = useRouter();
     const route = useRoute();
 
@@ -461,6 +466,44 @@ export default {
       return Math.min(stepsStore.currentStep, stepsStore.steps.length);
     });
 
+    // Info de auditoría del documento (creado por / actualizado por) - solo en modo edición
+    const documentAuditInfo = computed(() => {
+      const doc = documentos.currentDocument;
+      if (!doc) return null;
+
+      const createdBy = doc.createdBy;
+      const updatedBy = doc.updatedBy;
+
+      const createdByUsername = typeof createdBy === 'object' && createdBy?.username
+        ? createdBy.username
+        : null;
+      const updatedByUsername = typeof updatedBy === 'object' && updatedBy?.username
+        ? updatedBy.username
+        : null;
+
+      // Si no hay username (backend sin populate o usuario eliminado), no mostrar
+      if (!createdByUsername && !updatedByUsername) return null;
+
+      const createdById = typeof createdBy === 'object' ? createdBy?._id : createdBy;
+      const updatedById = typeof updatedBy === 'object' ? updatedBy?._id : updatedBy;
+      const isSameUser = createdById && updatedById && String(createdById) === String(updatedById);
+
+      return {
+        createdByUsername: createdByUsername || 'Usuario desconocido',
+        updatedByUsername: updatedByUsername || 'Usuario desconocido',
+        createdById,
+        updatedById,
+        isSameUser,
+      };
+    });
+
+    const formatUsername = (username, userId) => {
+      if (!username || username === 'Usuario desconocido') return username;
+      const currentUserId = userStore.user?._id;
+      if (!currentUserId || !userId) return username;
+      return String(userId) === String(currentUserId) ? username + ' (Yo)' : username;
+    };
+
     // Establece los pasos al montar el componente
     onMounted(() => {
       documentos.setCurrentTypeOfDocument(route.params.tipoDocumento);
@@ -515,8 +558,8 @@ export default {
         const proveedorSalud = JSON.parse(localStorage.getItem('proveedorSalud')) || null;
         const paisProveedor = proveedorSalud?.pais || '';
         
-        // Steps base para todos los países
-        const examenVistaSteps = [
+        // Steps base (Fecha, AV Lejana, AV Cercana, AV Con Lejana, AV Con Cercana, Ishihara)
+        const stepsBase = [
           { component: Step1ExamenVista, name: 'Paso 1' },
           { component: Step2ExamenVista, name: 'Paso 2' },
           { component: Step3ExamenVista, name: 'Paso 3' },
@@ -525,13 +568,25 @@ export default {
           { component: Step6ExamenVista, name: 'Paso 6' },
         ];
         
-        // Agregar steps adicionales solo para Guatemala
+        let examenVistaSteps;
         if (paisProveedor === 'GT') {
-          examenVistaSteps.push(
-            { component: Step7ExamenVista, name: 'Paso 7' },
-            { component: Step8ExamenVista, name: 'Paso 8' },
-            { component: Step9ExamenVista, name: 'Paso 9' }
-          );
+          // Guatemala: Fecha primero; luego Antecedentes, Anamnesis, Utiliza anteojos; luego AV e Ishihara; luego 7, 8, 9
+          examenVistaSteps = [
+            { component: Step1ExamenVista, name: 'Paso 1' },
+            { component: StepAntecedentesGT, name: 'Paso 2' },
+            { component: StepAnamnesisGT, name: 'Paso 3' },
+            { component: StepUtilizaAnteojosGT, name: 'Paso 4' },
+            { component: Step2ExamenVista, name: 'Paso 5' },
+            { component: Step3ExamenVista, name: 'Paso 6' },
+            { component: Step4ExamenVista, name: 'Paso 7' },
+            { component: Step5ExamenVista, name: 'Paso 8' },
+            { component: Step6ExamenVista, name: 'Paso 9' },
+            { component: Step7ExamenVista, name: 'Paso 10' },
+            { component: Step8ExamenVista, name: 'Paso 11' },
+            { component: Step9ExamenVista, name: 'Paso 12' }
+          ];
+        } else {
+          examenVistaSteps = stepsBase;
         }
         
         stepsStore.setSteps(examenVistaSteps);
@@ -878,21 +933,20 @@ export default {
     watch(
       () => documentos.currentDocument,
       (newDocument, oldDocument) => {
-        // Solo actualizar al paso final si:
-        // 1. Hay un documento cargado
-        // 2. Hay pasos definidos
-        // 3. Estamos editando (hay documentoId en la ruta)
-        // 4. El documento es nuevo (oldDocument era null), indicando carga inicial
-        // 5. NO hay skipToStep en query params (no interferir con navegación desde crear nota aclaratoria)
         const documentoId = route.params.idDocumento;
         const skipToStep = route.query.skipToStep;
-        
-        if (newDocument && stepsStore.steps.length > 0 && documentoId && !oldDocument && !skipToStep) {
-          // Si el documento se carga después del onMounted (edición), actualizar al paso final
+
+        if (
+          newDocument &&
+          stepsStore.steps.length > 0 &&
+          documentoId &&
+          !oldDocument &&
+          !skipToStep
+        ) {
           stepsStore.currentStep = stepsStore.steps.length + 1;
         }
       },
-      { immediate: false } // No ejecutar inmediatamente, solo cuando cambie
+      { immediate: false },
     );
 
     // Manejo de eventos de teclado
@@ -1386,13 +1440,14 @@ export default {
       crearNotaAclaratoria,
       notaAclaratoriaEnabled,
       regulatoryPolicy,
-      // Modal de consentimiento diario
       showConsentModal,
       modalTrabajadorId,
       modalTrabajadorNombre,
       modalTrabajadorSexo,
       handleConsentRegistered,
       handleConsentCancel,
+      documentAuditInfo,
+      formatUsername,
     };
   },
 };
@@ -1506,7 +1561,16 @@ export default {
             </button>
           </div>
 
-          <div class="flex justify-between">
+          <div v-if="documentos.currentDocument && documentAuditInfo"
+            class="-my-2 pt-3 pb-4 border-t border-gray-200 text-xs text-gray-400 space-y-1">
+            <p v-if="documentAuditInfo.createdByUsername">
+              Creado por: <span class="font-medium text-gray-500">{{ formatUsername(documentAuditInfo.createdByUsername, documentAuditInfo.createdById) }}</span>
+            </p>
+            <p v-if="documentAuditInfo.updatedByUsername && !documentAuditInfo.isSameUser">
+              Última actualización: <span class="font-medium text-gray-500">{{ formatUsername(documentAuditInfo.updatedByUsername, documentAuditInfo.updatedById) }}</span>
+            </p>
+          </div>
+          <div :class="['flex justify-between', documentAuditInfo && 'mt-4']">
             <button @click="stepsStore.previousStep"
               class="px-4 py-2 text-xs md:text-base text-white rounded-lg bg-gray-500 hover:bg-gray-600 transition-all duration-300 shadow-md">
               &lt; Anterior
