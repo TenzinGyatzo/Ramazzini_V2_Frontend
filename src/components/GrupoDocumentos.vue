@@ -82,7 +82,8 @@ const totalDocumentos = computed(() => {
            (props.documents.controlPrenatal?.length || 0) +
            (props.documents.historiaOtologica?.length || 0) +
            (props.documents.previoEspirometria?.length || 0) +
-           (props.documents.recetas?.length || 0);
+           (props.documents.recetas?.length || 0) +
+           (props.documents.entrevistasPsicologicas?.length || 0);
 });
 
 // Obtener todas las rutas de documentos de este grupo específico
@@ -239,6 +240,15 @@ const rutasDelGrupo = computed(() => {
         });
     }
 
+    if (props.documents.entrevistasPsicologicas) {
+        props.documents.entrevistasPsicologicas.forEach(entrevistaPsicologica => {
+            const rutaBase = obtenerRutaDocumento(entrevistaPsicologica, 'Entrevista Psicologica');
+            const fecha = obtenerFechaDocumento(entrevistaPsicologica) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(entrevistaPsicologica, 'Entrevista Psicologica', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            rutas.push(ruta);
+        });
+    }
     return rutas;
 });
 
@@ -734,6 +744,30 @@ const hasExtraSection = computed(() => !!slots.extraSection);
                         return props.selectedRoutes.includes(ruta);
                     })()"
                     @eliminarDocumento="$emit('eliminarDocumento', receta._id, convertirFechaISOaDDMMYYYY(receta.fechaReceta), 'receta')" 
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
+                />
+            </div>
+        </div>
+
+        <!-- Entrevista Psicologica -->
+        <div v-if="documents.entrevistasPsicologicas && documents.entrevistasPsicologicas.length > 0">
+            <div v-for="(entrevistaPsicologica, index) in documents.entrevistasPsicologicas" :key="entrevistaPsicologica._id"
+                 class="transition-all duration-200 hover:bg-gray-50"
+                 :style="{ animationDelay: `${index * 50}ms` }">
+                <DocumentoItem 
+                    :entrevistaPsicologica="entrevistaPsicologica" 
+                    :documentoId="entrevistaPsicologica._id" 
+                    :documentoTipo="'entrevistaPsicologica'" 
+                    :toggleRouteSelection="toggleRouteSelection"
+                    :isDeletionMode="isDeletionMode"
+                    :isSelected="(() => {
+                        const rutaBase = obtenerRutaDocumento(entrevistaPsicologica, 'Entrevista Psicologica');
+                        const fecha = obtenerFechaDocumento(entrevistaPsicologica) || 'SinFecha';
+                        const nombreArchivo = obtenerNombreArchivo(entrevistaPsicologica, 'Entrevista Psicologica', fecha);
+                        const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                        return props.selectedRoutes.includes(ruta);
+                    })()"
+                    @eliminarDocumento="$emit('eliminarDocumento', entrevistaPsicologica._id, convertirFechaISOaDDMMYYYY(entrevistaPsicologica.fechaEntrevistaPsicologica), 'entrevistaPsicologica')" 
                     @openSubscriptionModal="emit('openSubscriptionModal')"
                 />
             </div>

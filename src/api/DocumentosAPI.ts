@@ -61,6 +61,10 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/constanciaAptitud`);
     },
 
+    getEntrevistaPsicologica(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/entrevistaPsicologica`);
+    },
+
     getAlturaDisponible(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/altura-disponible`);
     },

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, watchEffect } from 'vue';
+import { ref, onMounted, onUnmounted, watchEffect, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useEmpresasStore } from '@/stores/empresas';
 import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
@@ -24,6 +24,11 @@ import VisualizadorHistoriaOtologica from '@/components/steps/VisualizadorHistor
 import VisualizadorPrevioEspirometria from '@/components/steps/VisualizadorPrevioEspirometria.vue';
 import VisualizadorReceta from '@/components/steps/VisualizadorReceta.vue';
 import VisualizadorConstanciaAptitud from '@/components/steps/VisualizadorConstanciaAptitud.vue';
+import VisualizadorEntrevistaPsicologica from '@/components/steps/VisualizadorEntrevistaPsicologica.vue';
+import {
+  ORIENTACION_SIN_HALLAZGO,
+  CONCLUSION_SIN_HALLAZGOS,
+} from '@/helpers/conclusionEntrevistaPsicologica';
 
 const route = useRoute();
 const router = useRouter();
@@ -135,6 +140,7 @@ watchEffect(async () => {
       previoEspirometria: formData.formDataPrevioEspirometria,
       receta: formData.formDataReceta,
       constanciaAptitud: formData.formDataConstanciaAptitud,
+      entrevistaPsicologica: formData.formDataEntrevistaPsicologica,
     };
 
     const documentoForm = documentoMap[tipoDocumento.value];
@@ -363,6 +369,42 @@ const contraindicacionesAbsolutasNegadas = () => {
   formData.formDataPrevioEspirometria.inestabilidadHemodinamicaGrave = 'NO';
   formData.formDataPrevioEspirometria.hipertensionIntracraneal = 'NO';
   formData.formDataPrevioEspirometria.desprendimientoAgudoRetina = 'NO';
+};
+
+// Entrevista Psicologica
+const entrevistaPsicologicaSinHallazgos = () => {
+  formData.formDataEntrevistaPsicologica.apariencia = 'Adecuada';
+  formData.formDataEntrevistaPsicologica.actitudHaciaEvaluador = 'Colaboradora';
+  formData.formDataEntrevistaPsicologica.nivelCooperacion = 'Alta';
+  formData.formDataEntrevistaPsicologica.contactoVisual = 'Adecuado';
+  formData.formDataEntrevistaPsicologica.conductaMotora = 'Normal';
+  formData.formDataEntrevistaPsicologica.estadoAnimoPredominante = 'Eutímico (normal)';
+  formData.formDataEntrevistaPsicologica.afecto = 'Adecuado';
+  formData.formDataEntrevistaPsicologica.intensidadEmocional = 'Normal';
+  formData.formDataEntrevistaPsicologica.cursoPensamiento = 'Normal';
+  formData.formDataEntrevistaPsicologica.alteracionesPensamiento = 'No';
+  formData.formDataEntrevistaPsicologica.descripcionAlteracionesPensamiento = 'Pensamiento lógico y coherente, sin alteraciones evidentes.';
+  formData.formDataEntrevistaPsicologica.alteracionesPerceptuales = 'No';
+  formData.formDataEntrevistaPsicologica.descripcionAlteracionesPerceptuales = 'Niega alteraciones perceptuales durante la entrevista.';
+  formData.formDataEntrevistaPsicologica.orientacion = ORIENTACION_SIN_HALLAZGO;
+  formData.formDataEntrevistaPsicologica.atencionConcentracion = 'Adecuada';
+  formData.formDataEntrevistaPsicologica.memoria = 'Conservada';
+  formData.formDataEntrevistaPsicologica.juicio = 'Conservado';
+  formData.formDataEntrevistaPsicologica.concienciaEstado = 'Presente';
+  formData.formDataEntrevistaPsicologica.relacionesInterpersonales = 'Adecuadas';
+  formData.formDataEntrevistaPsicologica.desempenoLaboralAutorreporte = 'Adecuado';
+  formData.formDataEntrevistaPsicologica.manejoEstres = 'Adecuado';
+  formData.formDataEntrevistaPsicologica.ideacionSuicida = 'No';
+  formData.formDataEntrevistaPsicologica.observacionesIdeacionSuicida = 'Niega ideación suicida actual o reciente.';
+  formData.formDataEntrevistaPsicologica.conclusionClinica = CONCLUSION_SIN_HALLAZGOS;
+};
+
+/** Rellena sin hallazgos, va al paso 22 y avanza un paso más para mostrar «Completado» en el stepper */
+const entrevistaPsicologicaSinHallazgosYCompletado = async () => {
+  entrevistaPsicologicaSinHallazgos();
+  goToStep(22);
+  await nextTick();
+  steps.nextStep();
 };
 
 </script>
@@ -811,6 +853,36 @@ const contraindicacionesAbsolutasNegadas = () => {
           </div>
           <div class="w-full xl:w-2/3 max-w-3xl mx-auto">
             <VisualizadorConstanciaAptitud />
+          </div>
+        </div>
+      </Transition>
+
+      <Transition appear mode="out-in" name="slide-up">
+        <div v-if="documentos.currentTypeOfDocument === 'entrevistaPsicologica'"
+          class="flex flex-col xl:flex-row md:flex-wrap lg:flex-nowrap gap-3 md:gap-6">
+          <div class="w-full xl:w-1/4">
+            <FormStepper />
+            <div class="text-center mt-4 p-4 md:p-6 bg-white rounded-lg shadow-md border border-gray-100 transition-all duration-300 ease-in-out hover:shadow-lg max-w-md mx-auto">
+              <p class="text-xl font-bold text-gray-700 flex items-center justify-center space-x-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                <span>Acción Rápida</span>
+              </p>
+              <button
+                type="button"
+                @click="entrevistaPsicologicaSinHallazgosYCompletado"
+                class="w-full mt-4 px-4 py-2 md:px-6 md:py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform active:scale-95 flex items-center justify-center space-x-2"
+              >
+                <span>Sin hallazgos en la entrevista</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="w-full xl:w-3/4">
+            <VisualizadorEntrevistaPsicologica />
           </div>
         </div>
       </Transition>

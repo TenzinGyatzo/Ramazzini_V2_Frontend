@@ -27,6 +27,7 @@ const documentOrder = {
   "Control Prenatal": 13,
   "Certificado Expedito": 14,
   "Receta": 15,
+  "Entrevista Psicologica": 16,
 };
 
 const getDocumentType = (route) => {
@@ -44,6 +45,7 @@ const getDocumentType = (route) => {
   if (route.includes("Control Prenatal")) return "Control Prenatal";
   if (route.includes("Certificado Expedito")) return "Certificado Expedito";
   if (route.includes("Receta")) return "Receta";
+  if (route.includes("Entrevista Psicologica")) return "Entrevista Psicologica";
   return "Documento Externo"; // Para cualquier otro caso
 };
 

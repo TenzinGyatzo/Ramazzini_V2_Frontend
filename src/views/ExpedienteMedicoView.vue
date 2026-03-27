@@ -470,6 +470,9 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(historiaOtologica) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(historiaOtologica, 'Historia Otologica', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: historiaOtologica._id, tipo: 'historiaOtologica' });
+                }
             });
 
             // Previo Espirometria
@@ -478,6 +481,20 @@ const handleDeleteSelected = async () => {
                 const fecha = obtenerFechaDocumento(previoEspirometria) || 'SinFecha';
                 const nombreArchivo = obtenerNombreArchivo(previoEspirometria, 'Previo Espirometria', fecha);
                 const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: previoEspirometria._id, tipo: 'previoEspirometria' });
+                }
+            });
+
+            // Entrevista Psicológica
+            yearData.entrevistasPsicologicas?.forEach(entrevistaPsicologica => {
+                const rutaBase = obtenerRutaDocumento(entrevistaPsicologica, 'Entrevista Psicologica');
+                const fecha = obtenerFechaDocumento(entrevistaPsicologica) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(entrevistaPsicologica, 'Entrevista Psicologica', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: entrevistaPsicologica._id, tipo: 'entrevistaPsicologica' });
+                }
             });
         });
                 
@@ -555,7 +572,8 @@ const totalDocumentosCreados = computed(() => {
       (yearData.notasMedicas?.length || 0) +
       (yearData.controlPrenatal?.length || 0) +
       (yearData.historiaOtologica?.length || 0) +
-      (yearData.previoEspirometria?.length || 0)
+      (yearData.previoEspirometria?.length || 0) +
+      (yearData.entrevistasPsicologicas?.length || 0)
     );
   }, 0);
 });

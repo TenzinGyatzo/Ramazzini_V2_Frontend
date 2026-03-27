@@ -97,6 +97,7 @@ const documentTypeLabels = {
   controlPrenatal: "Control Prenatal",
   historiaOtologica: "Historia Otologica",
   previoEspirometria: "Previo Espirometria",
+  entrevistaPsicologica: "Entrevista Psicologica",
 };
 
 // Computed properties para mejorar la legibilidad

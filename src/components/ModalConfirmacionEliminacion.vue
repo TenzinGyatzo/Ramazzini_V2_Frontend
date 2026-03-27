@@ -76,12 +76,15 @@ const documentTypes = computed(() => {
     }
     // Si la ruta no contiene ninguno de los tipos específicos pero tiene extensión, es un documento externo
     else if (!route.includes('Constancia de Aptitud') && !route.includes('Aptitud') && !route.includes('Historia Clinica') && !route.includes('Exploracion Fisica') && 
-             !route.includes('Examen Vista') && !route.includes('Historia Otologica') && !route.includes('Audiometria') && !route.includes('Antidoping') && !route.includes('Certificado') && !route.includes('Certificado Expedito') && !route.includes('Previo Espirometria') && !route.includes('Nota Medica') && !route.includes('Receta') && !route.includes('Control Prenatal') && (route.includes('.pdf') || route.includes('.png') || route.includes('.jpg') || 
+             !route.includes('Examen Vista') && !route.includes('Historia Otologica') && !route.includes('Audiometria') && !route.includes('Antidoping') && !route.includes('Certificado') && !route.includes('Certificado Expedito') && !route.includes('Previo Espirometria') && !route.includes('Nota Medica') && !route.includes('Receta') && !route.includes('Entrevista Psicologica') && !route.includes('Control Prenatal') && (route.includes('.pdf') || route.includes('.png') || route.includes('.jpg') || 
              route.includes('.jpeg') || route.includes('.doc') || route.includes('.docx'))) {
       types.documentosExternos = (types.documentosExternos || 0) + 1;
     }
     else if (route.includes('Nota Medica')) {
       types.notasMedicas = (types.notasMedicas || 0) + 1;
+    }
+    else if (route.includes('Entrevista Psicologica')) {
+      types.entrevistasPsicologicas = (types.entrevistasPsicologicas || 0) + 1;
     }
   });
   
@@ -189,6 +192,10 @@ const documentTypes = computed(() => {
                       <div v-if="documentTypes.previoEspirometria" class="flex items-center space-x-2">
                         <i class="fas fa-lungs text-sky-600"></i>
                         <span>{{ documentTypes.previoEspirometria }} Previo{{ documentTypes.previoEspirometria !== 1 ? 's' : '' }} Espirometría{{ documentTypes.previoEspirometria !== 1 ? 's' : '' }}</span>
+                      </div>
+                      <div v-if="documentTypes.entrevistasPsicologicas" class="flex items-center space-x-2">
+                        <i class="fa-regular fa-comments text-slate-600"></i>
+                        <span>{{ documentTypes.entrevistasPsicologicas }} Entrevista{{ documentTypes.entrevistasPsicologicas !== 1 ? 's' : '' }} Psicológica{{ documentTypes.entrevistasPsicologicas !== 1 ? 's' : '' }}</span>
                       </div>
                     </div>
                   </div>

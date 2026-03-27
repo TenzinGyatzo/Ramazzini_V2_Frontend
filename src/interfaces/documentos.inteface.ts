@@ -514,3 +514,32 @@ export interface ConstanciaAptitud {
     _id: string;
     fechaConstanciaAptitud: string;
 }
+
+export interface EntrevistaPsicologica {
+    _id: string;
+    fechaEntrevistaPsicologica: string;
+    apariencia: string;
+    actitudHaciaEvaluador: string;
+    nivelCooperacion: string;
+    contactoVisual: string;
+    conductaMotora: string;
+    estadoAnimoPredominante: string;
+    afecto: string;
+    intensidadEmocional: string;
+    cursoPensamiento: string;
+    alteracionesPensamiento: string;
+    descripcionAlteracionesPensamiento: string;
+    alteracionesPerceptuales: string;
+    descripcionAlteracionesPerceptuales: string;
+    orientacion: string;
+    atencionConcentracion: string;
+    memoria: string;
+    juicio: string;
+    concienciaEstado: string;
+    relacionesInterpersonales: string;
+    desempenoLaboralAutorreporte: string;
+    manejoEstres: string;
+    ideacionSuicida: string;
+    observacionesIdeacionSuicida: string;
+    conclusionClinica: string;
+}

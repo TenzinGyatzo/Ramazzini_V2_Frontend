@@ -94,6 +94,15 @@ const handleQuestionnaireSelect = (questionnaireType) => {
           tipoDocumento: 'previoEspirometria'
         }
       });
+    } else if (questionnaireType === 'entrevista-psicologica') {
+      router.push({
+        name: 'crear-documento',
+        params: {
+          idEmpresa: empresas.currentEmpresaId,
+          idTrabajador: trabajadores.currentTrabajadorId,
+          tipoDocumento: 'entrevistaPsicologica'
+        }
+      });
     }
   }, 'acceder a cuestionarios adicionales');
 };
@@ -175,6 +184,47 @@ const handleQuestionnaireSelect = (questionnaireType) => {
               </button>
             </div>
           </div>
+
+          <!-- Cuestionarios Psicologicos -->
+          <div class="space-y-3">
+            <div class="flex items-center text-sm font-semibold text-emerald-700 uppercase tracking-wide mb-3">
+              <i class="fas fa-exclamation-triangle text-emerald-500 mr-3"></i>
+              Cuestionarios Psicologicos
+            </div>
+            <div class="space-y-2">
+              <button 
+                @click="handleQuestionnaireSelect('entrevista-psicologica')"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
+              >
+                <i class="fa-regular fa-comments text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
+                Entrevista Psicologica
+              </button>
+              <button 
+                @click="handleQuestionnaireSelect('trastornos-estado-animo')"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
+              >
+                <i class="fa-solid fa-wave-square text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
+                Trastornos del Estado de Ánimo (MDQ)
+              </button>
+              <button 
+                @click="handleQuestionnaireSelect('cuestionario-prodromal-breve')"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
+              >
+                <i class="fa-solid fa-brain text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
+                Cuestionario Prodromal Breve (PQ-B)
+              </button>
+              <button 
+                @click="handleQuestionnaireSelect('trastorno-limite-personalidad')"
+                class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300 disabled"
+                disabled
+              >
+                <i class="fa-solid fa-heart-crack text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
+                Prueba del trastorno límite de personalidad (MASI-BPD)
+              </button>
+            </div>
+          </div> 
 
           <!-- Vigilancia médica por condición personal -->
           <div class="space-y-3">

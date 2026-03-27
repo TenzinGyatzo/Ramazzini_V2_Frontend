@@ -1122,6 +1122,7 @@ const props = defineProps({
     controlPrenatal: [Object, String],
     historiaOtologica: [Object, String],
     previoEspirometria: [Object, String],
+    entrevistaPsicologica: [Object, String],
 });
 
 const { antidoping } = props; // Desestructuración para acceder a antidoping
@@ -1331,9 +1332,10 @@ const construirRutaYNombrePDF = () => {
     'controlprenatal': props.controlPrenatal,
     'historiaotologica': props.historiaOtologica,
     'previoespirometria': props.previoEspirometria,
+    'entrevistaPsicologica': props.entrevistaPsicologica,
   }[tipoSinEspacios];
 
-  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaConstanciaAptitud || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaReceta || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria;
+  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaConstanciaAptitud || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaReceta || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria || doc?.fechaEntrevistaPsicologica;
 
   const tiposDocumentos = {
     'constanciaaptitud': 'Constancia de Aptitud',
@@ -1350,6 +1352,7 @@ const construirRutaYNombrePDF = () => {
     'controlprenatal': 'Control Prenatal',
     'historiaotologica': 'Historia Otologica',
     'previoespirometria': 'Previo Espirometria',
+    'entrevistaPsicologica': 'Entrevista Psicologica',
   };
 
   const tipoDocumentoFormateado = tiposDocumentos[tipoSinEspacios];
@@ -1461,7 +1464,7 @@ onMounted(() => {
 });
 
 // Watcher para verificar disponibilidad cuando cambien las props
-watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanciaAptitud, props.certificado, props.certificadoExpedito, props.receta, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal, props.historiaOtologica, props.previoEspirometria], () => {
+watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanciaAptitud, props.certificado, props.certificadoExpedito, props.receta, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal, props.historiaOtologica, props.previoEspirometria, props.entrevistaPsicologica], () => {
   verificarDisponibilidadPDF();
 }, { deep: true });
 
@@ -2643,6 +2646,53 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Entrevista Psicologica -->
+                <div v-if="typeof entrevistaPsicologica === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
+                    <!-- Checkbox mejorado -->
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, entrevistaPsicologica, 'Entrevista Psicologica')">
+                    </div>
+                    
+                    <!-- Contenido principal -->
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${entrevistaPsicologica.rutaPDF}`,
+                            `Entrevista Psicologica ${convertirFechaISOaDDMMYYYY(entrevistaPsicologica.fechaEntrevistaPsicologica)}.pdf`,
+                            entrevistaPsicologica.updatedAt ? new Date(entrevistaPsicologica.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${entrevistaPsicologica.rutaPDF}`,
+                            `Entrevista Psicologica ${convertirFechaISOaDDMMYYYY(entrevistaPsicologica.fechaEntrevistaPsicologica)}.pdf`,
+                            entrevistaPsicologica.updatedAt ? new Date(entrevistaPsicologica.updatedAt).getTime() : null,
+                            'Entrevista Psicologica')"
+                        @mouseleave="handleHoverLeave">
+                        
+                        <!-- Icono del documento -->
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-slate-100 rounded-lg mr-4 group-hover:bg-slate-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fa-regular fa-comments text-slate-600 text-lg"></i>
+                        </div>
+                        
+                        <!-- Información del documento -->
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
+                            <div class="flex items-center mb-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
+                                    Entrevista Psicologica
+                                </h3>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(entrevistaPsicologica.fechaEntrevistaPsicologica) }}
+                            </p>
+                        </div>
+                        
                     </div>
                 </div>
 

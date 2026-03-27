@@ -55,8 +55,36 @@ function validarSeleccion(seleccion: any): boolean {
   return typeof seleccion === 'string' && seleccion.trim().length > 0;
 }
 
+/** Obligatorio solo si `alteracionesPensamiento === 'Sí'` */
+function validarDescripcionAlteracionesPensamientoSiAplica(valor: any, datos?: any): boolean {
+  if (!datos || datos.alteracionesPensamiento !== 'Sí') return true;
+  return validarTexto(valor);
+}
+
+/** Obligatorio solo si `alteracionesPerceptuales === 'Sí'` */
+function validarDescripcionAlteracionesPerceptualesSiAplica(valor: any, datos?: any): boolean {
+  if (!datos || datos.alteracionesPerceptuales !== 'Sí') return true;
+  return validarTexto(valor);
+}
+
+/** Obligatorio solo si `ideacionSuicida === 'Sí'` */
+function validarObservacionesIdeacionSuicidaSiAplica(valor: any, datos?: any): boolean {
+  if (!datos || datos.ideacionSuicida !== 'Sí') return true;
+  return validarTexto(valor);
+}
+
 // Definición de campos requeridos por tipo de documento
-const camposRequeridosPorTipo: Record<string, Array<{campo: string, nombre: string, tipo: string, paso?: number, validacion?: (valor: any) => boolean}>> = {
+const camposRequeridosPorTipo: Record<
+  string,
+  Array<{
+    campo: string;
+    nombre: string;
+    tipo: string;
+    paso?: number;
+    /** El segundo argumento es opcional: datos completos del formulario para reglas condicionales */
+    validacion?: (valor: any, datosFormulario?: any) => boolean;
+  }>
+> = {
   antidoping: [
     { campo: 'fechaAntidoping', nombre: 'Fecha de la prueba', tipo: 'fecha', paso: 1, validacion: validarFecha },
     { campo: 'marihuana', nombre: 'Resultados', tipo: 'seleccion', paso: 2, validacion: validarSeleccion }
@@ -144,6 +172,34 @@ const camposRequeridosPorTipo: Record<string, Array<{campo: string, nombre: stri
     { campo: 'fechaReceta', nombre: 'Fecha de la receta', tipo: 'fecha', paso: 1, validacion: validarFecha },
     { campo: 'tratamiento', nombre: 'Tratamiento', tipo: 'lista', paso: 2, validacion: validarListaTexto },
   ],
+
+  entrevistaPsicologica: [
+    { campo: 'fechaEntrevistaPsicologica', nombre: 'Fecha de la entrevista psicológica', tipo: 'fecha', paso: 1, validacion: validarFecha },
+    { campo: 'apariencia', nombre: 'Apariencia', tipo: 'seleccion', paso: 2, validacion: validarSeleccion },
+    { campo: 'actitudHaciaEvaluador', nombre: 'Actitud hacia el evaluador', tipo: 'seleccion', paso: 3, validacion: validarSeleccion },
+    { campo: 'nivelCooperacion', nombre: 'Nivel de cooperación', tipo: 'seleccion', paso: 4, validacion: validarSeleccion },
+    { campo: 'contactoVisual', nombre: 'Contacto visual', tipo: 'seleccion', paso: 5, validacion: validarSeleccion },
+    { campo: 'conductaMotora', nombre: 'Conducta motora', tipo: 'seleccion', paso: 6, validacion: validarSeleccion },
+    { campo: 'estadoAnimoPredominante', nombre: 'Estado de ánimo predominante', tipo: 'seleccion', paso: 7, validacion: validarSeleccion },
+    { campo: 'afecto', nombre: 'Afecto', tipo: 'seleccion', paso: 8, validacion: validarSeleccion },
+    { campo: 'intensidadEmocional', nombre: 'Intensidad emocional', tipo: 'seleccion', paso: 9, validacion: validarSeleccion },
+    { campo: 'cursoPensamiento', nombre: 'Curso del pensamiento', tipo: 'seleccion', paso: 10, validacion: validarSeleccion },
+    { campo: 'alteracionesPensamiento', nombre: 'Alteraciones del pensamiento', tipo: 'seleccion', paso: 11, validacion: validarSeleccion },
+    { campo: 'descripcionAlteracionesPensamiento', nombre: 'Descripción de alteraciones del pensamiento', tipo: 'texto', paso: 11, validacion: validarDescripcionAlteracionesPensamientoSiAplica },
+    { campo: 'alteracionesPerceptuales', nombre: 'Alteraciones perceptuales', tipo: 'seleccion', paso: 12, validacion: validarSeleccion },
+    { campo: 'descripcionAlteracionesPerceptuales', nombre: 'Descripción de alteraciones perceptuales', tipo: 'texto', paso: 12, validacion: validarDescripcionAlteracionesPerceptualesSiAplica },
+    { campo: 'orientacion', nombre: 'Orientación', tipo: 'seleccion', paso: 13, validacion: validarSeleccion },
+    { campo: 'atencionConcentracion', nombre: 'Atención y concentración', tipo: 'seleccion', paso: 14, validacion: validarSeleccion },
+    { campo: 'memoria', nombre: 'Memoria', tipo: 'seleccion', paso: 15, validacion: validarSeleccion },
+    { campo: 'juicio', nombre: 'Juicio', tipo: 'seleccion', paso: 16, validacion: validarSeleccion },
+    { campo: 'concienciaEstado', nombre: 'Conciencia de estado', tipo: 'seleccion', paso: 17, validacion: validarSeleccion },
+    { campo: 'relacionesInterpersonales', nombre: 'Relaciones interpersonales', tipo: 'seleccion', paso: 18, validacion: validarSeleccion },
+    { campo: 'desempenoLaboralAutorreporte', nombre: 'Desempeño laboral (autorreporte)', tipo: 'seleccion', paso: 19, validacion: validarSeleccion },
+    { campo: 'manejoEstres', nombre: 'Manejo del estrés', tipo: 'seleccion', paso: 20, validacion: validarSeleccion },
+    { campo: 'ideacionSuicida', nombre: 'Ideación suicida', tipo: 'seleccion', paso: 21, validacion: validarSeleccion },
+    { campo: 'observacionesIdeacionSuicida', nombre: 'Observaciones (ideación suicida)', tipo: 'texto', paso: 21, validacion: validarObservacionesIdeacionSuicidaSiAplica },
+    { campo: 'conclusionClinica', nombre: 'Conclusión clínica', tipo: 'texto', paso: 22, validacion: validarTexto },
+  ],
 };
 
 // Función principal para validar campos requeridos
@@ -161,8 +217,9 @@ export function validarCamposRequeridos(tipoDocumento: string, datosFormulario: 
     const valor = datosFormulario[campoRequerido.campo];
     
     // Usar la función de validación específica si está definida, sino usar validación general
+    // El segundo argumento permite reglas condicionales (p. ej. descripción solo si "Sí")
     const esValido = campoRequerido.validacion 
-      ? campoRequerido.validacion(valor)
+      ? campoRequerido.validacion(valor, datosFormulario)
       : !esValorVacio(valor);
     
     if (!esValido) {
