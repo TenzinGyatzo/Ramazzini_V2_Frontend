@@ -46,16 +46,16 @@ onUnmounted(() => {
 const mensajeErrorTensionSistolica = computed(() => {
   return tensionArterialSistolica.value < 60 
     ? 'Debe ser mínimo 60' 
-    : tensionArterialSistolica.value > 200 
-      ? 'Debe ser máximo 200' 
+    : tensionArterialSistolica.value > 300 
+      ? 'Debe ser máximo 300' 
       : '';
 });
 
 const mensajeErrorTensionDiastolica = computed(() => {
   return tensionArterialDiastolica.value < 40 
     ? 'Debe ser mínimo 40' 
-    : tensionArterialDiastolica.value > 150 
-      ? 'Debe ser máximo 150' 
+    : tensionArterialDiastolica.value > 200 
+      ? 'Debe ser máximo 200' 
       : '';
 });
 

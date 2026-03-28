@@ -2135,9 +2135,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                         :class="exploracionFisica.categoriaTensionArterial === 'Óptima' ? 'text-emerald-600' :
                                                exploracionFisica.categoriaTensionArterial === 'Normal' ? 'text-emerald-600' :
                                                exploracionFisica.categoriaTensionArterial === 'Alta' ? 'text-amber-600' :
-                                               exploracionFisica.categoriaTensionArterial === 'Hipertensión ligera' ? 'text-amber-600' :
-                                               exploracionFisica.categoriaTensionArterial === 'Hipertensión moderada' ? 'text-red-600' :
-                                               exploracionFisica.categoriaTensionArterial === 'Hipertensión severa' ? 'text-red-700' : 'text-gray-800'">
+                                               exploracionFisica.categoriaTensionArterial === 'Hipertensión grado 1' ? 'text-amber-600' :
+                                               exploracionFisica.categoriaTensionArterial === 'Hipertensión grado 2' ? 'text-red-600' :
+                                               exploracionFisica.categoriaTensionArterial === 'Crisis hipertensiva' ? 'text-red-700' : 'text-gray-800'">
                                         <span>
                                             {{ exploracionFisica.categoriaTensionArterial }}
                                             <span v-if="exploracionFisica.categoriaTensionArterial === 'Normal' || exploracionFisica.categoriaTensionArterial === 'Óptima' || exploracionFisica.categoriaTensionArterial === 'Alta'">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>

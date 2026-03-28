@@ -921,9 +921,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                                 [ { text: 'Óptima', style: 'tableCellMedium' }, { text: 'Menos de 120', style: 'tableCellMedium' }, { text: 'Menos de 80', style: 'tableCellMedium' } ],
                                 [ { text: 'Normal', style: 'tableCellMedium' }, { text: '121 – 130', style: 'tableCellMedium' }, { text: '81 – 85', style: 'tableCellMedium' } ],
                                 [ { text: 'Alta', style: 'tableCellMedium' }, { text: '131 – 139', style: 'tableCellMedium' }, { text: '86 – 89', style: 'tableCellMedium' } ],
-                                [ { text: 'Hipertensión ligera', style: 'tableCellMedium' }, { text: '140 – 159', style: 'tableCellMedium' }, { text: '90 – 99', style: 'tableCellMedium' } ],
-                                [ { text: 'Hipertensión moderada', style: 'tableCellMedium' }, { text: '160 – 179', style: 'tableCellMedium' }, { text: '100 – 109', style: 'tableCellMedium' } ],
-                                [ { text: 'Hipertensión severa', style: 'tableCellMedium' }, { text: '180 o más', style: 'tableCellMedium' }, { text: '110 o más', style: 'tableCellMedium' } ]
+                                [ { text: 'Hipertensión grado 1', style: 'tableCellMedium' }, { text: '140 – 159', style: 'tableCellMedium' }, { text: '90 – 99', style: 'tableCellMedium' } ],
+                                [ { text: 'Hipertensión grado 2', style: 'tableCellMedium' }, { text: '160 – 179', style: 'tableCellMedium' }, { text: '100 – 109', style: 'tableCellMedium' } ],
+                                [ { text: 'Crisis hipertensiva', style: 'tableCellMedium' }, { text: '180 o más', style: 'tableCellMedium' }, { text: '110 o más', style: 'tableCellMedium' } ]
                             ]
                         },
                         layout: 'lightHorizontalLines',

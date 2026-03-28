@@ -497,9 +497,9 @@ const graficaTensionArterialData = computed(() => {
     'Óptima': '#10B981',           // Verde
     'Normal': '#34D399',           // Verde claro
     'Alta': '#F59E0B',             // Amarillo
-    'Hipertensión ligera': '#F97316', // Naranja
-    'Hipertensión moderada': '#DC2626', // Rojo
-    'Hipertensión severa': '#7F1D1D'    // Rojo oscuro
+    'Hipertensión grado 1': '#F97316', // Naranja
+    'Hipertensión grado 2': '#DC2626', // Rojo
+    'Crisis hipertensiva': '#7F1D1D'    // Rojo oscuro
   };
 
   return {
@@ -3163,7 +3163,7 @@ const tablaCintura = computed(() => {
                                   ? 'text-green-600'
                                   : categoria === 'Alta'
                                     ? 'text-amber-600'
-                                    : categoria === 'Hipertensión ligera'
+                                    : categoria === 'Hipertensión grado 1'
                                       ? 'text-orange-600'
                                       : 'text-rose-600'
                             ]"

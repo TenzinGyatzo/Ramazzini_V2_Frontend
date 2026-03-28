@@ -450,9 +450,9 @@ export const categoriasTensionArterialOrdenadas = [
   'Óptima',
   'Normal',
   'Alta',
-  'Hipertensión ligera',
-  'Hipertensión moderada',
-  'Hipertensión severa'
+  'Hipertensión grado 1',
+  'Hipertensión grado 2',
+  'Crisis hipertensiva',
 ];
 
 export function contarPorCategoriaTensionArterial(data: { categoriaTensionArterial: string | null }[]): [string, number, number][] {
