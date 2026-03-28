@@ -10,6 +10,7 @@ import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useDocumentosStore } from '@/stores/documentos';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento, obtenerNombreDescargaCertificadoExpedito } from '@/helpers/rutas.ts';
+import { esConclusionSinHallazgos } from '@/helpers/conclusionEntrevistaPsicologica';
 import ModalPdfEliminado from './ModalPdfEliminado.vue';
 import DocumentHoverPreview from './DocumentHoverPreview.vue';
 import { useUserPermissions } from '@/composables/useUserPermissions';
@@ -124,7 +125,7 @@ const canEditDocument = (documentType) => {
   }
   
   // Cuestionarios adicionales (incluye certificadoExpedito)
-  if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito'].includes(tipoSinEspacios)) {
+  if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito', 'entrevistaPsicologica'].includes(tipoSinEspacios)) {
     return canManageCuestionariosAdicionales.value;
   }
   
@@ -150,7 +151,7 @@ const handleEditDocument = (documentoId, documentoTipo) => {
     executeIfCanManageDocumentosDiagnostico(() => {
       editarDocumento(documentoId, documentoTipo);
     }, 'editar documentos de diagnóstico y certificación');
-  } else if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito'].includes(tipoSinEspacios)) {
+  } else if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito', 'entrevistaPsicologica'].includes(tipoSinEspacios)) {
     executeIfCanManageCuestionariosAdicionales(() => {
       editarDocumento(documentoId, documentoTipo);
     }, 'editar cuestionarios adicionales');
@@ -191,7 +192,7 @@ const handleDeleteDocument = (documentoId, documentoNombre, documentoTipo) => {
     executeIfCanManageDocumentosDiagnostico(() => {
       emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo);
     }, 'eliminar documentos de diagnóstico y certificación');
-  } else if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito'].includes(tipoSinEspacios)) {
+  } else if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito', 'entrevistaPsicologica'].includes(tipoSinEspacios)) {
     executeIfCanManageCuestionariosAdicionales(() => {
       emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo);
     }, 'eliminar cuestionarios adicionales');
@@ -996,6 +997,10 @@ const descargarPdfActual = async () => {
                     documento = props.previoEspirometria;
                     tipoDocumento = 'Previo Espirometria';
                     break;
+                case 'entrevistaPsicologica':
+                    documento = props.entrevistaPsicologica;
+                    tipoDocumento = 'Entrevista Psicologica';
+                    break;
                 case 'documentoexterno':
                     documento = props.documentoExterno;
                     tipoDocumento = 'Documento Externo';
@@ -1313,6 +1318,13 @@ const mensajeDetalladoAntidoping = computed(() => {
 
   return `Positivo a: ${sustanciasPositivas}`;
 })
+
+/** Alineado con `conclusionEntrevistaPsicologica.ts` (incluye variantes legacy del texto por defecto). */
+const entrevistaPsicologicaSinHallazgoConclusion = computed(() => {
+  const ep = props.entrevistaPsicologica;
+  if (!ep || typeof ep !== 'object') return true;
+  return esConclusionSinHallazgos(ep.conclusionClinica);
+});
 ///////////////////////////////////////////
 
 const construirRutaYNombrePDF = () => {
@@ -1332,7 +1344,7 @@ const construirRutaYNombrePDF = () => {
     'controlprenatal': props.controlPrenatal,
     'historiaotologica': props.historiaOtologica,
     'previoespirometria': props.previoEspirometria,
-    'entrevistaPsicologica': props.entrevistaPsicologica,
+    'entrevistapsicologica': props.entrevistaPsicologica,
   }[tipoSinEspacios];
 
   const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaConstanciaAptitud || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaReceta || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria || doc?.fechaEntrevistaPsicologica;
@@ -1352,7 +1364,7 @@ const construirRutaYNombrePDF = () => {
     'controlprenatal': 'Control Prenatal',
     'historiaotologica': 'Historia Otologica',
     'previoespirometria': 'Previo Espirometria',
-    'entrevistaPsicologica': 'Entrevista Psicologica',
+    'entrevistapsicologica': 'Entrevista Psicologica',
   };
 
   const tipoDocumentoFormateado = tiposDocumentos[tipoSinEspacios];
@@ -2682,17 +2694,52 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                         
                         <!-- Información del documento -->
                         <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
-                            <div class="flex items-center mb-1">
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duración-200 flex items-center max-[390px]:text-base">
-                                    Entrevista Psicologica
+                            <div class="flex items-center mb-1 flex-wrap gap-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center max-[390px]:text-base">
+                                    Entrevista Psicológica
                                 </h3>
+                                <span
+                                    v-if="entrevistaPsicologica.ideacionSuicida === 'Sí'"
+                                    class="hidden sm:flex ml-0 sm:ml-1 px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
+                                    Alerta
+                                </span>
+                                <span
+                                    v-if="entrevistaPsicologica.ideacionSuicida === 'No'"
+                                    class="hidden sm:flex ml-0 sm:ml-1 px-2 py-1 text-xs font-medium rounded-full"
+                                    :class="entrevistaPsicologicaSinHallazgoConclusion ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                                    {{ entrevistaPsicologicaSinHallazgoConclusion ? 'Sin hallazgos' : 'Hallazgo' }}
+                                </span>
                             </div>
                             <p class="text-sm text-gray-500 flex items-center">
                                 <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
                                 {{ convertirFechaISOaDDMMYYYY(entrevistaPsicologica.fechaEntrevistaPsicologica) }}
                             </p>
                         </div>
-                        
+
+                        <!-- Información adicional (pantallas grandes): flex-1 para no capar el ancho en w-64 -->
+                        <div class="hidden xl:flex xl:flex-1 xl:min-w-0 min-w-0">
+                            <div class="text-sm flex xl:space-x-2 min-w-0 flex-1">
+                                <div
+                                    v-if="entrevistaPsicologica.ideacionSuicida === 'Sí'"
+                                    class="hidden xl:block bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 flex-shrink-0">
+                                    <div class="min-w-0">
+                                        <p class="text-red-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Riesgo</p>
+                                        <p class="font-medium text-sm truncate max-w-full text-red-700">
+                                            Ideación suicida
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit min-w-0 max-w-dynamic-entrevista-conclusion xl-max-w-dynamic-entrevista-conclusion-xl xxl-max-w-dynamic-entrevista-conclusion-2xl">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Conclusión</p>
+                                    <p
+                                        class="font-medium text-sm truncate max-w-full xl:max-w-none 2xl:max-w-none"
+                                        :class="entrevistaPsicologicaSinHallazgoConclusion ? 'text-gray-800' : 'text-red-600'"
+                                        :title="entrevistaPsicologica.conclusionClinica">
+                                        {{ entrevistaPsicologica.conclusionClinica }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -2717,6 +2764,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     'Control Prenatal': controlPrenatal,
                     'Historia Otologica': historiaOtologica,
                     'Previo Espirometria': previoEspirometria,
+                    'Entrevista Psicologica': entrevistaPsicologica,
                 }" :key="key">
                     <button v-if="documento && documento.rutaDocumento" @click="descargarArchivo(documento, key)"
                         type="button"
