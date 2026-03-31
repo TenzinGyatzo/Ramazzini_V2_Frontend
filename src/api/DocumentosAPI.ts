@@ -65,6 +65,18 @@ export default {
         return api.get(`/expedientes/${trabajadorId}/documentos/entrevistaPsicologica`);
     },
 
+    getTrastornosEstadoAnimo(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/trastornosEstadoAnimo`);
+    },
+
+    getCuestionarioProdromalBreve(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/cuestionarioProdromalBreve`);
+    },
+
+    getTrastornoLimitePersonalidad(trabajadorId: string) {
+        return api.get(`/expedientes/${trabajadorId}/documentos/trastornoLimitePersonalidad`);
+    },
+
     getAlturaDisponible(trabajadorId: string) {
         return api.get(`/expedientes/${trabajadorId}/documentos/altura-disponible`);
     },

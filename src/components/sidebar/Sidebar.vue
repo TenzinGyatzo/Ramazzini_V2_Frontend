@@ -98,6 +98,9 @@ const documentTypeLabels = {
   historiaOtologica: "Historia Otologica",
   previoEspirometria: "Previo Espirometria",
   entrevistaPsicologica: "Entrevista Psicologica",
+  trastornosEstadoAnimo: "Trastornos Estado Animo",
+  cuestionarioProdromalBreve: "Cuestionario Prodromal Breve",
+  trastornoLimitePersonalidad: "Trastorno Limite Personalidad",
 };
 
 // Computed properties para mejorar la legibilidad

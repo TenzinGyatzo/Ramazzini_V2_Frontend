@@ -83,7 +83,10 @@ const totalDocumentos = computed(() => {
            (props.documents.historiaOtologica?.length || 0) +
            (props.documents.previoEspirometria?.length || 0) +
            (props.documents.recetas?.length || 0) +
-           (props.documents.entrevistasPsicologicas?.length || 0);
+           (props.documents.entrevistasPsicologicas?.length || 0) +
+           (props.documents.trastornosEstadoAnimo?.length || 0) +
+           (props.documents.cuestionarioProdromalBreve?.length || 0) +
+           (props.documents.trastornoLimitePersonalidad?.length || 0);
 });
 
 // Obtener todas las rutas de documentos de este grupo específico
@@ -249,6 +252,37 @@ const rutasDelGrupo = computed(() => {
             rutas.push(ruta);
         });
     }
+
+    if (props.documents.trastornosEstadoAnimo) {
+        props.documents.trastornosEstadoAnimo.forEach(trastornosEstadoAnimo => {
+            const rutaBase = obtenerRutaDocumento(trastornosEstadoAnimo, 'Trastornos Estado Animo');
+            const fecha = obtenerFechaDocumento(trastornosEstadoAnimo) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(trastornosEstadoAnimo, 'Trastornos Estado Animo', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            rutas.push(ruta);
+        });
+    }
+
+    if (props.documents.cuestionarioProdromalBreve) {
+        props.documents.cuestionarioProdromalBreve.forEach(cuestionarioProdromalBreve => {
+            const rutaBase = obtenerRutaDocumento(cuestionarioProdromalBreve, 'Cuestionario Prodromal Breve');
+            const fecha = obtenerFechaDocumento(cuestionarioProdromalBreve) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(cuestionarioProdromalBreve, 'Cuestionario Prodromal Breve', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            rutas.push(ruta);
+        });
+    }
+
+    if (props.documents.trastornoLimitePersonalidad) {
+        props.documents.trastornoLimitePersonalidad.forEach(trastornoLimitePersonalidad => {
+            const rutaBase = obtenerRutaDocumento(trastornoLimitePersonalidad, 'Trastorno Limite Personalidad');
+            const fecha = obtenerFechaDocumento(trastornoLimitePersonalidad) || 'SinFecha';
+            const nombreArchivo = obtenerNombreArchivo(trastornoLimitePersonalidad, 'Trastorno Limite Personalidad', fecha);
+            const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+            rutas.push(ruta);
+        });
+    }
+
     return rutas;
 });
 
@@ -773,6 +807,78 @@ const hasExtraSection = computed(() => !!slots.extraSection);
             </div>
         </div>
 
+        <!-- Trastornos Estado Animo -->
+        <div v-if="documents.trastornosEstadoAnimo && documents.trastornosEstadoAnimo.length > 0">
+            <div v-for="(trastornosEstadoAnimo, index) in documents.trastornosEstadoAnimo" :key="trastornosEstadoAnimo._id"
+                 class="transition-all duration-200 hover:bg-gray-50"
+                 :style="{ animationDelay: `${index * 50}ms` }">
+                <DocumentoItem 
+                    :trastornosEstadoAnimo="trastornosEstadoAnimo" 
+                    :documentoId="trastornosEstadoAnimo._id" 
+                    :documentoTipo="'trastornosEstadoAnimo'" 
+                    :toggleRouteSelection="toggleRouteSelection"
+                    :isDeletionMode="isDeletionMode"
+                    :isSelected="(() => {
+                        const rutaBase = obtenerRutaDocumento(trastornosEstadoAnimo, 'Trastornos Estado Animo');
+                        const fecha = obtenerFechaDocumento(trastornosEstadoAnimo) || 'SinFecha';
+                        const nombreArchivo = obtenerNombreArchivo(trastornosEstadoAnimo, 'Trastornos Estado Animo', fecha);
+                        const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                        return props.selectedRoutes.includes(ruta);
+                    })()"
+                    @eliminarDocumento="$emit('eliminarDocumento', trastornosEstadoAnimo._id, convertirFechaISOaDDMMYYYY(trastornosEstadoAnimo.fechaTrastornosEstadoAnimo), 'trastornosEstadoAnimo')" 
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
+                />
+            </div>
+        </div>
+
+        <!-- Cuestionario Prodromal Breve -->
+        <div v-if="documents.cuestionarioProdromalBreve && documents.cuestionarioProdromalBreve.length > 0">
+            <div v-for="(cuestionarioProdromalBreve, index) in documents.cuestionarioProdromalBreve" :key="cuestionarioProdromalBreve._id"
+                 class="transition-all duration-200 hover:bg-gray-50"
+                 :style="{ animationDelay: `${index * 50}ms` }">
+                <DocumentoItem 
+                    :cuestionarioProdromalBreve="cuestionarioProdromalBreve" 
+                    :documentoId="cuestionarioProdromalBreve._id" 
+                    :documentoTipo="'cuestionarioProdromalBreve'" 
+                    :toggleRouteSelection="toggleRouteSelection"
+                    :isDeletionMode="isDeletionMode"
+                    :isSelected="(() => {
+                        const rutaBase = obtenerRutaDocumento(cuestionarioProdromalBreve, 'Cuestionario Prodromal Breve');
+                        const fecha = obtenerFechaDocumento(cuestionarioProdromalBreve) || 'SinFecha';
+                        const nombreArchivo = obtenerNombreArchivo(cuestionarioProdromalBreve, 'Cuestionario Prodromal Breve', fecha);
+                        const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                        return props.selectedRoutes.includes(ruta);
+                    })()"
+                    @eliminarDocumento="$emit('eliminarDocumento', cuestionarioProdromalBreve._id, convertirFechaISOaDDMMYYYY(cuestionarioProdromalBreve.fechaCuestionarioProdromalBreve), 'cuestionarioProdromalBreve')" 
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
+                />
+            </div>
+        </div>
+
+        <!-- Trastorno Limite Personalidad -->
+        <div v-if="documents.trastornoLimitePersonalidad && documents.trastornoLimitePersonalidad.length > 0">
+            <div v-for="(trastornoLimitePersonalidad, index) in documents.trastornoLimitePersonalidad" :key="trastornoLimitePersonalidad._id"
+                 class="transition-all duration-200 hover:bg-gray-50"
+                 :style="{ animationDelay: `${index * 50}ms` }">
+                <DocumentoItem 
+                    :trastornoLimitePersonalidad="trastornoLimitePersonalidad" 
+                    :documentoId="trastornoLimitePersonalidad._id" 
+                    :documentoTipo="'trastornoLimitePersonalidad'" 
+                    :toggleRouteSelection="toggleRouteSelection"
+                    :isDeletionMode="isDeletionMode"
+                    :isSelected="(() => {
+                        const rutaBase = obtenerRutaDocumento(trastornoLimitePersonalidad, 'Trastorno Limite Personalidad');
+                        const fecha = obtenerFechaDocumento(trastornoLimitePersonalidad) || 'SinFecha';
+                        const nombreArchivo = obtenerNombreArchivo(trastornoLimitePersonalidad, 'Trastorno Limite Personalidad', fecha);
+                        const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                        return props.selectedRoutes.includes(ruta);
+                    })()"
+                    @eliminarDocumento="$emit('eliminarDocumento', trastornoLimitePersonalidad._id, convertirFechaISOaDDMMYYYY(trastornoLimitePersonalidad.fechaTrastornoLimitePersonalidad), 'trastornoLimitePersonalidad')" 
+                    @openSubscriptionModal="emit('openSubscriptionModal')"
+                />
+            </div>
+        </div>
+        
         <div v-if="hasExtraSection" class="border-t border-gray-200 bg-gray-50/70 px-4 py-4">
             <slot name="extraSection" :year="year"></slot>
         </div>

@@ -90,7 +90,7 @@ const filtrosConfig = [
     'Bajo Riesgo', 'Riesgo Aumentado', 'Alto Riesgo', '-'
   ]},
   { id: 'tensionArterial', label: 'Tensión Arterial', opciones: [
-    'Óptima', 'Normal', 'Alta', 'Hipertensión grado 1', 'Hipertensión grado 2', 'Crisis hipertensiva', '-'
+    'Óptima', 'Normal', 'Alta', 'Hipertensión grado 1', 'Hipertensión grado 2', 'Hipertensión grado 3', '-'
   ]},
   { id: 'diabetico', label: 'Diabético', opciones: ['Si', 'No', '-'] },
   { id: 'hipertensivo', label: 'Hipertensivo', opciones: ['Si', 'No', '-'] },
@@ -566,7 +566,7 @@ const filtrosValidos = {
   sexo: ['Masculino', 'Femenino'],
   imc: ['Bajo peso', 'Normal', 'Sobrepeso', 'Obesidad clase I', 'Obesidad clase II', 'Obesidad clase III'],
   cintura: ['Bajo Riesgo', 'Riesgo Aumentado', 'Alto Riesgo', '-'],
-  tensionArterial: ['Óptima', 'Normal', 'Alta', 'Hipertensión grado 1', 'Hipertensión grado 2', 'Crisis hipertensiva'],
+  tensionArterial: ['Óptima', 'Normal', 'Alta', 'Hipertensión grado 1', 'Hipertensión grado 2', 'Hipertensión grado 3'],
   aptitud: ['Apto Sin Restricciones', 'Apto Con Precaución', 'Apto Con Restricciones', 'No Apto', 'Evaluación No Completada'],
   vigencia: ['Vigente', 'Por vencer', 'Vencido'],
   lentes: ['Requiere lentes', 'No requiere'],

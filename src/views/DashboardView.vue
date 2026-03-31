@@ -499,7 +499,7 @@ const graficaTensionArterialData = computed(() => {
     'Alta': '#F59E0B',             // Amarillo
     'Hipertensión grado 1': '#F97316', // Naranja
     'Hipertensión grado 2': '#DC2626', // Rojo
-    'Crisis hipertensiva': '#7F1D1D'    // Rojo oscuro
+    'Hipertensión grado 3': '#7F1D1D'    // Rojo oscuro
   };
 
   return {

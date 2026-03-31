@@ -496,6 +496,39 @@ const handleDeleteSelected = async () => {
                     documentosAEliminar.push({ id: entrevistaPsicologica._id, tipo: 'entrevistaPsicologica' });
                 }
             });
+
+            // Trastornos Estado Animo
+            yearData.trastornosEstadoAnimo?.forEach(trastornosEstadoAnimo => {
+                const rutaBase = obtenerRutaDocumento(trastornosEstadoAnimo, 'Trastornos Estado Animo');
+                const fecha = obtenerFechaDocumento(trastornosEstadoAnimo) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(trastornosEstadoAnimo, 'Trastornos Estado Animo', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: trastornosEstadoAnimo._id, tipo: 'trastornosEstadoAnimo' });
+                }
+            });
+
+            // Cuestionario Prodromal Breve
+            yearData.cuestionarioProdromalBreve?.forEach(cuestionarioProdromalBreve => {
+                const rutaBase = obtenerRutaDocumento(cuestionarioProdromalBreve, 'Cuestionario Prodromal Breve');
+                const fecha = obtenerFechaDocumento(cuestionarioProdromalBreve) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(cuestionarioProdromalBreve, 'Cuestionario Prodromal Breve', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: cuestionarioProdromalBreve._id, tipo: 'cuestionarioProdromalBreve' });
+                }
+            });
+
+            // Trastorno Limite Personalidad
+            yearData.trastornoLimitePersonalidad?.forEach(trastornoLimitePersonalidad => {
+                const rutaBase = obtenerRutaDocumento(trastornoLimitePersonalidad, 'Trastorno Limite Personalidad');
+                const fecha = obtenerFechaDocumento(trastornoLimitePersonalidad) || 'SinFecha';
+                const nombreArchivo = obtenerNombreArchivo(trastornoLimitePersonalidad, 'Trastorno Limite Personalidad', fecha);
+                const ruta = `${rutaBase}/${nombreArchivo}`.replace(/\/+/g, '/');
+                if (selectedRoutes.value.includes(ruta)) {
+                    documentosAEliminar.push({ id: trastornoLimitePersonalidad._id, tipo: 'trastornoLimitePersonalidad' });
+                }
+            });
         });
                 
         // Eliminar documentos uno por uno
@@ -573,7 +606,10 @@ const totalDocumentosCreados = computed(() => {
       (yearData.controlPrenatal?.length || 0) +
       (yearData.historiaOtologica?.length || 0) +
       (yearData.previoEspirometria?.length || 0) +
-      (yearData.entrevistasPsicologicas?.length || 0)
+      (yearData.entrevistasPsicologicas?.length || 0) +
+      (yearData.trastornosEstadoAnimo?.length || 0) +
+      (yearData.cuestionarioProdromalBreve?.length || 0) +
+      (yearData.trastornoLimitePersonalidad?.length || 0)
     );
   }, 0);
 });

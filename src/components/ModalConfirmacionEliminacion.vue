@@ -76,7 +76,7 @@ const documentTypes = computed(() => {
     }
     // Si la ruta no contiene ninguno de los tipos específicos pero tiene extensión, es un documento externo
     else if (!route.includes('Constancia de Aptitud') && !route.includes('Aptitud') && !route.includes('Historia Clinica') && !route.includes('Exploracion Fisica') && 
-             !route.includes('Examen Vista') && !route.includes('Historia Otologica') && !route.includes('Audiometria') && !route.includes('Antidoping') && !route.includes('Certificado') && !route.includes('Certificado Expedito') && !route.includes('Previo Espirometria') && !route.includes('Nota Medica') && !route.includes('Receta') && !route.includes('Entrevista Psicologica') && !route.includes('Control Prenatal') && (route.includes('.pdf') || route.includes('.png') || route.includes('.jpg') || 
+             !route.includes('Examen Vista') && !route.includes('Historia Otologica') && !route.includes('Audiometria') && !route.includes('Antidoping') && !route.includes('Certificado') && !route.includes('Certificado Expedito') && !route.includes('Previo Espirometria') && !route.includes('Nota Medica') && !route.includes('Receta') && !route.includes('Entrevista Psicologica') && !route.includes('Trastornos Estado Animo') && !route.includes('Cuestionario Prodromal Breve') && !route.includes('Trastorno Limite Personalidad') && !route.includes('Control Prenatal') && (route.includes('.pdf') || route.includes('.png') || route.includes('.jpg') || 
              route.includes('.jpeg') || route.includes('.doc') || route.includes('.docx'))) {
       types.documentosExternos = (types.documentosExternos || 0) + 1;
     }
@@ -85,6 +85,15 @@ const documentTypes = computed(() => {
     }
     else if (route.includes('Entrevista Psicologica')) {
       types.entrevistasPsicologicas = (types.entrevistasPsicologicas || 0) + 1;
+    } 
+    else if (route.includes('Trastornos Estado Animo')) {
+      types.trastornosEstadoAnimo = (types.trastornosEstadoAnimo || 0) + 1;
+    }
+    else if (route.includes('Cuestionario Prodromal Breve')) {
+      types.cuestionarioProdromalBreve = (types.cuestionarioProdromalBreve || 0) + 1;
+    }
+    else if (route.includes('Trastorno Limite Personalidad')) {
+      types.trastornoLimitePersonalidad = (types.trastornoLimitePersonalidad || 0) + 1;
     }
   });
   
@@ -196,6 +205,18 @@ const documentTypes = computed(() => {
                       <div v-if="documentTypes.entrevistasPsicologicas" class="flex items-center space-x-2">
                         <i class="fa-regular fa-comments text-slate-600"></i>
                         <span>{{ documentTypes.entrevistasPsicologicas }} Entrevista{{ documentTypes.entrevistasPsicologicas !== 1 ? 's' : '' }} Psicológica{{ documentTypes.entrevistasPsicologicas !== 1 ? 's' : '' }}</span>
+                      </div>
+                      <div v-if="documentTypes.trastornosEstadoAnimo" class="flex items-center space-x-2">
+                        <i class="fas fa-wave-square text-purple-600"></i>
+                        <span>{{ documentTypes.trastornosEstadoAnimo }} Trastornos{{ documentTypes.trastornosEstadoAnimo !== 1 ? 'es' : '' }} Estado{{ documentTypes.trastornosEstadoAnimo !== 1 ? 'es' : '' }} Animo{{ documentTypes.trastornosEstadoAnimo !== 1 ? 'es' : '' }}</span>
+                      </div>
+                      <div v-if="documentTypes.cuestionarioProdromalBreve" class="flex items-center space-x-2">
+                        <i class="fas fa-brain text-purple-600"></i>
+                        <span>{{ documentTypes.cuestionarioProdromalBreve }} Cuestionario{{ documentTypes.cuestionarioProdromalBreve !== 1 ? 's' : '' }} Prodromal{{ documentTypes.cuestionarioProdromalBreve !== 1 ? 's' : '' }} Breve{{ documentTypes.cuestionarioProdromalBreve !== 1 ? 's' : '' }}</span>
+                      </div>
+                      <div v-if="documentTypes.trastornoLimitePersonalidad" class="flex items-center space-x-2">
+                        <i class="fas fa-heart-crack text-purple-600"></i>
+                        <span>{{ documentTypes.trastornoLimitePersonalidad }} Trastorno{{ documentTypes.trastornoLimitePersonalidad !== 1 ? 'es' : '' }} Limite{{ documentTypes.trastornoLimitePersonalidad !== 1 ? 'es' : '' }} Personalidad{{ documentTypes.trastornoLimitePersonalidad !== 1 ? 'es' : '' }}</span>
                       </div>
                     </div>
                   </div>

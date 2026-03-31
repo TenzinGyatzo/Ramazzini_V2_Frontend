@@ -28,6 +28,9 @@ const documentOrder = {
   "Certificado Expedito": 14,
   "Receta": 15,
   "Entrevista Psicologica": 16,
+  "Trastornos Estado Animo": 17,
+  "Cuestionario Prodromal Breve": 18,
+  "Trastorno Limite Personalidad": 19,
 };
 
 const getDocumentType = (route) => {
@@ -46,6 +49,9 @@ const getDocumentType = (route) => {
   if (route.includes("Certificado Expedito")) return "Certificado Expedito";
   if (route.includes("Receta")) return "Receta";
   if (route.includes("Entrevista Psicologica")) return "Entrevista Psicologica";
+  if (route.includes("Trastornos Estado Animo")) return "Trastornos Estado Animo";
+  if (route.includes("Cuestionario Prodromal Breve")) return "Cuestionario Prodromal Breve";
+  if (route.includes("Trastorno Limite Personalidad")) return "Trastorno Limite Personalidad";
   return "Documento Externo"; // Para cualquier otro caso
 };
 

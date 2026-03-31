@@ -19,6 +19,9 @@ export const useFormDataStore = defineStore('formData', () => {
   const formDataReceta = ref({}); // Estado compartido
   const formDataConstanciaAptitud = ref({}); // Estado compartido
   const formDataEntrevistaPsicologica = ref({}); // Estado compartido
+  const formDataTrastornosEstadoAnimo = ref({}); // Estado compartido
+  const formDataCuestionarioProdromalBreve = ref({}); // Estado compartido
+  const formDataTrastornoLimitePersonalidad = ref({}); // Estado compartido
 
   const setFormDataFromDocument = (documento, tipoDocumento) => {
     if (!documento) {
@@ -75,6 +78,15 @@ export const useFormDataStore = defineStore('formData', () => {
       case 'entrevistaPsicologica':
         formDataEntrevistaPsicologica.value = { ...documento };
         break;
+      case 'trastornosEstadoAnimo':
+        formDataTrastornosEstadoAnimo.value = { ...documento };
+        break;
+      case 'cuestionarioProdromalBreve':
+        formDataCuestionarioProdromalBreve.value = { ...documento };
+        break;
+      case 'trastornoLimitePersonalidad':
+        formDataTrastornoLimitePersonalidad.value = { ...documento };
+        break;
       default:
         console.error('Tipo de documento no reconocido:', tipoDocumento);
         break;
@@ -107,6 +119,9 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataReceta.value = {};
     formDataConstanciaAptitud.value = {};
     formDataEntrevistaPsicologica.value = {};
+    formDataTrastornosEstadoAnimo.value = {};
+    formDataCuestionarioProdromalBreve.value = {};
+    formDataTrastornoLimitePersonalidad.value = {};
   };
 
   const consultarAlturaDisponible = async (trabajadorId: string) => {
@@ -146,6 +161,9 @@ export const useFormDataStore = defineStore('formData', () => {
     formDataReceta,
     formDataConstanciaAptitud,
     formDataEntrevistaPsicologica,
+    formDataTrastornosEstadoAnimo,
+    formDataCuestionarioProdromalBreve,
+    formDataTrastornoLimitePersonalidad,
     setFormDataFromDocument,
     resetFormData,
     setExamenVistaCeguera,

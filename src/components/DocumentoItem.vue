@@ -125,7 +125,7 @@ const canEditDocument = (documentType) => {
   }
   
   // Cuestionarios adicionales (incluye certificadoExpedito)
-  if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito', 'entrevistaPsicologica'].includes(tipoSinEspacios)) {
+  if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito', 'entrevistaPsicologica', 'trastornosEstadoAnimo', 'cuestionarioProdromalBreve', 'trastornoLimitePersonalidad'].includes(tipoSinEspacios)) {
     return canManageCuestionariosAdicionales.value;
   }
   
@@ -151,7 +151,7 @@ const handleEditDocument = (documentoId, documentoTipo) => {
     executeIfCanManageDocumentosDiagnostico(() => {
       editarDocumento(documentoId, documentoTipo);
     }, 'editar documentos de diagnóstico y certificación');
-  } else if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito', 'entrevistaPsicologica'].includes(tipoSinEspacios)) {
+  } else if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito', 'entrevistaPsicologica', 'trastornosEstadoAnimo', 'cuestionarioProdromalBreve', 'trastornoLimitePersonalidad'].includes(tipoSinEspacios)) {
     executeIfCanManageCuestionariosAdicionales(() => {
       editarDocumento(documentoId, documentoTipo);
     }, 'editar cuestionarios adicionales');
@@ -192,7 +192,7 @@ const handleDeleteDocument = (documentoId, documentoNombre, documentoTipo) => {
     executeIfCanManageDocumentosDiagnostico(() => {
       emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo);
     }, 'eliminar documentos de diagnóstico y certificación');
-  } else if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito', 'entrevistaPsicologica'].includes(tipoSinEspacios)) {
+  } else if (['controlprenatal', 'historiaotologica', 'previoespirometria', 'certificadoexpedito', 'entrevistaPsicologica', 'trastornosEstadoAnimo', 'cuestionarioProdromalBreve', 'trastornoLimitePersonalidad'].includes(tipoSinEspacios)) {
     executeIfCanManageCuestionariosAdicionales(() => {
       emit('eliminarDocumento', documentoId, documentoNombre, documentoTipo);
     }, 'eliminar cuestionarios adicionales');
@@ -1001,6 +1001,18 @@ const descargarPdfActual = async () => {
                     documento = props.entrevistaPsicologica;
                     tipoDocumento = 'Entrevista Psicologica';
                     break;
+                case 'trastornosEstadoAnimo':
+                    documento = props.trastornosEstadoAnimo;
+                    tipoDocumento = 'Trastornos Estado Animo';
+                    break;
+                case 'cuestionarioProdromalBreve':
+                    documento = props.cuestionarioProdromalBreve;
+                    tipoDocumento = 'Cuestionario Prodromal Breve';
+                    break;
+                case 'trastornoLimitePersonalidad':
+                    documento = props.trastornoLimitePersonalidad;
+                    tipoDocumento = 'Trastorno Limite Personalidad';
+                    break;
                 case 'documentoexterno':
                     documento = props.documentoExterno;
                     tipoDocumento = 'Documento Externo';
@@ -1128,6 +1140,9 @@ const props = defineProps({
     historiaOtologica: [Object, String],
     previoEspirometria: [Object, String],
     entrevistaPsicologica: [Object, String],
+    trastornosEstadoAnimo: [Object, String],
+    cuestionarioProdromalBreve: [Object, String],
+    trastornoLimitePersonalidad: [Object, String],
 });
 
 const { antidoping } = props; // Desestructuración para acceder a antidoping
@@ -1345,9 +1360,12 @@ const construirRutaYNombrePDF = () => {
     'historiaotologica': props.historiaOtologica,
     'previoespirometria': props.previoEspirometria,
     'entrevistapsicologica': props.entrevistaPsicologica,
+    'trastornosEstadoAnimo': props.trastornosEstadoAnimo,
+    'cuestionarioProdromalBreve': props.cuestionarioProdromalBreve,
+    'trastornoLimitePersonalidad': props.trastornoLimitePersonalidad,
   }[tipoSinEspacios];
 
-  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaConstanciaAptitud || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaReceta || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria || doc?.fechaEntrevistaPsicologica;
+  const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaConstanciaAptitud || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaReceta || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria || doc?.fechaEntrevistaPsicologica || doc?.fechaTrastornosEstadoAnimo || doc?.fechaCuestionarioProdromalBreve || doc?.fechaTrastornoLimitePersonalidad;
 
   const tiposDocumentos = {
     'constanciaaptitud': 'Constancia de Aptitud',
@@ -1365,6 +1383,9 @@ const construirRutaYNombrePDF = () => {
     'historiaotologica': 'Historia Otologica',
     'previoespirometria': 'Previo Espirometria',
     'entrevistapsicologica': 'Entrevista Psicologica',
+    'trastornosEstadoAnimo': 'Trastornos Estado Animo',
+    'cuestionarioProdromalBreve': 'Cuestionario Prodromal Breve',
+    'trastornoLimitePersonalidad': 'Trastorno Limite Personalidad',
   };
 
   const tipoDocumentoFormateado = tiposDocumentos[tipoSinEspacios];
@@ -1476,7 +1497,7 @@ onMounted(() => {
 });
 
 // Watcher para verificar disponibilidad cuando cambien las props
-watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanciaAptitud, props.certificado, props.certificadoExpedito, props.receta, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal, props.historiaOtologica, props.previoEspirometria, props.entrevistaPsicologica], () => {
+watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanciaAptitud, props.certificado, props.certificadoExpedito, props.receta, props.documentoExterno, props.examenVista, props.exploracionFisica, props.historiaClinica, props.notaMedica, props.controlPrenatal, props.historiaOtologica, props.previoEspirometria, props.entrevistaPsicologica, props.trastornosEstadoAnimo, props.cuestionarioProdromalBreve, props.trastornoLimitePersonalidad], () => {
   verificarDisponibilidadPDF();
 }, { deep: true });
 
@@ -2149,7 +2170,7 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                                                exploracionFisica.categoriaTensionArterial === 'Alta' ? 'text-amber-600' :
                                                exploracionFisica.categoriaTensionArterial === 'Hipertensión grado 1' ? 'text-amber-600' :
                                                exploracionFisica.categoriaTensionArterial === 'Hipertensión grado 2' ? 'text-red-600' :
-                                               exploracionFisica.categoriaTensionArterial === 'Crisis hipertensiva' ? 'text-red-700' : 'text-gray-800'">
+                                               exploracionFisica.categoriaTensionArterial === 'Hipertensión grado 3' ? 'text-red-700' : 'text-gray-800'">
                                         <span>
                                             {{ exploracionFisica.categoriaTensionArterial }}
                                             <span v-if="exploracionFisica.categoriaTensionArterial === 'Normal' || exploracionFisica.categoriaTensionArterial === 'Óptima' || exploracionFisica.categoriaTensionArterial === 'Alta'">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
@@ -2743,6 +2764,147 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     </div>
                 </div>
 
+                <!-- Trastornos del estado de ánimo -->
+                <div v-if="typeof trastornosEstadoAnimo === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, trastornosEstadoAnimo, 'Trastornos Estado Animo')">
+                    </div>
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${trastornosEstadoAnimo.rutaPDF}`,
+                            `Trastornos Estado Animo ${convertirFechaISOaDDMMYYYY(trastornosEstadoAnimo.fechaTrastornosEstadoAnimo)}.pdf`,
+                            trastornosEstadoAnimo.updatedAt ? new Date(trastornosEstadoAnimo.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${trastornosEstadoAnimo.rutaPDF}`,
+                            `Trastornos Estado Animo ${convertirFechaISOaDDMMYYYY(trastornosEstadoAnimo.fechaTrastornosEstadoAnimo)}.pdf`,
+                            trastornosEstadoAnimo.updatedAt ? new Date(trastornosEstadoAnimo.updatedAt).getTime() : null,
+                            'Trastornos Estado Animo')"
+                        @mouseleave="handleHoverLeave">
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-violet-100 rounded-lg mr-4 group-hover:bg-violet-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fa-solid fa-wave-square text-violet-600 text-lg"></i>
+                        </div>
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
+                            <div class="flex items-center mb-1 flex-wrap gap-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center max-[390px]:text-base">
+                                    Trastornos del estado de ánimo
+                                </h3>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(trastornosEstadoAnimo.fechaTrastornosEstadoAnimo) }}
+                            </p>
+                        </div>
+                        <div class="hidden xl:flex xl:flex-1 xl:min-w-0 min-w-0">
+                            <div class="text-sm flex xl:space-x-2 min-w-0 flex-1">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit min-w-0 max-w-xs">
+                                    <p class="text-gray-400 text-xs font-medium mb-0.5 uppercase tracking-wide">Pendiente</p>
+                                    <p class="font-medium text-sm text-gray-400 italic">—</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cuestionario prodromal breve -->
+                <div v-if="typeof cuestionarioProdromalBreve === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, cuestionarioProdromalBreve, 'Cuestionario Prodromal Breve')">
+                    </div>
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${cuestionarioProdromalBreve.rutaPDF}`,
+                            `Cuestionario Prodromal Breve ${convertirFechaISOaDDMMYYYY(cuestionarioProdromalBreve.fechaCuestionarioProdromalBreve)}.pdf`,
+                            cuestionarioProdromalBreve.updatedAt ? new Date(cuestionarioProdromalBreve.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${cuestionarioProdromalBreve.rutaPDF}`,
+                            `Cuestionario Prodromal Breve ${convertirFechaISOaDDMMYYYY(cuestionarioProdromalBreve.fechaCuestionarioProdromalBreve)}.pdf`,
+                            cuestionarioProdromalBreve.updatedAt ? new Date(cuestionarioProdromalBreve.updatedAt).getTime() : null,
+                            'Cuestionario Prodromal Breve')"
+                        @mouseleave="handleHoverLeave">
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mr-4 group-hover:bg-purple-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fa-solid fa-brain text-purple-600 text-lg"></i>
+                        </div>
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
+                            <div class="flex items-center mb-1 flex-wrap gap-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center max-[390px]:text-base">
+                                    Cuestionario prodromal breve
+                                </h3>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(cuestionarioProdromalBreve.fechaCuestionarioProdromalBreve) }}
+                            </p>
+                        </div>
+                        <div class="hidden xl:flex xl:flex-1 xl:min-w-0 min-w-0">
+                            <div class="text-sm flex xl:space-x-2 min-w-0 flex-1">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit min-w-0 max-w-xs">
+                                    <p class="text-gray-400 text-xs font-medium mb-0.5 uppercase tracking-wide">Pendiente</p>
+                                    <p class="font-medium text-sm text-gray-400 italic">—</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trastorno límite de la personalidad -->
+                <div v-if="typeof trastornoLimitePersonalidad === 'object'" class="flex items-center w-full h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3">
+                    <div class="mr-4 flex-shrink-0">
+                        <input
+                            class="w-5 h-5 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 transition-all duration-200 ease-in-out hover:scale-110 cursor-pointer"
+                            :class="isDeletionMode ? 'accent-red-600 text-red-600 focus:ring-red-500' : 'accent-teal-600 text-emerald-600 focus:ring-emerald-500'"
+                            type="checkbox" :checked="isSelected"
+                            @change="(event) => handleCheckboxChange(event, trastornoLimitePersonalidad, 'Trastorno Limite Personalidad')">
+                    </div>
+                    <div
+                        class="flex items-center flex-1 h-full max-[390px]:flex-col max-[390px]:items-start max-[390px]:gap-3"
+                        @click="abrirPdf(
+                            `${trastornoLimitePersonalidad.rutaPDF}`,
+                            `Trastorno Limite Personalidad ${convertirFechaISOaDDMMYYYY(trastornoLimitePersonalidad.fechaTrastornoLimitePersonalidad)}.pdf`,
+                            trastornoLimitePersonalidad.updatedAt ? new Date(trastornoLimitePersonalidad.updatedAt).getTime() : null)"
+                        @mouseenter="schedulePdfHover(
+                            $event,
+                            `${trastornoLimitePersonalidad.rutaPDF}`,
+                            `Trastorno Limite Personalidad ${convertirFechaISOaDDMMYYYY(trastornoLimitePersonalidad.fechaTrastornoLimitePersonalidad)}.pdf`,
+                            trastornoLimitePersonalidad.updatedAt ? new Date(trastornoLimitePersonalidad.updatedAt).getTime() : null,
+                            'Trastorno Limite Personalidad')"
+                        @mouseleave="handleHoverLeave">
+                        <div class="hidden md:flex items-center justify-center w-12 h-12 bg-rose-100 rounded-lg mr-4 group-hover:bg-rose-200 transition-colors duration-200 flex-shrink-0">
+                            <i class="fa-solid fa-heart-crack text-rose-600 text-lg"></i>
+                        </div>
+                        <div class="sm:w-72 min-w-0 max-w-xs w-full max-[390px]:max-w-full">
+                            <div class="flex items-center mb-1 flex-wrap gap-1">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 flex items-center max-[390px]:text-base">
+                                    Trastorno límite de la personalidad
+                                </h3>
+                            </div>
+                            <p class="text-sm text-gray-500 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ convertirFechaISOaDDMMYYYY(trastornoLimitePersonalidad.fechaTrastornoLimitePersonalidad) }}
+                            </p>
+                        </div>
+                        <div class="hidden xl:flex xl:flex-1 xl:min-w-0 min-w-0">
+                            <div class="text-sm flex xl:space-x-2 min-w-0 flex-1">
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit min-w-0 max-w-xs">
+                                    <p class="text-gray-400 text-xs font-medium mb-0.5 uppercase tracking-wide">Pendiente</p>
+                                    <p class="font-medium text-sm text-gray-400 italic">—</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Botones de acción -->
@@ -2765,6 +2927,9 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                     'Historia Otologica': historiaOtologica,
                     'Previo Espirometria': previoEspirometria,
                     'Entrevista Psicologica': entrevistaPsicologica,
+                    'Trastornos Estado Animo': trastornosEstadoAnimo,
+                    'Cuestionario Prodromal Breve': cuestionarioProdromalBreve,
+                    'Trastorno Limite Personalidad': trastornoLimitePersonalidad,
                 }" :key="key">
                     <button v-if="documento && documento.rutaDocumento" @click="descargarArchivo(documento, key)"
                         type="button"

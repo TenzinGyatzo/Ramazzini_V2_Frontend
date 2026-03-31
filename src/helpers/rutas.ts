@@ -38,6 +38,9 @@ export const obtenerFechaDocumento = (documento) => {
         'fechaReceta',
         'fechaConstanciaAptitud',
         'fechaEntrevistaPsicologica',
+        'fechaTrastornosEstadoAnimo',
+        'fechaCuestionarioProdromalBreve',
+        'fechaTrastornoLimitePersonalidad',
     ];
 
     for (const campo of camposFecha) {

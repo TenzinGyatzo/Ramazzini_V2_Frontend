@@ -85,7 +85,7 @@ function setCategoriaTensionArterial() {
   } else if (sistolica >= 160 && sistolica <= 179) {
     categoriaSistolica = 'Hipertensión grado 2';
   } else {
-    categoriaSistolica = 'Crisis hipertensiva';
+    categoriaSistolica = 'Hipertensión grado 3';
   }
 
   if (diastolica <= 80) {
@@ -99,11 +99,11 @@ function setCategoriaTensionArterial() {
   } else if (diastolica >= 100 && diastolica <= 109) {
     categoriaDiastolica = 'Hipertensión grado 2';
   } else {
-    categoriaDiastolica = 'Crisis hipertensiva';
+    categoriaDiastolica = 'Hipertensión grado 3';
   }
 
-  if (categoriaSistolica === 'Crisis hipertensiva' || categoriaDiastolica === 'Crisis hipertensiva') {
-    categoria = 'Crisis hipertensiva';
+  if (categoriaSistolica === 'Hipertensión grado 3' || categoriaDiastolica === 'Hipertensión grado 3') {
+    categoria = 'Hipertensión grado 3';
   } else if (categoriaSistolica === 'Hipertensión grado 2' || categoriaDiastolica === 'Hipertensión grado 2') {
     categoria = 'Hipertensión grado 2';
   } else if (categoriaSistolica === 'Hipertensión grado 1' || categoriaDiastolica === 'Hipertensión grado 1') {
@@ -295,7 +295,7 @@ const mensajeErrorSaturacionOxigeno = computed(() => {
             categoriaTensionArterial === 'Alta' ? 'bg-yellow-50 text-yellow-800' : '',
             categoriaTensionArterial === 'Hipertensión grado 1' ? 'bg-red-50 text-red-900' : '',
             categoriaTensionArterial === 'Hipertensión grado 2' ? 'bg-red-100 text-red-900' : '',
-            categoriaTensionArterial === 'Crisis hipertensiva' ? 'bg-red-200 text-red-950' : ''
+            categoriaTensionArterial === 'Hipertensión grado 3' ? 'bg-red-200 text-red-950' : ''
           ]"
           v-model="categoriaTensionArterial" 
           readonly 
