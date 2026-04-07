@@ -11,6 +11,13 @@ import { useDocumentosStore } from '@/stores/documentos';
 import { useProveedorSaludStore } from '@/stores/proveedorSalud';
 import { obtenerRutaDocumento, obtenerNombreArchivo, obtenerFechaDocumento, obtenerNombreDescargaCertificadoExpedito } from '@/helpers/rutas.ts';
 import { esConclusionSinHallazgos } from '@/helpers/conclusionEntrevistaPsicologica';
+import { cumpleCriterioTriajePositivoMdq } from '@/helpers/trastornosEstadoAnimoSteps';
+import {
+  contarFrecuenciaPQB,
+  sumarMalestarPQB,
+  textoInterpretacionPQB,
+  esPositivoRiesgoPsicoticoPQB,
+} from '@/helpers/cuestionarioProdromalBreveSteps';
 import ModalPdfEliminado from './ModalPdfEliminado.vue';
 import DocumentHoverPreview from './DocumentHoverPreview.vue';
 import { useUserPermissions } from '@/composables/useUserPermissions';
@@ -1340,6 +1347,69 @@ const entrevistaPsicologicaSinHallazgoConclusion = computed(() => {
   if (!ep || typeof ep !== 'object') return true;
   return esConclusionSinHallazgos(ep.conclusionClinica);
 });
+
+/** Misma regla que `VisualizadorTrastornosEstadoAnimo.vue` (MDQ). */
+const interpretacionTrastornosEstadoAnimo = computed(() => {
+  const d = props.trastornosEstadoAnimo;
+  if (!d || typeof d !== 'object') return '';
+  return cumpleCriterioTriajePositivoMdq(d)
+    ? 'Positivo para riesgo de trastorno bipolar'
+    : 'Negativo para riesgo de trastorno bipolar';
+});
+
+const claseColorInterpretacionMdqLista = computed(() => {
+  const d = props.trastornosEstadoAnimo;
+  if (!d || typeof d !== 'object') return 'text-gray-600';
+  return cumpleCriterioTriajePositivoMdq(d) ? 'text-orange-600' : 'text-emerald-600';
+});
+
+/** Misma regla que `VisualizadorCuestionarioProdromalBreve.vue` (PQ-B). */
+const frecuenciaPQBDocumento = computed(() => contarFrecuenciaPQB(props.cuestionarioProdromalBreve));
+const malestarPQBDocumento = computed(() => sumarMalestarPQB(props.cuestionarioProdromalBreve));
+
+const interpretacionCuestionarioProdromalBreve = computed(() =>
+  textoInterpretacionPQB(frecuenciaPQBDocumento.value, malestarPQBDocumento.value),
+);
+
+const claseColorInterpretacionPQBLista = computed(() =>
+  esPositivoRiesgoPsicoticoPQB(frecuenciaPQBDocumento.value, malestarPQBDocumento.value)
+    ? 'text-orange-600'
+    : 'text-emerald-600',
+);
+
+/** Misma regla que `VisualizadorTrastornoLimitePersonalidad.vue` (MSI-BPD). */
+const CAMPOS_MSI_BPD_TLP = [
+  'relacionesCercanasDiscusionesRupturas',
+  'autolesionIntentoSuicidio',
+  'impulsividadOtrosDosProblemas',
+  'extremadamenteMalHumor',
+  'enojadoFrecuenteActuaEnojadoSarcastico',
+  'desconfianzaOtrasPersonas',
+  'sensacionIrrealidadEntornoIrreal',
+  'vacioCronico',
+  'faltaIdentidadQuienEs',
+  'esfuerzosEvitarAbandono',
+];
+
+const puntajeTrastornoLimitePersonalidadDoc = computed(() => {
+  const d = props.trastornoLimitePersonalidad;
+  if (!d || typeof d !== 'object') return 0;
+  return CAMPOS_MSI_BPD_TLP.reduce((acc, k) => acc + (d[k] === 'Sí' ? 1 : 0), 0);
+});
+
+const interpretacionTrastornoLimitePersonalidad = computed(() => {
+  const p = puntajeTrastornoLimitePersonalidadDoc.value;
+  if (p <= 4) return 'Síntomas improbables de TLP presentes.';
+  if (p <= 6) return 'Posibles síntomas de TLP presentes.';
+  return 'Probable presencia de síntomas de TLP.';
+});
+
+const claseColorInterpretacionTlpLista = computed(() => {
+  const p = puntajeTrastornoLimitePersonalidadDoc.value;
+  if (p <= 4) return 'text-green-600';
+  if (p <= 6) return 'text-yellow-600';
+  return 'text-orange-600';
+});
 ///////////////////////////////////////////
 
 const construirRutaYNombrePDF = () => {
@@ -1360,9 +1430,9 @@ const construirRutaYNombrePDF = () => {
     'historiaotologica': props.historiaOtologica,
     'previoespirometria': props.previoEspirometria,
     'entrevistapsicologica': props.entrevistaPsicologica,
-    'trastornosEstadoAnimo': props.trastornosEstadoAnimo,
-    'cuestionarioProdromalBreve': props.cuestionarioProdromalBreve,
-    'trastornoLimitePersonalidad': props.trastornoLimitePersonalidad,
+    'trastornosestadoanimo': props.trastornosEstadoAnimo,
+    'cuestionarioprodromalbreve': props.cuestionarioProdromalBreve,
+    'trastornolimitepersonalidad': props.trastornoLimitePersonalidad,
   }[tipoSinEspacios];
 
   const fecha = doc?.fechaAntidoping || doc?.fechaAptitudPuesto || doc?.fechaConstanciaAptitud || doc?.fechaAudiometria || doc?.fechaCertificado || doc?.fechaCertificadoExpedito || doc?.fechaReceta || doc?.fechaExamenVista || doc?.fechaExploracionFisica || doc?.fechaHistoriaClinica || doc?.fechaNotaMedica || doc?.fechaInicioControlPrenatal || doc?.fechaHistoriaOtologica || doc?.fechaPrevioEspirometria || doc?.fechaEntrevistaPsicologica || doc?.fechaTrastornosEstadoAnimo || doc?.fechaCuestionarioProdromalBreve || doc?.fechaTrastornoLimitePersonalidad;
@@ -1383,9 +1453,9 @@ const construirRutaYNombrePDF = () => {
     'historiaotologica': 'Historia Otologica',
     'previoespirometria': 'Previo Espirometria',
     'entrevistapsicologica': 'Entrevista Psicologica',
-    'trastornosEstadoAnimo': 'Trastornos Estado Animo',
-    'cuestionarioProdromalBreve': 'Cuestionario Prodromal Breve',
-    'trastornoLimitePersonalidad': 'Trastorno Limite Personalidad',
+    'trastornosestadoanimo': 'Trastornos Estado Animo',
+    'cuestionarioprodromalbreve': 'Cuestionario Prodromal Breve',
+    'trastornolimitepersonalidad': 'Trastorno Limite Personalidad',
   };
 
   const tipoDocumentoFormateado = tiposDocumentos[tipoSinEspacios];
@@ -2802,9 +2872,14 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                         </div>
                         <div class="hidden xl:flex xl:flex-1 xl:min-w-0 min-w-0">
                             <div class="text-sm flex xl:space-x-2 min-w-0 flex-1">
-                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit min-w-0 max-w-xs">
-                                    <p class="text-gray-400 text-xs font-medium mb-0.5 uppercase tracking-wide">Pendiente</p>
-                                    <p class="font-medium text-sm text-gray-400 italic">—</p>
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit min-w-0 max-w-dynamic-entrevista-conclusion xl-max-w-dynamic-entrevista-conclusion-xl xxl-max-w-dynamic-entrevista-conclusion-2xl">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Interpretación</p>
+                                    <p
+                                        class="font-medium text-sm truncate max-w-full xl:max-w-none 2xl:max-w-none"
+                                        :class="claseColorInterpretacionMdqLista"
+                                        :title="interpretacionTrastornosEstadoAnimo">
+                                        {{ interpretacionTrastornosEstadoAnimo }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -2849,9 +2924,14 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                         </div>
                         <div class="hidden xl:flex xl:flex-1 xl:min-w-0 min-w-0">
                             <div class="text-sm flex xl:space-x-2 min-w-0 flex-1">
-                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit min-w-0 max-w-xs">
-                                    <p class="text-gray-400 text-xs font-medium mb-0.5 uppercase tracking-wide">Pendiente</p>
-                                    <p class="font-medium text-sm text-gray-400 italic">—</p>
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit min-w-0 max-w-dynamic-entrevista-conclusion xl-max-w-dynamic-entrevista-conclusion-xl xxl-max-w-dynamic-entrevista-conclusion-2xl">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Interpretación</p>
+                                    <p
+                                        class="font-medium text-sm truncate max-w-full xl:max-w-none 2xl:max-w-none"
+                                        :class="claseColorInterpretacionPQBLista"
+                                        :title="interpretacionCuestionarioProdromalBreve">
+                                        {{ interpretacionCuestionarioProdromalBreve }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -2896,9 +2976,14 @@ watch(() => [props.antidoping, props.aptitud, props.audiometria, props.constanci
                         </div>
                         <div class="hidden xl:flex xl:flex-1 xl:min-w-0 min-w-0">
                             <div class="text-sm flex xl:space-x-2 min-w-0 flex-1">
-                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit min-w-0 max-w-xs">
-                                    <p class="text-gray-400 text-xs font-medium mb-0.5 uppercase tracking-wide">Pendiente</p>
-                                    <p class="font-medium text-sm text-gray-400 italic">—</p>
+                                <div class="bg-gray-50 rounded-lg px-2 py-1 border border-gray-100 w-fit min-w-0 max-w-dynamic-entrevista-conclusion xl-max-w-dynamic-entrevista-conclusion-xl xxl-max-w-dynamic-entrevista-conclusion-2xl">
+                                    <p class="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">Interpretación</p>
+                                    <p
+                                        class="font-medium text-sm truncate max-w-full xl:max-w-none 2xl:max-w-none"
+                                        :class="claseColorInterpretacionTlpLista"
+                                        :title="interpretacionTrastornoLimitePersonalidad">
+                                        {{ interpretacionTrastornoLimitePersonalidad }}
+                                    </p>
                                 </div>
                             </div>
                         </div>

@@ -245,7 +245,7 @@ const handleQuestionnaireSelect = (questionnaireType) => {
                 class="w-full text-left px-4 py-3 rounded-lg hover:bg-emerald-50 text-sm text-emerald-700 transition-colors duration-150 flex items-center group border border-gray-200 hover:border-emerald-300"
               >
                 <i class="fa-solid fa-heart-crack text-emerald-500 mr-3 text-sm group-hover:text-emerald-600"></i>
-                Prueba del trastorno límite de personalidad (MASI-BPD)
+                Prueba del trastorno límite de personalidad (MSI-BPD)
               </button>
             </div>
           </div> 
