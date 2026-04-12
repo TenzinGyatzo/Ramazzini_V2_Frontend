@@ -382,7 +382,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         tensionArterial: [3000, 2000], // Aspect ratio 3:2 para gráficas de barras
         audiometriaDistribucion: [3000, 2000], // Barras distribución audiometría
         espirometriaDistribucion: [3000, 2000], // Barras distribución espirometría
-        ekgDistribucion: [3000, 2000] // Barras distribución EKG
+        ekgDistribucion: [3000, 2000], // Barras distribución EKG
+        rayosXDistribucion: [3000, 2000],
+        analisisLaboratorioDistribucion: [3000, 2000]
     } : {
         imc: [800, 600], // Aspect ratio 4:3 para gráficas de barras horizontales
         aptitud: [800, 600], // Aspect ratio 4:3 para gráficas de barras horizontales
@@ -396,7 +398,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         tensionArterial: [800, 600], // Aspect ratio 4:3 para gráficas de barras
         audiometriaDistribucion: [800, 600], // Barras distribución audiometría
         espirometriaDistribucion: [800, 600], // Barras distribución espirometría
-        ekgDistribucion: [800, 600] // Barras distribución EKG
+        ekgDistribucion: [800, 600], // Barras distribución EKG
+        rayosXDistribucion: [800, 600],
+        analisisLaboratorioDistribucion: [800, 600]
     };
 
     const imagenes = {
@@ -412,7 +416,9 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         tensionArterial: obtenerBase64(props.refsGraficas.tensionArterial, dimensiones.tensionArterial[0], dimensiones.tensionArterial[1]),
         audiometriaDistribucion: obtenerBase64(props.refsGraficas.audiometriaDistribucion, dimensiones.audiometriaDistribucion[0], dimensiones.audiometriaDistribucion[1]),
         espirometriaDistribucion: obtenerBase64(props.refsGraficas.espirometriaDistribucion, dimensiones.espirometriaDistribucion[0], dimensiones.espirometriaDistribucion[1]),
-        ekgDistribucion: obtenerBase64(props.refsGraficas.ekgDistribucion, dimensiones.ekgDistribucion[0], dimensiones.ekgDistribucion[1])
+        ekgDistribucion: obtenerBase64(props.refsGraficas.ekgDistribucion, dimensiones.ekgDistribucion[0], dimensiones.ekgDistribucion[1]),
+        rayosXDistribucion: obtenerBase64(props.refsGraficas.rayosXDistribucion, dimensiones.rayosXDistribucion[0], dimensiones.rayosXDistribucion[1]),
+        analisisLaboratorioDistribucion: obtenerBase64(props.refsGraficas.analisisLaboratorioDistribucion, dimensiones.analisisLaboratorioDistribucion[0], dimensiones.analisisLaboratorioDistribucion[1])
     };
 
     const contenido: Content[] = [];
@@ -1589,15 +1595,21 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
     const filasAudiometria = construirFilasDistribucion(props.tablasDatos?.audiometriaDistribucion);
     const filasEspirometria = construirFilasDistribucion(props.tablasDatos?.espirometriaDistribucion);
     const filasEkg = construirFilasDistribucion(props.tablasDatos?.ekgDistribucion);
+    const filasRayosX = construirFilasDistribucion(props.tablasDatos?.rayosXDistribucion);
+    const filasAnalisisLaboratorio = construirFilasDistribucion(props.tablasDatos?.analisisLaboratorioDistribucion);
 
     const coloresAudiometria: string[] = props.tablasDatos?.audiometriaDistribucion?.datasets?.[0]?.backgroundColor ?? [];
     const coloresEspirometria: string[] = props.tablasDatos?.espirometriaDistribucion?.datasets?.[0]?.backgroundColor ?? [];
     const coloresEkg: string[] = props.tablasDatos?.ekgDistribucion?.datasets?.[0]?.backgroundColor ?? [];
+    const coloresRayosX: string[] = props.tablasDatos?.rayosXDistribucion?.datasets?.[0]?.backgroundColor ?? [];
+    const coloresAnalisisLaboratorio: string[] = props.tablasDatos?.analisisLaboratorioDistribucion?.datasets?.[0]?.backgroundColor ?? [];
 
     const mostrarAudiometria = Boolean(imagenes.audiometriaDistribucion) && tieneResultados(filasAudiometria);
     const mostrarEspirometria = Boolean(imagenes.espirometriaDistribucion) && tieneResultados(filasEspirometria);
     const mostrarEkg = Boolean(imagenes.ekgDistribucion) && tieneResultados(filasEkg);
-    const hayGabinete = mostrarAudiometria || mostrarEspirometria || mostrarEkg;
+    const mostrarRayosX = Boolean(imagenes.rayosXDistribucion) && tieneResultados(filasRayosX);
+    const mostrarAnalisisLaboratorio = Boolean(imagenes.analisisLaboratorioDistribucion) && tieneResultados(filasAnalisisLaboratorio);
+    const hayGabinete = mostrarAudiometria || mostrarEspirometria || mostrarEkg || mostrarRayosX || mostrarAnalisisLaboratorio;
 
     const COLOR_NEUTRO_CERO = '#6B7280';
     const crearBloqueDistribucion = (
@@ -1607,9 +1619,14 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
         imagen: string | undefined,
         filas: [string, string][],
         colores: string[],
-        pageBreak: boolean
+        pageBreak: boolean,
+        /** Solo Rayos X: muchas filas; reduce tipografía y márgenes para que quepa en una página */
+        tablaCompacta = false
     ) => {
         if (!imagen || !tieneResultados(filas)) return;
+
+        const estHeader = tablaCompacta ? 'tableHeaderDistribucionCompact' : 'tableHeader';
+        const estCelda = tablaCompacta ? 'tableCellDistribucionCompact' : 'tableCellMedium';
 
         contenido.push({
             text: titulo,
@@ -1635,7 +1652,7 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
             image: imagen,
             width: 400,
             alignment: 'center',
-            margin: [0, 0, 0, 15]
+            margin: [0, 0, 0, tablaCompacta ? 10 : 15]
         });
 
         const tablaDistribucion = {
@@ -1644,8 +1661,8 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 widths: ['*', '*'],
                 body: [
                     [
-                        { text: 'Resultado', style: 'tableHeader' },
-                        { text: 'Casos (%)', style: 'tableHeader' }
+                        { text: 'Resultado', style: estHeader },
+                        { text: 'Casos (%)', style: estHeader }
                     ],
                     ...filas.map((fila, index) => {
                         const textoCasos = fila[1];
@@ -1656,18 +1673,18 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                             : (colores[index] || undefined);
                         const celdaPorcentaje = {
                             text: textoCasos,
-                            style: 'tableCellMedium',
+                            style: estCelda,
                             ...(colorTexto ? { color: colorTexto } : {})
                         };
                         return [
-                            { text: fila[0], style: 'tableCellMedium' },
+                            { text: fila[0], style: estCelda },
                             celdaPorcentaje
                         ];
                     })
                 ]
             },
             layout: 'lightHorizontalLines',
-            margin: [0, 5, 0, 15]
+            margin: tablaCompacta ? [0, 3, 0, 10] : [0, 5, 0, 15]
         } as Content;
 
         contenido.push(tablaDistribucion);
@@ -1730,6 +1747,39 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 imagen: imagenes.ekgDistribucion,
                 filas: filasEkg,
                 colores: coloresEkg
+            } : null,
+            mostrarRayosX ? {
+                nombre: 'Rayos X',
+                tablaCompacta: true,
+                descripcion: [
+                    'Los hallazgos en estudios de imagen pueden ',
+                    { text: 'orientar sobre alteraciones estructurales', bold: true },
+                    ' relevantes para la aptitud ocupacional o el seguimiento clínico.'
+                ],
+                descripcion2: [
+                    'La distribución por ',
+                    { text: 'categorías de alteración', bold: true },
+                    ' resume los tipos de hallazgos registrados; un mismo trabajador puede aportar más de una categoría cuando corresponde.'
+                ],
+                imagen: imagenes.rayosXDistribucion,
+                filas: filasRayosX,
+                colores: coloresRayosX
+            } : null,
+            mostrarAnalisisLaboratorio ? {
+                nombre: 'Análisis de laboratorio',
+                descripcion: [
+                    'Los parámetros de laboratorio permiten ',
+                    { text: 'detectar alteraciones metabólicas, hematológicas u otras', bold: true },
+                    ' que puedan requerir seguimiento o interconsulta.'
+                ],
+                descripcion2: [
+                    'La distribución por ',
+                    { text: 'categorías', bold: true },
+                    ' agrupa los tipos de alteración registrados; un trabajador puede figurar en más de una categoría.'
+                ],
+                imagen: imagenes.analisisLaboratorioDistribucion,
+                filas: filasAnalisisLaboratorio,
+                colores: coloresAnalisisLaboratorio
             } : null
         ].filter((bloque): bloque is NonNullable<typeof bloque> => bloque !== null);
 
@@ -1743,7 +1793,8 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 bloque.imagen,
                 bloque.filas,
                 bloque.colores,
-                subIndex > 1
+                subIndex > 1,
+                'tablaCompacta' in bloque && bloque.tablaCompacta === true
             );
         }
 
@@ -2031,6 +2082,15 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 alignment: 'center',
                 margin: [2, 2, 2, 2]
             },
+            tableHeaderDistribucionCompact: {
+                fontSize: 8,
+                bold: true,
+                color: '#374151',
+                background: '#F3F4F6',
+                alignment: 'center',
+                margin: [1, 1, 1, 1],
+                lineHeight: 1.12
+            },
             tableCell: { 
                 fontSize: 9, 
                 color: '#374151',
@@ -2148,6 +2208,13 @@ const generarDocDefinition = (altaCalidad: boolean = false): TDocumentDefinition
                 color: '#374151',
                 alignment: 'center',
                 margin: [3, 3, 3, 3]
+            },
+            tableCellDistribucionCompact: {
+                fontSize: 9,
+                color: '#374151',
+                alignment: 'center',
+                margin: [1, 1, 1, 1],
+                lineHeight: 1.12
             },
             tableCellLeftMedium: {
                 fontSize: 10,

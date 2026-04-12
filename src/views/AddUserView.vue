@@ -11,6 +11,7 @@ const userStore = useUserStore();
 const toast = inject("toast");
 const registroExitoso = ref(false);
 const showSubscriptionModal = ref(false);
+const showPassword = ref(false);
 
 const user = ref(
   JSON.parse(localStorage.getItem("user")) || null // Recuperar usuario guardado o establecer null si no existe
@@ -168,18 +169,27 @@ const volver = () => {
           v-model="formDataUser.role"
         />
 
-        <FormKit
-          type="password"
-          label="Establece una contraseña"
-          name="password"
-          placeholder="Contraseña de usuario"
-          validation="required|passwordValidation"
-          :validation-messages="{
-            required: 'Este campo es obligatorio',
-            passwordValidation: 'Mín. 8 dígitos, 1 mayúscula y 1 número.',
-          }"
-          v-model="formDataUser.password"
-        />
+        <div class="relative">
+          <FormKit
+            :type="showPassword ? 'text' : 'password'"
+            label="Establece una contraseña"
+            name="password"
+            placeholder="Contraseña de usuario"
+            validation="required|passwordValidation"
+            :validation-messages="{
+              required: 'Este campo es obligatorio',
+              passwordValidation: 'Mín. 8 dígitos, 1 mayúscula y 1 número.',
+            }"
+            v-model="formDataUser.password"
+          />
+          <button
+            type="button"
+            class="absolute right-3 top-[2.35rem] text-sm text-emerald-700 hover:text-emerald-800"
+            @click="showPassword = !showPassword"
+          >
+            {{ showPassword ? "Ocultar" : "Ver" }}
+          </button>
+        </div>
 
         <hr class="my-3" />
         <div

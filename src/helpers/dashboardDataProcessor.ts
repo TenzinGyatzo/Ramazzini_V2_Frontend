@@ -627,7 +627,8 @@ export function distribuirPorMetodo(
   ];
 }
 
-// ===== RESULTADOS CLINICOS (EKG / ESPIROMETRIA) =====
+// ===== RESULTADOS CLINICOS (EKG / ESPIROMETRÍA / RAYOS X / LABORATORIO) =====
+// Los bloques `rayosX` y `analisisLaboratorio` del dashboard incluyen arrays de categorías cuando ANORMAL.
 export type ResultadoGlobalClinico = 'NORMAL' | 'ANORMAL' | 'NO_CONCLUYENTE';
 
 export const ordenTipoAlteracionEkg = [
@@ -660,6 +661,111 @@ export const etiquetasTipoAlteracionEspirometria: Record<string, string> = {
   ANORMAL_MIXTO: 'Mixto'
 };
 
+export const ordenTipoAlteracionRayosX = [
+  'ALTERACION_PARENQUIMATOSA',
+  'ALTERACION_PLEURAL',
+  'ALTERACION_CARDIOMEDIASTINICA',
+  'NODULO_O_MASA',
+  'SECUELA_CRONICA',
+  'ALTERACION_OSEA',
+  'ALTERACION_ARTICULAR',
+  'ALTERACION_ALINEACION',
+  'CAMBIO_DEGENERATIVO',
+  'FRACTURA_O_TRAUMA',
+  'OTRA_ALTERACION',
+];
+
+export const ordenTipoAlteracionAnalisisLaboratorio = [
+  'ALTERACION_HEMATOLOGICA',
+  'ALTERACION_METABOLICA',
+  'ALTERACION_RENAL',
+  'ALTERACION_HEPATICA',
+  'ALTERACION_INFECCIOSA_O_INFLAMATORIA',
+  'ALTERACION_URINARIA',
+  'OTRA_ALTERACION',
+];
+
+export const etiquetasTipoAlteracionRayosX: Record<string, string> = {
+  ALTERACION_PARENQUIMATOSA: 'Parenquimatosa',
+  ALTERACION_PLEURAL: 'Pleural',
+  ALTERACION_CARDIOMEDIASTINICA: 'Cardiomediastínica',
+  NODULO_O_MASA: 'Nódulo/masa',
+  SECUELA_CRONICA: 'Secuela crónica',
+  ALTERACION_OSEA: 'Ósea',
+  ALTERACION_ARTICULAR: 'Articular',
+  ALTERACION_ALINEACION: 'Alineación',
+  CAMBIO_DEGENERATIVO: 'Degenerativo',
+  FRACTURA_O_TRAUMA: 'Fractura/trauma',
+  OTRA_ALTERACION: 'Otra',
+};
+
+export const etiquetasTipoAlteracionAnalisisLaboratorio: Record<string, string> = {
+  ALTERACION_HEMATOLOGICA: 'Hematología',
+  ALTERACION_METABOLICA: 'Metabolismo',
+  ALTERACION_RENAL: 'Renal',
+  ALTERACION_HEPATICA: 'Hepática',
+  ALTERACION_INFECCIOSA_O_INFLAMATORIA: 'Infecciosa/inflamatoria',
+  ALTERACION_URINARIA: 'Urinaria',
+  OTRA_ALTERACION: 'Otra',
+};
+
+/** Normaliza campos `tipoAlteracionRayosX` o `tipoAlteracionAnalisisLaboratorio` (array en BD) para la distribución multi-categoría. */
+export function mapToCategoriasMultiples<
+  T extends { resultadoGlobal?: string | null }
+>(
+  data: (T & Record<string, unknown>)[],
+  campo: 'tipoAlteracionRayosX' | 'tipoAlteracionAnalisisLaboratorio'
+): { resultadoGlobal?: string | null; categorias?: string[] | null }[] {
+  return data.map((item) => {
+    const raw = item[campo];
+    const categorias = Array.isArray(raw)
+      ? raw.filter((c): c is string => typeof c === 'string' && c.length > 0)
+      : raw != null && String(raw).trim() !== ''
+        ? [String(raw)]
+        : [];
+    return { resultadoGlobal: item.resultadoGlobal, categorias };
+  });
+}
+
+/** Cuenta categorías en resultados ANORMAL con arrays (un trabajador puede aportar varias categorías). */
+export function distribuirResultadosClinicosPorCategoriasMultiples(
+  data: {
+    resultadoGlobal?: string | null;
+    categorias?: string[] | null;
+  }[],
+  ordenCategorias: string[]
+): [string, number, number][] {
+  const conteo: Record<string, number> = {
+    NORMAL: 0,
+  };
+  for (const c of ordenCategorias) {
+    conteo[c] = 0;
+  }
+
+  for (const item of data) {
+    const resultado = (item.resultadoGlobal || '').toUpperCase();
+    if (resultado === 'NORMAL') {
+      conteo.NORMAL += 1;
+      continue;
+    }
+    if (resultado === 'ANORMAL' && Array.isArray(item.categorias)) {
+      for (const cat of item.categorias) {
+        if (cat && conteo[cat] !== undefined) {
+          conteo[cat] += 1;
+        }
+      }
+    }
+  }
+
+  const totalParaPct = Object.values(conteo).reduce((acc, v) => acc + v, 0);
+  const labels = ['NORMAL', ...ordenCategorias];
+  return labels.map((label) => {
+    const cantidad = conteo[label] || 0;
+    const porcentaje = totalParaPct > 0 ? Math.round((cantidad / totalParaPct) * 100) : 0;
+    return [label, cantidad, porcentaje];
+  });
+}
+
 export function calcularProporcionResultadosClinicos(
   data: { resultadoGlobal?: string | null }[]
 ): Record<ResultadoGlobalClinico, number> {
@@ -680,7 +786,11 @@ export function calcularProporcionResultadosClinicos(
 }
 
 export function distribuirResultadosClinicos(
-  data: { resultadoGlobal?: string | null; tipoAlteracion?: string | null }[],
+  data: {
+    resultadoGlobal?: string | null;
+    tipoAlteracionEspirometria?: string | null;
+    tipoAlteracionEKG?: string | null;
+  }[],
   ordenCategorias: string[]
 ): [string, number, number][] {
   const conteo: Record<string, number> = {
@@ -699,7 +809,8 @@ export function distribuirResultadosClinicos(
     }
 
     if (resultado === 'ANORMAL') {
-      const alteracion = item.tipoAlteracion || '';
+      const alteracion =
+        item.tipoAlteracionEspirometria ?? item.tipoAlteracionEKG ?? '';
       if (alteracion && conteo[alteracion] !== undefined) {
         conteo[alteracion] += 1;
       }
