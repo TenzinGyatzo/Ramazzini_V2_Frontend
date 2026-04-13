@@ -146,6 +146,10 @@ const filtrosConfig: FiltroConfigItem[] = [
     'Hipoacusia profunda',
     '-'
   ]},
+  { id: 'espirometriaRc', groupId: 'estudios', label: 'Espirometría', opciones: ['Normal', 'Anormal', 'No concluyente', '-'] },
+  { id: 'ekgRc', groupId: 'estudios', label: 'EKG', opciones: ['Normal', 'Anormal', 'No concluyente', '-'] },
+  { id: 'rayosXRc', groupId: 'estudios', label: 'Rayos X', opciones: ['Normal', 'Anormal', 'No concluyente', '-'] },
+  { id: 'laboratorioRc', groupId: 'estudios', label: 'Laboratorios', opciones: ['Normal', 'Anormal', 'No concluyente', '-'] },
 ];
 
 const idsEnFiltrosRapidos = new Set<string>(filtrosRapidosIds);
@@ -237,6 +241,10 @@ const filtros = reactive<Record<string, string>>({
   consultas: '',
   audiometria: '',
   categoriaAudiometria: '',
+  espirometriaRc: '',
+  ekgRc: '',
+  rayosXRc: '',
+  laboratorioRc: '',
   periodo: '',
   estadoLaboral: 'Activo',
 });
@@ -644,6 +652,10 @@ const exportarFiltrados = () => {
       
       return resultado === 'Indeterminado' ? '-' : resultado;
     })(),
+    espirometriaRc: row.resultadosClinicosResumen?.espirometria?.etiqueta ?? '-',
+    ekgRc: row.resultadosClinicosResumen?.ekg?.etiqueta ?? '-',
+    rayosXRc: row.resultadosClinicosResumen?.rayosX?.etiqueta ?? '-',
+    laboratorioRc: row.resultadosClinicosResumen?.analisisLaboratorio?.etiqueta ?? '-',
     estadoLaboral: row.estadoLaboral || '-'
   }));
 
@@ -683,6 +695,10 @@ const filtrosValidos = {
   categoriaAudiometria: [
     'Normal', 'Hipoacusia leve', 'Hipoacusia moderada', 'H. moderada-severa', 'Hipoacusia severa', 'Hipoacusia profunda', '-'
   ],
+  espirometriaRc: ['Normal', 'Anormal', 'No concluyente', '-'],
+  ekgRc: ['Normal', 'Anormal', 'No concluyente', '-'],
+  rayosXRc: ['Normal', 'Anormal', 'No concluyente', '-'],
+  laboratorioRc: ['Normal', 'Anormal', 'No concluyente', '-'],
 };
 
 function aplicarFiltrosDesdeQuery(query: RouteLocationNormalizedLoaded['query']) {
@@ -1072,7 +1088,7 @@ const toggleVigencias = () => {
                     v-else-if="grupo.id === 'estudios'"
                     class="text-xs text-gray-500 leading-relaxed"
                   >
-                    Próximamente podrás añadir más filtros de estudios (p. ej. tipo de sangre, espirometría, EKG, rayos X, laboratorio).
+                    Puedes filtrar por resultado global de espirometría, EKG, rayos X y laboratorio (último estudio por tipo).
                   </p>
                 </div>
               </details>
