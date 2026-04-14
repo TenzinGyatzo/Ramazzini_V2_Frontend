@@ -6,7 +6,7 @@ import { useCentrosTrabajoStore } from '@/stores/centrosTrabajo';
 import { useTrabajadoresStore } from '@/stores/trabajadores';
 import { useMedicoFirmanteStore } from '@/stores/medicoFirmante';
 import { useInformePersonalizacionStore } from '@/stores/informePersonalizacion';
-import { clasificarPorEdadYSexo, ordenarPorGrupoEtario, contarPorCategoriaIMC, etiquetasEnfermedades, contarEnfermedadesCronicas, etiquetasAntecedentesReferidos, contarAntecedentesReferidos, etiquetasVisionSinCorreccion, calcularRequierenLentes, contarVisionSinCorreccion, calcularVistaCorregida, calcularDaltonismo, etiquetasAptitudPuesto, etiquetasAptitudPuestoTabla, contarPorAptitudPuesto, calcularCircunferenciaCintura, contarConsultasUltimos30Dias, etiquetasAgentesRiesgo, contarAgentesRiesgo, contarPorSexo, categoriasTensionArterialOrdenadas, contarPorCategoriaTensionArterial, calcularProporcionAudiometria, distribuirResultadosHBC, calcularProporcionResultadosClinicos, distribuirResultadosClinicos, distribuirResultadosClinicosPorCategoriasMultiples, mapToCategoriasMultiples, ordenTipoAlteracionEkg, ordenTipoAlteracionEspirometria, ordenTipoAlteracionRayosX, ordenTipoAlteracionAnalisisLaboratorio, etiquetasTipoAlteracionEkg, etiquetasTipoAlteracionEspirometria, etiquetasTipoAlteracionRayosX, etiquetasTipoAlteracionAnalisisLaboratorio } from '@/helpers/dashboardDataProcessor';
+import { clasificarPorEdadYSexo, ordenarPorGrupoEtario, contarPorCategoriaIMC, etiquetasEnfermedades, contarEnfermedadesCronicas, etiquetasAntecedentesReferidos, contarAntecedentesReferidos, etiquetasVisionSinCorreccion, calcularRequierenLentes, contarVisionSinCorreccion, calcularVistaCorregida, calcularDaltonismo, etiquetasAptitudPuesto, etiquetasAptitudPuestoTabla, contarPorAptitudPuesto, calcularCircunferenciaCintura, contarConsultasUltimos30Dias, etiquetasAgentesRiesgo, contarAgentesRiesgo, contarPorSexo, categoriasTensionArterialOrdenadas, contarPorCategoriaTensionArterial, calcularProporcionAudiometria, distribuirResultadosHBC, calcularProporcionResultadosClinicos, distribuirResultadosClinicos, distribuirResultadosClinicosPorCategoriasMultiples, mapToCategoriasMultiples, ordenTipoAlteracionEkg, ordenTipoAlteracionEspirometria, ordenTipoAlteracionRayosX, ordenTipoAlteracionAnalisisLaboratorio, etiquetasTipoAlteracionEkg, etiquetasTipoAlteracionEspirometria, etiquetasTipoAlteracionRayosX, etiquetasTipoAlteracionAnalisisLaboratorio, calcularAnilloTamizajeBipolarTEA, calcularAnilloTamizajeProdromalCPB, calcularBarrasFranjasTamizajeTLP, tablaFranjasTamizajeTLP } from '@/helpers/dashboardDataProcessor';
 import GraficaBarras from '@/components/graficas/GraficaBarras.vue';
 import GraficaAnillo from '@/components/graficas/GraficaAnillo.vue';
 import GraficaPastel from '@/components/graficas/GraficaPastel.vue';
@@ -170,6 +170,8 @@ const vistaSexo = ref('grafico');
 const vistaSexoKey = computed(() => `vista-${vistaSexo.value}`);
 const vistaCintura = ref('grafico');
 const vistaCinturaKey = computed(() => `vista-${vistaCintura.value}`);
+const vistaTamizajeTLP = ref('grafico');
+const vistaTamizajeTLPKey = computed(() => `vista-${vistaTamizajeTLP.value}`);
 
 // Refs para cada gráfica
 const refIMC = ref();
@@ -1530,6 +1532,87 @@ const graficaDaltonismoData = computed(() => {
   return calcularDaltonismo(examenes);
 });
 
+const filasTrastornosEstadoAnimoDashboard = computed(() => {
+  if (!dashboardData.value.length) return [];
+  return centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.trastornosEstadoAnimo?.[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex((c) => c.nombreCentro === centroSeleccionado.value)
+      ]?.trastornosEstadoAnimo?.[0] || [];
+});
+
+const graficaTamizajeBipolarTEAData = computed(() =>
+  calcularAnilloTamizajeBipolarTEA(filasTrastornosEstadoAnimoDashboard.value)
+);
+
+const filasCuestionarioProdromalDashboard = computed(() => {
+  if (!dashboardData.value.length) return [];
+  return centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.cuestionarioProdromalBreve?.[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex((c) => c.nombreCentro === centroSeleccionado.value)
+      ]?.cuestionarioProdromalBreve?.[0] || [];
+});
+
+const graficaTamizajeProdromalData = computed(() =>
+  calcularAnilloTamizajeProdromalCPB(filasCuestionarioProdromalDashboard.value)
+);
+
+const filasTrastornoLimiteDashboard = computed(() => {
+  if (!dashboardData.value.length) return [];
+  return centroSeleccionado.value === 'Todos'
+    ? dashboardData.value.flatMap((d) => d.trastornoLimitePersonalidad?.[0] || [])
+    : dashboardData.value[
+        centrosTrabajo.value.findIndex((c) => c.nombreCentro === centroSeleccionado.value)
+      ]?.trastornoLimitePersonalidad?.[0] || [];
+});
+
+const graficaFranjasTLPData = computed(() =>
+  calcularBarrasFranjasTamizajeTLP(filasTrastornoLimiteDashboard.value)
+);
+
+const tablaTamizajeTLP = computed(() =>
+  tablaFranjasTamizajeTLP(filasTrastornoLimiteDashboard.value)
+);
+
+const graficaFranjasTLPOptions = {
+  responsive: true,
+  plugins: {
+    legend: { display: false },
+    tooltip: { enabled: true },
+    datalabels: {
+      color: '#4B5563',
+      anchor: 'end',
+      align: 'top',
+      formatter: (value) => (value > 0 ? value : ''),
+      font: { weight: 'bold', size: 12 },
+      clamp: true,
+    },
+  },
+  scales: {
+    x: {
+      grid: { display: false },
+      ticks: {
+        color: '#374151',
+        font: { size: 11 },
+        maxRotation: 40,
+        minRotation: 0,
+      },
+    },
+    y: {
+      beginAtZero: true,
+      grid: { display: false },
+      ticks: { stepSize: 1, color: '#374151' },
+    },
+  },
+  onHover: (event, elements) => {
+    const canvas = event.chart?.canvas;
+    if (canvas) {
+      canvas.style.cursor = elements.length ? 'pointer' : 'default';
+    }
+  },
+};
+
 // Computed para gráfica de proporción Normal/Anormal de audiometría
 const graficaAudiometriaProporcionData = computed(() => {
   if (!dashboardData.value.length) return { conAnormal: 0, porcentaje: 0, chart: { labels: [], datasets: [] } };
@@ -2235,6 +2318,28 @@ const graficaCircunferenciaOptionsPDF = {
     }
   }
 };
+
+const hasAnyPositiveChartData = (chartData) =>
+  Boolean(
+    chartData?.datasets?.some((dataset) =>
+      (dataset?.data || []).some((value) => Number(value) > 0)
+    )
+  );
+
+const mostrarTamizajeBipolar = computed(() => hasAnyPositiveChartData(graficaTamizajeBipolarTEAData.value.chart));
+const mostrarTamizajeProdromal = computed(() => hasAnyPositiveChartData(graficaTamizajeProdromalData.value.chart));
+const mostrarTamizajeTLP = computed(() => hasAnyPositiveChartData(graficaFranjasTLPData.value));
+
+const mostrarAudiometriaProporcion = computed(() => hasAnyPositiveChartData(graficaAudiometriaProporcionData.value.chart));
+const mostrarAudiometriaDistribucion = computed(() => hasAnyPositiveChartData(graficaAudiometriaDistribucionData.value));
+const mostrarEspirometriaProporcion = computed(() => hasAnyPositiveChartData(graficaEspirometriaProporcionData.value.chart));
+const mostrarEspirometriaDistribucion = computed(() => hasAnyPositiveChartData(graficaEspirometriaDistribucionData.value));
+const mostrarEkgProporcion = computed(() => hasAnyPositiveChartData(graficaEkgProporcionData.value.chart));
+const mostrarEkgDistribucion = computed(() => hasAnyPositiveChartData(graficaEkgDistribucionData.value));
+const mostrarRayosXProporcion = computed(() => hasAnyPositiveChartData(graficaRayosXProporcionData.value.chart));
+const mostrarRayosXDistribucion = computed(() => hasAnyPositiveChartData(graficaRayosXDistribucionData.value));
+const mostrarAnalisisLaboratorioProporcion = computed(() => hasAnyPositiveChartData(graficaAnalisisLaboratorioProporcionData.value.chart));
+const mostrarAnalisisLaboratorioDistribucion = computed(() => hasAnyPositiveChartData(graficaAnalisisLaboratorioDistribucionData.value));
 
 // Computed para tabla y grafica de consultas
 const totalConsultas = computed(() => {
@@ -3023,6 +3128,9 @@ const tablaCintura = computed(() => {
                 rayosXDistribucion: { ref: refRayosXDistribucion, config: { type: 'bar', data: graficaRayosXDistribucionData, options: graficaRayosXDistribucionOptions } },
                 analisisLaboratorioProporcion: { ref: refAnalisisLaboratorioProporcion, config: { type: 'doughnut', data: graficaAnalisisLaboratorioProporcionData.chart, options: opcionesGenericasAnilloPDF } },
                 analisisLaboratorioDistribucion: { ref: refAnalisisLaboratorioDistribucion, config: { type: 'bar', data: graficaAnalisisLaboratorioDistribucionData, options: graficaAnalisisLaboratorioDistribucionOptions } },
+                tamizajeBipolarTEA: { config: { type: 'doughnut', data: graficaTamizajeBipolarTEAData.chart, options: opcionesGenericasAnilloPDF } },
+                tamizajeProdromal: { config: { type: 'doughnut', data: graficaTamizajeProdromalData.chart, options: opcionesGenericasAnilloPDF } },
+                tamizajeTLP: { config: { type: 'bar', data: graficaFranjasTLPData, options: graficaFranjasTLPOptions } },
                 agentes: { ref: refAgentes, config: { type: 'bar', data: graficaAgentesRiesgoData, options: graficaAgentesRiesgoOptionsPDF } },
                 grupos: { ref: refGruposEtarios, config: { type: 'bar', data: graficaGruposEtariosData, options: graficaGruposEtariosOptionsPDF } },
                 cintura: { ref: refCircunferencia, config: { type: 'bar', data: graficaCircunferenciaData.chart, options: graficaCircunferenciaOptionsPDF } },
@@ -3058,6 +3166,9 @@ const tablaCintura = computed(() => {
                 rayosXDistribucion: graficaRayosXDistribucionData,
                 analisisLaboratorioProporcion: graficaAnalisisLaboratorioProporcionData,
                 analisisLaboratorioDistribucion: graficaAnalisisLaboratorioDistribucionData,
+                tamizajeBipolarTEA: graficaTamizajeBipolarTEAData,
+                tamizajeProdromal: graficaTamizajeProdromalData,
+                tamizajeTLP: graficaFranjasTLPData,
                 cintura: graficaCircunferenciaData,
                 sexo: tablaSexoPDF,
                 tensionArterial: tablaTensionArterial
@@ -3785,6 +3896,162 @@ const tablaCintura = computed(() => {
               </div>
             </div>
 
+            <!-- Tamizajes psicológicos (TEA, prodromal, TLP) -->
+            <div
+              v-if="mostrarTamizajeBipolar"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-1 xl:col-span-1"
+            >
+              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                  Riesgo tamizaje bipolar (trastorno estado de ánimo)
+                  <span class="relative cursor-help">
+                    <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                    <span
+                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                    >
+                      Proporción de trabajadores con último cuestionario en el periodo: <span class="font-semibold">Positivo</span> según criterio operativo (≥2 «Sí» en P1 y «Sí» en P2). Tamizaje, no diagnóstico.
+                    </span>
+                  </span>
+                </h3>
+              </div>
+              <GraficaAnillo
+                v-if="graficaTamizajeBipolarTEAData.chart?.labels?.length"
+                :data="graficaTamizajeBipolarTEAData.chart"
+                :options="opcionesGenericasAnillo"
+                :cantidad="graficaTamizajeBipolarTEAData.positivos"
+                :porcentaje="graficaTamizajeBipolarTEAData.porcentaje"
+              />
+              <p v-else class="text-sm text-gray-500 text-center py-8">Sin evaluaciones en el periodo seleccionado.</p>
+              <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
+                Positivo / Negativo según cuestionario de trastornos del estado de ánimo.
+              </h4>
+            </div>
+
+            <div
+              v-if="mostrarTamizajeProdromal"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-1 xl:col-span-1"
+            >
+              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                  Riesgo tamizaje psicótico (prodromal breve)
+                  <span class="relative cursor-help">
+                    <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                    <span
+                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                    >
+                      <span class="font-semibold">Positivo</span> si el número de respuestas «Sí» en el cuestionario prodromal breve alcanza el umbral configurado. Tamizaje operativo, revisable clínicamente.
+                    </span>
+                  </span>
+                </h3>
+              </div>
+              <GraficaAnillo
+                v-if="graficaTamizajeProdromalData.chart?.labels?.length"
+                :data="graficaTamizajeProdromalData.chart"
+                :options="opcionesGenericasAnillo"
+                :cantidad="graficaTamizajeProdromalData.positivos"
+                :porcentaje="graficaTamizajeProdromalData.porcentaje"
+              />
+              <p v-else class="text-sm text-gray-500 text-center py-8">Sin evaluaciones en el periodo seleccionado.</p>
+              <h4 class="mt-4 text-xs text-gray-600 font-normal italic text-center">
+                Positivo / Negativo según cuestionario prodromal breve.
+              </h4>
+            </div>
+
+            <div
+              v-if="mostrarTamizajeTLP"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2"
+            >
+              <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4 gap-2">
+                <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                  Tamizaje rasgos límite (TLP)
+                  <span class="relative cursor-help">
+                    <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                    <span
+                      class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                    >
+                      Distribución por conteo de criterios «Sí» en el cuestionario: improbable (0–2), posible (3–5), probable (6–10). Tamizaje, no diagnóstico.
+                    </span>
+                  </span>
+                </h3>
+                <div class="flex gap-2 shrink-0">
+                  <button
+                    type="button"
+                    @click="vistaTamizajeTLP = 'grafico'"
+                    :class="[
+                      'px-3 py-1 rounded text-sm font-medium',
+                      vistaTamizajeTLP === 'grafico'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    ]"
+                  >
+                    Gráfico
+                  </button>
+                  <button
+                    type="button"
+                    @click="vistaTamizajeTLP = 'tabla'"
+                    :class="[
+                      'px-3 py-1 rounded text-sm font-medium',
+                      vistaTamizajeTLP === 'tabla'
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    ]"
+                  >
+                    Tabla
+                  </button>
+                </div>
+              </div>
+              <div class="flex-1 min-h-[200px] overflow-x-auto">
+                <Transition name="fade" mode="out-in">
+                  <template v-if="vistaTamizajeTLP === 'grafico'">
+                    <GraficaBarras
+                      v-if="graficaFranjasTLPData.labels?.length"
+                      :key="vistaTamizajeTLPKey"
+                      :data="graficaFranjasTLPData"
+                      :options="graficaFranjasTLPOptions"
+                    />
+                    <p v-else class="text-sm text-gray-500 text-center py-8">Sin evaluaciones en el periodo seleccionado.</p>
+                  </template>
+                  <template v-else>
+                    <table
+                      v-if="tablaTamizajeTLP.length"
+                      class="min-w-full text-sm border border-gray-300 rounded h-full"
+                    >
+                      <thead class="bg-gray-100 text-gray-700">
+                        <tr>
+                          <th class="py-2 px-4 text-left text-base sm:text-lg lg:text-xl">Categoría</th>
+                          <th class="py-2 px-4 text-center text-base sm:text-lg lg:text-xl">Trabajadores</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="[categoria, cantidad, porcentaje] in tablaTamizajeTLP"
+                          :key="categoria"
+                          class="border-t hover:bg-gray-50 transition"
+                        >
+                          <td class="py-1 px-4 font-medium text-gray-700 text-base sm:text-lg lg:text-xl">
+                            {{ categoria }}
+                          </td>
+                          <td
+                            :class="[
+                              'py-1 px-4 text-center text-base sm:text-lg lg:text-xl',
+                              categoria === 'Síntomas improbables'
+                                ? 'text-emerald-700'
+                                : cantidad === 0
+                                  ? 'text-emerald-700'
+                                  : 'text-amber-800'
+                            ]"
+                          >
+                            {{ cantidad }} <span class="text-sm text-gray-500">({{ porcentaje }}%)</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <p v-else class="text-sm text-gray-500 text-center py-8">Sin evaluaciones en el periodo seleccionado.</p>
+                  </template>
+                </Transition>
+              </div>
+            </div>
+
             <!-- Agudeza Visual -->
             <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
               <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
@@ -3935,7 +4202,10 @@ const tablaCintura = computed(() => {
             </div>
 
             <!-- Proporción Audiometría Normal/Anormal: 1 columna -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1">
+            <div
+              v-if="mostrarAudiometriaProporcion"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1"
+            >
               <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Proporción Audiometría
@@ -3963,7 +4233,10 @@ const tablaCintura = computed(() => {
             </div>
 
             <!-- Distribución de Resultados de Audiometría: 2 columnas -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+            <div
+              v-if="mostrarAudiometriaDistribucion"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2"
+            >
               <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Distribución Audiometría
@@ -4058,48 +4331,14 @@ const tablaCintura = computed(() => {
               </h4>
             </div>
 
-            <!-- Consultas -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
-              <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4">
-                <div class="flex flex-col gap-0.5">
-                  <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                    Consultas Médicas
-                    <span class="relative cursor-help">
-                      <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
-                      <span
-                        class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
-                      >
-                        Cantidad total de <span class="font-semibold text-emerald-600">consultas médicas</span> otorgadas a los trabajadores en el período seleccionado.
-                      </span>
-                    </span>
-                  </h3>
-
-                </div>
-              </div>
-
-              <!-- Número principal -->
-              <div 
-                :class="[
-                  'flex-1 flex items-center justify-center text-center rounded-lg transition',
-                  totalConsultas > 0 ? 'cursor-pointer hover:bg-emerald-50' : 'cursor-default'
-                ]"
-                @click="handleClickConsultas"
-              >
-                <div class="text-center">
-                  <div class="text-8xl font-medium text-emerald-600">
-                    {{ totalConsultas }}
-                  </div>
-                  <div class="text-sm text-gray-500 mt-1 whitespace-pre-line">{{ rangoPeriodo }}</div>
-                </div>
-              </div>
-
-              <h4 class="text-xs text-gray-600 font-normal italic text-center">
-                Actividad médica
-              </h4>
-            </div>
+            <!-- Espacio vacío intencional entre Audiometría y Espirometría -->
+            <div class="hidden xl:block bg-transparent p-6 rounded-lg shadow-none col-span-1"></div>
 
             <!-- Proporción Espirometría -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1">
+            <div
+              v-if="mostrarEspirometriaProporcion"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1"
+            >
               <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Proporción Espirometría
@@ -4127,7 +4366,10 @@ const tablaCintura = computed(() => {
             </div>
 
             <!-- Distribución Espirometría -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+            <div
+              v-if="mostrarEspirometriaDistribucion"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2"
+            >
               <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Distribución Espirometría
@@ -4212,11 +4454,14 @@ const tablaCintura = computed(() => {
               </h4>
             </div>
 
-            <!-- Espacio vacío para mantener layout -->
-            <div class="bg-transparent p-6 rounded-lg shadow-none hidden sm:block"></div>
+            <!-- Espacio vacío intencional entre Espirometría y EKG -->
+            <div class="hidden xl:block bg-transparent p-6 rounded-lg shadow-none col-span-1"></div>
 
             <!-- Proporción EKG -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1">
+            <div
+              v-if="mostrarEkgProporcion"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1"
+            >
               <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Proporción EKG
@@ -4244,7 +4489,10 @@ const tablaCintura = computed(() => {
             </div>
 
             <!-- Distribución EKG -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+            <div
+              v-if="mostrarEkgDistribucion"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2"
+            >
               <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Distribución EKG
@@ -4329,11 +4577,14 @@ const tablaCintura = computed(() => {
               </h4>
             </div>
 
-            <!-- Espacio vacío para mantener layout -->
-            <div class="bg-transparent p-6 rounded-lg shadow-none hidden sm:block"></div>
+            <!-- Espacio vacío intencional entre EKG y Rayos X -->
+            <div class="hidden xl:block bg-transparent p-6 rounded-lg shadow-none col-span-1"></div>
 
             <!-- Proporción Rayos X -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1">
+            <div
+              v-if="mostrarRayosXProporcion"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1"
+            >
               <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Proporción Rayos X
@@ -4361,7 +4612,10 @@ const tablaCintura = computed(() => {
             </div>
 
             <!-- Distribución Rayos X -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+            <div
+              v-if="mostrarRayosXDistribucion"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2"
+            >
               <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Distribución Rayos X
@@ -4446,11 +4700,14 @@ const tablaCintura = computed(() => {
               </h4>
             </div>
 
-            <!-- Espacio vacío para mantener layout -->
-            <div class="bg-transparent p-6 rounded-lg shadow-none hidden sm:block"></div>
+            <!-- Espacio vacío intencional entre Rayos X y Análisis de laboratorio -->
+            <div class="hidden xl:block bg-transparent p-6 rounded-lg shadow-none col-span-1"></div>
 
             <!-- Proporción Análisis de laboratorio -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1">
+            <div
+              v-if="mostrarAnalisisLaboratorioProporcion"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1"
+            >
               <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Proporción Análisis de laboratorio
@@ -4478,7 +4735,10 @@ const tablaCintura = computed(() => {
             </div>
 
             <!-- Distribución Análisis de laboratorio -->
-            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2">
+            <div
+              v-if="mostrarAnalisisLaboratorioDistribucion"
+              class="bg-gray-50 p-6 rounded-lg shadow flex flex-col col-span-1 sm:col-span-2 xl:col-span-2"
+            >
               <div class="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
                 <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                   Distribución Análisis de laboratorio
@@ -4649,6 +4909,46 @@ const tablaCintura = computed(() => {
                   </template>
                 </Transition>
               </div>
+            </div>
+
+            <!-- Consultas -->
+            <div class="bg-gray-50 p-6 rounded-lg shadow flex flex-col">
+              <div class="flex items-start justify-between border-b border-gray-200 pb-2 mb-4">
+                <div class="flex flex-col gap-0.5">
+                  <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                    Consultas Médicas
+                    <span class="relative cursor-help">
+                      <i class="fas fa-info-circle text-gray-400 hover:text-emerald-600 peer"></i>
+                      <span
+                        class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 md:bottom-auto md:top-1/2 md:left-full md:ml-2 md:-translate-x-0 md:-translate-y-1/2 w-64 text-sm font-normal bg-white text-gray-700 border border-gray-300 rounded shadow-lg px-3 py-2 opacity-0 peer-hover:opacity-100 transition-opacity z-10 pointer-events-none"
+                      >
+                        Cantidad total de <span class="font-semibold text-emerald-600">consultas médicas</span> otorgadas a los trabajadores en el período seleccionado.
+                      </span>
+                    </span>
+                  </h3>
+
+                </div>
+              </div>
+
+              <!-- Número principal -->
+              <div 
+                :class="[
+                  'flex-1 flex items-center justify-center text-center rounded-lg transition',
+                  totalConsultas > 0 ? 'cursor-pointer hover:bg-emerald-50' : 'cursor-default'
+                ]"
+                @click="handleClickConsultas"
+              >
+                <div class="text-center">
+                  <div class="text-8xl font-medium text-emerald-600">
+                    {{ totalConsultas }}
+                  </div>
+                  <div class="text-sm text-gray-500 mt-1 whitespace-pre-line">{{ rangoPeriodo }}</div>
+                </div>
+              </div>
+
+              <h4 class="text-xs text-gray-600 font-normal italic text-center">
+                Actividad médica
+              </h4>
             </div>
 
           </div>

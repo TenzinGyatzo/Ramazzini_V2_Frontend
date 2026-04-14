@@ -827,7 +827,188 @@ export function distribuirResultadosClinicos(
   });
 }
 
+// —— Tamizajes psicológicos (dashboard): reglas operativas, no diagnóstico clínico ——
 
+const RESPUESTA_SI = 'Sí';
 
+const CAMPOS_P1_TRASTORNOS_ESTADO_ANIMO = [
+  'p1ExaltadoComportamientoNoHabitualOMetidoProblemas',
+  'p1IrritableGritosPeleas',
+  'p1MasSeguridadQueLoHabitual',
+  'p1DormiaMenosSinNecesitarMasSueno',
+  'p1HablabaMasOMasRapido',
+  'p1PensamientosAgolpados',
+  'p1DistraccionDificultadConcentracion',
+  'p1MasEnergiaQueLoHabitual',
+  'p1MasActivoOMasCosasQueLoHabitual',
+  'p1MasSocialExtrovertido',
+  'p1MasApetitoSexual',
+  'p1CosasExageradasRiesgosas',
+  'p1GastoDineroProblemas',
+] as const;
+
+/**
+ * Tamizaje riesgo bipolar (TEA): ≥2 «Sí» en P1 y P2 (mismo período) = «Sí».
+ * Revisar umbrales con criterio clínico interno.
+ */
+export function esTamizajeBipolarPositivoTEA(row: Record<string, unknown>): boolean {
+  const totalSi = CAMPOS_P1_TRASTORNOS_ESTADO_ANIMO.filter((k) => row[k] === RESPUESTA_SI).length;
+  return totalSi >= 2 && row.p2SituacionesMismoPeriodo === RESPUESTA_SI;
+}
+
+export function calcularAnilloTamizajeBipolarTEA(data: Record<string, unknown>[]) {
+  if (!data.length) {
+    return { positivos: 0, porcentaje: 0, chart: { labels: [] as string[], datasets: [] as any[] } };
+  }
+
+  let positivos = 0;
+  let negativos = 0;
+  for (const row of data) {
+    if (esTamizajeBipolarPositivoTEA(row)) positivos++;
+    else negativos++;
+  }
+
+  const total = positivos + negativos;
+  const porcentaje = total > 0 ? Math.round((positivos / total) * 100) : 0;
+
+  return {
+    positivos,
+    porcentaje,
+    chart: {
+      labels: ['Positivo', 'Negativo'],
+      datasets: [
+        {
+          data: [positivos, negativos],
+          backgroundColor: ['#b45309', '#D1D5DB'],
+          hoverOffset: 8,
+        },
+      ],
+    },
+  };
+}
+
+/**
+ * Mínimo de respuestas «Sí» en p1–p21 para marcar tamizaje prodromal como positivo.
+ * Valor revisable con el equipo clínico.
+ */
+export const UMBRAL_SI_CPB_RIESGO_PSICOTICO = 5;
+
+export function contarSiCuestionarioProdromalBreve(row: Record<string, unknown>): number {
+  let n = 0;
+  for (let i = 1; i <= 21; i++) {
+    if (row[`p${i}`] === RESPUESTA_SI) n++;
+  }
+  return n;
+}
+
+export function calcularAnilloTamizajeProdromalCPB(data: Record<string, unknown>[]) {
+  if (!data.length) {
+    return { positivos: 0, porcentaje: 0, chart: { labels: [] as string[], datasets: [] as any[] } };
+  }
+
+  let positivos = 0;
+  let negativos = 0;
+  for (const row of data) {
+    if (contarSiCuestionarioProdromalBreve(row) >= UMBRAL_SI_CPB_RIESGO_PSICOTICO) positivos++;
+    else negativos++;
+  }
+
+  const total = positivos + negativos;
+  const porcentaje = total > 0 ? Math.round((positivos / total) * 100) : 0;
+
+  return {
+    positivos,
+    porcentaje,
+    chart: {
+      labels: ['Positivo', 'Negativo'],
+      datasets: [
+        {
+          data: [positivos, negativos],
+          backgroundColor: ['#b45309', '#D1D5DB'],
+          hoverOffset: 8,
+        },
+      ],
+    },
+  };
+}
+
+const CAMPOS_SI_TRASTORNO_LIMITE = [
+  'relacionesCercanasDiscusionesRupturas',
+  'autolesionIntentoSuicidio',
+  'impulsividadOtrosDosProblemas',
+  'extremadamenteMalHumor',
+  'enojadoFrecuenteActuaEnojadoSarcastico',
+  'desconfianzaOtrasPersonas',
+  'sensacionIrrealidadEntornoIrreal',
+  'vacioCronico',
+  'faltaIdentidadQuienEs',
+  'esfuerzosEvitarAbandono',
+] as const;
+
+export function contarCriteriosSiTLP(row: Record<string, unknown>): number {
+  return CAMPOS_SI_TRASTORNO_LIMITE.filter((k) => row[k] === RESPUESTA_SI).length;
+}
+
+/**
+ * Franjas por conteo de «Sí» (0–10): 0–2 improbable, 3–5 posible, 6–10 probable.
+ * Cortes revisables con criterio clínico interno.
+ */
+export function clasificarFranjaTamizajeTLP(totalSi: number): 0 | 1 | 2 {
+  if (totalSi <= 2) return 0;
+  if (totalSi <= 5) return 1;
+  return 2;
+}
+
+export const ETIQUETAS_FRANJAS_TAMIZAJE_TLP = [
+  'Síntomas improbables',
+  'Posibles síntomas',
+  'Síntomas probables',
+] as const;
+
+function contarTrabajadoresPorFranjasTamizajeTLP(
+  data: Record<string, unknown>[]
+): [number, number, number] {
+  const counts: [number, number, number] = [0, 0, 0];
+  for (const row of data) {
+    const idx = clasificarFranjaTamizajeTLP(contarCriteriosSiTLP(row));
+    counts[idx]++;
+  }
+  return counts;
+}
+
+/** Tabla [categoría, cantidad, porcentaje] alineada al gráfico de barras TLP. */
+export function tablaFranjasTamizajeTLP(
+  data: Record<string, unknown>[]
+): [string, number, number][] {
+  if (!data.length) return [];
+
+  const counts = contarTrabajadoresPorFranjasTamizajeTLP(data);
+  const total = data.length;
+
+  return ETIQUETAS_FRANJAS_TAMIZAJE_TLP.map((label, i) => {
+    const cantidad = counts[i];
+    const porcentaje = total > 0 ? Math.round((cantidad / total) * 100) : 0;
+    return [label, cantidad, porcentaje];
+  });
+}
+
+export function calcularBarrasFranjasTamizajeTLP(data: Record<string, unknown>[]) {
+  if (!data.length) {
+    return { labels: [] as string[], datasets: [] as any[] };
+  }
+
+  const counts = contarTrabajadoresPorFranjasTamizajeTLP(data);
+
+  return {
+    labels: [...ETIQUETAS_FRANJAS_TAMIZAJE_TLP],
+    datasets: [
+      {
+        label: 'Trabajadores',
+        data: [...counts],
+        backgroundColor: ['#9CA3AF', '#F59E0B', '#b45309'],
+      },
+    ],
+  };
+}
 
 
